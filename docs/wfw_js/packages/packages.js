@@ -1,0 +1,4 @@
+/**
+ * @namespace packages
+ * @memberOf wfw
+ */

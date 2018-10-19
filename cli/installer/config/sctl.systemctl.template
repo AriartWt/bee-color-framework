@@ -1,0 +1,12 @@
+[Unit]
+Description=Gestionnaire de services du framework bee-color wfw
+
+[Service]
+Type=simple
+User=root
+KillSignal=SIGALRM
+ExecStart=/usr/bin/php -q @ROOT/daemons/sctl/SCTLServerLauncher.php --debug
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,29 @@
+{
+    "working_dir": "kvstore\/data",
+    "socket_path": "KVSServer.socket",
+    "db_path": "kvs_db",
+    "containers": {
+        "test_db": {
+            "permissions": {
+                "users": {
+                    "tester": {
+                        "read": true,
+                        "write": true,
+                        "admin": true
+                    }
+                }
+            },
+            "default_storage": "IN_MEMORY_PERSISTED_ON_DISK"
+        }
+    },
+    "users": {
+        "tester": {
+            "password": "test"
+        }
+    },
+    "sessions_ttl": 900,
+    "request_ttl": 900,
+    "shutdown_on_error": false,
+    "send_error_to_client": true,
+    "error_logs": "error_logs.txt"
+}

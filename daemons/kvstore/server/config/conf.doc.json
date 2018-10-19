@@ -1,0 +1,134 @@
+{
+    //Optionnel
+    //Déclare le chemin de base de tous les fichiers et dossiers relatifs de la configuration.
+    //Si relatif, sera résolu depuis le chemin de la constante DAEMONS.
+    //Si non précisé, le chemin par défaut sera le suivant :
+    "working_dir" : "kvstore/default_working_dir",
+    //Chemin relatif ou absolu vers la socket.
+    // Ici le chemin résolu sera DAEMONS."/kvstore/default_working_dir/KVServer.socket
+    // Ex : "/tmp/KVSServer.socket"
+    "socket_path" : "KVSServer.socket",
+    //Chemin d'accés à la base de données KVS (repertoire valide)
+    "db_path" : "kvs_db",
+    //liste des containers :
+    //(Chaque container est géré par un worker différent, et son execution est isolée des autres containers)
+    //Ajouter un container ici le créera automatiquement.
+    //Le supprimer le gardera sur le disque jusqu'à suppression manuelle dans le working_dir.
+    "containers" : {
+        "container_name" : {
+            //Liste des utilisateurs ou groupes d'utilisateurs ayant accés au container.
+            //Les utilisateurs non définis n'ont pas accés au container.
+            //Si un utilisateur est défini plusieurs fois (apparait dans plusieurs groupes)
+            //Les paramètres appliqués sont les paramètres les plus permissifs.
+            /*
+              Ex : grp1 : usr1,usr2,usr3
+                   grp2 : usr1,usr4
+                my_container :
+                  groups :
+                   grp1 :
+                    read : true
+                    write : false
+                   grp2 :
+                    read : false
+                    write : true
+                usr1 : ( read : true, write : true )
+                usr2,usr3 : ( read : true, write : false )
+                usr4 : ( read : false, write : true )
+            */
+            //permissions
+            "permission" : {
+                //permissions des utilisateurs
+                "users" : {
+                    "user_name" : {
+                        //(optionnel défaut : false) Octroie les droits de lecture sur le container
+                        "read" : true,
+                        //(optionnel défaut : false) Octroie les droits d'écriture sur le container
+                        "write" : true,
+                        //(optionnel défaut : false) Octroie les droits d'administrations sur le container
+                        //(purge, suppression, déplacement, reconstruction...)
+                        "admin" : false
+                    }
+                },
+                //permissions des groupes
+                "groups" : {
+                    "group_name" : {
+                        //(optionnel défaut : false) Octroie les droits de lecture sur le container
+                        "read" : true,
+                        //(optionnel défaut : false) Octroie les droits d'écriture sur le container
+                        "write" : true,
+                        //(optionnel défaut : false) Octroie les droits d'administrations sur le container
+                        //(purge, suppression, déplacement, reconstruction...)
+                        "admin" : false
+                    }
+                }
+            },
+            //Mode de stockage des clés par défaut.
+            //Chaque clé peut-être stockée indépendament des autres clés à l'intérieur d'un même container.
+            //Les options disponibles sont : ON_DISK_ONLY / IN_MEMORY_ONLY / IN_MEMORY_PERSISTED_ON_DISK
+            "default_storage" : "IN_MEMORY_PERSISTED_ON_DISK",
+            //(optionnel) Chemin absolu vers un repertoir accessible.
+            //Si non spécifié, le dossier par défaut sera celui de kvs/db_path
+            "path" : "/path/to/a/valid/directory"
+        }
+    },
+    //(optionnel) liste des groupes d'utilisateurs
+    "groups" : {
+        "grp1" : [
+            "usr1","usr4"
+        ],
+        "grp2" : [
+            "usr1","usr2","usr3","usr4"
+        ]
+    },
+    //Liste des utilisateurs
+    "users" : {
+        "root" : {
+            "password" : "rootpwd"
+        },
+        "usr1" : {
+            "password" : "pwd1"
+        },
+        "usr2" : {
+            "password" : "pwd2"
+        },
+        "usr3" : {
+            "password" : "pwd3"
+        },
+        "usr4" : {
+            "password" : "pwd4"
+        }
+    },
+    //Liste des droits d'administration
+    "admins" : {
+        "users" : {
+            //Tous les droits d'administration sont accordés
+            "all" : [
+                "root"
+            ],
+            //Droit de demander l'extinction du serveur
+            "shutdown" : [
+                "usr1"
+            ]
+        },
+        "groups" : {
+            //Tous les droits d'administration sont accordés
+            "all" : [
+                "grp1"
+            ],
+            //Droit de demander l'extinction du serveur
+            "shutdown" : [
+                "grp2"
+            ]
+        }
+    },
+    //Temps en secondes avant expiration des requêtes internes.
+    "request_ttl" : 60,
+    //Temps en secondes d'inactivité minimum avant expiration des sessions
+    "session_ttl" : 900,
+    //Demande l'extinction du serveur lorsqu'une erreur survient (déconseillé)
+    "shutdown_on_error" : false,
+    //Envoi de l'erreur au client
+    "send_error_to_client" : true,
+    //Destination des logs d'erreur
+    "error_logs" : "error_logs.txt"
+}

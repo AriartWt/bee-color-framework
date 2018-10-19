@@ -1,0 +1,11 @@
+RewriteEngine On
+#Si l'url ne correspond ni à un fichier, ni à un dossier, alors on réécrit l'URL pour passer par le
+#fichier index.
+
+RewriteCond %{REQUEST_URI} ^(.*)/engine/(.*)$
+RewriteCond %{DOCUMENT_ROOT}%1/site/%2 -f
+RewriteRule (.*) %{REQUEST_SCHEME}://%{HTTP_HOST}/%1/site/%2 [L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+
+RewriteRule (.*) index.php/$1 [L]

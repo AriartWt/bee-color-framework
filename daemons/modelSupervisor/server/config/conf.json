@@ -1,0 +1,71 @@
+{
+    "working_dir": "modelSupervisor\/data",
+    "socket_path": "ModelSupervisor.socket",
+    "default_instance": {
+        "initializers_path": "{ROOT}\/daemons\/modelSupervisor\/server\/config\/initializers.components.php",
+        "components": {
+            "writer": {
+                "max_attempts": 10,
+                "delay": 0.1,
+                "save_frequency": 30,
+                "permissions": {
+                    "root": {
+                        "read": true,
+                        "write": true,
+                        "admin": true
+                    }
+                }
+            }
+        },
+        "users": {
+            "root": {
+                "password": "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"
+            }
+        },
+        "models_to_load_path": "{ROOT}\/site\/config\/load\/models.php",
+        "request_ttl": 900,
+        "session_ttl": 900,
+        "shutdown_on_error": false,
+        "send_error_to_client": true,
+        "error_logs": "error_logs.txt"
+    },
+    "instances": {
+        "test": {
+            "models_to_load_path": "{ROOT}\/BeeColor\/config\/load\/models.php",
+            "kvs": {
+                "login": "tester",
+                "password": "test",
+                "container": "test_db"
+            },
+            "components": {
+                "writer": {
+                    "kvs": {
+                        "login": "tester",
+                        "password": "test",
+                        "container": "test_db"
+                    },
+                    "mysql": {
+                        "host": "localhost",
+                        "database": "event_store_test",
+                        "login": "tester",
+                        "password": "test"
+                    },
+                    "permissions": {
+                        "users": {
+                            "tester": {
+                                "write": true,
+                                "read": true,
+                                "admin": true
+                            }
+                        }
+                    }
+                }
+            },
+            "users": {
+                "tester": {
+                    "password": "test"
+                }
+            }
+        }
+    }
+}

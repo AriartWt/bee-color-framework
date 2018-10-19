@@ -1,0 +1,84 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: ariart
+ * Date: 26/06/18
+ * Time: 16:34
+ */
+
+namespace wfw\engine\package\users\handlers\action\admin;
+
+use wfw\engine\core\command\ICommand;
+use wfw\engine\core\command\ICommandBus;
+use wfw\engine\core\domain\events\IDomainEvent;
+use wfw\engine\core\domain\events\IDomainEventListener;
+use wfw\engine\core\domain\events\IDomainEventObserver;
+use wfw\engine\core\response\IResponse;
+use wfw\engine\core\response\responses\Response;
+use wfw\engine\core\session\ISession;
+use wfw\engine\lib\data\string\json\IJSONEncoder;
+use wfw\engine\package\users\command\RemoveUsers;
+use wfw\engine\package\users\domain\events\UserRemovedEvent;
+use wfw\engine\package\users\handlers\action\admin\errors\IllegalSelfOperation;
+use wfw\engine\package\users\handlers\action\DefaultUserActionHandler;
+use wfw\engine\package\users\security\data\UserIdList;
+
+/**
+ * Supprime une liste d'utilisateurs
+ */
+final class RemoveHandler extends DefaultUserActionHandler implements IDomainEventListener{
+	/** @var IJSONEncoder $_encoder */
+	private $_encoder;
+	/** @var array $_ids */
+	private $_ids;
+	/**
+	 * RemoveHandler constructor.
+	 * @param ICommandBus $bus
+	 * @param UserIdList $rule
+	 * @param ISession $session
+	 * @param IDomainEventObserver $observer
+	 * @param IJSONEncoder $encoder
+	 */
+	public function __construct(
+		ICommandBus $bus,
+		UserIdList $rule,
+		ISession $session,
+		IDomainEventObserver $observer,
+		IJSONEncoder $encoder
+	){
+		parent::__construct($bus, $rule, $session);
+		$this->_encoder = $encoder;
+		$this->_ids = [];
+		$observer->addEventListener(UserRemovedEvent::class,$this);
+	}
+
+	/**
+	 * @param array $data
+	 * @return ICommand
+	 */
+	protected function createCommand(array $data): ICommand {
+		foreach($data["ids"] as $k=>$id){
+			//on empêche un utilisateur de se supprimer lui même.
+			if((string)$id === (string) $this->_session->get("user")->getId())
+				throw new IllegalSelfOperation(
+					"Un utilisateur ne peut pas supprimer son propre compte !"
+				);
+		}
+		return new RemoveUsers($this->_session->get("user")->getId(),...$data["ids"]);
+	}
+
+	/**
+	 * @return IResponse
+	 */
+	protected function successResponse(): IResponse {
+		return new Response($this->_encoder->jsonEncode($this->_ids));
+	}
+
+	/**
+	 * Méthode appelée lors de la reception d'un événement
+	 * @param IDomainEvent $e Evenement reçu
+	 */
+	public function recieveEvent(IDomainEvent $e): void {
+		if($e instanceof UserRemovedEvent) $this->_ids[] = (string) $e->getAggregateId();
+	}
+}

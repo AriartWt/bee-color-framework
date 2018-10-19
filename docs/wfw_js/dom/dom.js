@@ -1,0 +1,4 @@
+/**
+ * @namespace dom
+ * @memberOf wfw
+ */

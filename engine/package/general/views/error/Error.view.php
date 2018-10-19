@@ -1,0 +1,1 @@
+<div style="color:red;font-weight:bold;"><?php echo $this->_msg; ?></div>

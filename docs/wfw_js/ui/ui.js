@@ -1,0 +1,4 @@
+/**
+ * @namespace ui
+ * @memberOf wfw
+ */

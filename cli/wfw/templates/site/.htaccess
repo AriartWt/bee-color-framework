@@ -1,0 +1,10 @@
+<Files .htaccess>
+order allow,deny
+deny from all
+</Files>
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !^(.*)/webroot/(.*)$
+RewriteRule (.*) webroot/$1 [L]
+
+Options -Indexes

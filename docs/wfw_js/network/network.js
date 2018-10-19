@@ -1,0 +1,4 @@
+/**
+ * @namespace network
+ * @memberOf wfw
+ */

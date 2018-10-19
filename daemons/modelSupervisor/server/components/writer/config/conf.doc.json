@@ -1,0 +1,42 @@
+{
+    //Informations de connexion au KVS pour le composant
+    "kvs" : {
+        //optionnel
+        //Si non précisé, le MSServer inscrit la clé résolue à l'aide de
+        // la classe wfw\daemons\kvstore\server\KVSConfs
+        "addr" : "path/to/kvs/socket",
+        //Utilisateur
+        "login" : "user_name",
+        //mot de passe
+        "password" : "password",
+        //container dans lequel seront écrits les models.
+        "container" : "container_name",
+        //optionnel
+        //Si non précisié, le mod ed estockage par défaut du container sera utilisé.
+        //Pour les valeurs possibles, voir la classe wfw\dameons\kvstore\server\KVSmodes
+        "default_storage" : "ON_DISK_ONLY"
+    },
+    //Nombre maximum de tentative de redémarrage du worker
+    "max_attempts" : 10,
+    //délais en milisecondes entre chaque tentative (supporte microsecondes)
+    "delay" : 0.1,
+    //Délais en secondes entre chaque tentative. Accepte une précision en microsecondes.
+    "save_frequency" : 60,
+    //Permissions des utilisateur du MSServer sur ce composant.
+    "permissions" : {
+        "users" : {
+            "usr1" : {
+                "read" : false,
+                "write" : true,
+                "admin" : false
+            }
+        },
+        "groups" : {
+            "grp1" : {
+                "read" : true,
+                "write" : false,
+                "admin" : false
+            }
+        }
+    }
+}

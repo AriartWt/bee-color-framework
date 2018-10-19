@@ -1,0 +1,60 @@
+.md-header{
+    background-color : #FF9900
+}
+
+
+.md-typeset .codehilite .na,
+a,
+.md-typeset a{
+	color : #FF9900;
+}
+
+.md-header .md-flex__cell.md-flex__cell--shrink:first-child{
+	background-image: url("../images/logo.svg");
+	background-repeat: no-repeat;
+	background-size: contain;
+}
+
+.md-header-nav__button.md-logo > i{
+	opacity: 0;
+}
+
+.md-container a:hover{
+	color:black;!important
+}
+
+.md-typeset .codehilite:not(code){
+	background-color : rgba(40,40,40,1);
+	border-radius: 5px;
+}
+
+.codehilite:not(code) > pre{
+	color: rgba(230,230,230,0.8);
+}
+
+.md-typeset code.codehilite, .md-typeset code.highlight{
+	/*background-color : rgba(40,40,40,0);
+	border-radius :  2px;
+	color : rgba(230,230,230,0.8);
+	padding-left :  5px;
+	padding-right :  5px;*/
+}
+
+.md-typeset .codehilite:not(code) .p,
+.md-typeset .codehilite:not(code) .o{
+	color: rgba(240,240,240,1);
+}
+.md-typeset .codehilite .nv,
+.md-typeset .codehilite .cp{
+	color: rgba(210,20,20,1);
+}
+
+.md-typeset .codehilite .k{
+	color: rgba(200,50,120,1);
+}
+.md-typeset .codehilite .nx{
+	color: rgba(230,190,0,1);
+}
+.md-typeset .codehilite .s2{
+	color: rgba(60,180,30,1);
+}

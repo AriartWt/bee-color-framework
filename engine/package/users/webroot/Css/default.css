@@ -1,0 +1,176 @@
+.users-loader{
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	background-color: rgba(0,0,0,0.8);
+}
+.users-loader .container{
+	position:relative;
+	height:100%;
+	width:100%;
+	display:flex;
+	justify-content: center;
+	flex-direction: column;
+}
+
+.users-window{
+	position:absolute;
+	top:0;
+	left:0;
+	height:100%;
+	width:100%;
+	background-color: rgb(35,35,35);
+	animation-name: news-window_fade-in;
+	animation-duration: 0.35s;
+}
+
+.users-modal{
+	position:fixed;
+	top:50%;
+	left:50%;
+	transform: translate(-50%,-50%);
+	background-color: rgb(55,55,55);
+	box-shadow : 5px 5px 20px rgba(0,0,0,0.4);
+	border-radius:10px;
+	padding:20px;
+}
+.users-modal > p{
+	margin:0;
+	text-align:center;
+}
+.users-modal > .buttons{
+	display:flex!important;
+	justify-content: space-around;
+	margin-top:20px;
+}
+.users-modal > .buttons > button{
+	box-shadow : 5px 5px 10px rgba(0,0,0,0.4);
+}
+
+.users-window .body > .inputs{
+	flex:1;
+	display:flex;
+	flex-direction: column;
+	justify-content: center;
+	overflow:auto;
+}
+
+.users-window .body > .inputs > div{
+	text-align:center;
+}
+
+.users-modal input,
+.users-modal select,
+.users-window .body > .inputs input,
+.users-window .body > .inputs select{
+	display:block;
+	margin:20px auto;
+	padding:10px 20px;
+	width:30%;
+	font-size:115%;
+	border:none;
+	box-shadow : inset 2px 2px 10px rgba(0,0,0,0.4);
+	text-align:center;
+	box-sizing: border-box;
+	text-align-last:center;
+}
+.users-window .body > .inputs input.hidden-input{
+	display:none;
+}
+.users-window .progress-bar{
+	display:block;
+	height:24px;
+	width:30%;
+	padding:0;
+	margin:auto;
+	background-color: rgba(0,0,0,0.2);
+	box-shadow: inset 2px 2px 10px rgba(0,0,0,0.6);
+	position:relative;
+}
+.users-window .progress-bar > div{
+	text-align:center;
+	width:0;
+	height:100%;
+	background-color: #8f0000;
+	transition: 0.35s;
+	padding:0;
+	margin:0;
+}
+.users-window .progress-bar > span{
+	position:absolute;
+	display:block;
+	top:50%;
+	left:50%;
+	transform: translate(-50%,-50%);
+	text-align: center;
+	padding:0;
+	margin:0;
+}
+.users-window .body .inputs .password-input{
+	margin-bottom:0;
+}
+.users-window .body .inputs .passwordConfirm-input{
+	outline:none;
+}
+.users-modal input.input-error,
+.users-window .body .inputs .input-error{
+	outline:3px solid #F80000;
+}
+
+.users-modal input,
+.users-modal select,
+.users-modal .progress-bar{
+	width:300px;
+	margin-left:40px;
+	margin-right:40px;
+}
+
+.users-window .body .info{
+	display:inline-flex;
+	justify-content: center;
+	margin:20px 0;
+	font-size:125%;
+	flex-shrink: 0;
+}
+.users-window .body .info.hidden{
+	display:none;
+}
+.users-window .body .info > span{
+	padding:10px;
+}
+.users-window .body .info > div{
+	padding:10px;
+	color:#FF9900;
+	margin-left:20px;
+}
+.users-window .body .info.editable{
+	cursor:pointer;
+}
+.users-window .body .info > svg{
+	height:25px;
+	padding:10px;
+}
+.users-window .body .info > svg path{
+	fill:white;
+	transition: all 0.35s;
+}
+.users-window .body .info:hover > svg path{
+	fill:#FF9900;
+}
+.users-window .body > button{
+	white-space: nowrap;
+	flex:initial;
+	display:inline-block;
+	box-sizing: border-box;
+	margin:20px auto;
+	max-width: initial;
+	flex-shrink: 0;
+}
+
+.users-window .body .info > div[contenteditable=true]{
+	cursor:text;
+}
+
+/*TODO : responsive for modal box overflowing...*/

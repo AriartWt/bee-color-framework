@@ -1,0 +1,7 @@
+/**
+ * @type {HTMLElement}
+ */
+
+/**
+ * @type {Event}
+ */

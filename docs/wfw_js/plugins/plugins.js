@@ -1,0 +1,4 @@
+/**
+ * @namespace plugins
+ * @memberOf wfw
+ */

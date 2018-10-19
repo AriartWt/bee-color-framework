@@ -1,0 +1,12 @@
+{
+	"unix_user" : "www-data",
+	"mysql" : {
+		"path" : "mysql",
+		"root" : {
+			"login" : "wfw",
+			"password" : "password"
+		}
+	},
+	"mysqldump_path" : "mysqldump",
+	"tmp" : "/tmp"
+}

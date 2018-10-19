@@ -1,0 +1,14 @@
+{
+	"manager_folder" : "../backups",
+	"backup_folder" : "../backups",
+	"max_backups" : 5,
+	"databases" : {
+		"event_store" : {
+			"host" : "localhost",
+			"login" : "root",
+			"password" : "password"
+		}
+	},
+	"mysqldump" : "mysqldump",
+	"mysql" : "mysql"
+}

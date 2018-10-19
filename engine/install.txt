@@ -1,0 +1,45 @@
+//--------> Apache
+sudo apt-get install apache2
+//--------> configuration apache 2 : 
+
+//mod_rewrite
+sudo a2enmod rewrite
+sudo a2enmod headers
+
+//module de compression
+sudo a2enmod deflate
+//mod_filter
+sudo a2enmod filter
+
+//---------> Mysql
+sudo apt-get install mysql
+
+//---------> PHP 7.2 :
+
+sudo add-apt-repository ppa:ondrej/php
+sudo apt-get update
+
+sudo apt-get install php7.2 php7.2-common php7.2-curl php7.2-xml php7.2-zip php7.2-gd php7.2-mysql php7.2-mbstring php-apcu
+
+sudo phpenmod apcu
+
+//retoucher php.ini : sudo nano /etc/php/7.1/apache2/php.ini
+//display_errors=On // important pour les logs d'erreurs clients.
+[opcache]
+opcache.enable=1
+opcache.memory_consumption=128
+opcache.interned_strings_buffer=8
+opcache.max_accelerated_files=10000
+opcache.revalidate_freq=60
+opcache.fast_shutdown=1
+opcache.optimization_level=0xffffffff
+
+
+//---------->phpmyadmin
+sudo apt-get install phpmyadmin
+//créer l'utilisateur website
+
+//sudo systemctl restart apache2.service
+
+// cli/installer
+sudo ./install.sh --global

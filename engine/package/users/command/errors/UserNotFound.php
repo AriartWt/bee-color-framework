@@ -1,0 +1,24 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: ariart
+ * Date: 20/06/18
+ * Time: 16:15
+ */
+
+namespace wfw\engine\package\users\command\errors;
+
+use wfw\engine\core\command\errors\CommandFailure;
+
+/**L'utilisateur n'a pas été trouvé
+ */
+final class UserNotFound extends CommandFailure {
+	/**
+	 * UserNotFound constructor.
+	 *
+	 * @param string $id Identifiant de l'utilisateur
+	 */
+	public function __construct(string $id) {
+		parent::__construct("User $id not found !");
+	}
+}

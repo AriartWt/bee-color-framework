@@ -1,0 +1,4 @@
+/**
+ * @namespace browserfixes
+ * @memberOf wfw
+ */

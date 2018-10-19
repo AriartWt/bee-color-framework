@@ -1,0 +1,14 @@
+[Unit]
+Description=Gestionnaire de models de données du framework bee-color wfw
+After=wfw-kvs.service mysql.service
+Requires=wfw-kvs.service mysql.service
+
+[Service]
+Type=simple
+User=www-data
+KillSignal=SIGALRM
+ExecStart=/usr/bin/php -q @ROOT/daemons/modelSupervisor/MSServerLauncher.php --debug
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

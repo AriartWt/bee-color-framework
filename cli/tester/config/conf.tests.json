@@ -1,0 +1,18 @@
+{
+    "server" : {
+        "databases": {
+            "default": {
+                "host": "localhost",
+                "database": "event_store_test",
+                "login": "tester",
+                "password": "test"
+            }
+        },
+        "msserver" : {
+            "addr" : "daemons/modelSupervisor/data/ModelSupervisor.socket",
+            "db" : "test",
+            "login" : "tester",
+            "password" : "test"
+        }
+    }
+}

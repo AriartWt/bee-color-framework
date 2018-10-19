@@ -1,0 +1,208 @@
+.file-explorer{
+	display:flex;
+	flex-direction: column;
+	justify-content: center;
+	overflow:auto;
+	flex:1;
+	flex:1;
+}
+.file-explorer .fs-head,
+.file-explorer .fs-body{
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+.file-explorer .fs-head{
+	flex-shrink: 0;
+	padding:10px;
+	text-align:left;
+}
+.file-explorer .fs-head .hidden-input{
+	display:none;
+}
+.file-explorer .fs-head > *:first-child{
+	margin-bottom: 20px;
+}
+.file-explorer .fs-head .buttons{
+	display:inline-flex;
+	justify-content: flex-start;
+	position:relative;
+}
+.file-explorer .fs-head .buttons .button:last-child::after{
+	display:none;
+}
+.file-explorer .fs-head .path{
+	text-align:left;
+}
+.file-explorer .fs-head .path-part{
+	cursor:pointer;
+	display:inline-block;
+	transition:all 0.35s;
+	font-weight:200;
+	font-size:120%;
+}
+.file-explorer .fs-head .path-part:hover{
+	color:#FF9900;
+}
+.file-explorer .fs-head .path-part:not(:last-child)::after{
+	content:'/';
+	margin:0 5px;
+	color:white;
+}
+.file-explorer .fs-head .path-part:first-child{
+	margin-right:5px;
+}
+.file-explorer .fs-head .path-part:first-child::after{
+	display:none;
+}
+.file-explorer .fs-body{
+	display:flex;
+	flex-wrap: wrap;
+	flex:1;
+	overflow:auto;
+	align-content: flex-start;
+	align-items: flex-start;
+	margin-bottom:20px;
+}
+.fs-element{
+	display:inline-flex;
+	background-color: rgb(55,55,55);
+	width:250px;
+	padding:20px;
+	margin:10px;
+	cursor:pointer;
+	color:white;
+	transition: all 0.35s;
+	flex-grow: 0;
+	flex-shrink: 0;
+	box-sizing: border-box;
+	position:relative;
+}
+.fs-element:active{
+	cursor:grabbing;
+}
+.fs-element:hover{
+	color:#FF9900;
+}
+.fs-element .icon{
+	margin-right:20px;
+	flex-shrink: 0;
+}
+.fs-element .icon > *{
+	height:50px;
+	max-width:60px;
+	display:block;
+}
+.fs-element .icon svg path,
+.fs-element .icon svg polygon{
+	fill:white;
+	transition: all 0.35s;
+}
+.fs-element:hover .icon svg path,
+.fs-element:hover .icon svg polygon{
+	fill:#FF9900;
+}
+
+.fs-element .infos{
+	display:flex;
+	flex-direction: column;
+	justify-content: center;
+	overflow:hidden;
+}
+.fs-element .infos p{
+	margin:0;
+	text-align:left;
+	max-height:50px;
+	font-size:90%;
+	overflow:hidden;
+}
+.fs-elems{
+	font-size:80%;
+}
+.fs-element.selected::after{
+	content:'';
+	height:8px;
+	width:8px;
+	border-radius: 20px;
+	background-color: #FF9900;
+	position:absolute;
+	top:10px;
+	right:10px;
+	display:inline;
+	line-height: 0;
+}
+.fs-element.selected{
+	background-color: rgb(95,95,95);
+}
+
+.fs-loader{
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	background-color: rgba(0,0,0,0.8);
+}
+.fs-loader .container{
+	position:relative;
+	height:100%;
+	width:100%;
+	display:flex;
+	justify-content: center;
+	flex-direction: column;
+}
+.file-explorer .loader .progress{
+	position:absolute;
+	width:100%;
+	text-align:center;
+	height:100%;
+	display:flex;
+	flex-direction: column;
+	justify-content: center;
+	transform-origin: center center;
+	animation-name: eclipse-inv-rotate;
+	animation-iteration-count:infinite;
+	animation-duration:1s;
+}
+@keyframes eclipse-inv-rotate{
+	from{transform:rotate(360deg);}
+	to{transform:rotate(0deg);}
+}
+.fs-create,
+.fs-remove{
+	position:absolute;
+	top:50%;
+	left:50%;
+	transform: translate(-50%,-50%);
+	background-color: rgb(35,35,35);
+	padding:20px;
+	box-shadow:0 0 20px rgba(0,0,0,0.8);
+	animation-duration: 0.35s;
+	animation-name: fs-fadeIn;
+	border-radius:10px;
+}
+.fs-remove{
+	max-width: 350px;
+}
+.fs-remove > p{
+	text-align:center;
+	margin-bottom:30px;
+}
+.fs-remove > .buttons{
+	display:flex!important;
+	justify-content:space-around;
+}
+.fs-create>*:first-child{
+	margin-bottom:20px;
+}
+@keyframes fs-fadeIn {
+	from{
+		opacity:0;
+		top:40%;
+	}
+	to{
+		opacity: 1;
+		top:50%;
+	}
+}

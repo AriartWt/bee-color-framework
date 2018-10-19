@@ -1,0 +1,88 @@
+{
+    //Optionnel
+    //Déclare le chemin de base de tous les fichiers et dossiers relatifs de la configuration.
+    //Si relatif, sera résolu depuis le chemin de la constante DAEMONS.
+    //Si le chemin commence par {ROOT}, {ROOT} sera remplacé par la valeur de la constante ROOT
+    //Si non précisé, le chemin par défaut sera le suivant :
+    "working_dir" : "kvstore/default_working_dir",
+    //Chemin relatif ou absolu vers la socket.
+    // Ici le chemin résolu sera DAEMONS."/kvstore/default_working_dir/KVServer.socket
+    // Ex : "/tmp/KVSServer.socket"
+    "socket_path" : "KVSServer.socket",
+    //Optionnel
+    //Chemin d'accés à la map PHP component_name => component_initializer_class
+    //Valeur par défaut :
+    "initializers_path" : "{ROOT}/daemons/modelSupervisor/server/config/initializers.components.php",
+    //Optionnel
+    //Chemin d'accés à la liste PHP des models à charger.
+    //Valeur par défaut :
+    "models_to_load_path" : "{ROOT}/site/config/models.to.load.php",
+    //liste des composants :
+    //(Chaque composant est géré indépendament des autres et ne partagent pas leur environnement de travail.)
+    "components" : {
+        //Chemins relatifs admis.
+        //Résolu à partir de workin_dir si spécifié.
+        //ATTENTION : L'ordre de déclaration est important. Les modules seront lancés dans cet ordre.
+        "component_name" : "path/to/confs"
+    },
+    //(optionnel) liste des groupes d'utilisateurs
+    "groups" : {
+        "grp1" : [
+            "usr1","usr4"
+        ],
+        "grp2" : [
+            "usr1","usr2","usr3","usr4"
+        ]
+    },
+    //Liste des utilisateurs
+    "users" : {
+        "root" : {
+            "password" : "rootpwd"
+        },
+        "usr1" : {
+            "password" : "pwd1"
+        },
+        "usr2" : {
+            "password" : "pwd2"
+        },
+        "usr3" : {
+            "password" : "pwd3"
+        },
+        "usr4" : {
+            "password" : "pwd4"
+        }
+    },
+    //Liste des droits d'administration
+    "admins" : {
+        "users" : {
+            //Tous les droits d'administration sont accordés
+            "all" : [
+                "root"
+            ],
+            //Droit de demander l'extinction du serveur
+            "shutdown" : [
+                "usr1"
+            ]
+        },
+        "groups" : {
+            //Tous les droits d'administration sont accordés
+            "all" : [
+                "grp1"
+            ],
+            //Droit de demander l'extinction du serveur
+            "shutdown" : [
+                "grp2"
+            ]
+        }
+    },
+    //Temps en secondes avant expiration des requêtes internes.
+    "request_ttl" : 60,
+    //Temps en secondes d'inactivité minimum avant expiration des sessions
+    "session_ttl" : 900,
+    //Demande l'extinction du serveur lorsqu'une erreur survient (déconseillé)
+    "shutdown_on_error" : false,
+    //Envoi de l'erreur au client
+    "send_error_to_client" : true,
+    //Destination des logs d'erreur
+    "error_logs" : "error_logs.txt"
+}

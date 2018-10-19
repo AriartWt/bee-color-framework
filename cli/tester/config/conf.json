@@ -1,0 +1,58 @@
+{
+	"environments" : {
+		"Default" : "wfw\\cli\\tester\\contexts\\DefaultTestsEnvironment"
+	},
+	"launchers" : {
+		"PHPUnit" : "wfw\\cli\\tester\\launchers\\PHPUnit\\PHPUnitTestsLauncher"
+	},
+	"launcherCommands" : {
+		"PHPUnit" : {
+			"--coverage-html" : "/var/www/phpunit"
+		}
+	},
+	"sequences" : {
+		"PHPUnit" : {
+			"unit" : {
+				"modules" : {
+					"users" : {
+						"description" : "Users module (wfw\\engine\\package\\users\\*)",
+						"codePath" : "engine/package/users"
+					},
+					"news" : {
+						"description" : "News module (wfw\\engine\\package\\news\\*)",
+						"codePath" : "engine/package/news"
+					},
+					"contact" : {
+						"description" : "Contact module (wfw\\engine\\package\\management\\*)",
+						"codePath" : "engine/package/contact"
+					}
+				}
+			},
+			"integration" : {
+				"modules" : {
+					"contact" : {
+						"description" : "Integration contact module (wfw\\engine\\package\\contact\\*)",
+						"environments" : [
+							"Default"
+						],
+						"codePath" : "engine/package/contact"
+					},
+					"news" : {
+						"description" : "Integration news module (wfw\\engine\\package\\news\\*)",
+						"environments" : [
+							"Default"
+						],
+						"codePath" : "engine/package/news"
+					},
+					"users" : {
+						"description" : "Integration users module (wfw\\engine\\package\\users\\*)",
+						"environments" : [
+							"Default"
+						],
+						"codePath" : "engine/package/users"
+					}
+				}
+			}
+		}
+	}
+}
