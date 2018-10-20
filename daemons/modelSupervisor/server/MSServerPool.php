@@ -66,6 +66,7 @@ final class MSServerPool
 		$this->_protocol = $protocol;
 		$this->_pids = $pids;
 
+		if(!is_dir($workingDir)) mkdir($workingDir,0777,true);
 		//On commence par vérifier l'existence du fichier lock permettant d'obtenir le lock
 		//Un seul MSServer est autorisé par repertoir de travail.
 		$this->_lockFile = "$workingDir/server.lock";
