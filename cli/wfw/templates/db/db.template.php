@@ -111,8 +111,10 @@ CONSTRAINT `fk_snapshots_aggregates1` FOREIGN KEY (`aggregates_id`) REFERENCES `
 
 -- Dump completed on 2018-06-07 17:24:24
 
-CREATE USER IF NOT EXISTS '<?php echo $this->_user; ?>'@'localhost' IDENTIFIED BY '<?php echo $this->_password; ?>';
+CREATE USER IF NOT EXISTS '<?php echo $this->_user; ?>'@'localhost';
+SET PASSWORD FOR '<?php echo $this->_user; ?>'@'localhost' = '<?php echo $this->_password; ?>';
 GRANT SELECT, UPDATE, DELETE, INSERT, EXECUTE ON <?php echo $this->_name; ?>.* TO '<?php echo $this->_user; ?>'@'localhost';
 
-CREATE USER IF NOT EXISTS '<?php echo $this->_rootUser; ?>'@'localhost' IDENTIFIED BY '<?php echo $this->_rootPassword; ?>';
+CREATE USER IF NOT EXISTS '<?php echo $this->_rootUser; ?>'@'localhost';
+SET PASSWORD FOR '<?php echo $this->_rootUser; ?>'@'localhost' = '<?php echo $this->_rootPassword; ?>';
 GRANT ALL PRIVILEGES ON <?php echo $this->_name; ?>.* TO '<?php echo $this->_rootUser; ?>'@'localhost';
