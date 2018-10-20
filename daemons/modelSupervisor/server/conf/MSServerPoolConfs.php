@@ -305,7 +305,7 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 		try{
 			$path = $this->_instancesConfs[$instance]->find("models_to_load_path");
 		}catch(\Exception $e){
-			$path = "{ROOT}/engine/config/load/models.php";
+			$path = "{ROOT}/engine/config/default.models.php";
 		}
 
 		$modelsToLoad = new PHPString($path);

@@ -22,7 +22,7 @@
                 "password": "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"
             }
         },
-        "models_to_load_path": "{ROOT}\/engine\/config\/load\/models.php",
+        "models_to_load_path": "{ROOT}\/engine\/config\/default.models.php",
         "request_ttl": 900,
         "session_ttl": 900,
         "shutdown_on_error": false,
@@ -31,7 +31,7 @@
     },
     "instances": {
         "test": {
-            "models_to_load_path": "{ROOT}\/engine\/config\/load\/models.php",
+            "models_to_load_path": "{ROOT}\/engine\/config\/default.models.php",
             "kvs": {
                 "login": "tester",
                 "password": "test",
