@@ -165,8 +165,8 @@ try{
 		if(!file_exists("/tmp/$pName.sql")){
 			touch($dbFile);
 			chmod($dbFile,0600);
-			file_put_contents($dbFile,$db);
 		}
+		file_put_contents($dbFile,$db);
 		//credentials for login into db with true root user
 		if(!file_exists($dbCredentials)){
 			touch($dbCredentials);
