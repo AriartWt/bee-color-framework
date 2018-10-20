@@ -115,7 +115,11 @@ try{
 		mkdir($path);
 
 		$exec("cp -Rp ".ROOT."/cli/wfw/templates/site $path");
-
+		if(!is_dir("$path/site/package")) mkdir("$path/site/package");
+		if(!is_dir("$path/site/webroot")) mkdir("$path/site/webroot");
+		foreach(["Audio","Css","Image","JavaScript","Video","uploads"] as $v){
+			if(!is_dir("$path/site/webroot/$v")) mkdir("$path/site/webroot/$v");
+		}
 		//create base folders and files
 		$dirs = ['engine','cli','wfw','.htaccess'];
 		foreach($dirs as $dir){
