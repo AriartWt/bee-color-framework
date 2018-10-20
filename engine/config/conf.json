@@ -36,7 +36,7 @@
 			  	"register_type" : "client"
 			}
 		},
-		"display_loading_time": true
+		"display_loading_time": false
 	},
 	"app": {
 		"dev": false,

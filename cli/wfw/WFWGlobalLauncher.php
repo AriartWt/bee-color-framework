@@ -369,7 +369,9 @@ try{
 			throw new InvalidArgumentException("Unknown project $pName");
 
 		$pPath = dirname($data[$args[0]]);
+		$siteConfChanged = false;
 		if(!$keepConf && file_exists("$path/site/config/conf.json")){
+			$siteConfChanged = true;
 			$conf = new FileBasedConf("$path/site/config/conf.json");
 			$pConf = new FileBasedConf("$pPath/site/config/conf.json");
 			$conf->set("server/databases/default",$pConf->getArray("server/databases/default"));
@@ -377,6 +379,18 @@ try{
 			$conf->save();
 		}
 		$exec("cp -R \"$path/.\" \"$pPath\"");
+
+		if($siteConfChanged){
+			//rétabli le fichier d'origine.
+			$conf->removeKey("server/databases/default");
+			$conf->removeKey("server/msserver");
+			$conf->save();
+		}
+		//install packages (will create appropriated symlinks)
+		$packages = $conf->getArray("server/packages");
+		if(is_array($packages) && count($packages)>0){
+			$exec("wfw $pName package -install \"".implode("\" \"",$packages)."\"");
+		}
 
 		$wfwConf = new FileBasedConf(CLI."/wfw/config/conf.json");
 		$unixUser = $wfwConf->getString("unix_user") ?? "www-data";

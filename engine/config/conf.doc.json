@@ -1,327 +1,83 @@
-//Ce fichier est une documentation du fichier conf.json.
 {
-  //Contient les configurations côté serveur (ces configurations en sont pas
-  //envoyées au client JavaScript
+  //configurations lues côté serveur
   "server": {
-    //informations sur le framework
+    //informations sur le frameork
     "framework": {
       "name": "wfw",
-      "version": "ALPHA-3.2.1",
-      "last_update": 1523203286.012445,
-      "last_check": 1523203285.984356
+      "version": "STABLE-1.0"
     },
-    //Liste des bases de données accessibles (mysql)
-    "databases": {
-      "a_db_conf_name": {
-        "host": "host",
-        "database": "db_name",
-        "login": "my_login",
-        "password": "my_password"
-      }
+    //liste des sockets permettant d'accéder aux différents daemons
+    //chemin relatif à DAEMONS, peut aussi être absolu
+    "daemons": {
+      "kvs": "kvstore\/server\/config\/conf.json",
+      "model_supervisor": "modelSupervisor\/server\/config\/conf.json",
+      "sctl": "sctl\/config\/conf.json"
     },
-    "mailer" : {
-      //optionnal
-      "smtp" : {
-        //host and fallback
-        "host" : "smtp1.example.com;smtp2.example.com",
-        //optionnal smtp auth confs
-        "auth" : {
-          "login" : "username@example.com",
-          "password" : "password",
-          "secure" : "tls",
-          "port" : 587
-        }
-      },
-      //optionnal
-      "dkim" : {
-        "domain" : "example.com",
-        "private" : "path/to/private.key",
-        "selector" : "SELECTOR in DNS TXT record, maybe phpmailer",
-        "passphrase" : "yourpassphrasethere",
-        "identity" : null
-      }
+    //Chemin vers les configurations CLI
+    //Relatif à CLI, peut aussi être absolu
+    "cli": {
+      "backup": "backup\/config\/conf.json",
+      "updator": "updator\/config\/conf.json"
     },
-    //Configurations de chaque daemon.Les daemons utilisent la librarire pcntl et ne supportent que
-    //les systeme unix.
-    "daemons" : {
-      //absolu ou relatif.
-      //Si relatif, le chemin est résolu par rapport a la constante DAEMONS
-      "kvs" : "path/to/kvs/confs",
-      //ModelServerManager
-      "model_manager" : {
-        //Doit être spécifié.
-        //Déclare le chemin absolu de tous les chemins de la configuration.
-        "working_dir" : "/mnt/hgfs/www/website/daemons/modelManager/default_working_dir",
-        //Chemin vers la socket.
-        // Ici le chemin résolu sera "/mnt/hgfs/www/website/daemons/model_manager/default_working_dir/ModelManager.socket
-        // pour un chemin absolu, le chemin doit commencer par /
-        // Ex : "/tmp/KVSServer.socket"
-        "socket_path" : "ModelManager.socket",
-        // A ne changer qu'en cas de supports de plusieurs applications.
-        // voir fonction ftok() (running et ready sont passés aux fonctions ftok() en tant qu'argument project
-        "state" : {
-          "running" : "A",
-          "ready" : "B"
-        },
-        //Paramètres de connection au KVS
-        "kvs" : {
-          "login" : "model_manager",
-          "password" : "model_manager_password",
-          "container" : "model_manager_container",
-          //(optionnel : default : voir les paramètres du container)
-          "default_storage" : "IN_MEMORY_PERSISTED_ON_DISK"
-        },
-        //liste des composants :
-        //(Chaque composant est géré par un worker différent, et son execution est isolée des autres components)
-        "components" : {
-          "container_name" : {
-            //Liste des utilisateurs ou groupes d'utilisateurs ayant accés au container.
-            //Les utilisateurs non définis n'ont pas accés au container.
-            //Si un utilisateur est défini plusieurs fois (apparait dans plusieurs groupes)
-            //Les paramètres appliqués sont les paramètres les plus permissifs.
-            /*
-              Ex : grp1 : usr1,usr2,usr3
-                   grp2 : usr1,usr4
-                my_container :
-                  groups :
-                   grp1 :
-                    read : true
-                    write : false
-                   grp2 :
-                    read : false
-                    write : true
-                usr1 : ( read : true, write : true )
-                usr2,usr3 : ( read : true, write : false )
-                usr4 : ( read : false, write : true )
-            */
-            //permissions
-            "permission" : {
-              //permissions des utilisateurs
-              "users" : {
-                "user_name" : {
-                  //(optionnel défaut : false) Octroie les droits de lecture sur le module
-                  "read" : true,
-                  //(optionnel défaut : false) Octroie les droits d'écriture sur le module
-                  "write" : true,
-                  //(optionnel défaut : false) Octroie les droits d'administrations sur le module
-                  //(purge, suppression, déplacement, reconstruction...)
-                  "admin" : false
-                }
-              },
-              //permissions des groupes
-              "groups" : {
-                "group_name" : {
-                  //(optionnel défaut : false) Octroie les droits de lecture sur le container
-                  "read" : true,
-                  //(optionnel défaut : false) Octroie les droits d'écriture sur le container
-                  "write" : true,
-                  //(optionnel défaut : false) Octroie les droits d'administrations sur le container
-                  //(purge, suppression, déplacement, reconstruction...)
-                  "admin" : false
-                }
-              }
-            }
-          }
-        },
-        //(optionnel) liste des groupes d'utilisateurs
-        "groups" : {
-          "grp1" : [
-            "usr1","usr4"
-          ],
-          "grp2" : [
-            "usr1","usr2","usr3","usr4"
-          ]
-        },
-        //Liste des utilisateurs
-        "users" : {
-          "root" : {
-            "password" : "rootpwd"
-          },
-          "usr1" : {
-            "password" : "pwd1"
-          },
-          "usr2" : {
-            "password" : "pwd2"
-          },
-          "usr3" : {
-            "password" : "pwd3"
-          },
-          "usr4" : {
-            "password" : "pwd4"
-          }
-        },
-        //Liste des droits d'administration
-        "admins" : {
-          "users" : {
-            //Tous les droits d'administration sont accordés
-            "all" : [
-              "root"
-            ],
-            //Droit de demander l'extinction du serveur
-            "shutdown" : [
-              "usr1"
-            ]
-          },
-          "groups" : {
-            //Tous les droits d'administration sont accordés
-            "all" : [
-              "grp1"
-            ],
-            //Droit de demander l'extinction du serveur
-            "shutdown" : [
-              "grp2"
-            ]
-          }
-        },
-        //Temps en secondes avant expiration des requêtes internes.
-        "request_ttl" : 900,
-        //Temps en secondes d'inactivité minimum avant expiration des sessions
-        "session_ttl" : 900,
-        //Force le serveur à d'éteindre lorsqu'une erreur survient.
-        "shutdown_on_error" : false,
-        //Envoie l'erreur au client
-        "send_error_to_client" : true,
-        //Chemin relatif ou absolu aux logs d'erreurs
-        "error_logs" : "logs"
-      }
-    },
-    //Informations de connexion au serveur redis
-    "redis" : {
-      "host" : "localhost",
-      "port" : 6379,
-      "password" : "lilistabilo"
-    },
-    //Informations sur la langue
-    "language" : {
-      //Membre publique du fichier de configuration (envoyé au client JavaScript)
-      "public" : "client",
-      //Membre pricé du fichier de configuration (utilisé pour les messages côté serveur)
-      "private" : "server",
-      //Dossier contenant les fichiers de langue
-      "folder" : "view/languages",
-      //Langue par défaut
-      "default" : "FR",
-      //Langues disponibles
-      "availables" : [
-        "FR"
+    //Langues
+    "language": {
+      //langue par défaut
+      "default": "fr",
+      //langues disponibles
+      "availables": [
+        "fr"
       ]
     },
-    //Dossier de travail temporaire du site
-    "tmp" :{
-      "dir":"/mnt/hgfs/www/website/engine/resources/tmp"
+    //repertoire temporaire
+    "tmp": {
+      "dir": "site\/tmp"
     },
-    //Afficher/masque le temps d'execution du script.
-    "display_loading_time" : true
+    //paramètres de l'uploader
+    "uploader" : {
+      //chemin vers les uploads
+      "dir" : "site/webroot/uploads",
+      //Taille maximum des fichiers uploadés
+      "max_size" : "300Mo",
+      //Types mime acceptés
+      "accepted_mimes" : ["/^image\\/.*$/","/^video\\/mp4$/","/^audio\\/mp3$/","/^audio\\/mpeg$/"]
+    },
+    //paramètres de modules
+    "module" : {
+      "users" : {
+        //lien vers les CGU
+        "cgu_link" : "cgu",
+        //type d'utilisateur lorsqu'il s'inscrit lui même via une précdure d'inscription
+        "register_type" : "client"
+      }
+    },
+    //afficher le temps de génération de la page
+    "display_loading_time": false
   },
-  //Paramètres du projet
+  //configurations partagées avec le client javascript
   "app": {
-    //Version du projet
-    "version": "0.021",
-    //Nom du projet
-    "name": "Bee-color",
-    //Utilise l'API light
-    "useLightAPI" : false,
-    //Contient un module de développement
-    "hasDevModule" : false,
-    //MOde développement (debug) activé
-    "dev": true,
-    //Restrictions (temporaires)
-    "restricts" : {
-      "max_pages" : -1,
-      "max_depth" : -1
-    },
-    //Paramètres reCaptcha
-    "reCaptcha" : {
-      "public":"6LcyOCsUAAAAAKV0vedff331qS7wplCG6V6zLEUz",
-      "private":"6LcyOCsUAAAAAK5PKjt25ej2mDZ7L84VGkscJv8w"
-    },
-    //Layout par défaut
-    "default_layout" : "Def",
-    //Paramètres publiques envoyés au client JavaScript
-    // /!\Ne rien stocker de sensible ici !!!
+    "dev": false,
+    //transmises telle quel au client
     "params": {
-      //Paramètres de l'objet API.Console
-      "console":{
-        //Affiche les rapports d'execution dans la console
-        "debug":true,
-        //Nombre de message d'execution gardés dans la pile de debug
-        "maxSize":25,
-        //Active/desactive les rapports de bugs automatiques.
-        "auto_bug_report": false
-      },
-      //Paramètres d'affichage
-      "display" : {
-        //Affichage des booléens
-        "boolean" : {
-          "true" : "Oui",
-          "false" : "Non"
+      "ui": {
+        "notifications": {
+          "desktopNotifications": true,
+          "displayTime": 10000,
+          "xStart": "right",
+          "yStart": "bottom",
+          "xShift": "0",
+          "yShift": "0"
         },
-        //Formattage des nombres
-        "number" : {
-          //Nombre de chiffres après la virgule
-          "format" : 2,
-          //Affichage des NaN
-          "NaN" : "--",
-          //Caractère de séparaton partie entière/non entière
-          "dec_point" : ".",
-          //Séparateur de miliers
-          "thousands_sep" : " "
+        "CssSlider": {
+          "_PLAY_SPEED": 6000,
+          "_AUTORUN_AFTER": 30000
         },
-        //Monnaie par défaut
-        "currency" : {
-          //Singulier
-          "unit" : "euro",
-          //Pluriel
-          "units" : "euros",
-          //Symbole
-          "symbol": "€"
-        },
-        //Format des numéros de téléphones
-        "telNumber" : {
-          //Pays par défaut
-          "default_country" :"+33",
-          //Format
-          "format" : "mixed",
-          //Séparateur pour l'affichage
-          "separator" : "."
+        "lang": {
+          "replacement_pattern": "[$]"
         }
       },
-      //Options sur l'interface utilisateur
-      "UI" : {
-        //Notifications
-        "Notifications" : {
-          //Active les notifications bureau
-          "desktopNotifications" :true,
-          //Temps d'affichage de chaque notification
-          "displayTime":10000,
-          //Position horizontale left,center,right
-          "xStart" : "right",
-          //Position verticale top,middle,bottom
-          "yStart" : "bottom",
-          //Marge horiztonale
-          "xShift" : 20,
-          //Marge verticale
-          "yShift" : 10
-        },
-        //Sliders css
-        "CssSlider" : {
-          //Vitesse de défilement (en ms)
-          "_PLAY_SPEED" : 6000,
-          //Mise en route automatique après inactivité de (en ms)
-          "_AUTORUN_AFTER" : 30000
-        }
-      },
-      //Evenements
-      "EVENTS" : {
-        //DOuble clic
-        "ClickNDbl" : {
-          //Délais entre deux clics (ms)
-          "_DELAY" : 300
-        }
-      },
-      "MANAGERS" : {
-        "Lists" : {
-          "number_per_pages" : 50
+      "EVENTS": {
+        "ClickNDbl": {
+          "_DELAY": 300
         }
       }
     }
