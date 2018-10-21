@@ -103,7 +103,7 @@ wfw.define("packages/users",function($params){
 			let $chooseStateIcon = ($state) => {
 				switch($state){
 					case "EnabledUser" : return wfw.webroot+"Image/users/svg/icons/disable-user.svg";
-					case "DisabledUser" : return wfw.webroot+"Image/users/svg/icons/new-user.svg";
+					case "DisabledUser" : return wfw.webroot+"Image/users/svg/icons/enable-user.svg";
 					case "UserWaitingForMailConfirmation" :
 					case "UserWaitingForRegisteringConfirmation" :
 					case "UserWaitingForPasswordReset" :
@@ -423,7 +423,7 @@ wfw.define("packages/users",function($params){
 				),
 			('enable' in $params) ? $params.enable :
 				wfw.dom.appendTo(wfw.dom.create("div",{className:"button",on:{click:$enable}}),
-					wfw.dom.import.svg(wfw.webroot+"Image/users/svg/icons/new-user.svg"),
+					wfw.dom.import.svg(wfw.webroot+"Image/users/svg/icons/enable-user.svg"),
 					wfw.dom.create("span",{className:"title",innerHTML : $lstr('BTN_ENABLE')})
 				),
 			('disable' in $params) ? $params.disable :

@@ -37,9 +37,9 @@ opcache.optimization_level=0xffffffff
 
 //---------->phpmyadmin
 sudo apt-get install phpmyadmin
-//créer l'utilisateur website
+//créer l'utilisateur wfw
 
 //sudo systemctl restart apache2.service
 
 // cli/installer
-sudo ./install.sh --global
+sudo ./install.sh -global
