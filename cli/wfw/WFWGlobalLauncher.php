@@ -7,6 +7,7 @@ use wfw\daemons\kvstore\server\conf\KVSConfs;
 use wfw\daemons\modelSupervisor\client\MSInstanceAddrResolver;
 use wfw\daemons\modelSupervisor\server\conf\MSServerPoolConfs;
 use wfw\engine\core\conf\FileBasedConf;
+use wfw\engine\core\conf\io\adapters\JSONConfIOAdapter;
 use wfw\engine\core\data\DBAccess\NOSQLDB\msServer\MSServerWriterAccess;
 use wfw\engine\core\data\DBAccess\SQLDB\MySQLDBAccess;
 use wfw\engine\core\domain\events\observers\DomainEventObserver;
@@ -37,6 +38,11 @@ $argvReader=$argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 	new ArgvOpt('create','Crée un nouveau projet et l\'ajoute au gestionnaire (create [nom projet] [chemin]',2,null,true),
 	new ArgvOpt('import','Importe un projet dans un projet existant (import [nom du projet] [chemin des fichiers] [(optionnel)-keepConf]))',null,null,true),
 	new ArgvOpt('self','Applique les commandes sur le wfw global',null,null,true),
+	new ArgvOpt(
+			'update','Met à jour les fichiers wfw du projet ciblé avec les fichiers contenus dans le dossier spécifié '
+			.'(update [sources path] [-self(global) | -all(tous) | -projet,projet2,...(projets spécifiés)]',
+			2,null,true
+	),
 	new ArgvOpt('remove','Supprime un projet du gestionnaire',1,null,true),
 	new ArgvOpt('locate',"Localiste le projet. Si pas d'argument, retourne le chemin vers le projet global",null,null,true),
 	new ArgvOpt('[PROJECT] [cmd](args...)',"Execute une commande sur un projet",null,null,true)
@@ -49,7 +55,8 @@ try{
 	if(!file_exists(__DIR__.'/global.db.json')) $db->write([]);
 	$data = $db->read(true);
 	$validName = function(string $name):bool{
-		return preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/',$name);
+		return preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/',$name)
+			&& !in_array($name,["all","self","update","locate","remove","create","import"]);
 	};
 	$exec = function(string $cmd):void{
 		$outputs = []; $res = null;
@@ -77,7 +84,77 @@ try{
 			$cmd .= " \"$c\" ";
 		}
 		system("$cmd 2>&1");
-	} else if($argvReader->exists('add')){
+	} else if($argvReader->exists('update')){
+		$args = $argvReader->get('update');
+		$path = $args[0];
+		$projects = $args[1];
+		$projects = strpos($projects,"-") === 0 ? substr($projects,1):$projects;
+		$projects = explode(",",$projects);
+		$pMap = []; $valids = array_merge(["self","all"],array_keys($data));
+		foreach($projects as $v){
+			if(!in_array($v,$valids)) throw new InvalidArgumentException(
+					"Unknown project to update : $v"
+			);
+			$pMap[$v]=$data[$v]??null;
+		}
+		if(isset($pMap["all"])){
+			$pMap = $data;
+			$pMap["self"] = ROOT;
+		}else if(isset($pMap["self"])) $pMap["self"] = ROOT;
+		//now that we have parsed the user request, we can process it
+		//first get current wfw utility confs
+		$wfwConf = new FileBasedConf(CLI."/wfw/config/conf.json");
+		$unixUser = $wfwConf->getString("unix_user") ?? "www-data";
+		$unixPerm = $wfwConf->getString("permissions") ?? 700;
+		$tmpDir = $wfwConf->getString('tmp');
+		if(strpos($tmpDir,"/")!==0) $tmpDir = ROOT."/$tmpDir";
+		//nex create a working dir in tmp folder
+		mkdir($tmp = "$tmpDir/wfw",700);
+		foreach($pMap as $n=>$p){
+			mkdir("$tmp/$n",700);
+			//this is the list of all confs file that exists in the framework and that may be
+			//updated (to add properties or move them, mostly)
+			$confs = [
+				"engine" => "engine/config/conf.json",
+				"kvs" => "daemons/kvstore/server/config/conf.json",
+				"mss" => "daemons/modelSupervisor/server/config/conf.json",
+				"sctl" => "daemons/sctl/server/config/conf.json",
+				"wfw" => "cli/wfw/config/conf.json",
+				"updator" => "cli/updator/config/conf.json",
+				"tester" => "cli/tester/config/conf.json",
+				"backup" => "cli/backup/config/conf.json"
+			];
+			//we get all previous confs, and merge it with new confs from the update, to set
+			//default values to new keys in case of
+			foreach($confs as $c=>$v){
+				touch("$tmp/$n/$c",700);
+				file_put_contents("$tmp/$n/$c",'{}');
+				$fconf = new FileBasedConf("$tmp/$n/$c",new JSONConfIOAdapter());
+				$fconf->merge(new FileBasedConf("$path/$v"));
+				$fconf->merge(new FileBasedConf("$p/$v"));
+				file_put_contents(
+					"$tmp/$n/$c",
+					json_encode($fconf->getRawConf(),JSON_PRETTY_PRINT)
+				);
+			}
+			//shutdown daemons while updating folders
+			$exec("wfw self service stop -all");
+			$exec("cp -R \"$path/.\" \"$p\"");
+			foreach($confs as $c=>$v){
+				if(file_exists("$p/$v")) unlink("$p/$v");
+				//mv conf file in the updated directory
+				$exec("mv \"$tmp/$n/$c\" \"$p/$v\"");
+			}
+			//reset all permissions
+			$exec("chmod -R $unixPerm \"$p\"");
+			$exec("chmown -R $unixUser:$unixUser \"$p\"");
+			//start and restart daemons
+			$exec("wfw self service start -all");
+			$exec("wfw self service restart sctl");
+			rmdir("$tmp/$n");
+		}
+		rmdir($tmp);
+	}else if($argvReader->exists('add')){
 		$args = $argvReader->get('add');
 		$path = "$args[1]/wfw";
 		if(!is_file($path))
@@ -162,6 +239,7 @@ try{
 		$mysqlRootUser = $wfwConf->getString("mysql/root/login");
 		$mysqlRootPwd = $wfwConf->getString("mysql/root/password");
 		$unixUser = $wfwConf->getString("unix_user") ?? "www-data";
+		$unixPerm = $wfwConf->getString("permissions") ?? 700;
 		$mysqlPath = $wfwConf->getString("mysql/path") ?? "mysql";
 
 		//so, now we have credentials. We will create the DB.
@@ -259,7 +337,7 @@ try{
 		$tester->set("msserver/addr",$msConf->getSocketPath());
 		$tester->save();
 		//then, set the unix owner for the new project and give-it to the given user (apache,ngnix..)
-		$exec("chmod -R 700 $path");
+		$exec("chmod -R $unixPerm $path");
 		$exec("chown -R $unixUser:$unixUser $path");
 		//restart all daemons to take conf changes in consideration
 		$exec("wfw self service restart -all");
@@ -398,9 +476,10 @@ try{
 
 		$wfwConf = new FileBasedConf(CLI."/wfw/config/conf.json");
 		$unixUser = $wfwConf->getString("unix_user") ?? "www-data";
+		$unixPerm = $wfwConf->getString("permissions") ?? 700;
 
 		//then, set the unix owner for the new project and give-it to the given user (apache,ngnix..)
-		$exec("chmod -R 700 $pPath");
+		$exec("chmod -R $unixPerm $pPath");
 		$exec("chown -R $unixUser:$unixUser $pPath");
 		//restart all daemons to take conf changes in consideration
 		$exec("wfw self service restart -all");

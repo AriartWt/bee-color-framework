@@ -19,11 +19,11 @@ $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 		"Gestion de packages : package -help pour plus d'informations.",
 		null, null, true
 	),
-	new ArgvOpt(
+	/*new ArgvOpt(
 		'update',
 		"Gestion de mises à jour : updator -help pour plus d'informations.",
 		null,null,true
-	),
+	),*/
 	new ArgvOpt(
 		'service',
 		"Gestion des services wfw : service -help pour plus d'informations.",
@@ -63,9 +63,9 @@ try{
 		case 'backup' :
 			$path = CLI.'/backup/BackupLauncher.php';
 			break;
-		case 'update' :
+		/*case 'update' :
 			$path = CLI.'/updator/UpdatorLauncher.php';
-			break;
+			break;*/
 		case 'package' :
 			$path = CLI.'/installer/PackageLauncher.php';
 			break;

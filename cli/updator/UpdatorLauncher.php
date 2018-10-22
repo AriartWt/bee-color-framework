@@ -30,6 +30,7 @@ $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 ])),$argv);
 
 try{
+	throw new Exception("For now this functionnality is deprecated and should not be used anymore !");
 	$confs = new UpdatorConf(ENGINE.'/config/conf.json', SITE.'/config/conf.json');
 	$updator = new Updator($confs);
 	$check = false; $download = false; $install = false;

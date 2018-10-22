@@ -1,5 +1,6 @@
 {
 	"unix_user" : "www-data",
+	"permissions" : 700,
 	"mysql" : {
 		"path" : "mysql",
 		"root" : {
