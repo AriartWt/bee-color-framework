@@ -40,7 +40,7 @@ $argvReader=$argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 	new ArgvOpt('self','Applique les commandes sur le wfw global',null,null,true),
 	new ArgvOpt(
 			'update','Met à jour les fichiers wfw du projet ciblé avec les fichiers contenus dans le dossier spécifié '
-			.'(update [sources path] [-self(global) | -all(tous) | -projet,projet2,...(projets spécifiés)]',
+			.'(update [-self(global) | -all(tous) | -projet,projet2,...(projets spécifiés)] [sources path]',
 			2,null,true
 	),
 	new ArgvOpt('remove','Supprime un projet du gestionnaire',1,null,true),
@@ -86,8 +86,8 @@ try{
 		system("$cmd 2>&1");
 	} else if($argvReader->exists('update')){
 		$args = $argvReader->get('update');
-		$path = $args[0];
-		$projects = $args[1];
+		$projects = $args[0];
+		$path = $args[1];
 		$projects = strpos($projects,"-") === 0 ? substr($projects,1):$projects;
 		$projects = explode(",",$projects);
 		$pMap = []; $valids = array_merge(["self","all"],array_keys($data));
@@ -103,7 +103,7 @@ try{
 			foreach($data as $k=>$v){
 				$data[$k] = substr($data[$v],0,-4);
 			}
-			if(isset($projects["self"])) $pMap["self"] = ROOT;
+			$pMap["self"] = ROOT;
 		}else if(isset($projects["self"])) $pMap["self"] = ROOT;
 
 		//now that we have parsed the user request, we can process it
