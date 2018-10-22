@@ -95,12 +95,17 @@ try{
 			if(!in_array($v,$valids)) throw new InvalidArgumentException(
 					"Unknown project to update : $v"
 			);
-			$pMap[$v]=$data[$v]??null;
+			$pMap[$v]=isset($data[$v])?substr($data[$v],0,-4):null;
 		}
+		$projects = array_flip($projects);
 		if(isset($pMap["all"])){
 			$pMap = $data;
-			$pMap["self"] = ROOT;
-		}else if(isset($pMap["self"])) $pMap["self"] = ROOT;
+			foreach($data as $k=>$v){
+				$data[$k] = substr($data[$v],0,-4);
+			}
+			if(isset($projects["self"])) $pMap["self"] = ROOT;
+		}else if(isset($projects["self"])) $pMap["self"] = ROOT;
+
 		//now that we have parsed the user request, we can process it
 		//first get current wfw utility confs
 		$wfwConf = new FileBasedConf(CLI."/wfw/config/conf.json");
@@ -109,16 +114,16 @@ try{
 		$tmpDir = $wfwConf->getString('tmp');
 		if(strpos($tmpDir,"/")!==0) $tmpDir = ROOT."/$tmpDir";
 		//nex create a working dir in tmp folder
-		mkdir($tmp = "$tmpDir/wfw",700);
+		if(!is_dir($tmp = "$tmpDir/wfw"))mkdir($tmp,700);
 		foreach($pMap as $n=>$p){
-			mkdir("$tmp/$n",700);
+			if(!is_dir("$tmp/$n")) mkdir("$tmp/$n",700);
 			//this is the list of all confs file that exists in the framework and that may be
 			//updated (to add properties or move them, mostly)
 			$confs = [
 				"engine" => "engine/config/conf.json",
 				"kvs" => "daemons/kvstore/server/config/conf.json",
 				"mss" => "daemons/modelSupervisor/server/config/conf.json",
-				"sctl" => "daemons/sctl/server/config/conf.json",
+				"sctl" => "daemons/sctl/config/conf.json",
 				"wfw" => "cli/wfw/config/conf.json",
 				"updator" => "cli/updator/config/conf.json",
 				"tester" => "cli/tester/config/conf.json",
