@@ -20,6 +20,7 @@ final class File implements IHTMLInput {
 	private $_label;
 	/** @var array $_attributes */
 	private $_attributes;
+	/** @var mixed $_data */
 	private $_data;
 
 	/**
