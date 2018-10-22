@@ -147,7 +147,7 @@ try{
 			}
 			//reset all permissions
 			$exec("chmod -R $unixPerm \"$p\"");
-			$exec("chmown -R $unixUser:$unixUser \"$p\"");
+			$exec("chown -R $unixUser:$unixUser \"$p\"");
 			//start and restart daemons
 			$exec("wfw self service start -all");
 			$exec("wfw self service restart sctl");
