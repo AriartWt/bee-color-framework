@@ -47,7 +47,7 @@ wfw.define("network/ajax",(function(){
 
 		let $xhr = new XMLHttpRequest();
 		if($req.onreadystatechange) $xhr.onreadystatechange = $req.onreadystatechange;
-		$xhr.open($req.type,$url+$req.getData);
+		$xhr.open($req.type,$url.replace(/^\/+/,"/")+$req.getData);
 		Object.keys($req.headers).forEach(($key) => $xhr.setRequestHeader($key,$req.headers[$key]));
 		$xhr.onload = ($req.onload) ? $req.onload($xhr) : function(){
 			if($xhr.status >= 200 && $xhr.status < 400){

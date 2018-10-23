@@ -97,7 +97,8 @@ final class Router implements IRouter
 	public function webroot(string $url = ''): string
 	{
 		trim($url,'/');
-		return strlen($url) > 0 ? "$this->_baseUrl/$url" : '';
+		return $this->_baseUrl.((strlen($url)>0)?"/$url":'');
+
 	}
 
 	/**

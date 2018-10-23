@@ -493,7 +493,7 @@ wfw.define("packages/users",function($params){
 	if('disableClientLogin' in $params) $disableClientLogin = $params.disableClientLogin;
 	else $disableClientLogin = true;
 	document.head.appendChild(wfw.dom.create("link",
-		{href:$params.css ? $params.css : wfw.webroot+"/Css/users/default.css",rel:"stylesheet"})
+		{href:$params.css ? $params.css : wfw.webroot+"Css/users/default.css",rel:"stylesheet"})
 	);
 	$users = new wfw.ui.table([
 		{name:$lstr('USER_NAME'),sort:{default:"asc",first:"asc"}},
