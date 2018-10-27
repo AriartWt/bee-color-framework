@@ -1,6 +1,7 @@
 let WFW = function($webroot){
 	let $requiredLibs = [], $loadingLibs = [], $loadedLibs = [], $inited = false;
 	let $fnsOnReady = [], $laterPush = [], $toProcess = 0, $init = [];
+	$webroot = $webroot.charAt($webroot.length-1) === '/' ? $webroot : $webroot+'/';
 	let $loaded = function(){ $fnsOnReady.concat($laterPush).some( ($fn) =>{ return $fn() })};
 	let $formatUrl = function($lib){ return $webroot+"JavaScript/"+$lib+".js"; };
 	let $redefineError = function(){ throw new Error("Cannot redefine wfw's properties !"); };
@@ -72,7 +73,7 @@ let WFW = function($webroot){
 	};
 	let $asyncInit = ($fn)=>{ $init.push($fn); };
 	let $nextInit = ()=>{
-		if($inited) throw new Error("wfw have already been fully initialized !")
+		if($inited) throw new Error("wfw have already been fully initialized !");
 		if($init.length > 0) $init.shift()(); else{ $loaded(); $inited=true }
 	};
 	Object.defineProperties(this,{

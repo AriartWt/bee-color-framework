@@ -1,5 +1,3 @@
-php_flag session.auto_start 0
-
 <Files .htaccess>
 order allow,deny
 deny from all

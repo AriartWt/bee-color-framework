@@ -67,7 +67,7 @@ final class PHPMailerProvider implements IMailProvider{
 				$att->disposition() ?? "attachment"
 			);
 		}
-		$this->_mailer->SMTPDebug = 0;
+		$this->_mailer->SMTPDebug = 3;
 		$this->_mailer->CharSet = 'UTF-8';
 		$this->_mailer->Subject = (string) $mail->subject();
 		$this->_mailer->Body = (string) $mail->body();
