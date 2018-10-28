@@ -41,8 +41,8 @@ possèdes pas dans le domaine des failles XSS.
   les envois de mails.
   - Dice est le seul conteneur d'injection de dépendances qui joue son rôle avec
 efficacité sans dévier de son objectif principal. Ses performances rivalisent avec
-les DIC les plus aboutis (et les surpassent même, voir les tests de profrmances
-ici).
+les DIC les plus aboutis (et les surpassent même, voir les tests de proformances
+[ici](https://github.com/Level-2/Dice#performance)).
 
 Il est par ailleurs à noter que ces librairies sont intégrées au coeur du framework, 
 mais peuvent être remplacées si vous le souhaitez par celles de votre choix.
@@ -52,7 +52,7 @@ WFW se veut totalement souple, et j'espère que ce paris est réussis.
 
 La documentation complète est disponible sur un [site internet dédié](https://wfwdoc.bee-color.fr).
 
-#Contribution
+# Contribution
 
 N'hésitez pas à contribuer ! 
 
