@@ -2,9 +2,14 @@ This document is also available in [english](README.en.md).
 
 # Avant-propos
 
-Le framework wfw (pour Web FramWork) est un framework prévu pour la réalisation
+Le framework wfw (pour Web FrameWork) est un framework prévu pour la réalisation
 de sites web et/ou services et/ou application plus ou moins complexes et est 
-déjà équipé d'un système de gestion des langues.
+déjà équipé d'un système de gestion des langues. 
+
+Le but est de promouvoir un support de base pour la création de projets articulés autour 
+du principe CQRS et pour offrir un support de base à l'Event-sourcing. Si vous souhaitez
+vous documenter sur ces sujets, n'hésitez pas à visionner les conférences de Greg Young et
+de ses confrères.
 
 Son architecture ne se base pas sur MVC (ou aucun autre de ses dérivés) parce 
 que ce pattern est avant tout destiné à des long-running process et qu'il est bien
