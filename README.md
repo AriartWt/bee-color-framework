@@ -2,13 +2,13 @@ This document is also available in [english](README.en.md).
 
 # Avant-propos
 
-Le framework wfw (pour Web FrameWork) est un framework prévu pour la réalisation
+Le framework **wfw** (pour Web FrameWork) est un framework prévu pour la réalisation
 de sites web et/ou services et/ou application plus ou moins complexes et est 
-déjà équipé d'un système de gestion des langues. 
+déjà équipé d'un système de gestion des langues et a été écrit en **PHP 7.2**. 
 
 Le but est de promouvoir un support de base pour la création de projets articulés autour 
-du principe CQRS et pour offrir un support de base à l'Event-sourcing. Si vous souhaitez
-vous documenter sur ces sujets, n'hésitez pas à visionner les conférences de Greg Young et
+du principe **CQRS** et pour offrir un support de base à l'**Event-sourcing**. Si vous souhaitez
+vous documenter sur ces sujets, n'hésitez pas à visionner les conférences de **Greg Young** et
 de ses confrères.
 
 Son architecture ne se base pas sur MVC (ou aucun autre de ses dérivés) parce 
@@ -40,11 +40,11 @@ Si le principal but de ce framework est de limiter le recours aux dépendances
    
 Pourquoi ? Parce que ces librairies me semblent parfaitement indispensables et
 surtout sont bien plus abouties que tout ce que j'aurais pu coder moi même:
-  - HTMLPurifier est un projet brillant qui demande des connaissances que je ne 
+  - **HTMLPurifier** est un projet brillant qui demande des connaissances que je ne 
 possèdes pas dans le domaine des failles XSS.
-  - PHPMailer, qu'il est inutile de présenter, est une fantastique librairie pour
+  - **PHPMailer**, qu'il est inutile de présenter, est une fantastique librairie pour
   les envois de mails.
-  - Dice est le seul conteneur d'injection de dépendances qui joue son rôle avec
+  - **Dice** est le seul conteneur d'injection de dépendances qui joue son rôle avec
 efficacité sans dévier de son objectif principal. Ses performances rivalisent avec
 les DIC les plus aboutis (et les surpassent même, voir les tests de proformances
 [ici](https://github.com/Level-2/Dice#performance)).

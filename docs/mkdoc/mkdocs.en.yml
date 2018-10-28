@@ -1,0 +1,38 @@
+site_name: Bee-color Web FrameWork
+site_url: http://www.bee-color.fr
+site_description: "Bee-color WFW is a PHP Framework with base support for CQRS and EventSourcing."
+site_author: Jordan Breton
+docs_dir: ./en
+copyright: <a href="http://bee-color.fr">Bee-color</a> 2018, all rights reserved.
+
+pages :
+   - Introduction : index.md
+   - 'Quick Start' : quick-start.md
+
+theme : material
+
+extra_css: 
+  - css/style.css
+
+markdown_extensions:
+  - pymdownx.arithmatex
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - codehilite
+  - pymdownx.inlinehilite
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - toc:
+      permalink: 
+  - admonition
+  - def_list

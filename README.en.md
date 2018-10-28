@@ -2,11 +2,11 @@ Ce document est également disponible en [français](README.md)
 
 # Foreword
 
-The wfw framework (for Web FrameWork) have been designed to create websites, webservices and 
-more or less complicated web applications. It natively supports multilang.
+The **wfw** framework (for Web FrameWork) have been designed to create websites, webservices and 
+more or less complicated web applications. It natively supports multilang and have been written in **PHP 7.2**.
 
-The purpose is to provide a support to Event-sourced projects and a design which encourages
-use of CQRS. If you want to know more about those principles, please take a loog to Greg Young's 
+The purpose is to provide a support to **Event-sourced** projects and a design which encourages
+use of **CQRS**. If you want to know more about those principles, please takes a look to **Greg Young**'s 
 conferences on youtube.
 
 The wfw design don't use a MVC pattern (and no one of it's derivatives) because it should
@@ -33,9 +33,9 @@ in the framework's core :
 
 Why ? Because those libraries seems essentials to me, and beacause it's far beyond what I can 
 ever do myself :
-   - HTMLPurifier, a good protection against XSS.
-   - PHPMailer, which I shouldn't have to introduce, to easily send mails.
-   - Dice, the only one dependency injection container which is efficient and not over-complicated.
+   - **HTMLPurifier**, a good protection against XSS.
+   - **PHPMailer**, which I shouldn't have to introduce, to easily send mails.
+   - **Dice**, the only one dependency injection container which is efficient and not over-complicated.
    (To be as convinced as I am, please take the time to read [this](https://github.com/Level-2/Dice#performance)
    about performances and it's well written documentation)
    
