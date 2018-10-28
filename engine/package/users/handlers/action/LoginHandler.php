@@ -105,7 +105,7 @@ final class LoginHandler implements IActionHandler {
 					$action = $this->_session->get('previous_action');
 					$this->_session->set("user",$user);
 					$this->_session->set("csrfToken",new UUID(UUID::V4));
-					return new Redirection($action->getRequest()->getURL());
+					return new Redirection(substr($action->getRequest()->getURL(),1));
 				}else{
 					if(is_null($user)) $this->_notifier->addMessage(new Message(
 						"Ce nom d'utilisateur est inconnu !",MessageTypes::ERROR
