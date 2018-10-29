@@ -1,10 +1,11 @@
-site_name: Bee-color Web FrameWork
+site_name: Web Framework Bee-color
 site_url: http://www.bee-color.fr
-site_description: "Bee-color WFW is a PHP Framework with base support for CQRS and EventSourcing."
+site_description: "WFW Bee-color is a PHP Framework with base support for CQRS and EventSourcing."
 site_author: Jordan Breton
 docs_dir: ./en
 copyright: <a href="http://bee-color.fr">Bee-color</a> 2018, all rights reserved.
-
+repo_name: 'Framagit repos (source code)'
+repo_url: 'https://framagit.org/Ariart/bee-color-framework'
 pages :
    - Introduction : index.md
    - 'Quick Start' : quick-start.md
@@ -33,6 +34,6 @@ markdown_extensions:
       custom_checkbox: true
   - pymdownx.tilde
   - toc:
-      permalink: 
+      permalink: '🔗'
   - admonition
   - def_list

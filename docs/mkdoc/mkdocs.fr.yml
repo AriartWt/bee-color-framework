@@ -1,18 +1,29 @@
-site_name: Bee-color Web FrameWork
-site_url: http://www.bee-color.fr
-site_description: "Bee-color WFW est un framwork écrit en PHP basé sur le DDD, CQRS et EventSourcing."
+site_name: Web Framework Bee-color
+site_url: https://wfwdoc.bee-color.fr
+site_description: "WFW Bee-color est un framwork écrit en PHP encourageant le DDD, CQRS et EventSourcing."
 site_author: Jordan Breton
 docs_dir: ./fr
 copyright: <a href="http://bee-color.fr">Bee-color</a> 2018, tous droits réservés.
+repo_name: 'Dépôt Framagit (code source)'
+repo_url: 'https://framagit.org/Ariart/bee-color-framework'
 
 pages :
    - Introduction : index.md
    - 'Démarrage rapide' : quick-start.md
 
-theme : material
+theme:
+  name: 'material'
+  logo: '../images/logo.svg'
+  favicon: '../images/logo.ico'
+  language : 'fr'
+  feature:
+      tabs: true
+  palette:
+      primary: 'amber'
+      accent: 'orange'
 
 extra_css:
-  - css/style.css
+  - ../css/style.css
 
 markdown_extensions:
   - pymdownx.arithmatex
@@ -33,6 +44,6 @@ markdown_extensions:
       custom_checkbox: true
   - pymdownx.tilde
   - toc:
-      permalink: 
+      permalink: true
   - admonition
   - def_list
