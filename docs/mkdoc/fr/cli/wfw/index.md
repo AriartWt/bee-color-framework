@@ -5,7 +5,7 @@
 	Cette page est encore en cours de construction
 
 Une fois le framework [installé](general/start), le programme `wfw` est disponible. Il permet de
-gérer l'instance global du framework, d'ajouter, supprimer, mettre à jour des projets et éxecuter
+gérer l'instance globale du framework, d'ajouter, supprimer, mettre à jour des projets et exécuter
 quelques commandes spécifiques à un projet.
 
 ## Création d'un projet
@@ -20,11 +20,11 @@ projet.
 - Créer la base de données et deux utilisateurs qui peuvent agir dessus.
 - Créer le [container kvs](daemons/kvs) et son utilisateur.
 - Créer l'[instance msserver](daemons/msserver) et son utilisateur.
-- Editer tous les fichiers de configurations impactés.
+- Éditer tous les fichiers de configurations impactés.
 - Créer un premier utilisateur actif pour votre application.
 
 Pour créer un projet sur notre framework fraîchement installé, il n'y a donc rien de plus simple, il suffit
- d'avoir recours à la commande `wfw create [Nom du projet] [chemin absolu vers son repertoire d'installation]`
+ d'avoir recours à la commande `wfw create [Nom du projet] [chemin absolu vers son répertoire d'installation]`
 
 ``` bash
 sudo wfw create ProjectName /srv/wfw
@@ -35,25 +35,25 @@ sudo wfw create ProjectName /srv/wfw
     Pour des raisons de flexibilité, le dossier dans lequel vous créez votre projet peut très bien se
     trouver n'importe où sur le système.
 
-    Peut importe votre configuration, pensez bien à utiliser un chemin **absolu** lors de la commande,
+    Peu importe votre configuration, pensez bien à utiliser un chemin **absolu** lors de la commande,
     et faites attention à ce que le dossier de destination appartienne à l'utilisateur www-data avec
-    le droit d'execution.
+    le droit d'exécution.
 
-A la fin de l'installation, un fichier ProjectName.cred sera créé dans le dossier temporaire spécifié par les
+À la fin de l'installation, un fichier ProjectName.cred sera créé dans le dossier temporaire spécifié par les
 configurations.
 Il contient sur la première ligne le login du premier utilisateur créé pour votre projet,
  ainsi que son mot de passe, généré automatiquement à partir d'un **UUID v4**.
 
 !!! warning "Attention"
 
-    Si une base de donnée correspondant à la base qui sera créée par `wfw` existe déjà,
+    Si une base de données correspondant à la base qui sera créée par `wfw` existe déjà,
     elle sera silencieusement supprimée et remplacée par une base de données propre.
 
     Idem pour les utilisateurs.
 
-    Ce fonctionnement est normal et particulièrement utile dans le cas d'une création de projet
-    qui se serait mal déroulée nottament à cause d'un problème de permissions. Mais si vous
-    souhaitez ré-installer un projet ET conserver ses données, pensez à effectuer un [backup]()
+    Ce fonctionnement est normal et particulièrement utile dans le cas d'une création de projets
+    qui se serait mal déroulée notamment à cause d'un problème de permissions. Mais si vous
+    souhaitez réinstaller un projet ET conserver ses données, pensez à effectuer un [backup]()
     avant, sinon vos données seront perdues.
 
 ## Importation et mise à jour d'un projet
@@ -64,13 +64,13 @@ par les mêmes étapes : `wfw import [Nom du projet] [chemin absolu vers les sou
 ### Dans un projet existant
 
 La commande est très simple. Il vous suffit de préciser le nom du projet, et le chemin **absolu**
-d'accés aux sources permettant son import ou sa mise à jour :
+d'accès aux sources permettant son import ou sa mise à jour :
 ```bash
 sudo wfw import ProjectName ~/projectname
 ```
 
 Les configurations seront automatiquement éditées par `wfw` pour faire correspondre les mots
-de passes et les utilisateurs mysql, kvs et msserver.
+de passe et les utilisateurs mysql, kvs et msserver.
 
 
 ### Si le projet n'a pas encore été créé via `wfw create`
@@ -88,8 +88,8 @@ sudo wfw import ProjectName ~/projectname
 
 !!! info "Information sur les données"
 
-	L'import des données **MYSQL**, s'il y en, n'est pas pris en charge par `wfw` et doit être réalisé
-	manuellement.
+	 L'import des données **MYSQL**, s'il y en, n'est pas pris en charge par `wfw` et doit être réalisé
+	 manuellement.
 
 ## Supprimer un projet
 
@@ -108,7 +108,7 @@ sudo wfw remove ProjectName
     ne fait que supprimer les liens symboliques lui permettant de gérer ce projet, et de nettoyer
     les utilisateurs du msserver et du kvs.
 
-    Pour le supprimer totalement, vous devez effectuer les commandes manuelles necessaires :
+    Pour le supprimer totalement, vous devez effectuer les commandes manuelles nécessaires :
     ```bash
     sudo rm -rf /srv/wfw/ProjectName
     ```
@@ -136,7 +136,7 @@ sudo wfw remove ProjectName
         sudo wfw import ProjectName ~/ProjectName
         ```
 
-        Réstaurez vos données :
+        Restaurez vos données :
 
         ```bash
         mysql -u root -p[root_password] [database_name] < ~/dumpfilename.sql
@@ -169,13 +169,13 @@ La cohabitation entre plusieurs projets ayant différentes versions du framework
 prévue dans le cas où des changements dans les sources entraînent une incompatibilité avec les versions ultérieures.
 
 Chaque projet ayant sa propre copie des sources pour son propre fonctionnement, cela permet à chaque
- projet de fonctioner indépendamment des autres.
+ projet de fonctionner indépendamment des autres.
 
 !!! note "Note"
 
-	En toute logique, tant que les changements n'affectent pas l'interface client du [KVS](/daemons/kvs/)
-	ou celle du [MSServer](/daemons/msserver/), vous ne risquez rien à mettre à jour le framework sans
-	mettre à jour les projets.
+	 En toute logique, tant que les changements n'affectent pas l'interface client du [KVS](/daemons/kvs/)
+	 ou celle du [MSServer](/daemons/msserver/), vous ne risquez rien à mettre à jour le framework sans
+	 mettre à jour les projets.
 
-	Le fait de le garder à jour vous permettra de créer des nouveaux projets à partir de la nouvelle
-	version du framework.
+ Le fait de le garder à jour vous permettra de créer de nouveaux projets à partir de la nouvelle
+ version du framework.
