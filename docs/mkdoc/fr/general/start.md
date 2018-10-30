@@ -134,7 +134,7 @@ sudo nano /srv/wfw/global/cli/wfw/config/conf.json
 
 Pour ce qui est des autres options, rien de très compliqué :
 
-- `permissions` : permissions attribuées à tous les fichiers créés par l'utilitaire wfw
+- `permissions` : permissions attribuées à tous les fichiers créés par `wfw`
 - `mysql/path` : chemin d'accès au programme mysql, s'il n'est pas installé en commande globale
 - `mysqldump_path` : chemin d'accès au programme mysqldump, s'il n'est pas installé en commande globale
 - `tmp` : chemin d'accès au dossier dans lequel `wfw` travaillera.

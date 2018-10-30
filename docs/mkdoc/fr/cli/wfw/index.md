@@ -112,7 +112,7 @@ sudo wfw remove ProjectName
     ```bash
     sudo rm -rf /srv/wfw/ProjectName
     ```
-    Puis la suppression de la base de données et des utilisateurs qui avaient été générés par
+    Ensuite, à vous de gérer la suppression de la base de données et des utilisateurs qui avaient été générés par
     `wfw create`
 
     ??? hint "Astuce : suppression accidentelle"
@@ -130,7 +130,7 @@ sudo wfw remove ProjectName
         mysqldump -u root -p[root_password] [database_name] > ~/dumpfilename.sql
         ```
 
-        Récréez et importer votre projet :
+        Récréez et importez votre projet :
         ```bash
         sudo wfw create ProjectName /srv/wfw
         sudo wfw import ProjectName ~/ProjectName
