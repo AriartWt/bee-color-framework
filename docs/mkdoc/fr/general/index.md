@@ -1,6 +1,9 @@
-This documentation is also available in [english](https://wfwdoc.bee-color.fr/en).
-
 # Présentation
+
+!!! info
+
+	This documentation is also available in [english](https://wfwdoc.bee-color.fr/en).
+
 
 ## Avant-propos
 
@@ -9,7 +12,7 @@ de sites web et/ou services et/ou application plus ou moins complexes et est
 déjà équipé d'un système de gestion des langues et a été écrit en **PHP 7.2**. 
 
 Le but est de promouvoir un support de base pour la création de projets articulés autour 
-du principe **CQRS** et pour offrir un support de base à l'**Event-sourcing**. Si vous souhaitez
+du principe [CQRS](cqrs) et pour offrir un support de base à l'[Event-sourcing](event_sourcing). Si vous souhaitez
 vous documenter sur ces sujets, n'hésitez pas à visionner les conférences de **Greg Young** et
 de ses confrères.
 
@@ -88,7 +91,7 @@ d'honnêteté intellectuelle.
 
 ## Installation
 
-Pour plus de détails sur son fonctionnement et son installation, c'est [par ici](quick-start)
+Pour plus de détails sur son fonctionnement et son installation, c'est [par ici](start)
 
 ## Contribution
 

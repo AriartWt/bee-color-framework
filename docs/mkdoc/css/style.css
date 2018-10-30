@@ -9,10 +9,12 @@ body{
 .md-typeset h1,h2,h3,h4,h5,h6{
 	color:#FF9900;
 }
+.md-sidebar.md-sidebar--secondary > .md-sidebar__scrollwrap > .md-sidebar__inner > .md-nav,
+.md-sidebar.md-sidebar--primary > .md-sidebar__scrollwrap > .md-sidebar__inner > .md-nav{
+	padding:20px!important;
+}
 .md-nav{
 	background-color: rgb(55,55,55);
-	box-shadow:10px 10px 20px rgba(0,0,0,0.6);
-	padding:20px;
 }
 [data-md-color-primary=amber] .md-tabs{
 	color:black!important;
@@ -23,12 +25,13 @@ a:not(.md-source),
 .md-typeset a{
 	color : #FF9900;
 }
-
-/*.md-header .md-flex__cell.md-flex__cell--shrink:first-child{
-	background-image: url("../images/logo.svg");
-	background-repeat: no-repeat;
-	background-size: contain;
-}*/
+.md-typeset .codehilitetable .linenos{
+	color:rgba(255,255,255,0.4);
+	background-color: rgb(20,20,20);
+}
+.codehilite .hll, .md-typeset .highlight .hll{
+	background-color: rgba(255,79,79,0.2);
+}
 
 .md-header-nav__button.md-logo > i{
 	opacity: 0;
@@ -76,4 +79,10 @@ a:not(.md-source),
 
 .md-nav__link[data-md-state=blur]{
 	color:rgba(255,255,255,0.5);
+}
+
+.md-typeset .codehilite, .md-typeset .highlight{
+	background-color: rgb(20,20,20);
+	color:rgba(255,255,255,0.6);
+	box-shadow: 0.29412em 0 0 rgb(20,20,20), -0.29412em 0 0 rgb(20,20,20);
 }

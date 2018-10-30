@@ -8,8 +8,25 @@ repo_name: 'Dépôt Framagit (code source)'
 repo_url: 'https://framagit.org/Ariart/bee-color-framework'
 
 pages :
-   - Introduction : index.md
-   - 'Démarrage rapide' : quick-start.md
+- "Guide de l'utilisateur" :
+  - Introduction : general/index.md
+  - Installation : general/start.md
+  - "Premiers pas" :
+    - "L'arborescence" : general/first_steps/tree.md
+    - "Les configurations" : general/first_steps/config.md
+    - "Les handlers" : general/first_steps/handlers.md
+    - "Les modules" : general/first_steps/modules.md
+  - Informations :
+    - 'Event sourcing' : general/event_sourcing.md
+    - 'CQRS' : general/cqrs.md
+- CLI :
+  - wfw :
+    - 'Commande globale' : cli/wfw/index.md
+- 'Daemons' :
+  - 'Kvs' :
+    - 'KeyValueStore' : daemons/kvs/index.md
+  - 'MSServer' :
+    - 'ModelSupervisor' : daemons/msserver/index.md
 
 theme:
   name: 'material'
@@ -17,10 +34,10 @@ theme:
   favicon: '../images/logo.ico'
   language : 'fr'
   feature:
-      tabs: true
+    tabs: true
   palette:
-      primary: 'amber'
-      accent: 'orange'
+    primary: 'amber'
+    accent: 'orange'
 
 extra_css:
   - ../css/style.css
@@ -37,9 +54,10 @@ markdown_extensions:
   - pymdownx.magiclink
   - pymdownx.mark
   - pymdownx.smartsymbols
-  - pymdownx.superfences
-  - codehilite
+  - codehilite:
+      linenums: true
   - pymdownx.inlinehilite
+  - pymdownx.superfences
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
