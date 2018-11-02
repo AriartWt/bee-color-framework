@@ -39,8 +39,8 @@ sudo wfw create ProjectName /srv/wfw
     et faites attention à ce que le dossier de destination appartienne à l'utilisateur www-data avec
     le droit d'exécution.
 
-À la fin de l'installation, un fichier ProjectName.cred sera créé dans le dossier temporaire spécifié par les
-configurations.
+À la fin de l'installation, un fichier `ProjectName.cred` sera créé dans le dossier temporaire spécifié par les
+configurations du fichier `cli/wfw/conf/config.conf`.
 Il contient sur la première ligne le login du premier utilisateur créé pour votre projet,
  ainsi que son mot de passe, généré automatiquement à partir d'un **UUID v4**.
 
@@ -53,7 +53,7 @@ Il contient sur la première ligne le login du premier utilisateur créé pour v
 
     Ce fonctionnement est normal et particulièrement utile dans le cas d'une création de projets
     qui se serait mal déroulée notamment à cause d'un problème de permissions. Mais si vous
-    souhaitez réinstaller un projet ET conserver ses données, pensez à effectuer un [backup]()
+    souhaitez réinstaller un projet ET conserver ses données, pensez à effectuer un [backup](/cli/backup/)
     avant, sinon vos données seront perdues.
 
 ## Importation et mise à jour d'un projet

@@ -21,7 +21,7 @@ pages :
     - 'CQRS' : general/cqrs.md
 - CLI :
   - wfw :
-    - 'Globale command' : cli/wfw/index.md
+    - 'Global command' : cli/wfw/index.md
 - 'Daemons' :
   - 'Kvs' :
     - 'KeyValueStore' : daemons/kvs/index.md

@@ -4,151 +4,142 @@
 
 	This page is under construction
 
-Une fois le framework [installé](general/start), le programme `wfw` est disponible. Il permet de
-gérer l'instance globale du framework, d'ajouter, supprimer, mettre à jour des projets et exécuter
-quelques commandes spécifiques à un projet.
+Once the framework [installed](general/start), `wfw` is enabled. It manages its global instance and
+allow you to create, remove, update and exec commands on your projects.
 
-## Création d'un projet
+## Create a project
 
-L'utilitaire `wfw` permet de gérer simplement les nouveaux projets.
-Il se charge pour vous des opérations suivantes, ce qui simplifie grandement le processus :
+To make it easier to configure your new projects, `wfw` handle several tasks when you use its `create`
+command:
 
-- Créer le squelette du projet.
-- Copier des dossiers `/srv/wfw/global/engine`, `/srv/wfw/global/cli`, `/srv/wfw/global/daemons` vers le dossier du
-projet.
-- Créer les liens symboliques nécessaires à la gestion du projet par `wfw`.
-- Créer la base de données et deux utilisateurs qui peuvent agir dessus.
-- Créer le [container kvs](daemons/kvs) et son utilisateur.
-- Créer l'[instance msserver](daemons/msserver) et son utilisateur.
-- Éditer tous les fichiers de configurations impactés.
-- Créer un premier utilisateur actif pour votre application.
+- Create the project skeleton.
+- Copy `/srv/wfw/global/engine`, `/srv/wfw/global/cli`, `/srv/wfw/global/daemons` to the project root
+- Create symlinks required by `wfw` to manage th project.
+- Create the project db and two users who can manage it.
+- Create the [kvs container](daemons/kvs) and its user.
+- Create the [msserver instance](daemons/msserver) and its user.
+- Edit all configuration files.
+- Create a first user enabled for your app/website.
 
-Pour créer un projet sur notre framework fraîchement installé, il n'y a donc rien de plus simple, il suffit
- d'avoir recours à la commande `wfw create [Nom du projet] [chemin absolu vers son répertoire d'installation]`
+So, to create a project in our installed framework, let's use the command
+`wfw create [Project name] [absolute path to project folder]`
 
 ``` bash
 sudo wfw create ProjectName /srv/wfw
 ```
 
-??? help "Pourquoi le chemin est-il obligatoire ?"
+??? help "Why is the path ?"
 
-    Pour des raisons de flexibilité, le dossier dans lequel vous créez votre projet peut très bien se
-    trouver n'importe où sur le système.
+	For the sake of flexibility, the folder which will contain your project can be anywhere on your
+	system.
 
-    Peu importe votre configuration, pensez bien à utiliser un chemin **absolu** lors de la commande,
-    et faites attention à ce que le dossier de destination appartienne à l'utilisateur www-data avec
-    le droit d'exécution.
+	No matter your configuration, think to use an **absolute** path with this command, and paid
+	attention to the destination folder : it owner *must* be the apache user and must have the
+	execution permission.
 
-À la fin de l'installation, un fichier ProjectName.cred sera créé dans le dossier temporaire spécifié par les
-configurations.
-Il contient sur la première ligne le login du premier utilisateur créé pour votre projet,
- ainsi que son mot de passe, généré automatiquement à partir d'un **UUID v4**.
+When the command will ends, a `ProjectName.cred` file will be created under the `wfw` working dir
+given in the `cli/wfw/conf/config.json` file.
+It contains the first user credentials : user login on the first line, and the password on the second,
+automatically generated with an UUID v4.
 
-!!! warning "Attention"
+!!! warning
 
-    Si une base de données correspondant à la base qui sera créée par `wfw` existe déjà,
-    elle sera silencieusement supprimée et remplacée par une base de données propre.
+	If a database that have the same name than those which will be created by `wfw` already exists in
+	**mysql**, it will be silently removed and replaced by a clean DB.
 
-    Idem pour les utilisateurs.
+	The same process will happen for existing users.
 
-    Ce fonctionnement est normal et particulièrement utile dans le cas d'une création de projets
-    qui se serait mal déroulée notamment à cause d'un problème de permissions. Mais si vous
-    souhaitez réinstaller un projet ET conserver ses données, pensez à effectuer un [backup]()
-    avant, sinon vos données seront perdues.
+	This process is normal and usefull when a `create` command fails, espacially for permissions
+	problems. So, if you want to resintall a project AND keep its data, think about create a [backup](/cli/backup/)
+	before, otherwise your data will be **lost**.
 
-## Importation et mise à jour d'un projet
+## Import and update a project
 
-Les commandes pour l'import et la mise à jour d'un projet sont les mêmes, puisqu'elles passent
-par les mêmes étapes : `wfw import [Nom du projet] [chemin absolu vers les sources]`
+Commands to import and update a project are the same : `wfw import [Project name] [absolute path to sources]`
 
-### Dans un projet existant
+### In an existing project
 
-La commande est très simple. Il vous suffit de préciser le nom du projet, et le chemin **absolu**
-d'accès aux sources permettant son import ou sa mise à jour :
+Just use the `import` command with the project name and the **absolute** path to the sources you
+want to import to update it :
 ```bash
 sudo wfw import ProjectName ~/projectname
 ```
 
-Les configurations seront automatiquement éditées par `wfw` pour faire correspondre les mots
-de passe et les utilisateurs mysql, kvs et msserver.
+The project configs will be automatically edited by `wfw` to match mysql, kvs and msserv's users.
 
+### If the project haven't been created with `wfw create`
 
-### Si le projet n'a pas encore été créé via `wfw create`
-
-Il faut d'abord le créer via la commande :
+You must first create it :
 
 ```bash
 sudo wfw create ProjectName /srv/wfw
 ```
 
-Puis l'importer en fournissant le chemin **absolu** vers les sources à utiliser pour l'import :
+And then import your sources with their **absolute** path :
 ```bash
 sudo wfw import ProjectName ~/projectname
 ```
 
-!!! info "Information sur les données"
+!!! info "Infos on data"
 
-	 L'import des données **MYSQL**, s'il y en, n'est pas pris en charge par `wfw` et doit être réalisé
-	 manuellement.
+	The **MYSQL** data import have to be done by hand, since `wfw` is not able to do it.
 
-## Supprimer un projet
+## Remove a project
 
-La commande pour supprimer un projet est la suivante : `wfw remove [Nom du projet]`
+The commande to remove is `wfw remove [Project name]` :
 
 ```bash
 sudo wfw remove ProjectName
 ```
 
-!!! warning "Attention"
+!!! warning
 
-    L'utilitaire ne supprime pas la base de données afin d'éviter qu'une erreur de manipulation
-    ne tourne au désastre en supprimant toutes les données associées à votre projet.
+	`wfw` will not remove **mysql** database to avoid a disater after a manipulation error.
 
-    Il ne supprime pas non plus le dossier du projet à l'emplacement où vous l'avez installé. Il
-    ne fait que supprimer les liens symboliques lui permettant de gérer ce projet, et de nettoyer
-    les utilisateurs du msserver et du kvs.
+	It will not remove the project folder, for the same reason, only its symbolic links, and will cleanup
+	[kvs](/daemons/kvs/) and [msserver](/daemons/msserver/) configurations (users and container/instance).
 
-    Pour le supprimer totalement, vous devez effectuer les commandes manuelles nécessaires :
+	To definively remove it, you must do it manually :
     ```bash
     sudo rm -rf /srv/wfw/ProjectName
     ```
-    Ensuite, à vous de gérer la suppression de la base de données et des utilisateurs qui avaient été générés par
-    `wfw create`
 
-    ??? hint "Astuce : suppression accidentelle"
+    Then, remove by hand the database and users created by `wfw create`.
 
-        Si vous supprimez par erreur un projet, pas de panique. Commencez par déplacer son dossier
-        dans un autre répertoir :
+    ??? hint "Hint : accidental remove"
+
+		If you accidentaly use the `wfw remove` command, start by move the project folder to a safe
+		location (your home directory should be fine) :
 
         ```bash
         sudo mv /srv/wfw/ProjectName ~
         ```
 
-        Si vous avez des données à conserver, utilisez mysqldump :
+		If you have data to keep, use mysqldump :
 
         ```bash
         mysqldump -u root -p[root_password] [database_name] > ~/dumpfilename.sql
         ```
 
-        Récréez et importez votre projet :
+        Create a new project with the same name as the one you just removed :
         ```bash
         sudo wfw create ProjectName /srv/wfw
         sudo wfw import ProjectName ~/ProjectName
         ```
 
-        Restaurez vos données :
+        Restaure your data.
 
         ```bash
         mysql -u root -p[root_password] [database_name] < ~/dumpfilename.sql
         ```
 
-## Mettre à jour le framework
+## Updating the framework
 
-Mettre à jour le framework est aussi simple qu'importer un projet. `wfw` intègre une commande `update`
-similaire à `import`.
+A framework update can be done with the `wfw update` command which behave like `import` but for the
+global directory.
 
-Commencez par télécharger la dernière version du framework, puis utilisez la commande update après
-avoir supprimé le dossier `.git`.
+Start downloading the last framework version, and then use the command `update` (think about removing the
+.git folder) :
 
 ```bash
 cd ~
@@ -157,25 +148,20 @@ rm -rf bee-color-wfw/.git
 sudo wfw update -all ~/bee-color-wfw
 ```
 
-Vous pouvez *remplacer* l'argument `-all` par les différents arguments suivants, en fonction de vos
- besoins :
+You can *replace* the `-all` argument by the following ones, according to your needs :
 
-- `-all` : le framework et toutes ses instances.
-- `-self` : uniquement le framework
-- `-ProjectName` : le projet ProjectName
-- `-self,ProjectName1,ProjectName3` : le framework ainsi que les projets ProjectName1 et ProjectName3.
+- `-all` : framework and all projects.
+- `-self` : framework only
+- `-ProjectName` : ProjectName project
+- `-self,ProjectName1,ProjectName3` : framework, ProjectName1 and ProjectName3.
 
-La cohabitation entre plusieurs projets ayant différentes versions du framework de base est
-prévue dans le cas où des changements dans les sources entraînent une incompatibilité avec les versions ultérieures.
+You can update the framework only, if a version in backward incompatible for a project. Each get it's own
+copy of the framework source at it creation, so each is idependant from the others.
 
-Chaque projet ayant sa propre copie des sources pour son propre fonctionnement, cela permet à chaque
- projet de fonctionner indépendamment des autres.
+!!! note
 
-!!! note "Note"
+	While no backward incompatible changes are made to the client interface of the [KVS](/daemons/kvs/)
+	or the [MSserver](/daemons/msserver/), there should be no problem to update the framework without
+	keeping project updated, unless a security release is deployed.
 
-	 En toute logique, tant que les changements n'affectent pas l'interface client du [KVS](/daemons/kvs/)
-	 ou celle du [MSServer](/daemons/msserver/), vous ne risquez rien à mettre à jour le framework sans
-	 mettre à jour les projets.
-
- Le fait de le garder à jour vous permettra de créer de nouveaux projets à partir de la nouvelle
- version du framework.
+Keep the framework updated allow you to create new projects with its new version.
