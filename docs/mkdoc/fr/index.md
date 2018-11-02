@@ -8,7 +8,7 @@
 ## Avant-propos
 
 Le framework **wfw** (pour Web FrameWork) est un framework prévu pour la réalisation
-de sites web et/ou services et/ou application plus ou moins complexes et est
+de sites web et/ou services et/ou application plus ou moins complexes. Il est
 déjà équipé d'un système de gestion des langues et a été écrit en **PHP 7.2**.
 
 Le but est de promouvoir un support de base pour la création de projets articulés autour
@@ -18,8 +18,7 @@ de ses confrères.
 
 Son architecture ne se base pas sur MVC (ou aucun autre de ses dérivés) parce
 que ce pattern est avant tout destiné à des long-running process et qu'il est bien
-souvent utilisé à tort et à travers, et souvent mal appliqué (je vous renvoie
-sur les articles éclairés et documentés de Tom Butler sur ce design
+souvent mal appliqué (je vous renvoie sur les articles éclairés et documentés de Tom Butler sur ce design
 pattern, et notamment les deux articles très justement appelés
 [MVC : Model-View-Confusion](https://r.je/views-are-not-templates.html)).
 
@@ -37,7 +36,7 @@ indépendants devient très difficile à maintenir avec le temps.
 
 ## Attribution
 
-Si le principal but de ce framework est de limiter le recours aux dépendances
+Si l'un des principaux buts de ce framework est de limiter le recours aux dépendances
 à d'autres projets, j'en ai tout de même intégré trois au coeur du framework :
 
    - [PHPMailer](https://github.com/PHPMailer/PHPMailer)

@@ -25,7 +25,7 @@ upon ten or more other projects become a maintenance nightmare after few years.
 
 # Attribution
 
-If the wfw's principal concern is to avoir third party libraries, But I still integrated three of them
+On of the wfw's principal concern is to avoid third party libraries, But I still integrated three of them
 in the framework's core :
    - [PHPMailer](https://github.com/PHPMailer/PHPMailer) 
    - [HTMLPurifier](http://htmlpurifier.org/)
@@ -33,7 +33,7 @@ in the framework's core :
 
 Why ? Because those libraries seems essentials to me, and beacause it's far beyond what I can 
 ever do myself :
-   - **HTMLPurifier**, a good protection against XSS.
+   - **HTMLPurifier**, a very good protection against XSS.
    - **PHPMailer**, which I shouldn't have to introduce, to easily send mails.
    - **Dice**, the only one dependency injection container which is efficient and not over-complicated.
    (To be as convinced as I am, please take the time to read [this](https://github.com/Level-2/Dice#performance)
@@ -55,5 +55,5 @@ I do my best to write this documentation in two langs : English and French. Sinc
 guy, I try to traduce it as I can, so please do not hesitate to correct me when I'm wrong, it
 would be appreciated.
 
-Finally, I try to write a well written doc, as clear and detailed as possible, so, once again,
+Finally, I try to produce a well written doc, as clear and detailed as possible, so, once again,
 if something is missing or unclear, don't hesistate to contact me.

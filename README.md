@@ -32,7 +32,7 @@ indépendants devient très difficile à maintenir avec le temps.
 
 ## Attribution :
 
-Si le principal but de ce framework est de limiter le recours aux dépendances
+Si l'un des principaux buts de ce framework est de limiter le recours aux dépendances
 à d'autres projets, j'en ai tout de même intégré trois au coeur du framework :
    - [PHPMailer](https://github.com/PHPMailer/PHPMailer)
    - [HTMLPurifier](http://htmlpurifier.org/)
