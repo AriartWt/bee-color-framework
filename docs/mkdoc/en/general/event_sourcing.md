@@ -1,5 +1,5 @@
 # Event Sourcing
 
-!!! warning "Rédaction en cours"
+!!! warning "Writing in progress"
 	
-	Page en cours de construction
+	This page is under construction

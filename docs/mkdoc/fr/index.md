@@ -91,7 +91,7 @@ d'honnêteté intellectuelle.
 
 ## Installation
 
-Pour plus de détails sur son fonctionnement et son installation, c'est [par ici](start)
+Pour plus de détails sur son fonctionnement et son installation, c'est [par ici](/general/start)
 
 ## Contribution
 

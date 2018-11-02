@@ -1,8 +1,8 @@
 # WFW
 
-!!! warning "En cours de rédaction"
+!!! warning "Writing in progress"
 
-	Cette page est encore en cours de construction
+	This page is under construction
 
 Une fois le framework [installé](general/start), le programme `wfw` est disponible. Il permet de
 gérer l'instance globale du framework, d'ajouter, supprimer, mettre à jour des projets et exécuter

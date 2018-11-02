@@ -1,32 +1,29 @@
-## Prérequis
+## Prerequisites
 
-Voici la liste des prérequis pour l'installation du framework : 
+There are the exhaustive liste of prerequisites needed to install the framework :
   
-  - PHP >= 7.2 avec les extensions `php7.2-common php7.2-curl php7.2-xml php7.2-zip php7.2-gd php7.2-mysql php7.2-mbstring php-apcu` et `pcntl`
+  - PHP >= 7.2 with modules `php7.2-common php7.2-curl php7.2-xml php7.2-zip php7.2-gd php7.2-mysql php7.2-mbstring php-apcu` et `pcntl`
   - MYSQL & MysqlDump
-  - Accès root sur Ubuntu >= 16.04
-  - Apache >= 2.4 avec les modules `rewrite deflate headers filter` activés
+  - root access on Ubuntu >= 16.04
+  - Apache >= 2.4 with modules `rewrite deflate headers filter` enabled
   
-??? note "Remarque sur Ubuntu"
-    
-    En principe, du moment que l'extension pcntl est disponible sur **PHP** (ce qui exclut les plateformes
-    Windows), et que le système permet l'installation  et la gestion de daemons via **systemctl**,
-    tout devrait bien se passer.
+??? note "Note on Ubuntu"
 
-    Je laisse cependant ce prérequis pour le moment parce que je n'ai pas encore eu le temps de
-    le tester sur d'autres environnements.
+    Normaly, while the pcntl extension is available on **PHP**, and if the system can run systemctl
+    to manage daemons, all should be just fine.
 
-??? note "Remarque sur Apache"
+    But as I didn't have the time yet to test it in other environments, I let this requirement in place.
 
-    **WFW Bee-color** utilise des .htaccess pour permettre les redirections et les accès aux dossiers
-    publics (appelés `webroot`). Pour l'instant, un portage **Nginx** n'est pas encore prévu.
+??? note "Note on Apache"
+
+    **WFW Bee-color** use .htaccess files to provide some redirections and public folder access
+    (called `webroot`). For the moment, a **Nginx** compatibility is not planned.
 
 ## Installation
 
-### Dossier principal
+### Main folder
 
-Pour commencer, nous allons récupérer les sources, et supprimer le dossier .git, inutile pour la
-suite :
+Let's start downloading sources and removing the .git directory, which will not be used anymore :
 
 ``` bash
 git clone git@framagit.org:Ariart/bee-color-wfw.git
@@ -34,14 +31,14 @@ rm -rf bee-color-wfw/.git
 mv bee-color-wfw global
 ```
 
-Ensuite, nous créons le dossier qui va recueillir le framework et vos projets :
+Then, we create the folder in which the framework will be, with all your projects :
 
 ``` bash
 sudo mkdir /srv/wfw
 sudo mv ~/global /srv/wfw
 ```
 
-Maintenant, on change les permissions pour qu'apache en devienne l'unique propriétaire :
+Now, we give it to apache who become the only owner :
 
 ``` bash
 sudo chown -R www-data:www-data /srv/wfw
@@ -50,56 +47,52 @@ sudo chmod -R 700 /srv/wfw
 
 ??? note
 
-    Si l'utilisateur associé à apache n'est pas `www-data`, pensez à adapter les commandes.
+	If your apache user is not www-data, think about adapting comands.
 
-### Script d'installation
+### Install script
 
-Nous avons presque terminé, il suffit maintenant d'installer les daemons :
+Almost down, we just nee to install daemons :
 
 ``` bash
 sudo /srv/wfw/global/cli/installer/install.sh -global
 ```
 
-??? help "Pourquoi l'argument `-global` ?"
+??? help "Why the `-global` arg ?"
 
-    Cet argument est présent pour installer automatiquement l'utilitaire `wfw` en global sur votre
-    système.
+	This arg is there to install the `wfw` command on your system.
 
-    Vous pouvez l'omettre, mais il vous faudra alors utiliser son chemin complet lorsque vous
-    voudrez l'utiliser. Vous aurez donc à saisir dans votre invite de commande ceci :
+	You can omit it, but if you do so, you will have to use its full path to call it :
     ```bash
     sudo /srv/wfw/global/cli/wfw/WFWGlogalLauncher.php ...
     ```
-    au lieu de :
+    instead of :
     ```bash
     sudo wfw ...
     ```
 
 ### MYSQL
 
-Pour la suite, il nous faut créer un utilisateur MYSQL qui a les permissions nécessaires à la création
-de bases de données et d'utilisateurs. Pour cela vous pouvez passer par mysql en ligne de commande,
-ou par **phpmyadmin**.
+To continue, we have te create a MYSQL user, who have enough permissions to create databases and other users.
+For this, you can go through CLI or phpmyadmin, as you like.
 
-??? warning "Attention"
+??? warning
 
-    La plupart d'entre vous le savent déjà, mais je pense que c'est toujours bon à rappeler :
+	Even if many of you already know that, it's always good to specify :
 
-    Étant donné les droits conférés à cet utilisateur, pensez à lui choisir un mot de passe
-    sécurisé, et si possible à lui interdire les connexions depuis l'extérieur si votre instance
-    de Mysql tourne en local.
+	Given the permissions granted to this user, think about choose a strong password policy, and,
+	if possible, denie him connection from the outside world if your mysql instance is local.
 
-    ??? hint "Astuce"
+    ??? hint
 
-        Si vous utilisez **phpmyadmin**, vous pouvez éditer le fichier `/etc/phpmyadmin/conf.inc.php`,
-        déplacez-vous jusqu'au premier `$i++;` et ajoutez les lignes suivantes :
+		If you use **phpmyadmin**, you can edit the `/etc/phpmyadmin/conf.inc.php` file. Find the first
+		`$i++;` and add the following lines :
         ```
         <?
         //...
         $i++;
-        // Interdit la connexion à phpmyadmin à tous les utilisateurs
+        // Forbide connection to all users
         $cfg['Servers'][$i]['AllowDeny']['order'] = 'explicit';
-        // L'utilisateur apublicuser est autorisé à se connecter.
+        // Allow apublicuser to connect
         $cfg['Servers'][$i]['AllowDeny']['rules'] = [
             'allow apublicuser from all'
         ];
@@ -107,10 +100,11 @@ ou par **phpmyadmin**.
 
 ### Configuration
 
-Disons que l'utilisateur **MYSQL** créé à l'étape précédente est `wfw-user` et son mot de passe `mypassword`.
+Let's say your **MYSQL** user, which you created in the previous step is `wfw-user` and his password
+is `mypassword`.
 
-Éditez le fichier `/srv/wfw/global/cli/wfw/config/conf.json`. Si votre utilisateur unix pour
-apache n'est pas www-data, pensez à l'éditer aussi.
+Edit the `/srv/wfw/global/cli/wfw/config/conf.json` file with your favourite editor. If your apache user is not
+www-data, change it accordingly to your setup.
 
 ``` bash
 sudo nano /srv/wfw/global/cli/wfw/config/conf.json
@@ -132,31 +126,31 @@ sudo nano /srv/wfw/global/cli/wfw/config/conf.json
 }
 ```
 
-Pour ce qui est des autres options, rien de très compliqué :
+For the other options, nothing very hard to understand :
 
-- `permissions` : permissions attribuées à tous les fichiers créés par `wfw`
-- `mysql/path` : chemin d'accès au programme mysql, s'il n'est pas installé en commande globale
-- `mysqldump_path` : chemin d'accès au programme mysqldump, s'il n'est pas installé en commande globale
-- `tmp` : chemin d'accès au dossier dans lequel `wfw` travaillera.
+- `permissions` : permissions given to files created by `wfw`
+- `mysql/path` : path to mysql, if not global
+- `mysqldump_path` : path to mysqldump, if not global
+- `tmp` : path to the `wfw` working dir.
 
-??? note "Note"
+??? note
 
-      Même si le dossier `/tmp` est public, tous les fichiers sensibles y seront créés
-      avec des droits minimums par mesure de sécurité.
+	Even if `/tmp` is a public directory, all sensible files will be created with minimum permissions
+	for security concerns.
 
-Le framework est à présent configuré et prêt à l'emploi.
+The framework is now configured and ready to use.
 
-### Création d'un premier projet
+### Creating our first project
 
-Nous pouvons maintenant créer notre premier projet via la commande suivante :
+Let's execute the following command :
 
 ```bash
 sudo wfw create ProjectName /srv/wfw
 ```
 
-!!! info "Informations"
+!!! info
 
-	Pour plus de détail sur les différentes commandes disponibles en **CLI**, veuillez suivre [ce lien](/cli/wfw/).
+	For mor details about the available commands in **CLI**, please take a look [there](/cli/wfw).
 
-Maintenant que votre framework est installé et que votre premier projet est créé, voyons un peu
-comment utiliser `wfw` pour commencer le développement dans la section [Premiers pas](/general/first_steps/tree/)
+Now that your framework is installed and your first project created, let's see how to use `wfw` to
+ start the developpement in the [first steps section](/general/first_steps/tree/).

@@ -16,7 +16,7 @@ conferences on youtube.
 
 The wfw design don't use a MVC pattern (and no one of it's derivatives) because it should
 be used to design long-running process. Often missused, or used where it shouldn't, it leads
-to structural problem in most web softwares. For more informations about this complexe subject,
+to structural problem in most web softwares. For more informations about this complex subject,
 I let you take a look to a bunch of articles written by Tom Butler about MVC, including this one
 beautifully entititled [MVC : Model-View-Confusion](https://r.je/views-are-not-templates.html).
 
@@ -82,7 +82,7 @@ be adapted to solve a problem, or not.
 
 ## Installation
 
-For details about how it works and how to install, please [follow this link](start)
+For details about how it works and how to install, please [follow this link](/general/start)
 
 ## Contribution
 
