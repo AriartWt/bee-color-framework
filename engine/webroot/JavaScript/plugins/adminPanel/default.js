@@ -1,14 +1,16 @@
 wfw.require(
 	'api/ui/adminPanel',
-	'api/ui/lang'
+	'api/ui/lang',
+	'api/network/wfwAPI'
 );
 (function() {
 wfw.init(()=>wfw.ui.lang.load("plugins/adminPanel/default",wfw.next));
 let $lstr = ($key,...$replaces)=>wfw.ui.lang.get("plugins/adminPanel/default/"+$key,...$replaces);
 
-wfw.define("plugins/adminPanel/default", function ($params,$loadOrder) {
+wfw.define("plugins/adminPanel/default", function ($params,$loadOrder,$hbTimeout) {
 	let $packages = {}, $modules = {}, $ready = [], $inst=this, $loaded = false;
 	$params = $params || {}; $loadOrder = Array.isArray($loadOrder) ? $loadOrder : [];
+	$hbTimeout = Number.isInteger($hbTimeout) ? Math.abs($hbTimeout) : 0;
 	let $init = () => {
 		Object.keys($params).forEach($k => {
 			wfw.ui.adminPanel.add($k, {className: "panel panel-" + $k});
@@ -69,6 +71,7 @@ wfw.define("plugins/adminPanel/default", function ($params,$loadOrder) {
 		});
 		$ready.forEach($fn=>$fn());
 		$loaded = true;
+		if($hbTimeout > 0) setInterval(()=>wfw.network.wfwAPI(wfw.webroot+"general/heartBeat"),$hbTimeout);
 	};
 	let $defBtnParams = {
 		users: {

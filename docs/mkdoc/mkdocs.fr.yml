@@ -20,6 +20,8 @@ pages :
     - 'Event sourcing' : general/event_sourcing.md
     - 'CQRS' : general/cqrs.md
 - CLI :
+  - backup :
+      - 'Commande backup' : cli/backup/index.md
   - wfw :
     - 'Commande globale' : cli/wfw/index.md
 - 'Daemons' :

@@ -20,8 +20,10 @@ pages :
     - 'Event sourcing' : general/event_sourcing.md
     - 'CQRS' : general/cqrs.md
 - CLI :
+  - backup :
+    - 'Backup commands' : cli/backup/index.md
   - wfw :
-    - 'Global command' : cli/wfw/index.md
+    - 'Global commands' : cli/wfw/index.md
 - 'Daemons' :
   - 'Kvs' :
     - 'KeyValueStore' : daemons/kvs/index.md

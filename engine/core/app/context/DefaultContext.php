@@ -155,6 +155,8 @@ class DefaultContext implements IWebAppContext {
 	 * @param array       $globals            Contient la variables globales de php aux index _GET,_POST,_FILES,_SERVER
 	 * @param array       $confFiles          Liste des fichiers de configuration à charger
 	 * @param null|string $baseurl            Base url
+	 * @param null|string $projectName        Nom du projet. Sert de namespace pour les clés du cache.
+	 * @throws \InvalidArgumentException
 	 * @throws \wfw\daemons\modelSupervisor\client\errors\MSClientFailure
 	 */
 	public function __construct(
@@ -167,11 +169,16 @@ class DefaultContext implements IWebAppContext {
 		array $diceRules = [],
 		array $globals = [],
 		?array $confFiles = null,
-		?string $baseurl = BASE_URL)
-	{
+		?string $baseurl = BASE_URL,
+		?string $projectName = ROOT
+	){
 		$this->_dice = $dice = new Dice();
 		$this->_dice->addRules([
-			ICacheSystem::class => [ 'instanceOf' => APCUBasedCache::class, 'shared' =>true ]
+			ICacheSystem::class => [
+				'instanceOf' => APCUBasedCache::class,
+				'shared' =>true ,
+				'constructParams'=>[$projectName]
+			]
 		]);
 
 		$this->_conf = $conf = $this->initConfs($confFiles ?? [
