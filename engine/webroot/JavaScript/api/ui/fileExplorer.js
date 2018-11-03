@@ -355,14 +355,13 @@ wfw.define("ui/fileExplorer",function($params){
 	};
 	let $size = ($dir)=>{
 		let $res = 0;
-		if(!$dir) $dir = $data;
-		if($dir.type === "file") return $dir.size;
-		Object.keys($dir).forEach($k=>{
-			if(typeof $dir[$k] !== 'object' || Array.isArray($dir[$k])) return false;
-			if('items' in $dir[$k])
-				Object.keys($dir[$k].items).forEach($i=> $res+=$size($dir[$k].items[$i]));
-			else $res += $dir[$k].size;
-		});
+		if(!$dir) Object.keys($data).forEach($k=>$res+=$size($data[$k]));
+		else if($dir.type === "file") $res+=$dir.size;
+		else if($dir.type === 'dir'){
+			Object.keys($dir.items).forEach($k=>{
+				$res += $size($dir.items[$k]);
+			});
+		}
 		return $res;
 	};
 	let $byteSizes = ["o\0", 'Ko', 'Mo', 'Go', 'To', 'Po', 'Eo', 'Zo', 'Yo'], $byteK = 1024;
