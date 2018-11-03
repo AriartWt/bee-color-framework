@@ -19,7 +19,7 @@
 				"CREATE_FOLDER" : "Créer un dossier",
 				"WARN_MEDIA_TYPE_ACCEPTED" : "Seuls les fichiers audio mp3, video mp4 et images sont admis !",
 				"WAITING_SEND_FILE" : "Envoi du fichier en cours, veuillez patienter...",
-				"ERR_SERVER_REFUSES_FILE" : "Le serveur n'a pas pu enregistrer votre fichier.\nSeuls les fichiers images, mp3 et mp4 de moins de 300Mo sont acceptés !",
+				"ERR_SERVER_REFUSES_FILE" : "Le serveur n'a pas pu enregistrer votre fichier.\nSeuls les fichiers images, mp3 et mp4 de moins de 300Mo sont acceptés !\nSi votre fichier est valide, c'est que votre espace de stockage est plein, pensez à supprimer les fichiers intuiles.",
 				"ADD_FILE" : "Ajouter un fichier",
 				"REMOVE_SELECTED" : "Supprimer le(s) élément(s) séléctionné(s)",
 			 	"LOADING" : "Chargement en cours, veuillez patienter..."

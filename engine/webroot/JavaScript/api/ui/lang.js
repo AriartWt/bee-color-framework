@@ -1,13 +1,12 @@
 wfw.require("api/network/wfwAPI");
-wfw.define("ui/lang",(function($defSeparator){
-	wfw.ready(()=>{
-		if(wfw.defined("settings")) $defSeparator = wfw.settings.get("ui/lang/replacement_pattern");
-	},true);
+wfw.define("ui/lang",(function(){
+	let $defSeparator = wfw.settings.get("ui/lang/replacement_pattern") || '[$]';
+	$defSeparator = $defSeparator.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 	let $strs = {}; let $loaded = {};
 	let $redefineError = () => { throw new Error("Cannot redefine lang's properties") };
 	let $replace = function($str,$replaces){
 		let $i = 0; let $len = $replaces.length;
-		while($str.match(/\[\$]/) && $i<$len){ $str = $str.replace(/\[\$]/,$replaces[$i]); $i++; }
+		while($str.match($defSeparator) && $i<$len){ $str = $str.replace($defSeparator,$replaces[$i]); $i++; }
 		return $str;
 	};
 	let $get = function($path,$create){
@@ -49,4 +48,4 @@ wfw.define("ui/lang",(function($defSeparator){
 		load : { get : () => $load, set : $redefineError }
 	});
 	return this;
-})(window.lang_replacement_pattern || '[$]'));
+})());

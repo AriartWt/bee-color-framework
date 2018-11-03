@@ -3,7 +3,6 @@ namespace wfw\engine\core\cache\systems;
 
 use wfw\engine\core\cache\errors\CacheSystemIncompatibility;
 use wfw\engine\core\cache\ICacheSystem;
-use wfw\engine\core\cache\wfw;
 
 /**
  *  Gestionnaire de cache utilisant l'extension php APCU

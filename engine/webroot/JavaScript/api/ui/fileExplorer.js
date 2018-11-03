@@ -12,7 +12,7 @@ let $lstr = ($key,...$replaces)=>wfw.ui.lang.get("ui/fileExplorer/"+$key,...$rep
 
 wfw.define("ui/fileExplorer",function($params){
 	let $upload, $delete, $rename, $list, $create, $explorer, $displayed, $inst = this;
-	let $data, $loadedSvg=0, $div, $body, $pathHelp, $files, $filesForm;
+	let $data, $loadedSvg=0, $div, $body, $pathHelp, $files, $filesForm, $qSize, $qTxt;
 	let $svg = {
 		dir: wfw.dom.import.svg(wfw.webroot+"Image/svg/icons/folder.svg"),
 		back: wfw.dom.import.svg(wfw.webroot+"Image/svg/icons/come-back.svg"),
@@ -228,6 +228,7 @@ wfw.define("ui/fileExplorer",function($params){
 									else delete $d[$name];
 									$display($displayed);
 								});
+								$updateQuotas();
 							}, error : ($resp) => {
 								$loader.remove();
 								alert($lstr("ERR_REMOVE_SELECTED",$resp));
@@ -318,8 +319,9 @@ wfw.define("ui/fileExplorer",function($params){
 									else $d[$f.name]=$f;
 									$display($displayed);
 									$filesForm.reset();
+									$updateQuotas();
 								},
-								error : ()=>{ alert($lstr("ERR_SERVER_REFUSES_FILE")); }
+								error : ()=>{ $loader.remove();alert($lstr("ERR_SERVER_REFUSES_FILE")); }
 							});
 						}
 						},name:"file"})),
@@ -332,15 +334,53 @@ wfw.define("ui/fileExplorer",function($params){
 				)
 			)
 		),
-		$body = wfw.dom.create("div",{className:"fs-body"})
+		$body = wfw.dom.create("div",{className:"fs-body"}),
+		wfw.dom.appendTo(wfw.dom.create("div",{className:"fs-footer"}),
+			wfw.dom.appendTo(wfw.dom.create("div",{className:"fs-quotas"}),
+				$qSize = wfw.dom.create("div",{className:"fs-quotas-size"}),
+				$qTxt = wfw.dom.create("div",{className:"fs-quotas-txt"})
+			)
+		)
 	);
 	let $load = ($path)=>{
 		$purge();
 		let $loader = new wfw.ui.loaders.eclipse($lstr("LOADING"));
 		$explorer.appendChild($loader.html);
 		wfw.network.wfwAPI($list.url,{
-			"001" : ($d)=> { $data = JSON.parse($d); $loader.delete(); $display($path ? $path:''); }
+			"001" : ($d)=> {
+				$data = JSON.parse($d); $loader.delete();
+				$display($path ? $path:''); $updateQuotas();
+			}
 		});
+	};
+	let $size = ($dir)=>{
+		let $res = 0;
+		if(!$dir) $dir = $data;
+		if($dir.type === "file") return $dir.size;
+		Object.keys($dir).forEach($k=>{
+			if('items' in $dir[$k])
+				Object.keys($dir[$k].items).forEach($i=> $res+=$size($dir[$k].items[$i]));
+			else $res += $dir[$k].size;
+		});
+		return $res;
+	};
+	let $byteSizes = ["o\0", 'Ko', 'Mo', 'Go', 'To', 'Po', 'Eo', 'Zo', 'Yo'], $byteK = 1024;
+	let $displaySize = ($bytes,$decimalPoint)=>{
+		if($bytes === 0) return '0o\0';
+		let dm = $decimalPoint || 2,
+			i = Math.floor(Math.log($bytes) / Math.log($byteK));
+		return parseFloat(($bytes / Math.pow($byteK, i)).toFixed(dm)) + $byteSizes[i];
+	};
+	let $byteToInt = ($str)=>{
+		let $nb = $str.substr(0,$str.length-2), $unit = $str.substr($str.length-2,2);
+		return $nb * Math.pow($byteK,$byteSizes.indexOf($unit));
+	};
+	let $updateQuotas = ()=>{
+		let $mSizeDisplay = wfw.settings.get("uploader/quotas");
+		let $maxSize = $byteToInt($mSizeDisplay);
+		let $currentSize = $size();
+		$qTxt.innerHTML = $displaySize($currentSize,2)+" / "+$mSizeDisplay;
+		$qSize.style.width = ($currentSize/$maxSize)*100 + "%";
 	};
 
 	let $redefineError = ()=>{throw new Error("Cann't redefine fileExplorer's properties !")};
