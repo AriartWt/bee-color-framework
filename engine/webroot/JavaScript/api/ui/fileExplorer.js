@@ -358,6 +358,7 @@ wfw.define("ui/fileExplorer",function($params){
 		if(!$dir) $dir = $data;
 		if($dir.type === "file") return $dir.size;
 		Object.keys($dir).forEach($k=>{
+			if(typeof $dir[$k] === 'object') return false;
 			if('items' in $dir[$k])
 				Object.keys($dir[$k].items).forEach($i=> $res+=$size($dir[$k].items[$i]));
 			else $res += $dir[$k].size;
