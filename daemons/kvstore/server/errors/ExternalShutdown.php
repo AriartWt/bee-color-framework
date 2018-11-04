@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 26/01/18
- * Time: 03:29
- */
-
 namespace wfw\daemons\kvstore\server\errors;
 
 /**

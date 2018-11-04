@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 11/12/17
- * Time: 00:00
- */
-
 namespace wfw\engine\package\users\domain\events;
 
 use wfw\engine\core\domain\events\IAggregateRootGeneratedEvent;

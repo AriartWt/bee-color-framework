@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 28/05/18
- * Time: 15:22
- */
+
 namespace wfw\cli\tester\contexts;
 
 use Dice\Dice;
@@ -24,8 +19,7 @@ use wfw\engine\package\users\domain\types\Client;
  * Ce contexte par défaut n'est compatible qu'avec les IWebAppContext dont la classe ROOT possède une
  * propriété _dice dans laquelle une instance de Dice est présente avec une méthode create(string class,array $args)
  */
-class DefaultTestsEnvironment implements ITestsEnvironment
-{
+class DefaultTestsEnvironment implements ITestsEnvironment {
 	/** @var null|DefaultContext $_context */
 	private $_context;
 	/** @var Dice $_dice */

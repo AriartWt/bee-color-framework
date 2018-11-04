@@ -1,13 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 02/10/18
- * Time: 15:09
- */
-
 namespace wfw\engine\package\contact\handlers\action;
-
 
 use wfw\engine\core\command\ICommand;
 use wfw\engine\core\command\ICommandBus;
@@ -33,11 +25,11 @@ final class MarkAsUnreadHandler extends DefaultContactActionHandler implements I
 	/**
 	 * ArchiveHandler constructor.
 	 *
-	 * @param ICommandBus                                                 $bus      Bus de commandes
-	 * @param ISession                                                    $session  Session
-	 * @param \wfw\engine\package\contact\security\data\ContactIdListRule $rule     Régle de validation des données
-	 * @param IDomainEventObserver                                        $observer Observeur de DomainEventListeners
-	 * @param IJSONEncoder                                                $encoder  Encodeur JSON
+	 * @param ICommandBus       $bus      Bus de commandes
+	 * @param ISession          $session  Session
+	 * @param ContactIdListRule $rule     Régle de validation des données
+	 * @param IDomainEventObserver $observer Observeur de DomainEventListeners
+	 * @param IJSONEncoder         $encoder  Encodeur JSON
 	 */
 	public function __construct(
 		ICommandBus $bus,

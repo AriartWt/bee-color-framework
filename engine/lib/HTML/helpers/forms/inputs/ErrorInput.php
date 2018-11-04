@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 15/03/18
- * Time: 04:56
- */
-
 namespace wfw\engine\lib\HTML\helpers\forms\inputs;
 
 use wfw\engine\lib\HTML\helpers\forms\IHTMLInput;
@@ -28,8 +21,7 @@ final class ErrorInput implements IHTMLInput {
 	 * @param string     $errorIcon
 	 * @param string     $errorMessage
 	 */
-	public function __construct(IHTMLInput $input,string $errorIcon,string $errorMessage)
-	{
+	public function __construct(IHTMLInput $input,string $errorIcon,string $errorMessage) {
 		$this->_input = $input;
 		$this->_errorIcon = $errorIcon;
 		$this->_errorMessage = $errorMessage;
@@ -38,24 +30,21 @@ final class ErrorInput implements IHTMLInput {
 	/**
 	 * @return string Nom de l'input
 	 */
-	public function getName(): string
-	{
+	public function getName(): string {
 		return $this->_input->getName();
 	}
 
 	/**
 	 * @param mixed $data Données à intégrer à l'input
 	 */
-	public function setData($data): void
-	{
+	public function setData($data): void {
 		$this->_input->setData($data);
 	}
 
 	/**
 	 * @return string
 	 */
-	public function __toString()
-	{
+	public function __toString() {
 		return
 			'<div class="flex">'
 			.'<span class="error-inline" id="span'.$this->getName().'" title="'.$this->_errorMessage.'">'

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 25/05/18
- * Time: 13:20
- */
-
 namespace wfw\engine\package\news\data\model;
 
 use wfw\engine\core\data\model\IArraySorter;
@@ -15,8 +8,7 @@ use wfw\engine\package\news\data\model\DTO\Article;
 /**
  * Accés au model Articles
  */
-interface IArticleModelAccess
-{
+interface IArticleModelAccess {
 	/**
 	 * Retourne tous les articles.
 	 * @return Article[]

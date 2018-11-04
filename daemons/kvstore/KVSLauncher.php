@@ -1,11 +1,6 @@
 #!/usr/bin/php -q
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 13/01/18
- * Time: 05:13
- */
+
 require_once dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR."init.environment.php";
 
 use wfw\daemons\kvstore\server\conf\KVSConfs;

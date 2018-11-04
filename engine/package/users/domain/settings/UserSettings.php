@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 10/12/17
- * Time: 03:42
- */
-
 namespace wfw\engine\package\users\domain\settings;
 
 use stdClass;
@@ -15,8 +8,7 @@ use wfw\engine\core\conf\IConf;
 /**
  *  Décorateur de classe conf n'exposant que la partie lecture et les fonctions set/merge
  */
-abstract class UserSettings
-{
+abstract class UserSettings {
 	/** @var FileBasedConf $_conf */
 	private $_conf;
 

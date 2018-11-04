@@ -1,11 +1,6 @@
 #!/usr/bin/php -q
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 05/01/18
- * Time: 09:54
- */
+
 require_once dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR."init.environment.php";
 
 use wfw\daemons\modelSupervisor\server\conf\MSServerPoolConfs;

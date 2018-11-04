@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 27/04/18
- * Time: 10:13
- */
-
 namespace wfw\engine\package\news\security\data;
 
 use wfw\engine\core\security\data\AndRule;
@@ -19,8 +12,7 @@ use wfw\engine\core\security\data\rules\MaxStringLength;
 /**
  * Régle pour les champs d'édition
  */
-final class EditArticleRule implements IRule
-{
+final class EditArticleRule implements IRule {
 	/** @var AndRule $_rule */
 	private $_rule;
 
@@ -88,8 +80,7 @@ final class EditArticleRule implements IRule
 	 * @param array $data Données auxquelles appliquer la règle.
 	 * @return IRuleReport
 	 */
-	public function applyTo(array $data): IRuleReport
-	{
+	public function applyTo(array $data): IRuleReport {
 		return $this->_rule->applyTo($data);
 	}
 }

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 08/05/18
- * Time: 10:52
- */
-
 namespace wfw\engine\package\uploader\handlers\action;
 
 use wfw\engine\core\action\IAction;
@@ -20,11 +13,8 @@ use wfw\engine\package\uploader\security\data\RenamePathRule;
 /**
  * Renome un fichier ou un dossier
  */
-final class RenameHandler extends UploadHandler
-{
-	/**
-	 * @var RenamePathRule $_rule
-	 */
+final class RenameHandler extends UploadHandler {
+	/** @var RenamePathRule $_rule */
 	private $_rule;
 
 	/**
@@ -42,8 +32,7 @@ final class RenameHandler extends UploadHandler
 	 * @param IAction $action Action
 	 * @return IResponse Réponse
 	 */
-	public function handle(IAction $action): IResponse
-	{
+	public function handle(IAction $action): IResponse {
 		if($action->getRequest()->isAjax() && $action->getRequest()->getMethod()===IRequest::POST){
 			$data = $action->getRequest()->getData()->get(IRequestData::POST,true);
 			$res = $this->_rule->applyTo($data);

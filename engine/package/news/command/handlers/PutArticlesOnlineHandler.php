@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 26/04/18
- * Time: 11:37
- */
-
 namespace wfw\engine\package\news\command\handlers;
 
 use wfw\engine\core\command\ICommand;
@@ -15,8 +8,7 @@ use wfw\engine\package\news\domain\errors\PutOnlineFailed;
 /**
  * Met un article en ligne.
  */
-final class PutArticlesOnlineHandler extends ArticleCommandHandler
-{
+final class PutArticlesOnlineHandler extends ArticleCommandHandler {
 	/**
 	 * Traite la commande
 	 *

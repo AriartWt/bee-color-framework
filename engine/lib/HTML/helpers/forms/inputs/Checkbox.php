@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 16/03/18
- * Time: 08:26
- */
-
 namespace wfw\engine\lib\HTML\helpers\forms\inputs;
 
 use wfw\engine\lib\HTML\helpers\forms\IHTMLInput;
@@ -14,8 +7,7 @@ use wfw\engine\lib\HTML\helpers\forms\IHTMLLabel;
 /**
  * Input de type checkbox
  */
-final class Checkbox implements IHTMLInput
-{
+final class Checkbox implements IHTMLInput {
 	/** @var string $_name */
 	private $_name;
 	/** @var null|\wfw\engine\lib\HTML\helpers\forms\IHTMLLabel $_label */
@@ -50,24 +42,21 @@ final class Checkbox implements IHTMLInput
 	/**
 	 * @return string Nom de l'input
 	 */
-	public function getName(): string
-	{
+	public function getName(): string {
 		return $this->_name;
 	}
 
 	/**
 	 * @param mixed $data Données à intégrer à l'input
 	 */
-	public function setData($data): void
-	{
+	public function setData($data): void {
 		$this->_data = filter_var($data,FILTER_VALIDATE_BOOLEAN);
 	}
 
 	/**
 	 * @return string
 	 */
-	public function __toString()
-	{
+	public function __toString() {
 		$html = '';
 		if($this->_label) $html.=$this->_label;
 		$html.='<input type="checkbox" name="'.$this->_name.'"';

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 27/04/18
- * Time: 10:56
- */
-
 namespace wfw\engine\package\general\handlers\action;
 
 use wfw\engine\core\action\IAction;
@@ -67,8 +60,7 @@ abstract class PostDataDefaultActionHandler implements IActionHandler {
 	 * @param IAction $action Action
 	 * @return IResponse Réponse
 	 */
-	public final function handle(IAction $action): IResponse
-	{
+	public final function handle(IAction $action): IResponse {
 		if($action->getRequest()->getMethod() === IRequest::POST
 			&& (!$this->_requireAjax || $this->_requireAjax && $action->getRequest()->isAjax())
 		){

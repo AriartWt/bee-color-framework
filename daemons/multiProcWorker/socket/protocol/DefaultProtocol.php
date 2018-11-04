@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 13/01/18
- * Time: 05:04
- */
-
 namespace wfw\daemons\multiProcWorker\socket\protocol;
 
 use wfw\engine\lib\network\socket\errors\SocketFailure;
@@ -15,14 +8,9 @@ use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
  *  Protocol de communication entre sockets par défaut.
  */
 class DefaultProtocol implements ISocketProtocol {
-	/**
-	 * Taille de l'entête
-	 */
+	/** Taille de l'entête*/
 	private const HEADER_LENGTH = 10;
-
-	/**
-	 *  Taille des chunks
-	 */
+	/** Taille des chunks */
 	private const CHUNK_SIZE = 16384;
 
 	/**

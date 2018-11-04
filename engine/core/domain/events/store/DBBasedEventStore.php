@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 14/11/17
- * Time: 17:07
- */
-
 namespace wfw\engine\core\domain\events\store;
 
 use Exception;
@@ -23,8 +16,7 @@ use wfw\engine\lib\PHP\types\UUID;
 /**
  *  EventStore basé sur une base de données
  */
-final class DBBasedEventStore implements IEventStore
-{
+final class DBBasedEventStore implements IEventStore {
 	/** @var IDBAccess $_db */
 	private $_db;
 	/** @var IMSServerAccess $_msAccess */
@@ -53,8 +45,8 @@ final class DBBasedEventStore implements IEventStore
 		IMSServerAccess $msAccess,
 		IDomainEventDispatcher $dispatcher,
 		ISerializer $serializer,
-		bool $transctDispatch = false)
-	{
+		bool $transctDispatch = false
+	){
 		$this->_db = $access;
 		$this->_cmdCache = [];
 		$this->_msAccess = $msAccess;
@@ -94,10 +86,6 @@ final class DBBasedEventStore implements IEventStore
 				$res = $aggregateClass::restoreAggregateFromEvent(
 					$this->_serializer->unserialize($events[0]["data"])
 				);
-				/*$res = new $events[0]["aggregate_type"](
-					...$this->_serializer->unserialize($events[0]["data"])->getConstructorArgs()
-				);*/
-				//$res = $this->_serializer->unserialize(unserialize($events[0]["data"])->getSerializedAggregate());
 				$skipFirst = true;
 			}else{
 				//Sinon, on déserialise le snapshot
@@ -139,8 +127,7 @@ final class DBBasedEventStore implements IEventStore
 	 *
 	 * @throws Exception
 	 */
-	public function save(IAggregateRoot $aggregate, ?ICommand $command = null)
-	{
+	public function save(IAggregateRoot $aggregate, ?ICommand $command = null) {
 		if($aggregate->getEventList()->getLength()>0){
 			$this->_db->beginTransaction();
 			$builder = new QueryBuilder();
@@ -182,10 +169,11 @@ final class DBBasedEventStore implements IEventStore
 					$version = $agg[0]["version"];
 				}
 
-				if($version > $aggregate->getVersionBeforeEvents()){
-					throw new Inconsistency("The current aggregate have already been updated by a concurrent access.
-				The current version is $version and was loaded with version ".$aggregate->getVersionBeforeEvents().".");
-				}
+				if($version > $aggregate->getVersionBeforeEvents()) throw new Inconsistency(
+					"The current aggregate have already been updated by a concurrent access."
+					." The current version is $version and was loaded with version "
+					.$aggregate->getVersionBeforeEvents()."."
+				);
 
 				$insertQuery = $builder->insert()->into(
 					"events (id,type,data,version,generation_date,writing_date,aggregates_id,commands_id)"

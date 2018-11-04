@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 23/04/18
- * Time: 10:51
- */
-
 namespace wfw\engine\package\news\domain\repository;
 
 
@@ -15,8 +8,7 @@ use wfw\engine\package\news\domain\Article;
 /**
  * Repository d'articles
  */
-interface IArticleRepository
-{
+interface IArticleRepository {
 	/**
 	 * Obtient l'article d'identifiant $id
 	 * @param string $id

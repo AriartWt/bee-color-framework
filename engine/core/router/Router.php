@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 15/02/18
- * Time: 07:41
- */
-
 namespace wfw\engine\core\router;
 
 use wfw\engine\core\action\Action;
@@ -15,24 +8,14 @@ use wfw\engine\core\request\IRequest;
 /**
  * Router de requêtes par défaut
  */
-final class Router implements IRouter
-{
-	/**
-	 * @var array $_routes
-	 */
+final class Router implements IRouter {
+	/** @var array $_routes */
 	private $_routes;
-	/**
-	 * @var array $_langs
-	 */
+	/** @var array $_langs */
 	private $_langs;
-	/**
-	 * @var null|string $_lang
-	 */
+	/** @var null|string $_lang */
 	private $_lang;
-
-	/**
-	 * @var string $_baseUrl
-	 */
+	/** @var string $_baseUrl */
 	private $_baseUrl;
 
 	/**
@@ -48,8 +31,8 @@ final class Router implements IRouter
 		array $connections = [],
 		array $langs = [],
 		?string $lang = null,
-		?string $baseUrl = null)
-	{
+		?string $baseUrl = null
+	){
 		$this->_baseUrl = $baseUrl ?? BASE_URL ?? '';
 		$this->_langs = [];
 		$this->_routes = [];
@@ -68,8 +51,7 @@ final class Router implements IRouter
 	 * @param string $url url réelle relative
 	 * @return string URL finale absolue
 	 */
-	public function url(string $url = ''): string
-	{
+	public function url(string $url = ''): string {
 		trim($url,'/');
 		foreach($this->_routes as $v){
 			if(preg_match($v['originreg'],$url,$match)){
@@ -94,8 +76,7 @@ final class Router implements IRouter
 	 * @param string $url URL relative
 	 * @return string
 	 */
-	public function webroot(string $url = ''): string
-	{
+	public function webroot(string $url = ''): string {
 		trim($url,'/');
 		return $this->_baseUrl.((strlen($url)>0)?"/$url":'');
 
@@ -107,8 +88,7 @@ final class Router implements IRouter
 	 * @param IRequest $request Requête
 	 * @return IAction Action résultante
 	 */
-	public function parse(IRequest $request): IAction
-	{
+	public function parse(IRequest $request): IAction {
 		$url = trim($request->getURL(),'/');
 		if(empty($url)){
 			$url = '/';
@@ -145,8 +125,7 @@ final class Router implements IRouter
 	/**
 	 * @param string $lang Ajoute une langue au router afin qu'elle soit reconnue
 	 */
-	public function addLang(string $lang): void
-	{
+	public function addLang(string $lang): void {
 		$this->_langs[] = strtolower($lang);
 	}
 
@@ -161,8 +140,7 @@ final class Router implements IRouter
 	 * @param string $redir URL à connecter
 	 * @param string $url   URL de connexion
 	 */
-	public function addConnection(string $redir, string $url): void
-	{
+	public function addConnection(string $redir, string $url): void {
 		$r = [];
 		$r['params'] = [];
 		$r['url'] = $url;

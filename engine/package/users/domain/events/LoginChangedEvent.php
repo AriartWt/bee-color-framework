@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 12/12/17
- * Time: 02:20
- */
-
 namespace wfw\engine\package\users\domain\events;
 
 use wfw\engine\lib\PHP\types\UUID;
@@ -14,8 +7,7 @@ use wfw\engine\package\users\domain\Login;
 /**
  *  Evenement émi lors d'un changement de login
  */
-final class LoginChangedEvent extends UserEvent
-{
+final class LoginChangedEvent extends UserEvent {
 	/** @var $_login */
 	private $_login;
 	
@@ -26,8 +18,7 @@ final class LoginChangedEvent extends UserEvent
 	 * @param Login  $login  Login
 	 * @param string $modifierId Identifiant de l'utilisateur ayant demandé le changement
 	 */
-	public function __construct(UUID $userId, Login $login,string $modifierId)
-	{
+	public function __construct(UUID $userId, Login $login,string $modifierId) {
 		parent::__construct($userId,$modifierId);
 		$this->_login = $login;
 	}

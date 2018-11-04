@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 11/12/17
- * Time: 02:22
- */
-
 namespace wfw\engine\package\users\domain\events;
 
 use wfw\engine\lib\PHP\types\UUID;
@@ -14,8 +7,7 @@ use wfw\engine\package\users\lib\confirmationCode\UserConfirmationCode;
 /**
  *  Evenement demandant un code de confirmation
  */
-abstract class ConfirmationEvent extends UserEvent
-{
+abstract class ConfirmationEvent extends UserEvent {
 	/** @var UserConfirmationCode $_code */
 	private $_code;
 	
@@ -26,8 +18,7 @@ abstract class ConfirmationEvent extends UserEvent
 	 * @param string               $modifierId identifiant de l'utilisateur ayant demandé la confirmation
 	 * @param UserConfirmationCode $code   Code de confirmation
 	 */
-	public function __construct(UUID $userId,string $modifierId,UserConfirmationCode $code)
-	{
+	public function __construct(UUID $userId,string $modifierId,UserConfirmationCode $code) {
 		parent::__construct($userId,$modifierId);
 		$this->_code = $code;
 	}

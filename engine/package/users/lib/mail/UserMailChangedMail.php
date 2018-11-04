@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 24/06/18
- * Time: 17:05
- */
-
 namespace wfw\engine\package\users\lib\mail;
 
 use wfw\engine\core\conf\IConf;
@@ -30,7 +23,12 @@ final class UserMailChangedMail extends AbstractUserMail{
 	 * @throws UserNotFound
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct(UUID $userId, UserConfirmationCode $code, IConf $conf, IUserModelAccess $access) {
+	public function __construct(
+		UUID $userId,
+		UserConfirmationCode $code,
+		IConf $conf,
+		IUserModelAccess $access
+	) {
 		parent::__construct(
 			$userId,
 			$code,
@@ -47,7 +45,7 @@ final class UserMailChangedMail extends AbstractUserMail{
 	 */
 	protected function createBody(User $user, UserConfirmationCode $code): IMailBody {
 		return new MailBody(
-			"http://192.168.1.12/website/users/changeMailConfirmation?id=".$user->getId()."&code=$code",
+			"https://bee-color.fr/users/changeMailConfirmation?id=".$user->getId()."&code=$code",
 			null,
 			false
 		);

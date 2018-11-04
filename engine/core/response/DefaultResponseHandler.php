@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 11/09/18
- * Time: 16:28
- */
-
 namespace wfw\engine\core\response;
 
 use wfw\engine\core\view\IView;

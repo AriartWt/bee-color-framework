@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 08/05/18
- * Time: 11:05
- */
-
 namespace wfw\engine\package\uploader\handlers\action;
 
 use wfw\engine\core\action\IAction;
@@ -22,9 +15,7 @@ use wfw\engine\package\uploader\security\data\UploadFileRule;
  * Permet d'uploader un fichier vers le dossiers upoloads.
  */
 final class UploadFileHandler extends UploadHandler {
-	/**
-	 * @var UploadFileRule $_rule
-	 */
+	/** @var UploadFileRule $_rule */
 	private $_rule;
 
 	/**

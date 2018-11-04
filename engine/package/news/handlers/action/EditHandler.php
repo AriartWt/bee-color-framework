@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 27/04/18
- * Time: 10:01
- */
-
 namespace wfw\engine\package\news\handlers\action;
 
 use wfw\engine\core\command\ICommand;
@@ -32,8 +25,7 @@ use wfw\engine\package\news\security\data\EditArticleRule;
 /**
  * Permet l'édition d'un article
  */
-final class EditHandler extends DefaultArticleActionHandler implements IDomainEventListener
-{
+final class EditHandler extends DefaultArticleActionHandler implements IDomainEventListener {
 	/** @var IHTMLSanitizer $_sanitizer */
 	private $_sanitizer;
 	/** @var IJSONEncoder $_encoder */
@@ -101,8 +93,7 @@ final class EditHandler extends DefaultArticleActionHandler implements IDomainEv
 	/**
 	 * @return IResponse
 	 */
-	protected function successResponse(): IResponse
-	{
+	protected function successResponse(): IResponse {
 		$id = null;
 		if($this->_titleEvent) $id = $this->_titleEvent->getAggregateId();
 		else if($this->_contentEvent) $id = $this->_contentEvent->getAggregateId();
@@ -119,8 +110,7 @@ final class EditHandler extends DefaultArticleActionHandler implements IDomainEv
 	 *
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void
-	{
+	public function recieveEvent(IDomainEvent $e): void {
 		if($e instanceof TitleEditedEvent) $this->_titleEvent = $e;
 		else if($e instanceof ContentEditedEvent) $this->_contentEvent = $e;
 		else if($e instanceof VisualLinkEditedEvent) $this->_visualEvent = $e;

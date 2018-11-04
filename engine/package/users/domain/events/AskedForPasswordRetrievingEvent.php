@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 11/12/17
- * Time: 02:01
- */
-
 namespace wfw\engine\package\users\domain\events;
 use wfw\engine\lib\PHP\types\UUID;
 use wfw\engine\package\users\domain\states\UserState;
@@ -26,8 +19,12 @@ final class AskedForPasswordRetrievingEvent extends ConfirmationEvent{
 	 * @param UserState            $state  Nouvel état de l'utilisateur
 	 * @param string               $askerId Utilisateur ayant demandé la procédure de récupération
 	 */
-	public function __construct(UUID $userId, UserConfirmationCode $code,UserState $state,string $askerId)
-	{
+	public function __construct(
+		UUID $userId,
+		UserConfirmationCode $code,
+		UserState $state,
+		string $askerId
+	) {
 		parent::__construct($userId,$askerId,$code);
 		$this->_state = $state;
 	}

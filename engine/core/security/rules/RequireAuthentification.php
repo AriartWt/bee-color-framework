@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 20/02/18
- * Time: 08:10
- */
-
 namespace wfw\engine\core\security\rules;
 
 use wfw\engine\core\action\IAction;
@@ -24,8 +17,7 @@ use wfw\engine\lib\network\http\HTTPStatus;
 /**
  * Permet de protéger des URL. Applique des
  */
-final class RequireAuthentification implements IAccessRule
-{
+final class RequireAuthentification implements IAccessRule {
 	/** @var string[] $_paths */
 	private $_paths;
 	/** @var INotifier $_notifier */
@@ -55,8 +47,8 @@ final class RequireAuthentification implements IAccessRule
 		array $pathsToProtect = [],
 		?string $sessionKey = null,
 		?string $redirUrl = null,
-		?IMessage $message = null)
-	{
+		?IMessage $message = null
+	){
 		$pathsToProtect = (function(string ...$paths){
 			return $paths;
 		})(...$pathsToProtect);

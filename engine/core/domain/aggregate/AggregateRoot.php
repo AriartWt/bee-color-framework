@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 05/11/17
- * Time: 02:04
- */
-
 namespace wfw\engine\core\domain\aggregate;
 
 use wfw\engine\core\domain\aggregate\errors\NoHandlerForEvent;

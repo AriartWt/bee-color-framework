@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 29/06/18
- * Time: 15:30
- */
-
 namespace wfw\engine\package\users\handlers\action;
 
 
@@ -27,9 +20,7 @@ use wfw\engine\package\users\security\data\ChangeMailRule;
  * Réenvoi le mail permettant à un utilisateur de confirmer son changement d'email.
  * Necessite une authentification
  */
-final class ResendChangeMailHandler extends DefaultUserActionHandler
-	implements IDomainEventListener
-{
+final class ResendChangeMailHandler extends DefaultUserActionHandler implements IDomainEventListener {
 	/** @var null|AskedForEmailChangeEvent $_event */
 	private $_event;
 

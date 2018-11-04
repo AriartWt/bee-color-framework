@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 29/05/18
- * Time: 16:22
- */
-
 namespace wfw\cli\tester\launchers\PHPUnit;
 
 use wfw\cli\tester\launchers\TestSequence;
@@ -14,8 +7,7 @@ use wfw\engine\lib\PHP\types\UUID;
 /**
  * Sequence de test sous PHPUnit
  */
-final class PHPUnitTestSequence extends TestSequence
-{
+final class PHPUnitTestSequence extends TestSequence {
 	/** @var string $_tmpPath */
 	private $_tmpPath;
 	/** @var string $_cmds */

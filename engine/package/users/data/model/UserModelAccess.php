@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 16/04/18
- * Time: 10:57
- */
-
 namespace wfw\engine\package\users\data\model;
 
 use wfw\engine\core\data\DBAccess\NOSQLDB\msServer\IMSServerAccess;
@@ -15,8 +8,7 @@ use wfw\engine\package\users\data\model\specs\LoginIs;
 /**
  * Classe d'accés au model User
  */
-final class UserModelAccess implements IUserModelAccess
-{
+final class UserModelAccess implements IUserModelAccess {
 	/** @var IMSServerAccess $_db */
 	private $_db;
 

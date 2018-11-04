@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 17/02/18
- * Time: 02:46
- */
-
 namespace wfw\engine\package\general\layouts\blank;
 
 use wfw\engine\core\view\Layout;

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 25/05/18
- * Time: 13:26
- */
-
 namespace wfw\engine\package\news\data\model;
 
 use wfw\engine\core\data\DBAccess\NOSQLDB\msServer\IMSServerAccess;
@@ -18,8 +11,7 @@ use wfw\engine\package\news\data\model\specs\IsOnline;
 /**
  * Acces au model Articles via le msserver
  */
-final class ArticleModelAccess implements IArticleModelAccess
-{
+final class ArticleModelAccess implements IArticleModelAccess {
 	/** @var IMSServerAccess $_db */
 	private $_db;
 

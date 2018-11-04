@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 27/09/18
- * Time: 15:45
- */
-
 namespace wfw\engine\lib\HTML\helpers\forms\validation;
 
 use wfw\engine\lib\HTML\helpers\forms\errors\TooShortSubmissionTime;

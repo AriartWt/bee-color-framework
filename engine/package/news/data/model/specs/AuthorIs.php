@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 24/04/18
- * Time: 16:08
- */
-
 namespace wfw\engine\package\news\data\model\specs;
 
 use wfw\engine\core\data\specification\LeafSpecification;
@@ -15,8 +8,7 @@ use wfw\engine\package\news\data\model\objects\Article;
  * Permet de savoir si un article a été écrit par un utilisateur contenu dans une liste
  * d'utilisateurs
  */
-final class AuthorIs extends LeafSpecification
-{
+final class AuthorIs extends LeafSpecification {
 	/** @var string[] $_authorIds */
 	private $_authorIds;
 

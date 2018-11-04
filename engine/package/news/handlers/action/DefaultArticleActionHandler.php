@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 27/04/18
- * Time: 11:20
- */
-
 namespace wfw\engine\package\news\handlers\action;
 
 use wfw\engine\core\command\ICommandBus;

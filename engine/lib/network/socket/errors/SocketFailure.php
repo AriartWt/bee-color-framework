@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 16/08/18
- * Time: 18:08
- */
-
 namespace wfw\engine\lib\network\socket\errors;
 use Throwable;
 

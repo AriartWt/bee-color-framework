@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 08/05/18
- * Time: 11:09
- */
-
 namespace wfw\engine\core\security\data\rules;
 
 use wfw\engine\core\security\data\ForEachFieldRule;
@@ -13,8 +6,7 @@ use wfw\engine\core\security\data\ForEachFieldRule;
 /**
  * Vérifie si le fichier existe et s'il est conforme aux spécifications
  */
-final class IsFile extends ForEachFieldRule
-{
+final class IsFile extends ForEachFieldRule {
 	/** @var int $_maxSize */
 	private $_maxSize;
 	/** @var array $_acceptedMimes */
@@ -43,8 +35,7 @@ final class IsFile extends ForEachFieldRule
 	 * @param mixed $data Donnée sur laquelle appliquer la règle
 	 * @return bool
 	 */
-	protected function applyOn($data): bool
-	{
+	protected function applyOn($data): bool {
 		if(!is_array($data)) return false;
 		if(!isset($data["tmp_name"])) return false;
 		if(!file_exists($data["tmp_name"])) return false;

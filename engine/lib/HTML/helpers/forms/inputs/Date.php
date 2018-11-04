@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 16/03/18
- * Time: 12:40
- */
-
 namespace wfw\engine\lib\HTML\helpers\forms\inputs;
 use wfw\engine\lib\HTML\helpers\forms\IHTMLInput;
 use wfw\engine\lib\HTML\helpers\forms\IHTMLLabel;
@@ -33,8 +26,12 @@ final class Date implements IHTMLInput {
 	 * @param array           $attributes (optionnel) attributs additionnels
 	 * @param string          $default    (optionnel) Valeur par défaut
 	 */
-	public function __construct(string $name, ?IHTMLLabel $label, array $attributes=[], string $default)
-	{
+	public function __construct(
+		string $name,
+		?IHTMLLabel $label,
+		array $attributes=[],
+		string $default
+	) {
 		$this->_name = $name;
 		$this->_label = $label;
 		$this->_attributes = $attributes;
@@ -44,24 +41,21 @@ final class Date implements IHTMLInput {
 	/**
 	 * @return string Nom de l'input
 	 */
-	public function getName(): string
-	{
+	public function getName(): string {
 		return $this->_name;
 	}
 
 	/**
 	 * @param mixed $data Données à intégrer à l'input
 	 */
-	public function setData($data): void
-	{
+	public function setData($data): void {
 		$this->_data = $data;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function __toString()
-	{
+	public function __toString() {
 		$html = '';
 		if($this->_label) $html.=$this->_label;
 		$html.='<input type="date" name="'.$this->_name.'"';

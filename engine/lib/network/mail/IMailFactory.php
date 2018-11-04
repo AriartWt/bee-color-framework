@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 24/06/18
- * Time: 16:04
- */
-
 namespace wfw\engine\lib\network\mail;
 
 /**

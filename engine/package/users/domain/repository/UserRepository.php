@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 12/12/17
- * Time: 08:32
- */
-
 namespace wfw\engine\package\users\domain\repository;
 
 use wfw\engine\core\command\ICommand;
@@ -16,8 +9,7 @@ use wfw\engine\package\users\domain\User;
 /**
  * Repository pour les utilisateurs
  */
-final class UserRepository implements IUserRepository
-{
+final class UserRepository implements IUserRepository {
 	/** @var IAggregateRootRepository $_repos */
 	private $_repos;
 

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 03/12/17
- * Time: 06:26
- */
-
 namespace wfw\engine\core\data\model\arithmeticSearch;
 
 
@@ -18,8 +11,7 @@ use wfw\engine\lib\PHP\types\Type;
 /**
  *  Permet de parser une expression arithmetique infixée en pile postifée.
  */
-final class ArithmeticParser implements IArithmeticParser
-{
+final class ArithmeticParser implements IArithmeticParser {
 
 	/**
 	 *  Permet de savoir si un caractère est un opérateur d'expression valide

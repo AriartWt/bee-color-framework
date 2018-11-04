@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 05/01/18
- * Time: 09:48
- */
-
 namespace wfw\daemons\modelSupervisor\client;
 
 use wfw\daemons\modelSupervisor\client\errors\AlreadyLogged;
@@ -40,8 +33,7 @@ use wfw\engine\lib\PHP\types\Type;
 /**
  * Client d'un MSServer.
  */
-class MSClient implements IMSClient
-{
+class MSClient implements IMSClient {
 	/** @var string $_addr */
 	private $_addr;
 	/** @var string $_login */
@@ -77,8 +69,8 @@ class MSClient implements IMSClient
 		string $login,
 		string $password,
 		?ISerializer $serializer = null,
-		?ISocketProtocol $protocol = null)
-	{
+		?ISocketProtocol $protocol = null
+	) {
 		$this->_addr = $addr;
 		$this->_login = $login;
 		$this->_password = $password;
@@ -93,8 +85,7 @@ class MSClient implements IMSClient
 	/**
 	 * Obtient une session au client auprès du MSServer
 	 */
-	public function login(): void
-	{
+	public function login(): void {
 		if(!$this->isLogged()){
 			$response = $this->sendRequest(new LoginRequest($this->_login,$this->_password));
 			if($response instanceof AccessGranted){
@@ -110,16 +101,14 @@ class MSClient implements IMSClient
 	/**
 	 * @return bool True si le client est connecté au MSServer.
 	 */
-	public function isLogged(): bool
-	{
+	public function isLogged(): bool {
 		return $this->_session instanceof AccessGranted;
 	}
 
 	/**
 	 * Demande la destruction de la session du client auprés du MSServer
 	 */
-	public function logout(): void
-	{
+	public function logout(): void {
 		$this->checkRequestAbility();
 		$this->sendRequest(
 			new LogoutRequest($this->_session->getSessionId()),
@@ -133,8 +122,7 @@ class MSClient implements IMSClient
 	 *
 	 * @param \wfw\engine\core\domain\events\EventList $eventList Liste d'événements à appliquer
 	 */
-	public function applyEvents(EventList $eventList): void
-	{
+	public function applyEvents(EventList $eventList): void {
 		$this->checkRequestAbility();
 		$response = $this->sendRequest(new ApplyEvents($this->_session->getSessionId(),$this->_serializer->serialize($eventList)));
 		if(!($response instanceof DoneResponse)){
@@ -154,8 +142,7 @@ class MSClient implements IMSClient
 	 * @throws MSClientFailure
 	 * @throws \Exception
 	 */
-	public function query(string $class,string $query): array
-	{
+	public function query(string $class,string $query): array {
 		$this->checkRequestAbility();
 		$response = $this->sendRequest(new QueryModel(
 			$this->_session->getSessionId(),
@@ -177,8 +164,7 @@ class MSClient implements IMSClient
 	 * Il est conseillé de ne l'utiliser que dans les parties les plus critiques de l'application, ou de régler
 	 * une sauvegarde périodique plus courte.
 	 */
-	public function triggerSave(): void
-	{
+	public function triggerSave(): void {
 		$this->checkRequestAbility();
 		$response = $this->sendRequest(
 			new SaveChangedModels($this->_session->getSessionId())
@@ -196,8 +182,12 @@ class MSClient implements IMSClient
 	 * @param ISpecification $spec           Specification de l'index (mode de tri)
 	 * @param bool                   $modifyIfExists (optionnel defaut : true) Si true : si l'index existe il est modifié.
 	 */
-	public function setIndex(string $class, string $name, ISpecification $spec, bool $modifyIfExists = true): void
-	{
+	public function setIndex(
+		string $class,
+		string $name,
+		ISpecification $spec,
+		bool $modifyIfExists = true
+	): void {
 		$this->checkRequestAbility();
 		$response = $this->sendRequest(new SetIndex($this->_session->getSessionId(),$class,$name,$spec,$modifyIfExists));
 		if(!($response instanceof DoneResponse)){
@@ -211,22 +201,23 @@ class MSClient implements IMSClient
 	 * @param string $class Classe du model concerné
 	 * @param string $name  Nom de l'index à supprimer
 	 */
-	public function removeIndex(string $class, string $name): void
-	{
+	public function removeIndex(string $class, string $name): void {
 		$this->checkRequestAbility();
-		$response = $this->sendRequest(new RemoveIndex($this->_session->getSessionId(),$class,$name));
-		if(!($response instanceof DoneResponse)){
-			throw new MSClientFailure("Unexpected MSServer's response : ".get_class($response));
-		}
+		$response = $this->sendRequest(new RemoveIndex(
+			$this->_session->getSessionId(),$class,$name
+		));
+		if(!($response instanceof DoneResponse)) throw new MSClientFailure(
+			"Unexpected MSServer's response : ".get_class($response)
+		);
 	}
 
 	/**
 	 * @throws MustBeLogged
 	 */
 	private function checkRequestAbility():void{
-		if(!$this->isLogged()){
-			throw new MustBeLogged("You must be logged to perform this action. Please call MSClient::login !");
-		}
+		if(!$this->isLogged()) throw new MustBeLogged(
+			"You must be logged to perform this action. Please call MSClient::login !"
+		);
 	}
 
 	/**
@@ -307,8 +298,7 @@ class MSClient implements IMSClient
 	 * Met à jour le snapshot des models.
 	 * Nécessite les droits d'administration
 	 */
-	public function updateSnapshot(): void
-	{
+	public function updateSnapshot(): void {
 		$this->checkRequestAbility();
 		$response = $this->sendRequest(new UpdateSnapshot($this->_session->getSessionId()));
 		if(!($response instanceof DoneResponse)){
@@ -324,13 +314,12 @@ class MSClient implements IMSClient
 	 * de leurs indexes, de la complexité de l'algorythme d'application des événements et du
 	 * nombre d'événements à appliquer.
 	 */
-	public function rebuildAllModels(): void
-	{
+	public function rebuildAllModels(): void {
 		$this->checkRequestAbility();
 		$response = $this->sendRequest(new RebuildAllModels($this->_session->getSessionId()));
-		if(!($response instanceof DoneResponse)){
-			throw new MSClientFailure("Unexpected MSServer's response : ".get_class($response));
-		}
+		if(!($response instanceof DoneResponse)) throw new MSClientFailure(
+			"Unexpected MSServer's response : ".get_class($response)
+		);
 	}
 
 	/**
@@ -343,8 +332,7 @@ class MSClient implements IMSClient
 	 *
 	 * @param string[] $classes Liste des models à reconstruire.
 	 */
-	public function rebuildModels(string... $classes): void
-	{
+	public function rebuildModels(string... $classes): void {
 		$this->checkRequestAbility();
 		$response = $this->sendRequest(new RebuildModels($this->_session->getSessionId(),...$classes));
 		if(!($response instanceof DoneResponse)){

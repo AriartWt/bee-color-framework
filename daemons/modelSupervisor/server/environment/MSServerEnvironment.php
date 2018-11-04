@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 23/01/18
- * Time: 05:15
- */
-
 namespace wfw\daemons\modelSupervisor\server\environment;
 
 use stdClass;
@@ -62,8 +55,8 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 		stdClass $groups,
 		stdClass $admins,
 		stdClass $components,
-		int $sessionTtl = 900)
-	{
+		int $sessionTtl = 900
+	){
 		if(!file_exists($workingDir)){
 			if(file_exists(dirname($workingDir))){
 				mkdir($workingDir);
@@ -158,16 +151,14 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 	/**
 	 * @return string Repertoire de travail du serveur.
 	 */
-	public function getWorkingDir(): string
-	{
+	public function getWorkingDir(): string {
 		return $this->_workingDir;
 	}
 
 	/**
 	 * @return IModelLoader Objet permettant de charger un model
 	 */
-	public function getModelLoader(): IModelLoader
-	{
+	public function getModelLoader(): IModelLoader {
 		return $this->_loader;
 	}
 
@@ -176,8 +167,7 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 	 *
 	 * @return bool True si le composant existe, false sinon
 	 */
-	public function existsComponent(string $name): bool
-	{
+	public function existsComponent(string $name): bool {
 		return isset($this->_components[$name]);
 	}
 
@@ -186,8 +176,7 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 	 *
 	 * @return IMSServerClientComponent
 	 */
-	public function getComponent(string $name): IMSServerClientComponent
-	{
+	public function getComponent(string $name): IMSServerClientComponent {
 		if($this->existsComponent($name)){
 			return $this->_components[$name];
 		}else{
@@ -198,8 +187,7 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 	/**
 	 * @return IMSServerClientComponent[] Retourne la liste des composants du MSServer
 	 */
-	public function getComponents(): array
-	{
+	public function getComponents(): array {
 		return $this->_components;
 	}
 
@@ -211,8 +199,7 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 	 *
 	 * @return bool
 	 */
-	public function isAdminAccessGranted(string $userName, IMSServerAdminRequest $request): bool
-	{
+	public function isAdminAccessGranted(string $userName, IMSServerAdminRequest $request): bool {
 		if(isset($this->_admins["users"][$userName])){
 			if($this->checkPermission($this->_admins["users"][$userName],$request)){
 				return true;
@@ -258,8 +245,7 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 	 *
 	 * @return IMSServerUser
 	 */
-	public function getUser(string $name): IMSServerUser
-	{
+	public function getUser(string $name): IMSServerUser {
 		if($this->existsUser($name)){
 			return $this->_users[$name];
 		}else{
@@ -274,8 +260,7 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 	 *
 	 * @return bool
 	 */
-	public function existsUser(string $name): bool
-	{
+	public function existsUser(string $name): bool {
 		return isset($this->_users[$name]);
 	}
 
@@ -286,8 +271,7 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 	 *
 	 * @return IMSServerUserGroup
 	 */
-	public function getUserGroup(string $name): IMSServerUserGroup
-	{
+	public function getUserGroup(string $name): IMSServerUserGroup {
 		if($this->existsUserGroup($name)){
 			return $this->_groups[$name];
 		}else{
@@ -302,8 +286,7 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 	 *
 	 * @return bool
 	 */
-	public function existsUserGroup(string $name): bool
-	{
+	public function existsUserGroup(string $name): bool {
 		return isset($this->_groups[$name]);
 	}
 
@@ -315,8 +298,7 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 	 *
 	 * @return null|string Identifiant de session si la session a été créée, null sinon.
 	 */
-	public function createSessionForUser(string $login, string $password): ?string
-	{
+	public function createSessionForUser(string $login, string $password): ?string {
 		if($this->existsUser($login)){
 			$user = $this->getUser($login);
 			if($user->matchPassword($password)){
@@ -343,8 +325,7 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 	 *
 	 * @return IMSServerSession|null
 	 */
-	public function getUserSession(string $sessionId): ?IMSServerSession
-	{
+	public function getUserSession(string $sessionId): ?IMSServerSession {
 		if($this->existsUserSession($sessionId)){
 			$this->touchUserSession($sessionId);
 			return $this->_sessions[$sessionId]["session"];
@@ -358,8 +339,7 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 	 *
 	 * @param string $sessionId Identifiant de la session.
 	 */
-	public function touchUserSession(string $sessionId): void
-	{
+	public function touchUserSession(string $sessionId): void {
 		if($this->existsUserSession($sessionId)){
 			$this->_sessions[$sessionId]["expire_date"] = microtime(true) + $this->_ttl;
 		}
@@ -372,8 +352,7 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 	 *
 	 * @return bool
 	 */
-	public function existsUserSession(string $sessionId): bool
-	{
+	public function existsUserSession(string $sessionId): bool {
 		return isset($this->_sessions[$sessionId]);
 	}
 
@@ -382,8 +361,7 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 	 *
 	 * @param string $sessionId Session à détruire.
 	 */
-	public function destroyUserSession(string $sessionId)
-	{
+	public function destroyUserSession(string $sessionId) {
 		if($this->existsUserSession($sessionId)){
 			unset($this->_sessions[$sessionId]);
 		}
@@ -392,8 +370,7 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 	/**
 	 *  Supprime les sessions inactives depuis un certain temps.
 	 */
-	public function destroyOutdatedSessions(): void
-	{
+	public function destroyOutdatedSessions(): void {
 		foreach($this->_sessions as $id=>$session){
 			if($session["expire_date"] < microtime(true)){
 				$this->destroyUserSession($id);

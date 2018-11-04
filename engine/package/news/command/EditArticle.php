@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 26/04/18
- * Time: 11:09
- */
-
 namespace wfw\engine\package\news\command;
 
 use wfw\engine\package\news\domain\Content;
@@ -15,8 +8,7 @@ use wfw\engine\package\news\domain\VisualLink;
 /**
  * Edite un article
  */
-final class EditArticle extends ArticleCommand
-{
+final class EditArticle extends ArticleCommand {
 	/** @var string $_articleId */
 	private $_articleId;
 	/** @var null|Title $_title */

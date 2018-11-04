@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 24/06/18
- * Time: 17:05
- */
-
 namespace wfw\engine\package\users\lib\mail;
 
 use wfw\engine\core\conf\IConf;
@@ -52,7 +45,7 @@ final class UserRegisteredMail extends AbstractUserMail{
 	 */
 	protected function createBody(User $user, UserConfirmationCode $code): IMailBody {
 		return new MailBody(
-			"http://192.168.1.12/website/users/confirmUserReigstration?id=".$user->getId()."&code=$code",
+			"https://bee-color.fr/users/confirmUserReigstration?id=".$user->getId()."&code=$code",
 			null,
 			false
 		);

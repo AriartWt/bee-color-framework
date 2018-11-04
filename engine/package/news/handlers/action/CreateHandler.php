@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 26/04/18
- * Time: 12:15
- */
-
 namespace wfw\engine\package\news\handlers\action;
 
 use wfw\engine\core\command\ICommand;
@@ -30,8 +23,7 @@ use wfw\engine\package\news\security\data\CreateArticleRule;
 /**
  * Crée un article
  */
-final class CreateHandler extends DefaultArticleActionHandler implements IDomainEventListener
-{
+final class CreateHandler extends DefaultArticleActionHandler implements IDomainEventListener {
 	/** @var IHTMLSanitizer $_sanitizer */
 	private $_sanitizer;
 	/** @var ArticleWrittenEvent $_creationEvent */

@@ -10,7 +10,6 @@ use wfw\engine\core\conf\io\IConfIOAdapter;
  *  Classe de gestion des configurations de l'application.
  */
 final class FileBasedConf extends AbstractConf{
-
 	/**
 	 *  Contient le chemin d'accés à la configuration du fichier
 	 * @var string $_confPath

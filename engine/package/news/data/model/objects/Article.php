@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 23/04/18
- * Time: 11:42
- */
-
 namespace wfw\engine\package\news\data\model\objects;
 
 use wfw\engine\core\data\model\DTO\IDTO;
@@ -211,8 +204,7 @@ class Article extends ModelObject {
 	 *
 	 * @return IDTO
 	 */
-	public function toDTO(): IDTO
-	{
+	public function toDTO(): IDTO {
 		return new \wfw\engine\package\news\data\model\DTO\Article(
 			$this->getId(),
 			$this->_title,

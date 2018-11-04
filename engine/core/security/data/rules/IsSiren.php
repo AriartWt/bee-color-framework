@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 20/07/18
- * Time: 15:30
- */
-
 namespace wfw\engine\core\security\data\rules;
 
 /**

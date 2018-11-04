@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 11/12/17
- * Time: 01:51
- */
-
 namespace wfw\engine\package\users\domain\events;
 use wfw\engine\lib\PHP\types\UUID;
 use wfw\engine\package\users\domain\Password;
@@ -26,7 +19,12 @@ final class UserPasswordResetedEvent extends PasswordEvent{
 	 * @param UserState $state    Nouvel état de l'utilisateur
 	 * @param string    $reseterId
 	 */
-	public function __construct(UUID $userId, Password $password,UserState $state, string $reseterId) {
+	public function __construct(
+		UUID $userId,
+		Password $password,
+		UserState $state,
+		string $reseterId
+	) {
 		parent::__construct($userId, $password,$reseterId);
 		$this->_state = $state;
 	}

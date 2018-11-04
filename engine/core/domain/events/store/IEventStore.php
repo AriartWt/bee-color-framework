@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 14/11/17
- * Time: 16:55
- */
-
 namespace wfw\engine\core\domain\events\store;
 
 use wfw\engine\core\command\ICommand;
@@ -15,8 +8,7 @@ use wfw\engine\lib\PHP\types\UUID;
 /**
  *  Base de l'eventStore
  */
-interface IEventStore
-{
+interface IEventStore {
 	/**
 	 *  Retourne un aggrégat grace à son UUID
 	 *

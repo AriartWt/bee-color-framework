@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 16/01/18
- * Time: 08:13
- */
-
 namespace wfw\daemons\kvstore\server\containers\params\worker;
 
 use wfw\daemons\kvstore\server\environment\IKVSContainer;
@@ -13,26 +6,14 @@ use wfw\daemons\kvstore\server\environment\IKVSContainer;
 /**
  *  Paramètres attendus par un worker.
  */
-final class ContainerWorkerParams
-{
-	/**
-	 * @var IKVSContainer $_container
-	 */
+final class ContainerWorkerParams {
+	/** @var IKVSContainer $_container */
 	private $_container;
-
-	/**
-	 * @var string $_serverKey
-	 */
+	/** @var string $_serverKey */
 	private $_serverKey;
-
-	/**
-	 * @var string $_dbPath
-	 */
+	/** @var string $_dbPath */
 	private $_dbPath;
-
-	/**
-	 * @var string $_socketDir
-	 */
+	/** @var string $_socketDir */
 	private $_socketDir;
 
 	/**
@@ -43,8 +24,12 @@ final class ContainerWorkerParams
 	 * @param string                $dbPath    Chemin d'accés au dossier de la base de donnée KVS
 	 * @param string                $socketDir Chemin vers le dossier devant contenir la socket de communication unix
 	 */
-	public function __construct(IKVSContainer $container,string $serverKey,string $dbPath, string $socketDir="/tmp")
-	{
+	public function __construct(
+		IKVSContainer $container,
+		string $serverKey,
+		string $dbPath,
+		string $socketDir="/tmp"
+	) {
 		$this->_container = $container;
 		$this->_serverKey = $serverKey;
 		if(file_exists($dbPath)){

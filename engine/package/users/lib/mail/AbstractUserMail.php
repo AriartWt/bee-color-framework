@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 01/07/18
- * Time: 11:45
- */
-
 namespace wfw\engine\package\users\lib\mail;
 
 use wfw\engine\core\conf\IConf;

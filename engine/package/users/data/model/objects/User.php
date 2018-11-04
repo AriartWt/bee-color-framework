@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 12/12/17
- * Time: 04:54
- */
-
 namespace wfw\engine\package\users\data\model\objects;
 
 use wfw\engine\core\data\model\DTO\IDTO;
@@ -23,8 +16,7 @@ use wfw\engine\package\users\domain\types\UserType;
  *
  * @package wfw\engine\package\users\data\model\objects
  */
-class User extends ModelObject
-{
+class User extends ModelObject {
 	/** @var Login $_login */
 	private $_login;
 	/** @var Password $_password */

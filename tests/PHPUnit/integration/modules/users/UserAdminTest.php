@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 30/06/18
- * Time: 16:36
- */
+
 namespace wfw\tests\PHPUnit\integration\modules\users;
 
 use PHPUnit\Framework\TestCase;

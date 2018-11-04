@@ -1,18 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 10/12/17
- * Time: 02:59
- */
-
 namespace wfw\engine\package\users\domain;
 
 /**
  *  ValueObject mot de passe
  */
-class Password
-{
+class Password {
 	/** @var bool|string $_password */
 	private $_password;
 

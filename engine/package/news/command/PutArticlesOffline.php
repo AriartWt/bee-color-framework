@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 26/04/18
- * Time: 11:44
- */
-
 namespace wfw\engine\package\news\command;
 
 use wfw\engine\core\command\Command;
@@ -13,8 +6,7 @@ use wfw\engine\core\command\Command;
 /**
  * Met un article hors ligne
  */
-final class PutArticlesOffline extends Command
-{
+final class PutArticlesOffline extends Command {
 	/** @var string[] $_articleIds */
 	private $_articleIds;
 	/** @var string $_userId */

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 29/06/18
- * Time: 14:57
- */
-
 namespace wfw\engine\package\users\handlers\action;
 
 use wfw\engine\core\command\ICommand;
@@ -26,9 +19,7 @@ use wfw\engine\package\users\security\data\RetrievePasswordRule;
 /**
  * Réenvoie le mail contenant les codes pour un mot de passe oublié.
  */
-final class ResendForgottenPasswordMailHandler extends DefaultUserActionHandler
-	implements IDomainEventListener
-{
+final class ResendForgottenPasswordMailHandler extends DefaultUserActionHandler implements IDomainEventListener {
 	/** @var IUserModelAccess $_access */
 	private $_access;
 	/** @var null|AskedForPasswordRetrievingEvent $_event */

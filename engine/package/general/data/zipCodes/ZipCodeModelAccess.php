@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 23/07/18
- * Time: 13:20
- */
-
 namespace wfw\engine\package\general\data\zipCodes;
 
 /**

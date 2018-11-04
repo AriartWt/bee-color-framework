@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 08/05/18
- * Time: 11:33
- */
-
 namespace wfw\engine\lib\PHP\types;
 
 /**

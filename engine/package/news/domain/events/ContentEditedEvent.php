@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 23/04/18
- * Time: 09:12
- */
-
 namespace wfw\engine\package\news\domain\events;
 
 use wfw\engine\lib\PHP\types\UUID;
@@ -14,15 +7,10 @@ use wfw\engine\package\news\domain\Content;
 /**
  * Le contenu d'un article a été édité
  */
-final class ContentEditedEvent extends ArticleEvent
-{
-	/**
-	 * @var Content $_content
-	 */
+final class ContentEditedEvent extends ArticleEvent {
+	/** @var Content $_content */
 	private $_content;
-	/**
-	 * @var string $_editorId
-	 */
+	/** @var string $_editorId */
 	private $_editorId;
 
 	/**
@@ -32,8 +20,7 @@ final class ContentEditedEvent extends ArticleEvent
 	 * @param Content $content   Contenu
 	 * @param string  $editorId  Identifiant de l'éditeur
 	 */
-	public function __construct(UUID $articleId,Content $content,string $editorId)
-	{
+	public function __construct(UUID $articleId,Content $content,string $editorId) {
 		parent::__construct($articleId);
 		$this->_content = $content;
 		$this->_editorId = $editorId;

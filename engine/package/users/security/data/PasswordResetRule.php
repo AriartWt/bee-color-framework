@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 27/06/18
- * Time: 16:49
- */
-
 namespace wfw\engine\package\users\security\data;
 
 use wfw\engine\core\security\data\AndRule;

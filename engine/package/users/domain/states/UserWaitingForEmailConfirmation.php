@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 11/12/17
- * Time: 01:06
- */
-
 namespace wfw\engine\package\users\domain\states;
 
 use wfw\engine\package\general\domain\Email;

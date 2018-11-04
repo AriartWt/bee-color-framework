@@ -8,24 +8,25 @@ use wfw\engine\lib\HTML\resources\FileIncluder;
  *  System d'inclusion de fichiers et variables CSS
  */
 final class JsScriptManager extends FileIncluder implements IJsScriptManager {
-	private $_vars=array();/**<  array<string,mixed> Liste des variables à inclure */
+	/** @var array $_vars */
+	private $_vars=array();
 
-    /**
-     *   Ajoute une nouvelle variable si elle n'est pas présente
-     *
-     * @param  string $key   Clé (nom de variable)
-     * @param  mixed  $value Valeur à écrire (doit pouvoir être encodée à l'aide de json_encode)
-     *
-     * @throws Exception
-     */
+	/**
+	 *   Ajoute une nouvelle variable si elle n'est pas présente
+	 *
+	 * @param  string $key   Clé (nom de variable)
+	 * @param  mixed  $value Valeur à écrire (doit pouvoir être encodée à l'aide de json_encode)
+	 *
+	 * @throws Exception
+	 */
 	public function registerVar(string $key,$value):void{
 		if(!$this->isRegisteredVar($key)){
-            $this->_vars[$key]=$value;
+			$this->_vars[$key]=$value;
 		}else{
 			if($this->_currentFlag==self::EMIT_EXCEPTION_ON){
 				throw new Exception(
-				    "Trying to register a var that have been already registered : $key=$value"
-                );
+					"Trying to register a var that have been already registered : $key=$value"
+				);
 			}
 		}
 	}
@@ -33,8 +34,8 @@ final class JsScriptManager extends FileIncluder implements IJsScriptManager {
 	 *   Supprime une variable de la liste des inclusions si elle est présente
 	 *
 	 * @param  string    $key Nom de la variable à supprimer
-     * @throws Exception si la variable n'existe pas et que le currentFlag est à
-     *                        self::EMIT_EXCEPTION_OFF
+	 * @throws Exception si la variable n'existe pas et que le currentFlag est à
+	 *                        self::EMIT_EXCEPTION_OFF
 	 * @return void
 	 */
 	public function unregisterVar(string $key):void{

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 12/12/17
- * Time: 08:29
- */
-
 namespace wfw\engine\package\users\data\model;
 
 use wfw\engine\core\data\specification\ISpecification;
@@ -94,8 +87,7 @@ class UserModel extends InMemoryEventBasedModel {
 	 *
 	 * @return EventReceptionReport
 	 */
-	protected function recieve(IDomainEvent $e): EventReceptionReport
-	{
+	protected function recieve(IDomainEvent $e): EventReceptionReport {
 		/** @var UserEvent $e */
 		/** @var User $user */
 		$user = $this->getById($e->getAggregateId());

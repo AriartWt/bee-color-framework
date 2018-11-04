@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 26/05/18
- * Time: 16:31
- */
-
 namespace wfw\engine\package\news\domain\events;
 
 
@@ -15,11 +8,9 @@ use wfw\engine\package\news\domain\VisualLink;
 /**
  * Le lien vers le visuel d'un article a été édité
  */
-final class VisualLinkEditedEvent extends ArticleEvent
-{
+final class VisualLinkEditedEvent extends ArticleEvent {
 	/** @var VisualLink $_link */
 	private $_link;
-
 	/** @var string $_editorId */
 	private $_editorId;
 

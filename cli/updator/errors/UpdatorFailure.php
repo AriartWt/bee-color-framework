@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 06/04/18
- * Time: 01:53
- */
-
 namespace wfw\cli\updator\errors;
 
 /**

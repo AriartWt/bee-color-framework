@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 16/11/17
- * Time: 02:36
- */
-
 namespace wfw\engine\core\domain\aggregate\errors;
 
 /**

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 04/07/18
- * Time: 13:19
- */
-
 namespace wfw\engine\package\general\handlers\action\errors;
 
 /**

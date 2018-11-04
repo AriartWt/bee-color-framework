@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 07/06/18
- * Time: 11:00
- */
-
 namespace wfw\daemons\kvstore\server\containers;
 
 use wfw\daemons\kvstore\server\containers\data\IKVSContainerDataManager;
@@ -50,8 +43,7 @@ use wfw\engine\lib\PHP\types\Type;
 /**
  * Worker s'occupant d'un container
  */
-final class ContainerWorker extends Worker
-{
+final class ContainerWorker extends Worker {
 	/** @var string $_socketAddr */
 	private $_socketAddr;
 	/** @var null|ContainerWorkerParams $_workerParams */
@@ -113,8 +105,7 @@ final class ContainerWorker extends Worker
 	/**
 	 * Lancé seulement par le worker
 	 */
-	protected function runWorker(): void
-	{
+	protected function runWorker(): void {
 		$lockFile = self::getContainerLockFile($this->_workerParams->getContainer());
 		if(!file_exists($lockFile)){
 			touch($lockFile);
@@ -249,8 +240,8 @@ final class ContainerWorker extends Worker
 	public function handle(
 		IKVSContainerDataManager $dataManager,
 		IKVSContainerRequest $clientRequest,
-		KVSDataParserResult $request):bool
-	{
+		KVSDataParserResult $request
+	):bool {
 		if($clientRequest instanceof IKVSAdminContainerRequest){
 			if($clientRequest instanceof ShutdownContainerWorkerRequest){
 				return false;

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 07/01/18
- * Time: 09:48
- */
-
 namespace wfw\daemons\kvstore\client;
 
 use wfw\daemons\kvstore\client\errors\AlreadyLogged;

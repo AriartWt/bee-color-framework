@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 23/04/18
- * Time: 11:06
- */
-
 namespace wfw\engine\package\news\data\model;
 
 use wfw\engine\core\data\model\EventReceptionReport;
@@ -76,8 +69,7 @@ class ArticleModel extends InMemoryEventBasedModel {
 	 *
 	 * @return EventReceptionReport
 	 */
-	protected function recieve(IDomainEvent $e): EventReceptionReport
-	{
+	protected function recieve(IDomainEvent $e): EventReceptionReport {
 		if($e instanceof ArticleEvent){
 			/** @var ArticleEvent $e */
 			/** @var Article $article */

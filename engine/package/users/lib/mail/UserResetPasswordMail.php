@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 24/06/18
- * Time: 17:06
- */
-
 namespace wfw\engine\package\users\lib\mail;
 
 use wfw\engine\core\conf\IConf;
@@ -52,7 +45,7 @@ final class UserResetPasswordMail extends AbstractUserMail{
 	 */
 	protected function createBody(User $user, UserConfirmationCode $code): IMailBody {
 		return new MailBody(
-			"http://192.168.1.12/website/users/resetPassword?id=".$user->getId()."&code=$code",
+			"https://bee-color.fr/users/resetPassword?id=".$user->getId()."&code=$code",
 			null,
 			false
 		);

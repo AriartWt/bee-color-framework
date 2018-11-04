@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 02/10/18
- * Time: 15:06
- */
-
 namespace wfw\engine\package\contact\handlers\action;
 
 use wfw\engine\core\command\ICommand;
@@ -32,11 +25,11 @@ final class UnarchiveHandler extends DefaultContactActionHandler implements IDom
 	/**
 	 * ArchiveHandler constructor.
 	 *
-	 * @param ICommandBus                                                 $bus      Bus de commandes
-	 * @param ISession                                                    $session  Session
-	 * @param \wfw\engine\package\contact\security\data\ContactIdListRule $rule     Régle de validation des données
-	 * @param IDomainEventObserver                                        $observer Observeur de DomainEventListeners
-	 * @param IJSONEncoder                                                $encoder  Encodeur JSON
+	 * @param ICommandBus       $bus      Bus de commandes
+	 * @param ISession          $session  Session
+	 * @param ContactIdListRule $rule     Régle de validation des données
+	 * @param IDomainEventObserver $observer Observeur de DomainEventListeners
+	 * @param IJSONEncoder         $encoder  Encodeur JSON
 	 */
 	public function __construct(
 		ICommandBus $bus,

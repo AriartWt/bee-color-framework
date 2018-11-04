@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 26/04/18
- * Time: 11:48
- */
-
 namespace wfw\engine\package\news\command\handlers;
 
 use wfw\engine\core\command\ICommand;
@@ -18,8 +11,7 @@ use wfw\engine\package\news\domain\repository\IArticleRepository;
 /**
  * Commande handler de base pour un article.
  */
-abstract class ArticleCommandHandler implements ICommandHandler
-{
+abstract class ArticleCommandHandler implements ICommandHandler {
 	/** @var IArticleRepository $_repos */
 	private $_repos;
 

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 30/09/18
- * Time: 17:01
- */
-
 namespace wfw\engine\package\contact\command\handlers;
 
 use wfw\engine\core\command\ICommand;
@@ -16,7 +9,6 @@ use wfw\engine\package\contact\domain\errors\MarkAsReadFailed;
  * Marque les prises de contacts spécifiée comme luesg
  */
 final class MarkContactsAsReadHandler extends ContactCommandHandler {
-
 	/**
 	 * Traite la commande
 	 *

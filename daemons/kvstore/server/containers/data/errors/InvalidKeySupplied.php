@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 18/01/18
- * Time: 05:56
- */
-
 namespace wfw\daemons\kvstore\server\containers\data\errors;
 
 use wfw\daemons\kvstore\server\containers\errors\KVSContainerFailure;

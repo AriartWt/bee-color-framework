@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 04/07/18
- * Time: 11:09
- */
-
 namespace wfw\engine\package\users\command;
 
 use wfw\engine\package\users\domain\Login;

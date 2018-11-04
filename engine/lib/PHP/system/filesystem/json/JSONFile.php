@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 30/10/17
- * Time: 03:01
- */
-
 namespace wfw\engine\lib\PHP\system\filesystem\json;
 
 use Exception;
@@ -13,8 +6,7 @@ use Exception;
 /**
  *  Manipule un fichier JSON
  */
-final class JSONFile
-{
+final class JSONFile {
 	/**
 	 *  Chemin d'accés au fichier json
 	 * @var string $_path

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 14/10/18
- * Time: 16:58
- */
-
 namespace wfw\cli\wfw\templates\confs;
 
 /**

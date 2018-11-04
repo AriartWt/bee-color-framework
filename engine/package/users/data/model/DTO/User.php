@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 12/12/17
- * Time: 05:16
- */
-
 namespace wfw\engine\package\users\data\model\DTO;
 
 use wfw\engine\core\data\model\DTO\DTO;
@@ -21,8 +14,7 @@ use wfw\engine\package\users\domain\types\UserType;
 /**
  *  DTO pour la classe User
  */
-class User extends DTO
-{
+class User extends DTO {
 	/** @var Login $_login */
 	private $_login;
 	/** @var Password $_password */

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 08/03/18
- * Time: 07:55
- */
-
 namespace wfw\engine\package\miel\security\data;
 
 use wfw\engine\core\security\data\AndRule;

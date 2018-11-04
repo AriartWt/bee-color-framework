@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 30/09/18
- * Time: 16:16
- */
-
 namespace wfw\engine\package\contact\command;
 
 use wfw\engine\package\contact\domain\ContactLabel;

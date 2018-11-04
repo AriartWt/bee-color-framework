@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 23/01/18
- * Time: 04:51
- */
-
 namespace wfw\daemons\modelSupervisor\server;
 
 use wfw\daemons\modelSupervisor\server\components\requests\IClientDeniedRequest;
@@ -111,8 +104,8 @@ final class MSServer {
 		int $requestTtl = 60,
 		bool $sendErrorsToClient = true,
 		bool $shutdownOnError = false,
-		string $errorLogs = __DIR__."/logs/error_logs.txt")
-	{
+		string $errorLogs = __DIR__."/logs/error_logs.txt"
+	) {
 		$this->_serializer = $serializer ?? new LightSerializer(
 			new GZCompressor(),
 			new PHPSerializer()
@@ -266,8 +259,7 @@ final class MSServer {
 		$socket,
 		MSServerDataParserResult $parsed,
 		?string $sessId
-	):?IMSServerResponse
-	{
+	):?IMSServerResponse {
 		if($parsed->instanceOf(LoginRequest::class)){
 			/** @var LoginRequest $request */
 			$request = $this->_serializer->unserialize($parsed->getData());

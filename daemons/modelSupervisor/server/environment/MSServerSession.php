@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 23/01/18
- * Time: 06:31
- */
-
 namespace wfw\daemons\modelSupervisor\server\environment;
 
 use wfw\engine\lib\PHP\types\UUID;

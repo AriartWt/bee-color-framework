@@ -6,11 +6,9 @@ use wfw\engine\core\cache\ICacheSystem;
  *  NoCache permet de substituer le systeme de cache courant par un systeme de cache inactif. Utilse notament pour désactiver le cache via les configurations de l'application. NoCache est chargé par défaut par wfw::lib::cache::Cache
  */
 class NoCache implements ICacheSystem{
-    public function __construct()
-    {
-    }
+	public function __construct() {}
 
-    public function get(string $key){
+	public function get(string $key){
 		return null;
 	}
 	public function set(string $key,$data,float $timeout=0):bool{

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 08/05/18
- * Time: 11:07
- */
-
 namespace wfw\engine\package\uploader\security\data;
 
 use wfw\engine\core\conf\IConf;
@@ -31,7 +24,6 @@ final class UploadFileRule implements IRule {
 	 *
 	 * @param IConf $conf
 	 * @param int   $maxFileNameLength Taille maximale d'un nom de fichier
-	 * @throws \InvalidArgumentException
 	 */
 	public function __construct(IConf $conf,int $maxFileNameLength = 512) {
 		$maxFileSize = (new Byte($conf->getString("server/uploader/max_size") ?? -1))->toInt();

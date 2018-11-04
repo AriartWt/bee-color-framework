@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 27/04/18
- * Time: 11:30
- */
-
 namespace wfw\engine\package\news\handlers\action;
 
 use wfw\engine\core\command\ICommand;
@@ -24,8 +17,7 @@ use wfw\engine\package\news\security\data\ArticleIdListRule;
 /**
  * Désarchive un article
  */
-final class UnarchiveHandler extends DefaultArticleActionHandler implements IDomainEventListener
-{
+final class UnarchiveHandler extends DefaultArticleActionHandler implements IDomainEventListener {
 	/** @var string[] $_ids */
 	private $_ids;
 	/** @var IJSONEncoder $_encoder */

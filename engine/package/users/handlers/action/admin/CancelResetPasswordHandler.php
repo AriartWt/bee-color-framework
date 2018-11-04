@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 28/06/18
- * Time: 16:18
- */
-
 namespace wfw\engine\package\users\handlers\action\admin;
 
 use wfw\engine\core\command\ICommand;
@@ -41,7 +34,10 @@ final class CancelResetPasswordHandler extends DefaultUserActionHandler implemen
 		IDomainEventObserver $observer
 	){
 		parent::__construct($bus, $rule, $session);
-		$observer->addEventListener(UserPasswordRetrievingCanceledEvent::class,$this);
+		$observer->addEventListener(
+			UserPasswordRetrievingCanceledEvent::class,
+			$this
+		);
 	}
 
 	/**

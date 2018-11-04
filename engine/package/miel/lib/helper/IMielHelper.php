@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 25/02/18
- * Time: 08:55
- */
-
 namespace wfw\engine\package\miel\lib\helper;
 
 use wfw\engine\lib\HTML\resources\css\ICSSManager;

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 08/02/18
- * Time: 09:55
- */
-
 namespace wfw\engine\package\users\domain\repository;
 
 use wfw\engine\core\command\ICommand;
@@ -14,8 +7,7 @@ use wfw\engine\package\users\domain\User;
 /**
  * Interface d'un repository pour les utilisateurs.
  */
-interface IUserRepository
-{
+interface IUserRepository {
 	/**
 	 * @param string $id Identifiant de l'utilisateur
 	 * @return null|User

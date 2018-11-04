@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 26/04/18
- * Time: 11:34
- */
-
 namespace wfw\engine\package\news\command;
 
 /**
@@ -13,8 +6,7 @@ namespace wfw\engine\package\news\command;
  *
  * @package wfw\engine\package\news\command
  */
-final class PutArticlesOnline extends ArticleCommand
-{
+final class PutArticlesOnline extends ArticleCommand {
 	/** @var string[] $_articleIds */
 	private $_articleIds;
 	/** @var string $_userId */

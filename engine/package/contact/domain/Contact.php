@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 28/09/18
- * Time: 13:01
- */
-
 namespace wfw\engine\package\contact\domain;
 
 use wfw\engine\core\domain\aggregate\AggregateRoot;

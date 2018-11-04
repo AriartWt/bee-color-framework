@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 16/02/18
- * Time: 11:57
- */
-
 namespace wfw\engine\core\response;
 
 use wfw\engine\core\action\IAction;
@@ -18,16 +11,10 @@ use wfw\engine\package\general\handlers\response\ErrorHandler;
 /**
  * Route une réponse vers son handler
  */
-final class ResponseRouter implements IResponseRouter
-{
-	/**
-	 * @var IResponseHandlerFactory $_factory
-	 */
+final class ResponseRouter implements IResponseRouter {
+	/** @var IResponseHandlerFactory $_factory */
 	private $_factory;
-
-	/**
-	 * @var int $_foldingLimit
-	 */
+	/** @var int $_foldingLimit */
 	private $_foldingLimit;
 
 	/**
@@ -38,8 +25,7 @@ final class ResponseRouter implements IResponseRouter
 	 *                          repertoirs de recherche. Si la limite est atteinte, et que le
 	 *                          handler n'est pas trouvé, l'exception HandlerNotFound sera levée.
 	 */
-	public function __construct(IResponseHandlerFactory $factory, int $foldingLimit = 5)
-	{
+	public function __construct(IResponseHandlerFactory $factory, int $foldingLimit = 5) {
 		$this->_factory = $factory;
 		$this->_foldingLimit = $foldingLimit;
 	}
@@ -52,8 +38,7 @@ final class ResponseRouter implements IResponseRouter
 	public function findResponseHandler(
 		IAction $action,
 		IResponse $response
-	): IResponseHandler
-	{
+	): IResponseHandler {
 		if($response instanceof ErrorResponse && !$action->getRequest()->isAjax()){
 			return $this->_factory->create(ErrorHandler::class);
 		}else{

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 03/06/18
- * Time: 15:58
- */
-
 namespace wfw\daemons\modelSupervisor\server;
 
 use wfw\engine\lib\cli\signalHandler\PCNTLSignalsHelper;
@@ -15,8 +8,7 @@ use wfw\engine\lib\PHP\errors\IllegalInvocation;
 /**
  * Gère un pool de serveurs
  */
-final class MSServerPool
-{
+final class MSServerPool {
 	/**
 	 *  Timeout des socket sur RCV et SND
 	 * @var array $_socketTimeout

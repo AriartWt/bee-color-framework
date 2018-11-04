@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 11/12/17
- * Time: 01:59
- */
-
 namespace wfw\engine\package\users\domain\states;
 
 use wfw\engine\package\users\lib\confirmationCode\UserConfirmationCode;

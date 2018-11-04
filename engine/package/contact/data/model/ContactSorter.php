@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 02/10/18
- * Time: 11:17
- */
-
 namespace wfw\engine\package\contact\data\model;
 
 use wfw\engine\core\data\model\ArraySorter;

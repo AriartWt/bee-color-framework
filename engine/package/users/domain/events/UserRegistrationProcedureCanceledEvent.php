@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 28/06/18
- * Time: 16:31
- */
-
 namespace wfw\engine\package\users\domain\events;
 use wfw\engine\lib\PHP\types\UUID;
 

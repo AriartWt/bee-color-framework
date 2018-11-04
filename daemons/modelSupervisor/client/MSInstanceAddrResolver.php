@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 06/06/18
- * Time: 11:49
- */
-
 namespace wfw\daemons\modelSupervisor\client;
 use wfw\daemons\modelSupervisor\client\errors\MSClientFailure;
 use wfw\daemons\modelSupervisor\socket\protocol\MSServerSocketProtocol;

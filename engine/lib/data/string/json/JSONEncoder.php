@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 25/05/18
- * Time: 17:02
- */
-
 namespace wfw\engine\lib\data\string\json;
 
 /**
@@ -14,8 +7,7 @@ namespace wfw\engine\lib\data\string\json;
  * Attention : ne prend pas en considération les références circulaires (boucle infinie)
  * Attention : ne permet pas le rétablissement des références vers un même objet
  */
-final class JSONEncoder implements IJSONEncoder
-{
+final class JSONEncoder implements IJSONEncoder {
 	/**
 	 * @param mixed $data                Données à sérialiser
 	 * @param array $skipProperties      Propriétées à omettre sous la forme class=>string[] properties
@@ -24,7 +16,7 @@ final class JSONEncoder implements IJSONEncoder
 	 *                                   utilisée comme valeur de propriété
 	 * @param array $addProperties       Propriétées à ajouter sous la forme class=>[ property => callable/value ]
 	 *                                   Le callable doit etre une fonction prenant l'objet en paramètre.
-	 * @param null  $opts
+	 * @param int   $opts
 	 * @return string
 	 * @throws \ReflectionException
 	 */

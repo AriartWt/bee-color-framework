@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 20/06/18
- * Time: 16:15
- */
-
 namespace wfw\engine\package\users\command\errors;
 
 use wfw\engine\core\command\errors\CommandFailure;

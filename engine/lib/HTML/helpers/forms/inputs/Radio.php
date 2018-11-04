@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 16/03/18
- * Time: 06:59
- */
-
 namespace wfw\engine\lib\HTML\helpers\forms\inputs;
 use wfw\engine\lib\HTML\helpers\forms\IHTMLInput;
 use wfw\engine\lib\HTML\helpers\forms\IHTMLLabel;
@@ -46,7 +39,9 @@ final class Radio implements IHTMLInput {
 		array $attributes=[],
 		string ...$values
 	){
-		if(count($values) === 0) throw new \InvalidArgumentException("Expects at least one value !");
+		if(count($values) === 0) throw new \InvalidArgumentException(
+			"Expects at least one value !"
+		);
 		$this->_name = $name;
 		$this->_label = $label;
 		$this->_values = array_flip($values);

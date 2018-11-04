@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 23/04/18
- * Time: 10:57
- */
-
 namespace wfw\engine\core\domain\repository;
 
 use wfw\engine\core\command\ICommand;
@@ -15,8 +8,7 @@ use wfw\engine\lib\PHP\types\UUID;
 /**
  * Repository d'aggregate root
  */
-interface IAggregateRootRepository
-{
+interface IAggregateRootRepository {
 	/**
 	 *  Ajoute un AggregateRoot au repository.
 	 *

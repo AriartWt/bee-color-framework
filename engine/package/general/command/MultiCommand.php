@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 29/06/18
- * Time: 15:08
- */
-
 namespace wfw\engine\package\general\command;
 
 use wfw\engine\core\command\Command;

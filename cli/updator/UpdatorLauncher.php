@@ -1,11 +1,6 @@
 #!/usr/bin/php -q
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 03/04/18
- * Time: 01:15
- */
+
 
 use wfw\cli\updator\conf\UpdatorConf;
 use wfw\cli\updator\Updator;

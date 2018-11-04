@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 14/01/18
- * Time: 07:07
- */
-
 namespace wfw\engine\core\conf;
 
 use stdClass;
@@ -15,8 +8,7 @@ use wfw\engine\lib\PHP\objects\StdClassOperator;
 /**
  *  Configuration de base
  */
-abstract class AbstractConf implements IConf
-{
+abstract class AbstractConf implements IConf {
 	/**
 	 *  Permet de sauvegarder automatiquement les configurations lors d'une modification
 	 * @var bool $_autoSave
@@ -45,8 +37,7 @@ abstract class AbstractConf implements IConf
 	 *
 	 * @param stdClass $rawConf
 	 */
-	public function __construct(stdClass $rawConf)
-	{
+	public function __construct(stdClass $rawConf) {
 		$this->_confMerges = [];
 		$this->_conf = $rawConf;
 		$this->_stdOperator = new StdClassOperator($rawConf);
@@ -64,8 +55,7 @@ abstract class AbstractConf implements IConf
 	 *  Permet de savoir si l'instance courante est en mode sauvegarde automatique
 	 * @return bool
 	 */
-	public function autoSaveModeEnabled(): bool
-	{
+	public function autoSaveModeEnabled(): bool {
 		return $this->_autoSave;
 	}
 
@@ -278,8 +268,7 @@ abstract class AbstractConf implements IConf
 	 *
 	 * @return array|null
 	 */
-	public function getArray(string $key):?array
-	{
+	public function getArray(string $key):?array {
 		$res = $this->get($key);
 		if(is_null($res)){
 			return null;

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 29/09/18
- * Time: 17:36
- */
-
 namespace wfw\engine\package\contact\domain\events;
 
 /**

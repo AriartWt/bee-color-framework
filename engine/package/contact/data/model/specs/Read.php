@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 02/10/18
- * Time: 11:29
- */
-
 namespace wfw\engine\package\contact\data\model\specs;
 
 use wfw\engine\core\data\specification\LeafSpecification;

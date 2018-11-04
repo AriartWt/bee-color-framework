@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 31/05/18
- * Time: 19:12
- */
-
 namespace wfw\tests\PHPUnit\unit\modules\news\data\model\objects;
 
 use PHPUnit\Framework\TestCase;

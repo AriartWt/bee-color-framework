@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 19/02/18
- * Time: 08:54
- */
-
 namespace wfw\engine\core\security\rules;
 
 use wfw\engine\core\action\IAction;
@@ -26,23 +19,14 @@ use wfw\engine\lib\network\http\HTTPStatus;
  * Si aucun token défini, la régle interromp les vérification et renvoie null.
  * Si un token est défini, il doit être présent et bon, sinon la régle renvoie false.
  */
-final class ValidToken implements IAccessRule
-{
-	/**
-	 * @var string|null $_csrf
-	 */
+final class ValidToken implements IAccessRule {
+	/** @var string|null $_csrf */
 	private $_csrf;
-	/**
-	 * @var null|string $_redirUrl
-	 */
+	/** @var null|string $_redirUrl */
 	private $_redirUrl;
-	/**
-	 * @var INotifier $_notifier
-	 */
+	/** @var INotifier $_notifier */
 	private $_notifier;
-	/**
-	 * @var null|IMessage $_message
-	 */
+	/** @var null|IMessage $_message */
 	private $_message;
 
 	/**
@@ -62,8 +46,8 @@ final class ValidToken implements IAccessRule
 		INotifier $notifier,
 		?string $redirUrl = null,
 		?IMessage $message = null,
-		?string $sessionKey = null)
-	{
+		?string $sessionKey = null
+	) {
 		$this->_csrf = $session->get($sessionKey ?? "csrfToken");
 		$this->_notifier = $notifier;
 		$this->_redirUrl = $redirUrl ?? "users/login";

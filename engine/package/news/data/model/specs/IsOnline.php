@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 25/05/18
- * Time: 12:10
- */
-
 namespace wfw\engine\package\news\data\model\specs;
 
 use wfw\engine\core\data\specification\LeafSpecification;
@@ -14,8 +7,7 @@ use wfw\engine\package\news\data\model\objects\Article;
 /**
  * L'article est en ligne
  */
-final class IsOnline extends LeafSpecification
-{
+final class IsOnline extends LeafSpecification {
 	/**
 	 *  Verifie que le candidat correspond à la spécification
 	 *
@@ -23,8 +15,7 @@ final class IsOnline extends LeafSpecification
 	 *
 	 * @return bool
 	 */
-	public function isSatisfiedBy($candidate): bool
-	{
+	public function isSatisfiedBy($candidate): bool {
 		/** @var Article $candidate */
 		return $candidate->isOnline();
 	}

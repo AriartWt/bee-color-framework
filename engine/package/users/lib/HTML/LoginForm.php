@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 29/03/18
- * Time: 08:53
- */
-
 namespace wfw\engine\package\users\lib\HTML;
 
 use wfw\engine\lib\HTML\helpers\forms\Form;
@@ -20,7 +13,6 @@ use wfw\site\package\web\security\data\LoginRule;
  * Formulaire de connexion
  */
 final class LoginForm extends Form {
-
 	/**
 	 * LoginForm constructor.
 	 *

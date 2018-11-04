@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 07/04/18
- * Time: 12:26
- */
-
 namespace wfw\daemons\sctl;
 
 use wfw\daemons\sctl\conf\SCTLConf;
@@ -17,32 +10,18 @@ use wfw\engine\lib\PHP\types\UUID;
 /**
  * Serveur sctl
  */
-final class SCTLServer implements ISCTLServer
-{
+final class SCTLServer implements ISCTLServer {
 	public const SCTL = 'sctl';
-	/**
-	 * @var SCTLConf $_conf
-	 */
+
+	/** @var SCTLConf $_conf */
 	private $_conf;
-
-	/**
-	 * @var resource $_semFile
-	 */
+	/** @var resource $_semFile */
 	private $_semFile;
-
-	/**
-	 * @var UUID $_pwd
-	 */
+	/** @var UUID $_pwd */
 	private $_pwd;
-
-	/**
-	 * @var resource $_socket
-	 */
+	/** @var resource $_socket */
 	private $_socket;
-
-	/**
-	 * @var ISocketProtocol $_protocol
-	 */
+	/** @var ISocketProtocol $_protocol */
 	private $_protocol;
 
 	/**
@@ -91,8 +70,7 @@ final class SCTLServer implements ISCTLServer
 		}
 	}
 
-	public function start(): void
-	{
+	public function start(): void {
 		while(true){
 			$socket = socket_accept($this->_socket);
 			$this->configureSocket($socket);
@@ -301,8 +279,7 @@ final class SCTLServer implements ISCTLServer
 	/**
 	 * @param int $signal Signal ayant éteint le serveur
 	 */
-	public function shutdown(int $signal): void
-	{
+	public function shutdown(int $signal): void {
 		$this->closeConnection();
 
 		sem_release($this->_semFile);

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 03/11/18
- * Time: 23:36
- */
-
 namespace wfw\engine\package\lang\security\data;
 
 use wfw\engine\core\security\data\AndRule;
@@ -34,7 +27,11 @@ final class TranslationPathRule implements IRule{
 			"Ce champ n'est pas valide !",
 			new RequiredFields("Ce champ est requis !","lang_path"),
 			new IsString("Ceci n'est pas une chaîne de caractères valide !","lang_path"),
-			new MaxStringLength("Ce champ ne peut excéder les 512 caractères de long !",512,"lang_path")
+			new MaxStringLength(
+				"Ce champ ne peut excéder les 512 caractères de long !",
+				512,
+				"lang_path"
+			)
 		);
 	}
 

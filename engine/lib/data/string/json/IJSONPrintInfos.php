@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 02/07/18
- * Time: 12:34
- */
-
 namespace wfw\engine\lib\data\string\json;
 
 /**

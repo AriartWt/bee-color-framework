@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 23/04/18
- * Time: 11:22
- */
-
 namespace wfw\engine\package\news\data\model\DTO;
 
 use wfw\engine\core\data\model\DTO\DTO;
@@ -17,8 +10,7 @@ use wfw\engine\package\news\domain\VisualLink;
 /**
  * Article
  */
-class Article extends DTO
-{
+class Article extends DTO {
 	/** @var Title $_title */
 	private $_title;
 	/** @var VisualLink $_link */

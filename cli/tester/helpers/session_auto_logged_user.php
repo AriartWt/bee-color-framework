@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 10/06/18
- * Time: 16:45
- */
+
 namespace wfw\engine\core\session;
 
 use wfw\engine\lib\PHP\types\UUID;

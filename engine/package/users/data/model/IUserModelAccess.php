@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 17/04/18
- * Time: 09:32
- */
-
 namespace wfw\engine\package\users\data\model;
 
 use wfw\engine\package\users\data\model\DTO\User;
@@ -13,8 +6,7 @@ use wfw\engine\package\users\data\model\DTO\User;
 /**
  * Acces au model utilisateur
  */
-interface IUserModelAccess
-{
+interface IUserModelAccess {
 	/**
 	 * @param string $login Login de l'utilisateur à chercher
 	 * @return null|User

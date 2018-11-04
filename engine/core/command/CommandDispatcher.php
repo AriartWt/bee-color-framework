@@ -1,12 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 11/02/18
- * Time: 08:31
- */
-
 namespace wfw\engine\core\command;
+
 use wfw\engine\core\command\errors\NoCommandHandlerFound;
 
 /**
@@ -14,39 +8,34 @@ use wfw\engine\core\command\errors\NoCommandHandlerFound;
  * L'instance courante tentera un à un chaque dispatcher dans l'ordre à chaque echec, et s'arrêtera
  * dés lors qu'un dispatch() aura réussi.
  */
-final class CommandDispatcher implements ICommandDispatcher
-{
-    /**
-     * @var ICommandDispatcher[] $_dispatchers
-     */
-    private $_dispatchers;
+final class CommandDispatcher implements ICommandDispatcher {
+	/** @var ICommandDispatcher[] $_dispatchers */
+	private $_dispatchers;
 
-    /**
-     * CommandDispatcher constructor.
-     *
-     * @param ICommandDispatcher ...$dispatchers
-     */
-    public function __construct(ICommandDispatcher ...$dispatchers)
-    {
-        $this->_dispatchers = $dispatchers;
-    }
+	/**
+	 * CommandDispatcher constructor.
+	 *
+	 * @param ICommandDispatcher ...$dispatchers
+	 */
+	public function __construct(ICommandDispatcher ...$dispatchers) {
+		$this->_dispatchers = $dispatchers;
+	}
 
-    /**
-     * @param ICommand $command Commande à dispatcher
-     * @throws NoCommandHandlerFound
-     */
-    public function dispatch(ICommand $command): void
-    {
-        $success = false;
-        foreach ($this->_dispatchers as $dispatcher){
-            try{
-                $dispatcher->dispatch($command);
-                $success = true;
-                break;
-            }catch(NoCommandHandlerFound $e){}
-        }
-        if(!$success){
-            throw new NoCommandHandlerFound("No handler found for command ".get_class($command));
-        }
-    }
+	/**
+	 * @param ICommand $command Commande à dispatcher
+	 * @throws NoCommandHandlerFound
+	 */
+	public function dispatch(ICommand $command): void {
+		$success = false;
+		foreach ($this->_dispatchers as $dispatcher){
+			try{
+				$dispatcher->dispatch($command);
+				$success = true;
+				break;
+			}catch(NoCommandHandlerFound $e){}
+		}
+		if(!$success){
+			throw new NoCommandHandlerFound("No handler found for command ".get_class($command));
+		}
+	}
 }

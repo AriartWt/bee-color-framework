@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 02/10/18
- * Time: 10:38
- */
-
 namespace wfw\engine\package\contact\data\model\DTO;
 
 use wfw\engine\core\data\model\DTO\DTO;

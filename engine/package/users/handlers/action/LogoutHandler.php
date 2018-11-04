@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 27/04/18
- * Time: 17:16
- */
-
 namespace wfw\engine\package\users\handlers\action;
 
 
@@ -20,8 +13,7 @@ use wfw\engine\core\session\ISession;
 /**
  * Deconnecte l'utilisateur courant
  */
-final class LogoutHandler implements IActionHandler
-{
+final class LogoutHandler implements IActionHandler {
 	/** @var ISession $_session */
 	private $_session;
 	/** @var INotifier $_notifier */

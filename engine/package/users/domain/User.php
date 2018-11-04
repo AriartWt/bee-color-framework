@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 10/12/17
- * Time: 02:57
- */
-
 namespace wfw\engine\package\users\domain;
 
 use InvalidArgumentException;
@@ -50,8 +43,7 @@ use wfw\engine\package\users\lib\confirmationCode\UserConfirmationCode;
 /**
  *  Utilisateur
  */
-class User extends AggregateRoot
-{
+class User extends AggregateRoot {
 	/** @var Login $_login */
 	private $_login;
 	/** @var Password $_password */
@@ -133,7 +125,11 @@ class User extends AggregateRoot
 	 * @throws IllegalInvocation Si l'utilisateur n'est pas en état d'attente de confirmation
 	 * @throws InvalidArgumentException
 	 */
-	public function confirm(UserConfirmationCode $code, string $confirmer, ?UserState $state = null){
+	public function confirm(
+		UserConfirmationCode $code,
+		string $confirmer,
+		?UserState $state = null
+	){
 		$this->throwIfRemoved();
 		if($this->_state instanceof UserWaitingForRegisteringConfirmation){
 			if($this->_state->isValide($code)){
@@ -165,7 +161,8 @@ class User extends AggregateRoot
 	}
 	
 	/**
-	 *  Permet de tenter de changer l'adresse mail de l'utilisateur courant. Place l"utilisateur dans l'état UserWaitingForEmailConfirmation
+	 *  Permet de tenter de changer l'adresse mail de l'utilisateur courant. Place l"utilisateur
+	 * dans l'état UserWaitingForEmailConfirmation
 	 *
 	 * @param Email                $email Nouvel email
 	 * @param UserConfirmationCode $code  Code de confirmation pour vérifier l'adresse mail
@@ -184,7 +181,8 @@ class User extends AggregateRoot
 	}
 	
 	/**
-	 *  Annule la procédure de changement d'adresse email de l'utilisateur courant si l'utilisateur courant est en attente de confirmaton pour sa nouvelle adresse mail
+	 *  Annule la procédure de changement d'adresse email de l'utilisateur courant si l'utilisateur
+	 * courant est en attente de confirmaton pour sa nouvelle adresse mail
 	 *
 	 * @param string $canceler Identifiant de l'utilisateur à l'origine de l'annulation
 	 * @throws IllegalInvocation
@@ -197,9 +195,9 @@ class User extends AggregateRoot
 				new EnabledUser(),
 				$canceler
 			));
-		}else{
-			throw new IllegalInvocation("Cannot cancel email change : the current user is not waiting for email confirmation");
-		}
+		}else throw new IllegalInvocation(
+			"Cannot cancel email change : the current user is not waiting for email confirmation"
+		);
 	}
 
 	/**
@@ -212,7 +210,11 @@ class User extends AggregateRoot
 	 * @throws IllegalInvocation
 	 * @throws InvalidArgumentException
 	 */
-	public function confirmEmail(UserConfirmationCode $code,string $confirmer,?UserState $state=null){
+	public function confirmEmail(
+		UserConfirmationCode $code,
+		string $confirmer,
+		?UserState $state=null
+	){
 		$this->throwIfRemoved();
 		if($this->_state instanceof UserWaitingForEmailConfirmation){
 			if($this->_state->isValide($code)){
@@ -244,9 +246,9 @@ class User extends AggregateRoot
 			$this->registerEvent(new UserPasswordChangedEvent(
 				$this->getId(),$password,$modifier
 			));
-		}else{
-			throw new InvalidArgumentException("Cannot modify password : the given old password is wrong !");
-		}
+		}else throw new InvalidArgumentException(
+			"Cannot modify password : the given old password is wrong !"
+		);
 	}
 	
 	/**
@@ -277,9 +279,9 @@ class User extends AggregateRoot
 			$this->registerEvent(new UserPasswordRetrievingCanceledEvent(
 				$this->getId(), new EnabledUser(),$canceler
 			));
-		}else{
-			throw new IllegalInvocation("Cannot cancel password retriving : user is not in retriving state !");
-		}
+		}else throw new IllegalInvocation(
+			"Cannot cancel password retriving : user is not in retriving state !"
+		);
 	}
 
 	/**
@@ -307,12 +309,10 @@ class User extends AggregateRoot
 					$state ?? new EnabledUser(),
 					$reseter
 				));
-			}else{
-				throw new InvalidArgumentException("Wrong confirmation code !");
-			}
-		}else{
-			throw new IllegalInvocation("Cannot reset password : user is not in UserWaitingForPasswordReset state !");
-		}
+			}else throw new InvalidArgumentException("Wrong confirmation code !");
+		}else throw new IllegalInvocation(
+			"Cannot reset password : user is not in UserWaitingForPasswordReset state !"
+		);
 	}
 	
 	/**
@@ -325,9 +325,9 @@ class User extends AggregateRoot
 	public function modifySettings(array $settings, string $modifier){
 		$this->throwIfRemoved();
 		foreach($settings as $k=>$s){
-			if(!is_string($k)){
-				throw new InvalidArgumentException("Invalid index at offset $k ! (Only string index are allowed)");
-			}
+			if(!is_string($k)) throw new InvalidArgumentException(
+				"Invalid index at offset $k ! (Only string index are allowed)"
+			);
 		}
 		$this->registerEvent(new UserSettingsModifiedEvent(
 			$this->getId(),$settings,$modifier)
@@ -344,11 +344,12 @@ class User extends AggregateRoot
 	public function removeSettings(array $settings, string $remover){
 		$this->throwIfRemoved();
 		foreach($settings as $k=>$s){
-			if(!is_string($s)){
-				throw new InvalidArgumentException("Invalid key at offset $k ! (Only string index are allowed)");
-			}else if(!$this->_settings->existsKey($s)){
-				throw new InvalidArgumentException("Invalid key at offset $k : $s doesn't exists !");
-			}
+			if(!is_string($s)) throw new InvalidArgumentException(
+				"Invalid key at offset $k ! (Only string index are allowed)"
+			);
+			else if(!$this->_settings->existsKey($s)) throw new InvalidArgumentException(
+				"Invalid key at offset $k : $s doesn't exists !"
+			);
 		}
 		$this->registerEvent(new UserSettingsRemovedEvent(
 			$this->getId(),$settings,$remover
@@ -455,8 +456,10 @@ class User extends AggregateRoot
 	}
 
 	/**
-	 *  Applique l'événement de demande de changement de l'adresse mail de l'utilisateur. Place l'utilisateur dans
+	 *  Applique l'événement de demande de changement de l'adresse mail de l'utilisateur. Place
+	 * l'utilisateur dans
 	 *        l'état UserWaitingForEmailConfirmation
+	 *
 	 * @param AskedForEmailChangeEvent $e Evenement de demande de changement d'adresse mail
 	 */
 	protected function applyAskedForEmailChangeEvent(AskedForEmailChangeEvent $e){
@@ -464,7 +467,9 @@ class User extends AggregateRoot
 	}
 
 	/**
-	 *  Applique l'événement d'annulation de changement d'adresse mail. Replace l'utilisateur dans l'état Enabled
+	 *  Applique l'événement d'annulation de changement d'adresse mail. Replace l'utilisateur dans
+	 * l'état Enabled
+	 *
 	 * @param CanceledUserMailChangeEvent $e Evenement d'annulation de changement d'adresse mail
 	 */
 	protected function applyCanceledUserMailChangeEvent(CanceledUserMailChangeEvent $e){
@@ -489,9 +494,11 @@ class User extends AggregateRoot
 	}
 
 	/**
-	 *  Applique l'événement de demande de réinitialisation de mot de passe. Place l'utilisateur courant dans
-	 *        l'état UserWaitingForRe
-	 * @param AskedForPasswordRetrievingEvent $e Evenemnt de demande de réinitialisation de mot de passe
+	 *  Applique l'événement de demande de réinitialisation de mot de passe. Place l'utilisateur
+	 * courant dans l'état UserWaitingForRe
+	 *
+	 * @param AskedForPasswordRetrievingEvent $e Evenemnt de demande de réinitialisation de mot de
+	 *                                           passe
 	 */
 	protected function applyAskedForPasswordRetrievingEvent(AskedForPasswordRetrievingEvent $e){
 		$this->_state = $e->getUserState();
@@ -499,9 +506,13 @@ class User extends AggregateRoot
 
 	/**
 	 *  Annule la demande de réinitialisation de mot de passe.
-	 * @param UserPasswordRetrievingCanceledEvent $e Evenement d'annulation de réinitialisation de mot de passe
+	 *
+	 * @param UserPasswordRetrievingCanceledEvent $e Evenement d'annulation de réinitialisation de
+	 *                                               mot de passe
 	 */
-	protected function applyUserPasswordRetrievingCanceledEvent(UserPasswordRetrievingCanceledEvent $e){
+	protected function applyUserPasswordRetrievingCanceledEvent(
+		UserPasswordRetrievingCanceledEvent $e
+	){
 		$this->_state = $e->getUserState();
 	}
 
@@ -561,7 +572,9 @@ class User extends AggregateRoot
 	/**
 	 * @param UserRegistrationProcedureCanceledEvent $e
 	 */
-	protected function applyUserRegistrationProcedureCanceledEvent(UserRegistrationProcedureCanceledEvent $e){
+	protected function applyUserRegistrationProcedureCanceledEvent(
+		UserRegistrationProcedureCanceledEvent $e
+	){
 		$this->_type = $e->removeUser() ? new RemovedUser() : new DisabledUser();
 	}
 }

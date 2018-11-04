@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 16/02/18
- * Time: 09:34
- */
-
 namespace wfw\engine\core\action;
 
 use wfw\engine\core\action\errors\ActionHandlerNotFound;
@@ -14,16 +7,10 @@ use wfw\engine\core\action\errors\InvalidActionHandler;
 /**
  * Router d'actions de base.
  */
-final class ActionRouter implements IActionRouter
-{
-	/**
-	 * @var IActionHandlerFactory $_factory
-	 */
+final class ActionRouter implements IActionRouter {
+	/** @var IActionHandlerFactory $_factory */
 	private $_factory;
-
-	/**
-	 * @var int $_foldingLimit
-	 */
+	/** @var int $_foldingLimit */
 	private $_foldingLimit;
 
 	/**
@@ -34,8 +21,7 @@ final class ActionRouter implements IActionRouter
 	 *                          repertoirs de recherche. Si la limite est atteinte, et que le
 	 *                          handler n'est pas trouvé, l'exception HandlerNotFound sera levée.
 	 */
-	public function __construct(IActionHandlerFactory $factory,int $foldingLimit = 5)
-	{
+	public function __construct(IActionHandlerFactory $factory,int $foldingLimit = 5) {
 		$this->_factory = $factory;
 		$this->_foldingLimit = $foldingLimit;
 	}
@@ -44,8 +30,7 @@ final class ActionRouter implements IActionRouter
 	 * @param IAction $action Action à router
 	 * @return IActionHandler Handler destinataire de l'action
 	 */
-	public function findActionHandler(IAction $action): IActionHandler
-	{
+	public function findActionHandler(IAction $action): IActionHandler {
 		$path = explode('/',$action->getInternalPath());
 		if(!is_null($package = array_shift($path))){
 			$handlerClass = "package\\$package\\handlers\\action";

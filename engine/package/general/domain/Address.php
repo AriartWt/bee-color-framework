@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 20/07/18
- * Time: 10:49
- */
-
 namespace wfw\engine\package\general\domain;
 
 use wfw\engine\lib\data\string\json\IJSONPrintInfos;

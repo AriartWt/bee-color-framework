@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 30/06/18
- * Time: 16:50
- */
-
 namespace wfw\engine\package\users\lib\HTML;
 
 use wfw\engine\lib\HTML\helpers\forms\Form;

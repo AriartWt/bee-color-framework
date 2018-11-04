@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 27/06/18
- * Time: 16:56
- */
-
 namespace wfw\engine\core\security\data\rules;
 
 use wfw\engine\core\security\data\IRule;

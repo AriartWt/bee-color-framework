@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 20/06/18
- * Time: 15:49
- */
-
 namespace wfw\engine\package\users\data\model\specs;
 
 

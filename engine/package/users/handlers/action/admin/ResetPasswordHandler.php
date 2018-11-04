@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 27/06/18
- * Time: 16:45
- */
-
 namespace wfw\engine\package\users\handlers\action\admin;
 
 use wfw\engine\core\command\ICommand;
@@ -28,6 +21,7 @@ use wfw\engine\package\users\security\data\PasswordResetRule;
 final class ResetPasswordHandler extends DefaultUserActionHandler implements IDomainEventListener{
 	/** @var null|UserPasswordResetedEvent $_event */
 	private $_event;
+	/** @var IUserModelAccess $_access */
 	private $_access;
 
 	/**

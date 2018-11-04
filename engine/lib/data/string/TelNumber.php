@@ -6,16 +6,15 @@ namespace wfw\engine\lib\data\string;
  * Permet des opérations sur les numéros de téléphones.
  */
 final class TelNumber{
-
-    /**
-     *  Uniformise le numéro de téléphone passé en entrée afin de le faire correspondre au format
-     * suivant : +[code pays][espace](0)[numéro]
-     *
-     * @param  string $number Numéro à standardiser
-     * @param  string $defaultCountry
-     * @return string         Numéro standardisé
-     * @throws \Exception
-     */
+	/**
+	 *  Uniformise le numéro de téléphone passé en entrée afin de le faire correspondre au format
+	 * suivant : +[code pays][espace](0)[numéro]
+	 *
+	 * @param  string $number Numéro à standardiser
+	 * @param  string $defaultCountry
+	 * @return string         Numéro standardisé
+	 * @throws \Exception
+	 */
 	public static function standardize($number,$defaultCountry){
 		$indicateur=false;
 		if(preg_match("/^\+/",$number)||preg_match("/^00/",$number)){
@@ -37,9 +36,11 @@ final class TelNumber{
 		}
 		if(strlen($numero)==12){
 			return $indicateur." ".$numero;
-		}else{
-			throw new \Exception("Unexpected tel number length. 12 was expected but ".strlen($numero)."given. Input number: \"".$number."\". Parsed number:\"".$numero."\" Country Code : ".$indicateur);
-		}
+		}else throw new \Exception(
+			"Unexpected tel number length. 12 was expected but ".strlen($numero)
+			."given. Input number: \"".$number."\". Parsed number:\"".$numero."\" Country Code : "
+			.$indicateur
+		);
 	}
 
 	/**

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 07/05/18
- * Time: 11:42
- */
-
 namespace wfw\engine\package\uploader\handlers\action;
 
 use FilesystemIterator;
@@ -18,8 +11,7 @@ use wfw\engine\lib\PHP\types\PHPString;
 /**
  * Handler de base
  */
-abstract class UploadHandler implements IActionHandler
-{
+abstract class UploadHandler implements IActionHandler {
 	/** @var IConf $_conf */
 	protected $_conf;
 	/** @var string $_path */

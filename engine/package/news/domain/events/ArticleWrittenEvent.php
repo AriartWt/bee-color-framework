@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 23/04/18
- * Time: 11:19
- */
-
 namespace wfw\engine\package\news\domain\events;
 
 use wfw\engine\core\domain\events\IAggregateRootGeneratedEvent;
@@ -17,8 +10,7 @@ use wfw\engine\package\news\domain\VisualLink;
 /**
  * L'article a été écrit
  */
-final class ArticleWrittenEvent extends ArticleEvent implements IAggregateRootGeneratedEvent
-{
+final class ArticleWrittenEvent extends ArticleEvent implements IAggregateRootGeneratedEvent {
 	/** @var Title $_title */
 	private $_title;
 	/** @var VisualLink $_link */

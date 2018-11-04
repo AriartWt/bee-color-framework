@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 15/12/17
- * Time: 01:20
- */
+
 
     define("START_TIME",microtime(1));
 

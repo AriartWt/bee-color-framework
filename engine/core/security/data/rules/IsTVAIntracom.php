@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 20/07/18
- * Time: 15:48
- */
-
 namespace wfw\engine\core\security\data\rules;
 
 use SoapClient;
@@ -16,7 +9,6 @@ use wfw\engine\core\security\data\ForEachFieldRule;
  * en utilisant le service SOAP http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl
  */
 final class IsTVAIntracom extends ForEachFieldRule{
-
 	/**
 	 * @param mixed $data Donnée sur laquelle appliquer la règle
 	 * @return bool

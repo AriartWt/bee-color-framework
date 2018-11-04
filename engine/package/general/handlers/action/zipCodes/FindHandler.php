@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 23/07/18
- * Time: 14:06
- */
-
 namespace wfw\engine\package\general\handlers\action\zipCodes;
 
 use wfw\engine\core\action\IAction;

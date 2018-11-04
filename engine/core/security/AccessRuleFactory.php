@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 18/02/18
- * Time: 13:52
- */
-
 namespace wfw\engine\core\security;
 
 use Dice\Dice;
@@ -13,11 +6,8 @@ use Dice\Dice;
 /**
  * Factory d'AccessRule basée sur Dice
  */
-final class AccessRuleFactory implements IAccessRuleFactory
-{
-	/**
-	 * @var Dice $_dice
-	 */
+final class AccessRuleFactory implements IAccessRuleFactory {
+	/** @var Dice $_dice */
 	private $_dice;
 
 	/**
@@ -25,8 +15,7 @@ final class AccessRuleFactory implements IAccessRuleFactory
 	 *
 	 * @param Dice $dice Dice
 	 */
-	public function __construct(Dice $dice)
-	{
+	public function __construct(Dice $dice) {
 		$this->_dice = $dice;
 	}
 
@@ -37,8 +26,7 @@ final class AccessRuleFactory implements IAccessRuleFactory
 	 * @param array  $params    Paramètres de construction
 	 * @return IAccessRule
 	 */
-	public function create(string $ruleClass, array $params = []): IAccessRule
-	{
+	public function create(string $ruleClass, array $params = []): IAccessRule {
 		if(is_a($ruleClass,IAccessRule::class,true)){
 			/** @var IAccessRule $rule */
 			$rule = $this->_dice->create($ruleClass,$params);

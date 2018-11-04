@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 26/01/18
- * Time: 03:00
- */
-
 namespace wfw\daemons\modelSupervisor\server\conf;
 
 use stdClass;
@@ -43,8 +36,11 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 	 * @param null|string $siteConfs   (optionnel) données de configuration du site
 	 * @param string      $basePath    (optionnel defaut : DAEMONS) chemin absolu permettant la résolution du chemin relatif des fichiers.
 	 */
-	public function __construct(string $engineConfs,?string $siteConfs=null,string $basePath = DAEMONS)
-	{
+	public function __construct(
+		string $engineConfs,
+		?string $siteConfs=null,
+		string $basePath = DAEMONS
+	){
 		$this->_kvsAddr = (new KVSConfs($engineConfs,$siteConfs))->getSocketPath();
 		$this->_basePath = $basePath;
 		$confIO = new JSONConfIOAdapter();

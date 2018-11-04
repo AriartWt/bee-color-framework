@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 31/05/18
- * Time: 16:19
- */
-
 namespace wfw\cli\tester\contexts;
 
 use wfw\cli\backup\LocalMysqlDbBackup;
@@ -29,8 +22,7 @@ use wfw\engine\lib\PHP\errors\IllegalInvocation;
  * from all integration tests.
  * It allow some fantasy like manage a test DB.
  */
-final class TestEnv
-{
+final class TestEnv {
 	/** @var null|ITestsEnvironment $instance */
 	private static $instance;
 

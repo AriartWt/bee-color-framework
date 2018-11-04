@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 01/07/18
- * Time: 08:19
- */
-
 namespace wfw\engine\core\security\rules;
 
 use wfw\engine\core\action\IAction;

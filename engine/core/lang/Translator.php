@@ -1,30 +1,16 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 21/02/18
- * Time: 08:03
- */
-
 namespace wfw\engine\core\lang;
 
 /**
  * Permet d'effectuer des traductions, en se basant sur des StrRepositories créés à partir de
  * fichiers de langue.
  */
-final class Translator implements ITranslator
-{
-	/**
-	 * @var IStrRepository[] $_repositories
-	 */
+final class Translator implements ITranslator {
+	/** @var IStrRepository[] $_repositories */
 	private $_repositories;
-	/**
-	 * @var string $_defaultLang
-	 */
+	/** @var string $_defaultLang */
 	private $_defaultLang;
-	/**
-	 * @var string $_baseKey
-	 */
+	/** @var string $_baseKey */
 	private $_baseKey;
 
 	/**
@@ -53,8 +39,7 @@ final class Translator implements ITranslator
 	 * @param string $key Clé d'obtention d'une chaine
 	 * @return string Chaine correspondante
 	 */
-	public function get(string $key): string
-	{
+	public function get(string $key): string {
 		return $this->_repositories[$this->_defaultLang]->get($this->_baseKey.$key);
 	}
 
@@ -62,8 +47,7 @@ final class Translator implements ITranslator
 	 * @param null|string $basePath Chemin de base ajouté devant les clén pour une résolution
 	 *                              relative. Null : resolution absolue.
 	 */
-	public function changeBaseKey(?string $basePath = null): void
-	{
+	public function changeBaseKey(?string $basePath = null): void {
 		$this->_baseKey = $basePath ?? "";
 	}
 
@@ -76,8 +60,7 @@ final class Translator implements ITranslator
 	 * @return string Chaine correspondante, dont les motifs de remplacement sont substitués par les
 	 *                              termes fournis.
 	 */
-	public function getAndReplace(string $key, string ...$replaces): string
-	{
+	public function getAndReplace(string $key, string ...$replaces): string {
 		return $this->_repositories[$this->_defaultLang]->getAndReplace(
 			$this->_baseKey.$key,
 			...$replaces
@@ -87,16 +70,14 @@ final class Translator implements ITranslator
 	/**
 	 * @return string Langue par défaut.
 	 */
-	public function getCurrentLanguage(): string
-	{
+	public function getCurrentLanguage(): string {
 		return $this->_defaultLang;
 	}
 
 	/**
 	 * @param string $lang Nouvelle langue par défaut.
 	 */
-	public function changeCurrentLanguage(string $lang): void
-	{
+	public function changeCurrentLanguage(string $lang): void {
 		if(isset($this->_repositories[$lang])){
 			$this->_defaultLang = $lang;
 		}else{
@@ -109,8 +90,7 @@ final class Translator implements ITranslator
 	 * @param null|string $lang Langue souhaitée
 	 * @return string
 	 */
-	public function getAndTranslate(string $key, ?string $lang = null): string
-	{
+	public function getAndTranslate(string $key, ?string $lang = null): string {
 		$lang = $lang ?? $this->_defaultLang;
 		return $this->_repositories[$lang]->get($this->_baseKey.$key);
 	}
@@ -125,8 +105,7 @@ final class Translator implements ITranslator
 		string $key,
 		?string $lang = null,
 		string ...$replaces
-	): string
-	{
+	): string {
 		$lang = $lang ?? $this->_defaultLang;
 		return $this->_repositories[$lang]->getAndReplace(
 			$this->_baseKey.$key,
@@ -138,8 +117,7 @@ final class Translator implements ITranslator
 	 * @param string $key Clé représentant à sous-ensemble de clés
 	 * @return null|\stdClass
 	 */
-	public function getAll(string $key): ?\stdClass
-	{
+	public function getAll(string $key): ?\stdClass {
 		return $this->_repositories[$this->_defaultLang]->getAll($key);
 	}
 
@@ -148,8 +126,7 @@ final class Translator implements ITranslator
 	 * @param string $lang Langue souhaitée
 	 * @return \stdClass Ensemble de traductions
 	 */
-	public function getAllTranslations(string $key, ?string $lang = null): \stdClass
-	{
+	public function getAllTranslations(string $key, ?string $lang = null): \stdClass {
 		$lang = $lang ?? $this->_defaultLang;
 		return $this->_repositories[$lang]->getAll($key);
 	}

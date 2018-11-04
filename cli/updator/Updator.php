@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 06/04/18
- * Time: 03:31
- */
-
 namespace wfw\cli\updator;
 
 use wfw\cli\updator\conf\UpdatorConf;
@@ -14,11 +7,8 @@ use wfw\cli\updator\errors\UpdatorFailure;
 /**
  * Execute les différent manoeuvre pour les mises à jour.
  */
-final class Updator implements IUpdator
-{
-	/**
-	 * @var UpdatorConf $_conf
-	 */
+final class Updator implements IUpdator {
+	/** @var UpdatorConf $_conf */
 	private $_conf;
 
 	/**
@@ -26,8 +16,7 @@ final class Updator implements IUpdator
 	 *
 	 * @param UpdatorConf $conf Configurations
 	 */
-	public function __construct(UpdatorConf $conf)
-	{
+	public function __construct(UpdatorConf $conf) {
 		$this->_conf = $conf;
 	}
 
@@ -36,8 +25,7 @@ final class Updator implements IUpdator
 	 *
 	 * @return array Liste des mises à jour à installer
 	 */
-	public function check(): array
-	{
+	public function check(): array {
 		$crl = curl_init($this->_conf->getCheckUrl());
 		curl_setopt($crl,CURLOPT_RETURNTRANSFER,true);
 		$res = json_decode(curl_exec($crl),true)??[];
@@ -52,8 +40,7 @@ final class Updator implements IUpdator
 	 * @param null|string $dest Destination des mises à jour
 	 * @return void
 	 */
-	public function download(?string $dest = null): void
-	{
+	public function download(?string $dest = null): void {
 		$path = $this->_conf->getWorkingDir();
 		if($dest) $path = $dest;
 		if(is_dir("$path/updates")) $this->exec("rm -rf \"$path/updates\"");
@@ -82,8 +69,7 @@ final class Updator implements IUpdator
 	/**
 	 * @param null|string $source Dossier dans lequel se trouvent les mises à jour à installer.
 	 */
-	public function install(?string $source = null): void
-	{
+	public function install(?string $source = null): void {
 		$path = $this->_conf->getWorkingDir()."/updates.zip";
 		if($source) $path = $source;
 		if(!is_file($path)) throw new UpdatorFailure("$path : no such file or directory !");

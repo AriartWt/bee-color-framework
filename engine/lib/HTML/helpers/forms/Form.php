@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 15/03/18
- * Time: 03:47
- */
-
 namespace wfw\engine\lib\HTML\helpers\forms;
 
 use InvalidArgumentException;

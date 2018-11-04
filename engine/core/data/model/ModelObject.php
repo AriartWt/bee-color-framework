@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 12/12/17
- * Time: 04:41
- */
-
 namespace wfw\engine\core\data\model;
 
 use wfw\engine\core\data\model\DTO\IDTO;
@@ -38,8 +31,7 @@ abstract class ModelObject implements IModelObject {
 	 * @param IModelObject $o
 	 * @return bool
 	 */
-	public function equals(IModelObject $o): bool
-	{
+	public function equals(IModelObject $o): bool {
 		return (string) $this->getId() === (string) $o->getId();
 	}
 

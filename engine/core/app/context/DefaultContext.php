@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 11/02/18
- * Time: 10:29
- */
-
 namespace wfw\engine\core\app\context;
 
 use Dice\Dice;

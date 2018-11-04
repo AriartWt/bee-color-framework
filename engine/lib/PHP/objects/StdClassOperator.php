@@ -9,9 +9,7 @@ use Traversable;
  *  Permet des recherches par clé dans des objets (recursif)
  */
 final class StdClassOperator implements \IteratorAggregate {
-	/**
-	 * @var stdClass $_obj
-	 */
+	/** @var stdClass $_obj */
 	private $_obj;
 
 	/**

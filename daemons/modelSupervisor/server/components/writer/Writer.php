@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 24/01/18
- * Time: 07:24
- */
-
 namespace wfw\daemons\modelSupervisor\server\components\writer;
 
 use wfw\daemons\kvstore\server\KVSModes;
@@ -33,193 +26,182 @@ use wfw\engine\lib\PHP\types\PHPString;
 /**
  *  Composant gérant les écritures et modifications des models.
  */
-final class Writer implements IMSServerComponent
-{
-    public const NAME = "writer";
+final class Writer implements IMSServerComponent {
+	public const NAME = "writer";
 
-    /**
-     * @var WriterWorker $_worker
-     */
-    private $_worker;
+	/** @var WriterWorker $_worker */
+	private $_worker;
+	/** @var string $_serverkey */
+	private $_serverkey;
 
-    /**
-     * @var string $_serverkey
-     */
-    private $_serverkey;
+	/**
+	 *  Appelé par le MSServerModuleInitializer
+	 *
+	 * @param string                                 $socket_path
+	 * @param string                                 $serverKey
+	 * @param array                                  $modelList
+	 * @param ISerializer                    $serializer
+	 * @param IDataParser                    $dataParser
+	 * @param IMSServerComponentEnvironment  $environment
+	 * @param IMSServerRequestHandlerManager $requestHandlerManager
+	 *
+	 * @throws \wfw\daemons\kvstore\client\errors\AlreadyLogged
+	 * @throws \wfw\daemons\kvstore\client\errors\KVSClientFailure
+	 * @throws \wfw\daemons\kvstore\errors\KVSFailure
+	 */
+	public function __construct(
+		string $socket_path,
+		string $serverKey,
+		array $modelList,
+		ISerializer $serializer,
+		IDataParser $dataParser,
+		IMSServerComponentEnvironment $environment,
+		IMSServerRequestHandlerManager $requestHandlerManager
+	) {
+		$this->_serverkey = $serverKey;
+		//On initialise le mode de stockage par défaut pour les KVSAccess
+		$defaultStorage = $environment->getString("kvs/default_storage");
+		if(!is_null($defaultStorage) && KVSModes::exists($defaultStorage)){
+			$defaultStorage = KVSModes::get($defaultStorage);
+		}else{
+			$defaultStorage = null;
+		}
 
-    /**
-     *  Appelé par le MSServerModuleInitializer
-     *
-     * @param string                                 $socket_path
-     * @param string                                 $serverKey
-     * @param array                                  $modelList
-     * @param ISerializer                    $serializer
-     * @param IDataParser                    $dataParser
-     * @param IMSServerComponentEnvironment  $environment
-     * @param IMSServerRequestHandlerManager $requestHandlerManager
-     *
-     * @throws \wfw\daemons\kvstore\client\errors\AlreadyLogged
-     * @throws \wfw\daemons\kvstore\client\errors\KVSClientFailure
-     * @throws \wfw\daemons\kvstore\errors\KVSFailure
-     */
-    public function __construct(
-        string $socket_path,
-        string $serverKey,
-        array $modelList,
-        ISerializer $serializer,
-        IDataParser $dataParser,
-        IMSServerComponentEnvironment $environment,
-        IMSServerRequestHandlerManager $requestHandlerManager
-    )
-    {
-        $this->_serverkey = $serverKey;
-        //On initialise le mode de stockage par défaut pour les KVSAccess
-        $defaultStorage = $environment->getString("kvs/default_storage");
-        if(!is_null($defaultStorage) && KVSModes::exists($defaultStorage)){
-            $defaultStorage = KVSModes::get($defaultStorage);
-        }else{
-            $defaultStorage = null;
-        }
+		//Acces pour le ModelLoader
+		$kvsAccessLoader = new KVSAccess(
+			$environment->getString("kvs/addr"),
+			$environment->getString("kvs/login"),
+			$environment->getString("kvs/password"),
+			$environment->getString("kvs/container"),
+			$defaultStorage
+		);
+		$kvsAccessLoader->login();
 
-        //Acces pour le ModelLoader
-        $kvsAccessLoader = new KVSAccess(
-            $environment->getString("kvs/addr"),
-            $environment->getString("kvs/login"),
-            $environment->getString("kvs/password"),
-            $environment->getString("kvs/container"),
-            $defaultStorage
-        );
-        $kvsAccessLoader->login();
+		//Access pour le ModelStorage
+		$kvsAccessStorage = new KVSAccess(
+			$environment->getString("kvs/addr"),
+			$environment->getString("kvs/login"),
+			$environment->getString("kvs/password"),
+			$environment->getString("kvs/container"),
+			$defaultStorage
+		);
+		$kvsAccessStorage->login();
 
-        //Access pour le ModelStorage
-        $kvsAccessStorage = new KVSAccess(
-            $environment->getString("kvs/addr"),
-            $environment->getString("kvs/login"),
-            $environment->getString("kvs/password"),
-            $environment->getString("kvs/container"),
-            $defaultStorage
-        );
-        $kvsAccessStorage->login();
+		//Si le serveur n'a pas été éteint correctement et qu'un worker est toujours actif,
+		//on le tue.
+		$pidFile = $environment->getWorkingDir().DS."pid";
+		if(file_exists($pidFile)){
+			posix_kill(file_get_contents($pidFile),9);
+			unlink($pidFile);
+		}
 
-        //Si le serveur n'a pas été éteint correctement et qu'un worker est toujours actif,
-        //on le tue.
-        $pidFile = $environment->getWorkingDir().DS."pid";
-        if(file_exists($pidFile)){
-            posix_kill(file_get_contents($pidFile),9);
-            unlink($pidFile);
-        }
+		$synchronizer = $this->createSynchronizer(
+			$environment,
+			$serializer,
+			$modelList
+		);
+		$synchronizer->synchronize();
 
-        $synchronizer = $this->createSynchronizer(
-            $environment,
-            $serializer,
-            $modelList
-        );
-        $synchronizer->synchronize();
+		$this->_worker = new WriterWorker(
+			$socket_path,
+			[
+				"protocol" => new MSServerSocketProtocol()
+			],
+			dirname($socket_path),
+			$serializer,
+			$dataParser,
+			$environment,
+			new WriterComponentWorkerParams(
+				$serverKey,
+				new ModelManager(
+					new KVStoreBasedModelLoader(
+						$kvsAccessLoader,
+						$modelList
+					),
+					new KVSBasedModelStorage(
+						$kvsAccessStorage
+					)
+				),
+				$synchronizer
+			)
+		);
 
-        $this->_worker = new WriterWorker(
-            $socket_path,
-            [
-                "protocol" => new MSServerSocketProtocol()
-            ],
-            dirname($socket_path),
-            $serializer,
-            $dataParser,
-            $environment,
-            new WriterComponentWorkerParams(
-                $serverKey,
-                new ModelManager(
-                    new KVStoreBasedModelLoader(
-                        $kvsAccessLoader,
-                        $modelList
-                    ),
-                    new KVSBasedModelStorage(
-                        $kvsAccessStorage
-                    )
-                ),
-                $synchronizer
-            )
-        );
+		$requestHandlerManager->addRequestHandler(
+			IWriterRequest::class,
+			new WriterRequestHandler($this->_worker));
+	}
 
-        $requestHandlerManager->addRequestHandler(
-            IWriterRequest::class,
-            new WriterRequestHandler($this->_worker));
-    }
+	/**
+	 * Crée un modelSyncrhonizer
+	 *
+	 * @param IMSServerComponentEnvironment $environment
+	 * @param ISerializer                   $serializer
+	 * @param array                         $modelList
+	 * @return IModelSynchronizer
+	 * @throws \InvalidArgumentException
+	 */
+	private function createSynchronizer(
+		IMSServerComponentEnvironment $environment,
+		ISerializer $serializer,
+		array $modelList
+	):IModelSynchronizer {
+		$snapshotDir = $environment->getString("snapshot_path")??$environment->getWorkingDir();
+		$snapshotDir = new PHPString($snapshotDir);
+		if(!$snapshotDir->startBy("/")){
+			$snapshotDir = $environment->getWorkingDir().DS.$snapshotDir;
+		}
+		$snapshotDir = (string)$snapshotDir;
+		//On initialise le mode de stockage par défaut pour les KVSAccess
+		$defaultStorage = $environment->getString("kvs/default_storage");
+		if(!is_null($defaultStorage) && KVSModes::exists($defaultStorage)){
+			$defaultStorage = KVSModes::get($defaultStorage);
+		}else{
+			$defaultStorage = null;
+		}
 
-    /**
-     * Crée un modelSyncrhonizer
-     *
-     * @param IMSServerComponentEnvironment $environment
-     * @param ISerializer                   $serializer
-     * @param array                         $modelList
-     * @return IModelSynchronizer
-     * @throws \InvalidArgumentException
-     */
-    private function createSynchronizer(
-        IMSServerComponentEnvironment $environment,
-        ISerializer $serializer,
-        array $modelList
-    ):IModelSynchronizer
-    {
-        $snapshotDir = $environment->getString("snapshot_path")??$environment->getWorkingDir();
-        $snapshotDir = new PHPString($snapshotDir);
-        if(!$snapshotDir->startBy("/")){
-            $snapshotDir = $environment->getWorkingDir().DS.$snapshotDir;
-        }
-        $snapshotDir = (string)$snapshotDir;
-        //On initialise le mode de stockage par défaut pour les KVSAccess
-        $defaultStorage = $environment->getString("kvs/default_storage");
-        if(!is_null($defaultStorage) && KVSModes::exists($defaultStorage)){
-            $defaultStorage = KVSModes::get($defaultStorage);
-        }else{
-            $defaultStorage = null;
-        }
+		$kvsAccess = new KVSAccess(
+			$environment->getString("kvs/addr"),
+			$environment->getString("kvs/login"),
+			$environment->getString("kvs/password"),
+			$environment->getString("kvs/container"),
+			$defaultStorage
+		);
+		$modelStorage = new KVSBasedModelStorage($kvsAccess);
 
-        $kvsAccess = new KVSAccess(
-            $environment->getString("kvs/addr"),
-            $environment->getString("kvs/login"),
-            $environment->getString("kvs/password"),
-            $environment->getString("kvs/container"),
-            $defaultStorage
-        );
-        $modelStorage = new KVSBasedModelStorage($kvsAccess);
+		$snapshoter = new ModelSnapshoter(
+			new MySQLDBAccess(
+				$environment->getString("mysql/host"),
+				$environment->getString("mysql/database"),
+				$environment->getString("mysql/login"),
+				$environment->getString("mysql/password")
+			),
+			$snapshotDir,
+			$modelList,
+			new GenericModelBuilder(),
+			$serializer
+		);
+		$synchronizer = new ModelSynchronizer($modelStorage,$snapshoter);
+		return $synchronizer;
+	}
 
-        $snapshoter = new ModelSnapshoter(
-            new MySQLDBAccess(
-                $environment->getString("mysql/host"),
-                $environment->getString("mysql/database"),
-                $environment->getString("mysql/login"),
-                $environment->getString("mysql/password")
-            ),
-            $snapshotDir,
-            $modelList,
-            new GenericModelBuilder(),
-            $serializer
-        );
-        $synchronizer = new ModelSynchronizer($modelStorage,$snapshoter);
-        return $synchronizer;
-    }
+	/**
+	 *  Appelé par le MSServer
+	 */
+	public function start(): void {
+		$this->_worker->start();
+	}
 
-    /**
-     *  Appelé par le MSServer
-     */
-    public function start(): void
-    {
-        $this->_worker->start();
-    }
+	/**
+	 *  Appelé par le ModelManagerServer juste avant qu'il ne quitte, si la fonction haveToBeShutdownGracefully renvoie true
+	 */
+	public function shutdown(): void {
+		$this->_worker->shutdown($this->_serverkey);
+	}
 
-    /**
-     *  Appelé par le ModelManagerServer juste avant qu'il ne quitte, si la fonction haveToBeShutdownGracefully renvoie true
-     */
-    public function shutdown(): void
-    {
-        $this->_worker->shutdown($this->_serverkey);
-    }
-
-    /**
-     * @return string Nom du composant
-     */
-    public function getName(): string
-    {
-        return self::NAME;
-    }
+	/**
+	 * @return string Nom du composant
+	 */
+	public function getName(): string {
+		return self::NAME;
+	}
 }

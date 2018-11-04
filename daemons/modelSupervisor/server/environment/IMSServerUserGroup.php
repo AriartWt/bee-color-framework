@@ -1,18 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 22/01/18
- * Time: 09:07
- */
-
 namespace wfw\daemons\modelSupervisor\server\environment;
 
 /**
  *  Groupe d'utilisateurs du MSServer
  */
-interface IMSServerUserGroup
-{
+interface IMSServerUserGroup {
 	/**
 	 *  Retourne l'utilisateur du groupe dont le nom est $name
 	 * @param string $name Nom de l'utilisateur.

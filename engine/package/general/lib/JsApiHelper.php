@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 25/02/18
- * Time: 08:33
- */
-
 namespace wfw\engine\package\general\lib;
 
 use wfw\engine\core\conf\IConf;
@@ -15,27 +8,16 @@ use wfw\engine\lib\HTML\resources\js\IJsScriptManager;
 /**
  * Helper pour l'inclusion de l'api javascript.
  */
-final class JsApiHelper
-{
-	/**
-	 * @var array $_appInfos
-	 */
+final class JsApiHelper {
+	/** @var array $_appInfos */
 	private $_appInfos;
-	/**
-	 * @var string $_apiPath
-	 */
+	/** @var string $_apiPath */
 	private $_apiPath;
-	/**
-	 * @var string[] $_libsToLoad
-	 */
+	/** @var string[] $_libsToLoad */
 	private $_libsToLoad;
-	/**
-	 * @var string $_webroot
-	 */
+	/** @var string $_webroot */
 	private $_webroot;
-	/**
-	 * @var null|string $_csrfToken
-	 */
+	/** @var null|string $_csrfToken */
 	private $_csrfToken;
 	/**
 	 * JsApiHelper constructor.
@@ -47,8 +29,8 @@ final class JsApiHelper
 	public function __construct(
 		IRouter $router,
 		IConf $conf,
-		?string $csrfToken = null)
-	{
+		?string $csrfToken = null
+	) {
 		$this->_apiPath = $router->webroot("JavaScript/api/api.js");
 		$this->_libsToLoad[] = $router->webroot("JavaScript/api/settings.js");
 		$this->_libsToLoad[] = $router->webroot("JavaScript/api/console.js");

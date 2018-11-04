@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 04/06/18
- * Time: 11:28
- */
-
 namespace wfw\daemons\multiProcWorker;
 
 use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
@@ -14,8 +7,7 @@ use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
  * Permet de lancer un worker. Crée un environnement propice à l'IPC grâce à pcntl_fork et
  * socket_create_pair
  */
-abstract class Worker
-{
+abstract class Worker {
 	public const CLIENT_MODE=1;
 	public const WORKER_MODE=0;
 

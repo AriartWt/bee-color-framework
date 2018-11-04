@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 14/01/18
- * Time: 06:59
- */
-
 namespace wfw\daemons\kvstore\server;
 
 use wfw\daemons\kvstore\server\containers\ContainerWorker;
@@ -44,10 +37,9 @@ use wfw\engine\lib\PHP\errors\IllegalInvocation;
 use wfw\engine\lib\PHP\types\UUID;
 
 /**
- *  Serveur KVS
+ *  Serveur KVS (sorry if the main function is painfull to read... think about how it was to write.)
  */
-final class KVSServer
-{
+final class KVSServer {
 	/** @var IKVSServerEnvironment $_environment */
 	private $_environment;
 	/** @var UUID $_serverKey */
@@ -116,8 +108,7 @@ final class KVSServer
 		bool $sendErrorsToClient = true,
 		bool $shutdownOnError = false,
 		string $errorLogs = __DIR__."/error_logs.txt"
-	)
-	{
+	) {
 		$this->_serializer = $serializer ?? new LightSerializer(
 			new GZCompressor(),
 			new PHPSerializer()
@@ -357,7 +348,10 @@ final class KVSServer
 	 *
 	 * @return bool
 	 */
-	private function attemptSendingRequestToWorker(IKVSInternalRequest $request,ContainerWorker $worker):bool{
+	private function attemptSendingRequestToWorker(
+		IKVSInternalRequest $request,
+		ContainerWorker $worker
+	):bool{
 		try{
 			$worker->sendQuery($request);
 			return true;

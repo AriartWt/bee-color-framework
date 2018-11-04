@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 02/11/18
- * Time: 17:39
- */
-
 namespace wfw\engine\package\general\handlers\action;
 
 use wfw\engine\core\action\IAction;

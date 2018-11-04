@@ -1,18 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 26/05/18
- * Time: 16:26
- */
-
 namespace wfw\engine\package\news\domain;
 
 /**
  * Lien vers le visuel d'un article
  */
-class VisualLink
-{
+class VisualLink {
 	/** @var string $_link */
 	private $_link;
 
@@ -30,8 +22,7 @@ class VisualLink
 	/**
 	 * @return string
 	 */
-	public function __toString()
-	{
+	public function __toString() {
 		return $this->_link;
 	}
 }

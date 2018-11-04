@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 15/01/18
- * Time: 01:46
- */
-
 namespace wfw\daemons\kvstore\server\environment;
 
 use stdClass;
@@ -18,40 +11,22 @@ use wfw\daemons\kvstore\server\requests\ShutdownKVSServerRequest;
 /**
  *  Environnement du serveur KVS
  */
-final class KVSServerEnvironment implements IKVSServerEnvironment
-{
-	/**
-	 * @var IKVSUser[] $_users
-	 */
+final class KVSServerEnvironment implements IKVSServerEnvironment {
+	/** @var IKVSUser[] $_users */
 	private $_users;
-	/**
-	 * @var IKVSUserGroup[] $_groups
-	 */
+	/** @var IKVSUserGroup[] $_groups */
 	private $_groups;
-	/**
-	 * @var IKVSContainer[] $_containers
-	 */
+	/** @var IKVSContainer[] $_containers */
 	private $_containers;
-	/**
-	 * @var array $_admins
-	 */
+	/** @var array $_admins */
 	private $_admins;
-	/**
-	 * @var array $_sessions
-	 */
+	/** @var array $_sessions */
 	private $_sessions;
-	/**
-	 * @var array $_groupDefs
-	 */
+	/** @var array $_groupDefs */
 	private $_groupDefs;
-	/**
-	 * @var string $_dbPath
-	 */
+	/** @var string $_dbPath */
 	private $_dbPath;
-
-	/**
-	 * @var int $_ttl
-	 */
+	/** @var int $_ttl */
 	private $_ttl;
 
 	/**
@@ -70,8 +45,8 @@ final class KVSServerEnvironment implements IKVSServerEnvironment
 		stdClass $admins,
 		stdClass $containers,
 		string $dbPath,
-		int $ttl = 900)
-	{
+		int $ttl = 900
+	) {
 		if(file_exists($dbPath)){
 			$this->_dbPath = $dbPath;
 		}else{
@@ -159,8 +134,7 @@ final class KVSServerEnvironment implements IKVSServerEnvironment
 	 *
 	 * @return bool
 	 */
-	public function isAdminAccessGranted(string $userName, string $requestClass):bool
-	{
+	public function isAdminAccessGranted(string $userName, string $requestClass):bool {
 		if(isset($this->_admins["users"][$userName])){
 			if($this->checkPermission($this->_admins["users"][$userName],$requestClass)){
 				return true;
@@ -204,8 +178,7 @@ final class KVSServerEnvironment implements IKVSServerEnvironment
 	 *
 	 * @return IKVSContainer
 	 */
-	public function getContainer(string $name): IKVSContainer
-	{
+	public function getContainer(string $name): IKVSContainer {
 		if($this->existsContainer($name)){
 			return $this->_containers[$name];
 		}else{
@@ -220,8 +193,7 @@ final class KVSServerEnvironment implements IKVSServerEnvironment
 	 *
 	 * @return bool
 	 */
-	public function existsContainer(string $name): bool
-	{
+	public function existsContainer(string $name): bool {
 		return isset($this->_containers[$name]);
 	}
 
@@ -232,8 +204,7 @@ final class KVSServerEnvironment implements IKVSServerEnvironment
 	 *
 	 * @return IKVSUser
 	 */
-	public function getUser(string $name): IKVSUser
-	{
+	public function getUser(string $name): IKVSUser {
 		if($this->existsUser($name)){
 			return $this->_users[$name];
 		}else{
@@ -248,8 +219,7 @@ final class KVSServerEnvironment implements IKVSServerEnvironment
 	 *
 	 * @return bool
 	 */
-	public function existsUser(string $name): bool
-	{
+	public function existsUser(string $name): bool {
 		return isset($this->_users[$name]);
 	}
 
@@ -260,13 +230,9 @@ final class KVSServerEnvironment implements IKVSServerEnvironment
 	 *
 	 * @return IKVSUserGroup
 	 */
-	public function getUserGroup(string $name): IKVSUserGroup
-	{
-		if($this->existsUserGroup($name)){
-			return $this->_groups[$name];
-		}else{
-			throw new UserGroupNotFound("Unknown user group : $name");
-		}
+	public function getUserGroup(string $name): IKVSUserGroup {
+		if($this->existsUserGroup($name)) return $this->_groups[$name];
+		else throw new UserGroupNotFound("Unknown user group : $name");
 	}
 
 	/**
@@ -276,8 +242,7 @@ final class KVSServerEnvironment implements IKVSServerEnvironment
 	 *
 	 * @return bool
 	 */
-	public function existsUserGroup(string $name): bool
-	{
+	public function existsUserGroup(string $name): bool {
 		return isset($this->_groups[$name]);
 	}
 
@@ -293,8 +258,12 @@ final class KVSServerEnvironment implements IKVSServerEnvironment
 	 * @throws ContainerNotFound
 	 * @throws UserNotFound
 	 */
-	public function createSessionForUser(string $container, string $login, string $password, ?int $default_storage_mode = null): ?string
-	{
+	public function createSessionForUser(
+		string $container,
+		string $login,
+		string $password,
+		?int $default_storage_mode = null
+	): ?string {
 		if($this->existsContainer($container) && $this->existsUser($login)){
 			$container = $this->getContainer($container);
 			if(is_null($default_storage_mode) || !KVSModes::existsValue($default_storage_mode)){
@@ -325,8 +294,7 @@ final class KVSServerEnvironment implements IKVSServerEnvironment
 	 *
 	 * @return null|IKVSUserSession
 	 */
-	public function getUserSession(string $sessionId): ?IKVSUserSession
-	{
+	public function getUserSession(string $sessionId): ?IKVSUserSession {
 		if($this->existsUserSession($sessionId)){
 			$this->touchUserSession($sessionId);
 			return $this->_sessions[$sessionId]["session"];
@@ -340,8 +308,7 @@ final class KVSServerEnvironment implements IKVSServerEnvironment
 	 *
 	 * @param string $sessionId Identifiant de la session.
 	 */
-	public function touchUserSession(string $sessionId): void
-	{
+	public function touchUserSession(string $sessionId): void {
 		if($this->existsUserSession($sessionId)){
 			$this->_sessions[$sessionId]["expire_date"]=microtime(true) + $this->_ttl;
 		}
@@ -354,8 +321,7 @@ final class KVSServerEnvironment implements IKVSServerEnvironment
 	 *
 	 * @return bool
 	 */
-	public function existsUserSession(string $sessionId): bool
-	{
+	public function existsUserSession(string $sessionId): bool {
 		return isset($this->_sessions[$sessionId]);
 	}
 
@@ -364,8 +330,7 @@ final class KVSServerEnvironment implements IKVSServerEnvironment
 	 *
 	 * @param string $sessionId Session à détruire.
 	 */
-	public function destroyUserSession(string $sessionId)
-	{
+	public function destroyUserSession(string $sessionId) {
 		if($this->existsUserSession($sessionId)){
 			unset($this->_sessions[$sessionId]);
 		}
@@ -374,8 +339,7 @@ final class KVSServerEnvironment implements IKVSServerEnvironment
 	/**
 	 *  Supprime les sessions inactives depuis un certain temps.
 	 */
-	public function destroyOutdatedSessions(): void
-	{
+	public function destroyOutdatedSessions(): void {
 		foreach($this->_sessions as $id=>$session){
 			if($session["expire_date"]<time()){
 				$this->destroyUserSession($id);
@@ -386,8 +350,7 @@ final class KVSServerEnvironment implements IKVSServerEnvironment
 	/**
 	 * @return IKVSContainer[] Liste des containers
 	 */
-	public function getContainers(): array
-	{
+	public function getContainers(): array {
 		return $this->_containers;
 	}
 

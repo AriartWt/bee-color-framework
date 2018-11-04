@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 11/12/17
- * Time: 01:12
- */
-
 namespace wfw\engine\package\users\domain\events;
 
 use wfw\engine\lib\PHP\types\UUID;
@@ -15,8 +8,7 @@ use wfw\engine\package\users\domain\states\UserState;
 /**
  *  Nouvel email confirmé
  */
-final class UserMailConfirmedEvent extends UserEvent
-{
+final class UserMailConfirmedEvent extends UserEvent {
 	/** @var Email $_email */
 	private $_email;
 	/** @var UserState $_state */

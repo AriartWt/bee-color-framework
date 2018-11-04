@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 23/04/18
- * Time: 10:54
- */
-
 namespace wfw\engine\package\news\domain\repository;
 
 use wfw\engine\core\command\ICommand;
@@ -16,8 +9,7 @@ use wfw\engine\package\news\domain\Article;
 /**
  * Repository d'articles
  */
-final class ArticleRepository implements IArticleRepository
-{
+final class ArticleRepository implements IArticleRepository {
 	/** @var IAggregateRootRepository $_repos */
 	private $_repos;
 

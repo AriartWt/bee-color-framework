@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 26/06/18
- * Time: 14:56
- */
-
 namespace wfw\engine\package\users\handlers\action\admin;
 
 use wfw\engine\core\command\ICommand;

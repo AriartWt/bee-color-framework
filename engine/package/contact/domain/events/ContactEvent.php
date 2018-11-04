@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 29/09/18
- * Time: 17:15
- */
-
 namespace wfw\engine\package\contact\domain\events;
 
 use wfw\engine\core\domain\events\DomainEvent;

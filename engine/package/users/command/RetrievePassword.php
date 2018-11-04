@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 21/06/18
- * Time: 16:39
- */
-
 namespace wfw\engine\package\users\command;
 
 use wfw\engine\package\users\domain\Password;

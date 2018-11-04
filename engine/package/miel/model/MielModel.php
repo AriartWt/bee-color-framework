@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 25/02/18
- * Time: 06:22
- */
-
 namespace wfw\engine\package\miel\model;
 
 use wfw\engine\lib\data\string\serializer\ISerializer;
@@ -98,8 +91,7 @@ abstract class MielModel implements IMielModel {
 	 * @return mixed Can return any type.
 	 * @since 5.0.0
 	 */
-	public final function current()
-	{
+	public final function current() {
 		return $this->_data[$this->key()];
 	}
 
@@ -110,8 +102,7 @@ abstract class MielModel implements IMielModel {
 	 * @return void Any returned value is ignored.
 	 * @since 5.0.0
 	 */
-	public final function next()
-	{
+	public final function next() {
 		$this->_cursor++;
 	}
 
@@ -122,8 +113,7 @@ abstract class MielModel implements IMielModel {
 	 * @return mixed scalar on success, or null on failure.
 	 * @since 5.0.0
 	 */
-	public final function key()
-	{
+	public final function key() {
 		return array_keys($this->_data)[$this->_cursor];
 	}
 
@@ -135,8 +125,7 @@ abstract class MielModel implements IMielModel {
 	 * Returns true on success or false on failure.
 	 * @since 5.0.0
 	 */
-	public final function valid()
-	{
+	public final function valid() {
 		return count($this->_data) > $this->_cursor;
 	}
 
@@ -147,8 +136,7 @@ abstract class MielModel implements IMielModel {
 	 * @return void Any returned value is ignored.
 	 * @since 5.0.0
 	 */
-	public final function rewind()
-	{
+	public final function rewind() {
 		$this->_cursor = 0;
 	}
 
@@ -164,8 +152,7 @@ abstract class MielModel implements IMielModel {
 	 * @param string $key Clé d'accès
 	 * @return mixed Données
 	 */
-	public final function get(string $key)
-	{
+	public final function get(string $key) {
 		return $this->_data[$key]["value"];
 	}
 
@@ -173,8 +160,7 @@ abstract class MielModel implements IMielModel {
 	 * @param string $key Clé concernée
 	 * @return array Paramètres de la clé
 	 */
-	public final function getParams(string $key): array
-	{
+	public final function getParams(string $key): array {
 		return $this->_data[$key]["params"];
 	}
 
@@ -184,8 +170,7 @@ abstract class MielModel implements IMielModel {
 	 * @param string $key  Clé d'accès
 	 * @param mixed  $data Données
 	 */
-	public final function set(string $key, $data): void
-	{
+	public final function set(string $key, $data): void {
 		if($this->exists($key)){
 			$this->_data[$key]["value"] = $data;
 		}else{
@@ -198,8 +183,7 @@ abstract class MielModel implements IMielModel {
 	 * @param string $key    Clé concernée
 	 * @param array  $params Paramètres à appliquer
 	 */
-	public final function setParams(string $key, array $params): void
-	{
+	public final function setParams(string $key, array $params): void {
 		$atLeastOne = false;
 		foreach($params as $k=>$v){
 			$this->_data[$key]["params"][$k]=$v;
@@ -215,8 +199,7 @@ abstract class MielModel implements IMielModel {
 	 *
 	 * @param string $key Clé d'accès.
 	 */
-	public final function remove(string $key): void
-	{
+	public final function remove(string $key): void {
 		unset($this->_data[$key]);
 		$this->_modified = true;
 	}
@@ -227,8 +210,7 @@ abstract class MielModel implements IMielModel {
 	 * @param string     $key    Clé concernée
 	 * @param array|null $params (optionnel) Index des paramètres à supprimer
 	 */
-	public final function resetParams(string $key, ?array $params = null): void
-	{
+	public final function resetParams(string $key, ?array $params = null): void {
 		$atLeastOne = false;
 		if(is_null($params)){
 			$this->_data = [];
@@ -250,8 +232,7 @@ abstract class MielModel implements IMielModel {
 	 * @param $offset
 	 * @return bool
 	 */
-	public final function offsetExists($offset)
-	{
+	public final function offsetExists($offset) {
 		return $this->exists($offset);
 	}
 
@@ -259,8 +240,7 @@ abstract class MielModel implements IMielModel {
 	 * @param $offset
 	 * @return mixed
 	 */
-	public final function offsetGet($offset)
-	{
+	public final function offsetGet($offset) {
 		return $this->get($offset);
 	}
 
@@ -268,8 +248,7 @@ abstract class MielModel implements IMielModel {
 	 * @param $offset
 	 * @param $value
 	 */
-	public final function offsetSet($offset,$value)
-	{
+	public final function offsetSet($offset,$value) {
 		$this->set($offset,$value);
 	}
 

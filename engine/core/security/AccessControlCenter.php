@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 18/02/18
- * Time: 13:50
- */
-
 namespace wfw\engine\core\security;
 
 use wfw\engine\core\action\IAction;
@@ -14,9 +7,7 @@ use wfw\engine\core\action\IAction;
  * Centre de contrôle d'accés
  */
 final class AccessControlCenter implements IAccessControlCenter {
-	/**
-	 * @var IAccessRule[] $_rules
-	 */
+	/** @var IAccessRule[] $_rules */
 	private $_rules;
 
 	/**

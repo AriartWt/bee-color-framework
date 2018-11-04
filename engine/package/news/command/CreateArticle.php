@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 25/04/18
- * Time: 11:34
- */
-
 namespace wfw\engine\package\news\command;
 
 use wfw\engine\package\news\domain\Content;
@@ -15,8 +8,7 @@ use wfw\engine\package\news\domain\VisualLink;
 /**
  * Commande de création d'un article.
  */
-final class CreateArticle extends ArticleCommand
-{
+final class CreateArticle extends ArticleCommand {
 	/** @var Title $_title */
 	private $_title;
 	/** @var VisualLink $_visual */

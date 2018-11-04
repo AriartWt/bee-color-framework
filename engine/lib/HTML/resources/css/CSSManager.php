@@ -7,7 +7,8 @@ use wfw\engine\lib\HTML\resources\FileIncluder;
  *  Gestionnaire d'inclusion de fichiers css
  */
 final class CSSManager extends FileIncluder implements ICSSManager {
-	protected $_inlineCSS=array();/**<  array<string> Tableau d'instructions CSS à ecrire directement dans des balises <style> */
+	/** @var array $_inlineCSS */
+	protected $_inlineCSS=array();
 
 	/**
 	 *   Ecrit les dépendances CSS dans le code HTML. (AInsi que les inclusions de CSS généré dynamiquement)
@@ -20,7 +21,8 @@ final class CSSManager extends FileIncluder implements ICSSManager {
 			$res.="<link rel=\"stylesheet\" href=\"$v$add_to_url\">";
 		}
 		if(count($this->_inlineCSS)>0){
-			$res.="<style>\n\n/*---AUTO_GENERATED_CSS---*/\n\n".implode("\n\n /* --- */ \n\n",$this->_inlineCSS)."\n\n</style>";
+			$res.="<style>\n\n/*---AUTO_GENERATED_CSS---*/\n\n"
+				.implode("\n\n /* --- */ \n\n",$this->_inlineCSS)."\n\n</style>";
 		}
 		return $res;
 	}

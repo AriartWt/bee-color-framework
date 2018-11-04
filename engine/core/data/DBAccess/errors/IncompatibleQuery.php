@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 05/11/17
- * Time: 05:40
- */
-
 namespace wfw\engine\core\data\DBAccess\errors;
 
 /**

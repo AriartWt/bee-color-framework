@@ -1,18 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 26/04/18
- * Time: 12:07
- */
-
 namespace wfw\engine\package\news\command;
 
 /**
  * Désarchive un article
  */
-final class UnarchiveArticles extends ArticleCommand
-{
+final class UnarchiveArticles extends ArticleCommand {
 	/** @var string[] $_articleId */
 	private $_articleId;
 	/** @var string $_userId */

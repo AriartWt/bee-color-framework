@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 03/10/17
- * Time: 00:57
- */
-
 namespace wfw\engine\core\conf\io\adapters;
 
 use stdClass;
@@ -17,8 +10,7 @@ use wfw\engine\lib\PHP\system\filesystem\json\JSONFile;
 /**
  *  Permet de lire des fichiers de configuration au format JSON
  */
-final class JSONConfIOAdapter implements IConfIOAdapter
-{
+final class JSONConfIOAdapter implements IConfIOAdapter {
 	/**
 	 * @brief Parse un fichier JSON et retourne le résultat sous la forme d'un stdClass.
 	 *
@@ -46,8 +38,7 @@ final class JSONConfIOAdapter implements IConfIOAdapter
 	 * @brief Sauvegarde la configuration courante dans un fichier.
 	 * @param IConf $conf Confs à sauvegarder
 	 */
-	public function save(IConf $conf): void
-	{
+	public function save(IConf $conf): void {
 		if(method_exists($conf,'getConfPath')){
 			$file = new JSONFile($conf->getConfPath());
 			$file->write($conf->getRawConf());

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 03/11/18
- * Time: 23:55
- */
-
 namespace wfw\engine\core\security\data\rules;
 
 use wfw\engine\core\security\data\ForEachFieldRule;

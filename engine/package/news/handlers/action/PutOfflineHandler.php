@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 27/04/18
- * Time: 11:25
- */
-
 namespace wfw\engine\package\news\handlers\action;
 
 use wfw\engine\core\command\ICommand;
@@ -24,8 +17,7 @@ use wfw\engine\package\news\security\data\ArticleIdListRule;
 /**
  * Met un article hors ligne
  */
-final class PutOfflineHandler extends DefaultArticleActionHandler implements IDomainEventListener
-{
+final class PutOfflineHandler extends DefaultArticleActionHandler implements IDomainEventListener {
 	/** @var string[] $_ids */
 	private $_ids;
 	/** @var IJSONEncoder $_encoder */

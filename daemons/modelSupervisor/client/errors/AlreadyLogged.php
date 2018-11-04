@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 26/01/18
- * Time: 06:35
- */
-
 namespace wfw\daemons\modelSupervisor\client\errors;
 
 /**

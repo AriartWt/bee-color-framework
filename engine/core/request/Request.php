@@ -1,18 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 15/02/18
- * Time: 08:13
- */
-
 namespace wfw\engine\core\request;
 
 /**
  * Requête.
  */
-final class Request implements IRequest
-{
+final class Request implements IRequest {
 	/** @var string $_ip */
 	private $_ip;
 	/** @var string $_url */
@@ -38,8 +30,7 @@ final class Request implements IRequest
 	 * @param IRequestData $data
 	 * @param array        $server Paramètres SERVER de la requete
 	 */
-	public function __construct(IRequestData $data, array $server)
-	{
+	public function __construct(IRequestData $data, array $server) {
 		$this->_data = $data;
 		$this->_SERVER = $server;
 		$this->_ip = $server["REMOTE_ADDR"];
@@ -97,40 +88,35 @@ final class Request implements IRequest
 	/**
 	 * @return bool True si la requête est AJAX, false sinon.
 	 */
-	public function isAjax(): bool
-	{
+	public function isAjax(): bool {
 		return $this->_ajax;
 	}
 
 	/**
 	 * @return string IP du client
 	 */
-	public function getIP(): string
-	{
+	public function getIP(): string {
 		return $this->_ip;
 	}
 
 	/**
 	 * @return string URI
 	 */
-	public function getURI(): string
-	{
+	public function getURI(): string {
 		return $this->_uri;
 	}
 
 	/**
 	 * @return string URL
 	 */
-	public function getURL(): string
-	{
+	public function getURL(): string {
 		return $this->_url;
 	}
 
 	/**
 	 * @return string Méthode HTTP
 	 */
-	public function getMethod(): string
-	{
+	public function getMethod(): string {
 		return $this->_method;
 	}
 
@@ -139,8 +125,7 @@ final class Request implements IRequest
 	 *                          contenues dans availables
 	 * @return array Langues acceptées par le client.
 	 */
-	public function getAcceptedLanguages(array $availables=[]): array
-	{
+	public function getAcceptedLanguages(array $availables=[]): array {
 		if(count($availables)>0){
 			$res = $this->_acceptLanguages;
 			if(count($availables)>0){
@@ -159,16 +144,14 @@ final class Request implements IRequest
 	/**
 	 * @return null|string Token CSRF si fourni
 	 */
-	public function getCSRFToken(): ?string
-	{
+	public function getCSRFToken(): ?string {
 		return $this->_csrfToken;
 	}
 
 	/**
 	 * @return IRequestData Données de la requête
 	 */
-	public function getData(): IRequestData
-	{
+	public function getData(): IRequestData {
 		return $this->_data;
 	}
 }

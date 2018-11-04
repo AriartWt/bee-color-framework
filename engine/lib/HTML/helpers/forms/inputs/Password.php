@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 16/03/18
- * Time: 09:18
- */
-
 namespace wfw\engine\lib\HTML\helpers\forms\inputs;
 use wfw\engine\lib\HTML\helpers\forms\IHTMLInput;
 use wfw\engine\lib\HTML\helpers\forms\IHTMLLabel;

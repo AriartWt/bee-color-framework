@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 02/12/17
- * Time: 05:28
- */
-
 namespace wfw\engine\core\domain\repository;
 
 use wfw\engine\core\command\ICommand;
@@ -16,11 +9,8 @@ use wfw\engine\lib\PHP\types\UUID;
 /**
  *  Repository de base
  */
-final class AggregateRootRepository implements IAggregateRootRepository
-{
-	/**
-	 * @var IEventStore $_eventStore
-	 */
+final class AggregateRootRepository implements IAggregateRootRepository {
+	/** @var IEventStore $_eventStore */
 	private $_eventStore;
 
 	/**

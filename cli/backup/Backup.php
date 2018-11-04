@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 04/04/18
- * Time: 04:09
- */
-
 namespace wfw\cli\backup;
 
 use wfw\cli\backup\errors\BackupFailure;

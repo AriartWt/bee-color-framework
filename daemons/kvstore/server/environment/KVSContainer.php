@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 15/01/18
- * Time: 04:03
- */
-
 namespace wfw\daemons\kvstore\server\environment;
 
 use stdClass;
@@ -14,8 +7,7 @@ use wfw\daemons\kvstore\server\KVSModes;
 /**
  *  Container kvs
  */
-final class KVSContainer implements IKVSContainer
-{
+final class KVSContainer implements IKVSContainer {
 	/** @var string $_name */
 	private $_name;
 	/** @var array $_users */
@@ -37,8 +29,14 @@ final class KVSContainer implements IKVSContainer
 	 * @param int      $defaultStorageMode Mode de stockage par défaut du container
 	 * @param string   $dbPath             Chemin d'accés au repertoire parent du container
 	 */
-	public function __construct(string $name, stdClass $users, stdClass $groups, array $groupDefs, int $defaultStorageMode, string $dbPath)
-	{
+	public function __construct(
+		string $name,
+		stdClass $users,
+		stdClass $groups,
+		array $groupDefs,
+		int $defaultStorageMode,
+		string $dbPath
+	) {
 		if(KVSModes::existsValue($defaultStorageMode)){
 			$this->_defaultStorageMode = $defaultStorageMode;
 			$this->_name = $name;
@@ -81,8 +79,7 @@ final class KVSContainer implements IKVSContainer
 	/**
 	 * @return string Nom du container
 	 */
-	public function getName(): string
-	{
+	public function getName(): string {
 		return $this->_name;
 	}
 
@@ -94,8 +91,7 @@ final class KVSContainer implements IKVSContainer
 	 *
 	 * @return bool
 	 */
-	public function isUserAccessGranted(string $userName, int $permission): bool
-	{
+	public function isUserAccessGranted(string $userName, int $permission): bool {
 		if(KVSUserPermissions::existsValue($permission)){
 			return $permission & ($this->_users[$userName] ?? 0)
 				|| $permission & $this->getUserGroupPermission($userName);
@@ -123,16 +119,14 @@ final class KVSContainer implements IKVSContainer
 	/**
 	 * @return int Retourne le mode de stockage des données par défaut pour se container.
 	 */
-	public function getDefaultStorageMode(): int
-	{
+	public function getDefaultStorageMode(): int {
 		return $this->_defaultStorageMode;
 	}
 
 	/**
 	 * @return string Chemin d'accés au repertoir du container.
 	 */
-	public function getSavePath(): string
-	{
+	public function getSavePath(): string {
 		return $this->_dbPath.DS.$this->getName();
 	}
 }

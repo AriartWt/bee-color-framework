@@ -1,11 +1,6 @@
 #!/usr/bin/php -q
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 04/04/18
- * Time: 00:27
- */
+
 
 use wfw\cli\backup\Backup;
 use wfw\cli\backup\BackupManager;

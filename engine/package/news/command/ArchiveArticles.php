@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 26/04/18
- * Time: 12:03
- */
-
 namespace wfw\engine\package\news\command;
 
 /**

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 23/04/18
- * Time: 08:59
- */
-
 namespace wfw\engine\package\news\domain;
 
 use wfw\engine\core\domain\aggregate\AggregateRoot;
@@ -25,8 +18,7 @@ use wfw\engine\package\news\domain\events\VisualLinkEditedEvent;
 /**
  * Article
  */
-class Article extends AggregateRoot
-{
+class Article extends AggregateRoot {
 	/** @var float $_creationDate */
 	private $_creationDate;
 	/** @var float $_editDate */

@@ -1,18 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 18/01/18
- * Time: 09:12
- */
-
 namespace wfw\daemons\kvstore\client;
 
 /**
  *  Interface d'un client du KVS
  */
-interface IKVSClient
-{
+interface IKVSClient {
 	/**
 	 *  Obtient la valeur associée à une clé
 	 * @param string $key Clé

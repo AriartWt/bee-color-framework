@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 09/09/18
- * Time: 15:41
- */
-
 namespace wfw\engine\core\notifier\printer;
 
 use wfw\engine\core\notifier\IMessage;

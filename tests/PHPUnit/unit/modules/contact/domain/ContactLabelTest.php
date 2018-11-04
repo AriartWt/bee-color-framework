@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 01/06/18
- * Time: 13:05
- */
-
 namespace wfw\tests\PHPUnit\unit\modules\contact\domain;
 
 use PHPUnit\Framework\TestCase;

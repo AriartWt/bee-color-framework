@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 25/04/18
- * Time: 11:01
- */
-
 namespace wfw\engine\package\news\domain\events;
 
 use wfw\engine\lib\PHP\types\UUID;
@@ -13,8 +6,7 @@ use wfw\engine\lib\PHP\types\UUID;
 /**
  * L'article a été désarchivé
  */
-final class UnarchivedEvent extends ArticleEvent
-{
+final class UnarchivedEvent extends ArticleEvent {
 	/** @var string $_unarchiver */
 	private $_unarchiver;
 

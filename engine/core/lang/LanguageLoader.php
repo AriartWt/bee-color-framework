@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 21/02/18
- * Time: 08:00
- */
-
 namespace wfw\engine\core\lang;
 
 use stdClass;

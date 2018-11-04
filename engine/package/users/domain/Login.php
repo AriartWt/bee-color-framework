@@ -1,18 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 10/12/17
- * Time: 02:58
- */
-
 namespace wfw\engine\package\users\domain;
 
 /**
  * Login d'un utilisateur
  */
-class Login
-{
+class Login {
 	/** @var string $_login */
 	private $_login;
 	

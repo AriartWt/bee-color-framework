@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 27/06/18
- * Time: 17:34
- */
-
 namespace wfw\engine\package\users\command;
 
 use wfw\engine\package\users\domain\types\UserType;

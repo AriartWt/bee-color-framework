@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 26/05/18
- * Time: 14:29
- */
-
 namespace wfw\engine\core\security\data\sanitizer;
 
 /**
@@ -16,8 +9,7 @@ namespace wfw\engine\core\security\data\sanitizer;
  * Autorise l'utilisation des attributs class, style, id pour tous les éléments.
  * Autorise l'utilisation de l'attribut target pour les liens.
  */
-final class HTMLPurifierBasedSanitizer implements IHTMLSanitizer
-{
+final class HTMLPurifierBasedSanitizer implements IHTMLSanitizer {
 	/** @var \HTMLPurifier $_purifier */
 	private $_purifier;
 	/** @var bool $_LOADED */
@@ -37,19 +29,10 @@ final class HTMLPurifierBasedSanitizer implements IHTMLSanitizer
 		$config->set('CSS.AllowTricky', true);
 		$config->set('Cache.SerializerPath', '/tmp');
 		$config->set('Attr.EnableID', true);
-		// Allow iframes from:
-		// YouTube.com Vimeo.com
+
 		$config->set('HTML.SafeIframe', true);
 		$config->set('URI.SafeIframeRegexp', '%^(http:|https:)?//(www.youtube(?:-nocookie)?.com/embed/|player.vimeo.com/video/)%');
-		/*$config->set('HTML.Allowed',implode(',',[
-			"*[style|class]",
-			"a[href|target]",
-			"img[src]",
-			"video[src|controls|type|autoplay|loop|preload|poster]",
-			"audio[src|controls|type|autoplay|loop|preload]",
-			"source[src|type]",
-			"p,div,span,font[color],b,strike,ul,ol,h1,h2,h3,br,li"
-		]));*/
+
 		$config->set('HTML.AllowedElements', 'a,i,u,p,div,span,font,b,strike,ul,ol,video,audio,h1,h2,h3,br,img,li,source');
 		$config->set('HTML.AllowedAttributes','a.target,a.href,*.class,*.style,*.id,img.src,img.style,font.color,'
 			.'video.src,video.controls,video.muted,video.type,video.autoplay,video.loop,video.preload,video.poster,video.style,'
