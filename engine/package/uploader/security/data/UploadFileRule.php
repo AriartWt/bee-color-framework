@@ -31,7 +31,7 @@ final class UploadFileRule implements IRule {
 			"Les données sont invalides",
 			new RequiredFields("Ces champs sont requis : ","file","name"),
 			new MatchRegexp(
-				"/^[^\/\0]{1,$maxFileNameLength}$/",
+				"/^.{1,$maxFileNameLength}$/",
 				"Ce nom de fichier n'est pas valide.\nUn nom de fichier doit contenir moins de $maxFileNameLength caractères et aucun /",
 				"name"
 			),

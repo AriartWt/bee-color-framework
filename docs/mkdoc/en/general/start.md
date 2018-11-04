@@ -26,7 +26,7 @@ There are the exhaustive liste of prerequisites needed to install the framework 
 Let's start downloading sources and removing the .git directory, which will not be used anymore :
 
 ``` bash
-git clone git@framagit.org:Ariart/bee-color-wfw.git
+git clone git@framagit.org:Ariart/bee-color-framework.git
 rm -rf bee-color-wfw/.git
 mv bee-color-wfw global
 ```

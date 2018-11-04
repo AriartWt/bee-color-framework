@@ -29,7 +29,7 @@ Pour commencer, nous allons récupérer les sources, et supprimer le dossier .gi
 suite :
 
 ``` bash
-git clone git@framagit.org:Ariart/bee-color-wfw.git
+git clone git@framagit.org:Ariart/bee-color-framework.git
 rm -rf bee-color-wfw/.git
 mv bee-color-wfw global
 ```

@@ -93,15 +93,15 @@ try{
 		$pMap = []; $valids = array_merge(["self","all"],array_keys($data));
 		foreach($projects as $v){
 			if(!in_array($v,$valids)) throw new InvalidArgumentException(
-					"Unknown project to update : $v"
+				"Unknown project to update : $v"
 			);
 			$pMap[$v]=isset($data[$v])?substr($data[$v],0,-4):null;
 		}
 		$projects = array_flip($projects);
-		if(isset($pMap["all"])){
+		if(isset($projects["all"])){
 			$pMap = $data;
 			foreach($data as $k=>$v){
-				$data[$k] = substr($data[$v],0,-4);
+				$pMap[$k] = substr($v,0,-4);
 			}
 			$pMap["self"] = ROOT;
 		}else if(isset($projects["self"])) $pMap["self"] = ROOT;
