@@ -211,10 +211,22 @@
 	background-color: rgb(15,15,15);
 	position: relative;
 }
+.file-explorer .fs-quotas::before{
+	content:"t";
+	opacity: 0;
+}
+.file-explorer .fs-quotas .fs-quotas-size,
+.file-explorer .fs-quotas .fs-quotas-txt{
+	position:absolute;
+	top:0;
+	left:0;
+	height:100%;
+}
+.file-explorer .fs-quotas .fs-quotas-txt{
+	width:100%;
+}
 .file-explorer .fs-quotas .fs-quotas-size{
 	content: '';
-	position: absolute;
-	height: 100%;
 	background-color: #FF9900;
 	transition:all 0.35s;
 }

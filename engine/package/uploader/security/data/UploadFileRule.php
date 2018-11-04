@@ -14,6 +14,8 @@ use wfw\engine\core\security\data\IRule;
 use wfw\engine\core\security\data\IRuleReport;
 use wfw\engine\core\security\data\rules\IsFile;
 use wfw\engine\core\security\data\rules\IsString;
+use wfw\engine\core\security\data\rules\MatchRegexp;
+use wfw\engine\core\security\data\rules\MaxStringLength;
 use wfw\engine\core\security\data\rules\RequiredFields;
 use wfw\engine\lib\PHP\types\Byte;
 
@@ -28,13 +30,19 @@ final class UploadFileRule implements IRule {
 	 * UploadFileRule constructor.
 	 *
 	 * @param IConf $conf
+	 * @param int   $maxFileNameLength Taille maximale d'un nom de fichier
+	 * @throws \InvalidArgumentException
 	 */
-	public function __construct(IConf $conf) {
+	public function __construct(IConf $conf,int $maxFileNameLength = 512) {
 		$maxFileSize = (new Byte($conf->getString("server/uploader/max_size") ?? -1))->toInt();
 		$this->_rule = new AndRule(
 			"Les données sont invalides",
 			new RequiredFields("Ces champs sont requis : ","file","name"),
-			new IsString("Ce champ n'est as une chaine valide","name"),
+			new MatchRegexp(
+				"/^[^\/\0]{1,$maxFileNameLength}$/",
+				"Ce nom de fichier n'est pas valide.\nUn nom de fichier doit contenir moins de $maxFileNameLength caractères et aucun /",
+				"name"
+			),
 			new IsFile(
 				"Ce fichier est invalide ou trop volumineux !",
 				$maxFileSize,

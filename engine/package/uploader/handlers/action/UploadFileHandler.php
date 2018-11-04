@@ -21,8 +21,7 @@ use wfw\engine\package\uploader\security\data\UploadFileRule;
 /**
  * Permet d'uploader un fichier vers le dossiers upoloads.
  */
-final class UploadFileHandler extends UploadHandler
-{
+final class UploadFileHandler extends UploadHandler {
 	/**
 	 * @var UploadFileRule $_rule
 	 */
@@ -43,8 +42,7 @@ final class UploadFileHandler extends UploadHandler
 	 * @param IAction $action Action
 	 * @return IResponse Réponse
 	 */
-	public function handle(IAction $action): IResponse
-	{
+	public function handle(IAction $action): IResponse {
 		if($action->getRequest()->isAjax() && $action->getRequest()->getMethod()===IRequest::POST){
 			$data = $action->getRequest()->getData()->get(
 				IRequestData::POST|IRequestData::FILES,
@@ -52,31 +50,16 @@ final class UploadFileHandler extends UploadHandler
 			);
 			$res = $this->_rule->applyTo($data);
 			if($res->satisfied()){
-				$maxFileSize = (new Byte($this->_conf->getString("server/uploader/max_size") ?? -1))->toInt();
+				$filesize = filesize($data["file"]["tmp_name"]);
 				$quotas = (new Byte($this->_conf->getString("server/uploader/quotas") ?? -1))->toInt();
 				$dirSize = $this->getUploadDirectorySize();
 				if($quotas >= 0){ // si un quotas est défini
-					if($maxFileSize >= 0){ // si une limite de taille pour les fichiers est définie
-						if($dirSize + $maxFileSize > $quotas){ // si la taille du fichier + actuelle taille dépasse le quotas
-							$maxFileSize = $quotas - ($dirSize + $maxFileSize); // le fichier ne peux pas dépasser l'espace restant
-							if($maxFileSize <= 0) return new ErrorResponse(
-								"201",
-								"Vous n'avez plus assez d'espace disque disponible !"
-							);
-						}
-					}else{
-						$maxFileSize = $quotas - $dirSize; // si pas de limite fichier, la taille max est l'espace disponible
-						if($maxFileSize <= 0) return new ErrorResponse(
-							"201",
-							"Vous n'avez plus assez d'espace disque disponible !"
-						);
-					}
+					$maxFileSize = $quotas - $dirSize; // si pas de limite fichier, la taille max est l'espace disponible
+					if($maxFileSize < $filesize) return new ErrorResponse(
+						"201",
+						"Vous n'avez plus assez d'espace disque disponible !"
+					);
 				}
-				//var_dump([$maxFileSize,$quotas,$dirSize,filesize($data["file"]["tmp_name"])]);
-				if($maxFileSize < filesize($data["file"]["tmp_name"])) return new ErrorResponse(
-					"201",
-					"Vous n'avez plus assez d'espace disque disponible !"
-				);
 				try{
 					$name = $this->realPath(strip_tags($data["name"]));
 					if(!is_dir(dirname($name)))

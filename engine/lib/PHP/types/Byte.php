@@ -11,8 +11,7 @@ namespace wfw\engine\lib\PHP\types;
 /**
  * Permet de manipuler des valeurs d'octets.
  */
-final class Byte
-{
+final class Byte {
 	public const Ko = "ko";
 	public const Mo = "mo";
 	public const Go = "go";

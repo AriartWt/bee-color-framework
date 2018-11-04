@@ -168,7 +168,7 @@ final class ArticleModelTest extends TestCase
 		]);
 		$this->assertEquals(1,count($model->find((string) new AuthorIs($createdEvent->getAuthor()))));
 		$model->recieveEvent(
-			new UserRemovedEvent(new UUID(UUID::V6, $createdEvent->getAuthor()), new EnabledUser())
+			new UserRemovedEvent(new UUID(UUID::V6, $createdEvent->getAuthor()), new EnabledUser(), new UUID())
 		);
 		$this->assertEquals(0,count($model->find((string) new AuthorIs($createdEvent->getAuthor()))));
 

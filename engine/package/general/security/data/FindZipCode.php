@@ -40,7 +40,7 @@ class FindZipCode implements IRule{
 				null,
 				new IsEmpty("country"),
 				new MatchRegexp(
-					"/^[a-zA-Z]{2,}$/",
+					"/^[a-zA-Z]{2,120}$/",
 					"Ceci n'est pas un nom de pays valide !",
 					"country"
 				)

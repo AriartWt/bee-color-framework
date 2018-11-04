@@ -13,11 +13,8 @@ use wfw\engine\core\security\data\ForEachFieldRule;
 /**
  * Verfie que chacun des champs match une expression régulière
  */
-class MatchRegexp extends ForEachFieldRule
-{
-	/**
-	 * @var string $_regexp
-	 */
+class MatchRegexp extends ForEachFieldRule {
+	/** @var string $_regexp */
 	private $_regexp;
 
 	/**

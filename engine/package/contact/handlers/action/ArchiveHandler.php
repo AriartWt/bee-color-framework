@@ -18,7 +18,7 @@ use wfw\engine\core\response\responses\Response;
 use wfw\engine\core\session\ISession;
 use wfw\engine\lib\data\string\json\IJSONEncoder;
 use wfw\engine\package\contact\command\ArchiveContacts;
-use wfw\engine\package\contact\data\security\ContactIdListRule;
+use wfw\engine\package\contact\security\data\ContactIdListRule;
 use wfw\engine\package\contact\domain\events\ArchivedEvent;
 
 /**

@@ -100,16 +100,8 @@ use wfw\engine\package\contact\data\model\ContactModelAccess;
 use wfw\engine\package\contact\data\model\IContactModelAccess;
 use wfw\engine\package\contact\domain\repository\ContactRepository;
 use wfw\engine\package\contact\domain\repository\IContactRepository;
-use wfw\engine\package\general\data\zipCodes\IZipCodeModelAccess;
-use wfw\engine\package\general\data\zipCodes\ZipCodeModelAccess;
 use wfw\engine\package\general\handlers\response\AjaxHandler;
 use wfw\engine\package\general\handlers\response\ErrorHandler;
-use wfw\engine\package\management\data\settings\model\ISettingsAccess;
-use wfw\engine\package\management\data\settings\model\SettingsAccess;
-use wfw\engine\package\management\domain\settings\repository\ISettingsRepository;
-use wfw\engine\package\management\domain\settings\repository\SettingsRepository;
-use wfw\engine\package\management\lib\settings\Builder;
-use wfw\engine\package\management\lib\settings\IBuilder;
 use wfw\engine\package\news\data\model\ArticleModelAccess;
 use wfw\engine\package\news\data\model\IArticleModelAccess;
 use wfw\engine\package\news\domain\repository\ArticleRepository;
@@ -401,11 +393,7 @@ class DefaultContext implements IWebAppContext {
 			IUserRegisteredMail::class => [ 'instanceOf'=>UserRegisteredMail::class],
 			IUserMailChangedMail::class => [ 'instanceOf'=>UserMailChangedMail::class],
 			IUserResetPasswordMail::class => [ 'instanceOf'=>UserResetPasswordMail::class],
-			IUserRepository::class => [ 'instanceOf'=>UserRepository::class,'shared'=>true],/*
-			IZipCodeModelAccess::class => [ 'instanceOf'=>ZipCodeModelAccess::class,'shared'=>true ],
-			IBuilder::class => [ 'instanceOf' => Builder::class, 'shared'=>true ],
-			ISettingsAccess::class => [ 'instanceOf' => SettingsAccess::class, 'shared'=>true ],
-			ISettingsRepository::class => [ 'instanceOf' => SettingsRepository::class, 'shared'=>true ],*/
+			IUserRepository::class => [ 'instanceOf'=>UserRepository::class,'shared'=>true],
 			IContactRepository::class => ['instanceOf'=>ContactRepository::class,'shared'=>true],
 			IContactModelAccess::class => ['instanceOf'=>ContactModelAccess::class,'shared'=>true]
 		]);
@@ -528,7 +516,9 @@ class DefaultContext implements IWebAppContext {
 	private function getDomainEventListeners():array{
 		$listeners = $this->getCacheSystem()->get(self::CACHE_KEYS[self::DOMAIN_EVENT_LISTENERS]);
 		if(is_null($listeners)){
-			$listeners = require_once(SITE.'/config/load/domain_events.listeners.php');
+			if(file_exists(SITE.'/config/load/domain_events.listeners.php'))
+				$listeners = require(SITE.'/config/load/domain_events.listeners.php');
+			else $listeners = require(ENGINE.'/config/default.domain_events.listeners.php');
 			$this->getCacheSystem()->set(self::CACHE_KEYS[self::DOMAIN_EVENT_LISTENERS],$listeners);
 		}
 		return $listeners;

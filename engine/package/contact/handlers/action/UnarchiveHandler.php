@@ -18,7 +18,7 @@ use wfw\engine\core\response\responses\Response;
 use wfw\engine\core\session\ISession;
 use wfw\engine\lib\data\string\json\IJSONEncoder;
 use wfw\engine\package\contact\command\UnarchiveContacts;
-use wfw\engine\package\contact\data\security\ContactIdListRule;
+use wfw\engine\package\contact\security\data\ContactIdListRule;
 use wfw\engine\package\contact\domain\events\UnarchivedEvent;
 
 /**
@@ -32,11 +32,11 @@ final class UnarchiveHandler extends DefaultContactActionHandler implements IDom
 	/**
 	 * ArchiveHandler constructor.
 	 *
-	 * @param ICommandBus          $bus     Bus de commandes
-	 * @param ISession             $session Session
-	 * @param ContactIdListRule    $rule    Régle de validation des données
-	 * @param IDomainEventObserver $observer Observeur de DomainEventListeners
-	 * @param IJSONEncoder         $encoder  Encodeur JSON
+	 * @param ICommandBus                                                 $bus      Bus de commandes
+	 * @param ISession                                                    $session  Session
+	 * @param \wfw\engine\package\contact\security\data\ContactIdListRule $rule     Régle de validation des données
+	 * @param IDomainEventObserver                                        $observer Observeur de DomainEventListeners
+	 * @param IJSONEncoder                                                $encoder  Encodeur JSON
 	 */
 	public function __construct(
 		ICommandBus $bus,
