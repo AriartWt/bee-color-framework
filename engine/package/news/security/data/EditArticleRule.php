@@ -54,7 +54,7 @@ final class EditArticleRule implements IRule {
 					"Ce contenu n'est pas valide !",
 					new MaxStringLength(
 						"Le contenu d'un article ne peut pas dépasser les $maxContentLength caractères",
-						$maxTitleLength,
+						$maxContentLength,
 						"content"
 					),
 					new IsString("Ce champ doit être une chaine","content")

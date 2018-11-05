@@ -1,7 +1,6 @@
 wfw.require("api/network/wfwAPI");
 wfw.define("ui/lang",(function(){
 	let $defSeparator = wfw.settings.get("ui/lang/replacement_pattern") || '[$]';
-	$defSeparator = $defSeparator.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 	let $strs = {}; let $loaded = {};
 	let $redefineError = () => { throw new Error("Cannot redefine lang's properties") };
 	let $replace = function($str,$replaces){
