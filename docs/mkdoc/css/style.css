@@ -86,3 +86,13 @@ a:not(.md-source),
 	color:rgba(255,255,255,0.6);
 	box-shadow: 0.29412em 0 0 rgb(20,20,20), -0.29412em 0 0 rgb(20,20,20);
 }
+.codehilite .se,
+.codehilite .sh,
+.codehilite .si,
+.codehilite .sx,
+.md-typeset .highlight .se,
+.md-typeset .highlight .sh,
+.md-typeset .highlight .si,
+.md-typeset .highlight .sx {
+	color : #22aaca;
+}

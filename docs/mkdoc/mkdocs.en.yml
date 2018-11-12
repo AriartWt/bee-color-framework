@@ -12,10 +12,12 @@ pages :
 - "User guide" :
   - Installation : general/start.md
   - "First steps" :
+    - "Overview" : general/first_steps/overview.md
     - "Tree" : general/first_steps/tree.md
     - "Configurations" : general/first_steps/config.md
     - "Handlers" : general/first_steps/handlers.md
     - "Modules" : general/first_steps/modules.md
+    - "Include CSS and JavaScript files" : general/first_steps/ressources_managers.md
   - Informations :
     - 'Event sourcing' : general/event_sourcing.md
     - 'CQRS' : general/cqrs.md

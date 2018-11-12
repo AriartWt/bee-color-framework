@@ -153,4 +153,4 @@ sudo wfw create ProjectName /srv/wfw
 	For mor details about the available commands in **CLI**, please take a look [there](/cli/wfw).
 
 Now that your framework is installed and your first project created, let's see how to use `wfw` to
- start the developpement in the [first steps section](/general/first_steps/tree/).
+ start the developpement in the [first steps section](/general/first_steps/overview/).
