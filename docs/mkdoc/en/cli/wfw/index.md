@@ -143,8 +143,8 @@ Start downloading the last framework version, and then use the command `update` 
 
 ```bash
 cd ~
-git clone git@framagit.org:Ariart/bee-color-wfw.git
-rm -rf bee-color-wfw/.git
+git clone git@framagit.org:Ariart/bee-color-framework.git
+rm -rf bee-color-framework/.git
 sudo wfw update -all ~/bee-color-wfw
 ```
 

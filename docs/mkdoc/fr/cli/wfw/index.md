@@ -152,9 +152,9 @@ avoir supprimé le dossier `.git`.
 
 ```bash
 cd ~
-git clone git@framagit.org:Ariart/bee-color-wfw.git
-rm -rf bee-color-wfw/.git
-sudo wfw update -all ~/bee-color-wfw
+git clone git@framagit.org:Ariart/bee-color-framework.git
+rm -rf bee-color-framework/.git
+sudo wfw update -all ~/bee-color-framework
 ```
 
 Vous pouvez *remplacer* l'argument `-all` par les différents arguments suivants, en fonction de vos

@@ -27,8 +27,8 @@ Let's start downloading sources and removing the .git directory, which will not 
 
 ``` bash
 git clone git@framagit.org:Ariart/bee-color-framework.git
-rm -rf bee-color-wfw/.git
-mv bee-color-wfw global
+rm -rf bee-color-framework/.git
+mv bee-color-framework global
 ```
 
 Then, we create the folder in which the framework will be, with all your projects :

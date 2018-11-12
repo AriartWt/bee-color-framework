@@ -30,8 +30,8 @@ suite :
 
 ``` bash
 git clone git@framagit.org:Ariart/bee-color-framework.git
-rm -rf bee-color-wfw/.git
-mv bee-color-wfw global
+rm -rf bee-color-framework/.git
+mv bee-color-framework global
 ```
 
 Ensuite, nous créons le dossier qui va recueillir le framework et vos projets :
