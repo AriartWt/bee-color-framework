@@ -152,5 +152,125 @@ sudo wfw create ProjectName /srv/wfw
 
 	For mor details about the available commands in **CLI**, please take a look [there](/cli/wfw).
 
-Now that your framework is installed and your first project created, let's see how to use `wfw` to
- start the developpement in the [first steps section](/general/first_steps/overview/).
+### Apache configurations
+
+#### Grant access to the project folder
+
+To allow `.htaccess` to correctly redirect requests in the projet folder, you must create an
+apache conf file in `/etc/apache2/sites-available` usualy with the name of your website/web application :
+(ex : `project-name.com`)
+
+We will start by configuring the root directory configs :
+```apache
+<Directory /srv/wfw/ProjectName>
+	AllowOverride All
+	Options FollowSymLinks Indexes
+	Require all granted
+	Order allow,deny
+	Allow from all
+</Directory>
+```
+
+#### HTTP, HTTPS et HTTP2
+
+Now that SSL certificates are easy and free to acquire and use (see [let's encrypt](https://letsencrypt.org/)),
+we will configure our server to automatically redirect all default unsecure trafic to the secured SSL port :
+
+```apache
+<VirtualHost *:80>
+	DocumentRoot "/srv/wfw/ProjectName"
+	ServerName project-name.com
+	# Only if you want to redirect all your subdomains too
+	ServerAlias *.project-name.com
+
+	Include /etc/apache2/common/letsencrypt.conf
+	RewriteEngine On
+	RewriteCond %{HTTPS} off
+	RewriteCond %{REQUEST_URI} !^/\.well\-known/acme\-challenge
+	RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+</VirtualHost>
+```
+This configuration have to advantages : the first is to secure all your trafic and the second is to
+allow your server to serve all your pages with the
+[HTTP2](https://httpd.apache.org/docs/current/fr/howto/http2.html) (h2) protocol.
+
+??? note "HTTP2 vs HTTP1 et **WFW**"
+	Serving pages through HTTP2 with **WFW** and it's default config is highly recommended since the
+	framework encourage you to split your css/javascript files withtout using a module bundler like
+	Webpack. You can serve your pages using HTTP1, but the ressources loading will be longer.
+
+	Of course, this default behaviour can be modified to work with module bundlers, see the
+	[ressources inclusion section](/general/first_steps/ressources_managers) for more details.
+
+??? help "How to enable HTTP2 with apache and PHP 7.x ?"
+	Enabling HTTP2 is easier that it seems but requires some important steps, sometimes hard to find
+	on internet.
+
+	If you installed apache2 with `apt-get`, you should have a `httpd` binary compiled with the
+	`mod_http2` module. If not, please refer to the
+	[apache documentation](https://httpd.apache.org/docs/current/en/howto/http2.html)
+
+	To enable HTTP2 and make it works with PHP 7.x and later, please follow
+	[this tuto](https://gist.github.com/GAS85/990b46a3a9c2a16c0ece4e48ebce7300). Think about adapt
+	your PHP version accordingly (minimum 7.2 in our case).
+
+??? help "What's in the `/etc/apache2/common/letsencrypt.conf` file ?"
+	This config file allow you to automaticaly renew your Let's Encrypt certifacates :
+	```apache
+	Alias /.well-known/acme-challenge/ /srv/www/letsencrypt/.well-known/acme-challenge/
+	<Directory "/srv/www/letsencrypt/.well-known/acme-challenge/">
+		Options None
+		AllowOverride None
+		ForceType text/plain
+		RedirectMatch 404 "^(?!/\.well-known/acme-challenge/[\w_-]{43}$)"
+	</Directory>
+	```
+	The Let's Encrypt configuration is far beyond the scope of this documentation, but you can find
+	all necessary informations and steps to follow in this easy to understand and well constructed
+	tutorial serie :
+	[lets-encrypt-from-start-to-finish](https://blog.wizardsoftheweb.pro/lets-encrypt-from-start-to-finish-overview/)
+
+Let's see now the 443 (SSL) port config :
+```apache
+<VirtualHost *:443>
+	DocumentRoot "/srv/wfw/ProjectName"
+	ServerName project-name.com
+
+	# Include scoped config
+	RewriteEngine On
+	RewriteCond %{HTTP_HOST} ^www.project-name.com(.*)
+	RewriteRule (.*) https://project-name.com%{REQUEST_URI} [R=301,L]
+
+	SSLEngine on
+	SSLCertificateFile /etc/letsencrypt/live/project-name.com/fullchain.pem
+	SSLCertificateKeyFile /etc/letsencrypt/live/project-name.com/privkey.pem
+
+	# HTTP2 configs
+	Protocols h2 h2c http/1.1
+	H2Push on
+	H2PushPriority * after
+	H2PushPriority text/css before
+	H2PushPriority image/jpg after 32
+	H2PushPriority image/jpeg after 32
+	H2PushPriority image/png after 32
+	H2PushPriority application/javascript interleaved
+ </VirtualHost>
+```
+We make the decision to redirect all requets coming for the subdomain `www.project-name.com` to the
+root. This step can be omitted if you create your certificate to cover this subdomain using a wildcard
+for example.
+
+If you use a different config or another SSL certificates provider, think about edit this config
+accordingly.
+
+Know, you only have to enable your conf and restart apache :
+```bash
+sudo a2ensite project-name.com
+sudo systemctl restart apache2
+```
+
+## And now ?
+
+Now that your framework is installed, your apache server ready and your first project created,
+let's see how to use `wfw` to start the developpement in the
+[first steps section](/general/first_steps/overview/).

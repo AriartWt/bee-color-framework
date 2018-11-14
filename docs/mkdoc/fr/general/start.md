@@ -209,7 +209,7 @@ ou de votre application, et la seconde c'est qu'elle vous permettra de servir vo
 	 Bien entendu, ce comportement par défaut peut-être modifié pour vous permettre d'utiliser un
 	 module bundler, voir la section traitant de l'inclusion de [fichiers css et javascript](/general/first_steps/ressources_managers)
 
-??? help "Comment activer HTTP2 dans apache ?"
+??? help "Comment activer HTTP2 dans apache et PHP 7.x ?"
 	L'activation d'HTTP2 n'est pas très difficile mais requiert quand même quelques étapes importantes,
 	pas toujours évidentes à trouver sur le net.
 
@@ -217,8 +217,9 @@ ou de votre application, et la seconde c'est qu'elle vous permettra de servir vo
 	binaire `httpd` compilé avec le module `mod_http2`, si ce n'est pas le cas, reportez vous à la
 	[documentation d'apache](https://httpd.apache.org/docs/current/fr/howto/http2.html).
 
-	Pour activer HTTP2 et le faire fonctionner avec PHP >= 7.2, veuillez suivre
-	[ce tutoriel](https://gist.github.com/GAS85/990b46a3a9c2a16c0ece4e48ebce7300)
+	Pour activer HTTP2 et le faire fonctionner avec PHP 7.x, veuillez suivre
+	[ce tutoriel](https://gist.github.com/GAS85/990b46a3a9c2a16c0ece4e48ebce7300) en pensant à adapter
+	votre version de PHP (minimum 7.2 dans notre cas).
 
 ??? help "Que contient le fichier  `/etc/apache2/common/letsencrypt.conf` ?"
 	Ce fichier de configuration permet un renouvellement automatisé de vos certificats SSL :
