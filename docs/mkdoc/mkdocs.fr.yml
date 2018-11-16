@@ -12,12 +12,23 @@ pages :
 - "Guide de l'utilisateur" :
   - Installation : general/start.md
   - "Premiers pas" :
-    - "Tour d'horizon" : general/first_steps/overview.md
-    - "L'arborescence" : general/first_steps/tree.md
-    - "Les configurations" : general/first_steps/config.md
-    - "Les handlers" : general/first_steps/handlers.md
-    - "Les modules" : general/first_steps/modules.md
-    - "Inclure des fichiers CSS et JavaScript" : general/first_steps/ressources_managers.md
+      - "Tour d'horizon" : general/first_steps/overview.md
+      - "L'arborescence" : general/first_steps/tree.md
+      - "Les configurations" : general/first_steps/config.md
+      - "Contrôle d'accès" : general/first_steps/access.md
+      - "Les handlers" : general/first_steps/handlers.md
+      - "Les routeurs" : general/first_steps/routers.md
+      - "Les modules" : general/first_steps/modules.md
+      - "Inclure des fichiers CSS et JavaScript" : general/first_steps/ressources_managers.md
+  - "Démarrage rapide" :
+    - "Environnement de développement" : general/quickstart/dev.md
+    - "Créer un projet" :
+      - "Introduction" : general/quickstart/first_project/index.md
+      - "Configuration" : general/quickstart/first_project/config.md
+      - "Layout" : general/quickstart/first_project/layout.md
+      - "Créer une page" : general/quickstart/first_project/page.md
+      - "Restrictions d'accés" : general/quickstart/first_project/access.md
+      - "Panneau d'administration" : general/quickstart/first_project/admin_panel.md
   - Informations :
     - 'Event sourcing' : general/event_sourcing.md
     - 'CQRS' : general/cqrs.md

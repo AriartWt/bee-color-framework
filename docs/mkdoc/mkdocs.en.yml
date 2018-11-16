@@ -12,12 +12,23 @@ pages :
 - "User guide" :
   - Installation : general/start.md
   - "First steps" :
-    - "Overview" : general/first_steps/overview.md
-    - "Tree" : general/first_steps/tree.md
-    - "Configurations" : general/first_steps/config.md
-    - "Handlers" : general/first_steps/handlers.md
-    - "Modules" : general/first_steps/modules.md
-    - "Include CSS and JavaScript files" : general/first_steps/ressources_managers.md
+      - "Overview" : general/first_steps/overview.md
+      - "Tree" : general/first_steps/tree.md
+      - "Configurations" : general/first_steps/config.md
+      - "Access restrictions" : general/first_steps/access.md
+      - "Handlers" : general/first_steps/handlers.md
+      - "Routers" : general/first_steps/routers.md
+      - "Modules" : general/first_steps/modules.md
+      - "Include CSS and JavaScript files" : general/first_steps/ressources_managers.md
+  - "Quick start" :
+      - "Dev environnement" : general/quickstart/dev.md
+      - "Create a project" :
+        - "Introduction" : general/quickstart/first_project/index.md
+        - "Configuration" : general/quickstart/first_project/config.md
+        - "Layout" : general/quickstart/first_project/layout.md
+        - "Create a page" : general/quickstart/first_project/page.md
+        - "Access restrictions" : general/quickstart/first_project/access.md
+        - "Admin panel" : general/quickstart/first_project/admin_panel.md
   - Informations :
     - 'Event sourcing' : general/event_sourcing.md
     - 'CQRS' : general/cqrs.md
