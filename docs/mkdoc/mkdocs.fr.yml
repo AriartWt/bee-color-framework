@@ -42,7 +42,9 @@ pages :
     - 'KeyValueStore' : daemons/kvs/index.md
   - 'MSServer' :
     - 'ModelSupervisor' : daemons/msserver/index.md
-
+- JavaScript :
+  - "Introduction" : JavaScript/index.md
+  - "WFW" : JavaScript/wfw.md
 theme:
   name: 'material'
   logo: './images/logo.svg'

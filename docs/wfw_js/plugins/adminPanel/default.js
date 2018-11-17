@@ -25,6 +25,10 @@
  * @property {string} [cancel] Contenu du bouton CANCEL de la boite de confirmation
  */
 /**
+ * @namespace adminPanel
+ * @memberOf wfw.plugins
+ */
+/**
  * Crée automatiquement un panel de gestion en fonction des paramètres passés.
  * Chacun des modules doit être défini dans wfw.packages.[module_name]
  * Chacun des modules peut disposer d'une fonction load() qui sera appelée une fois le gestionnaire
@@ -39,6 +43,9 @@
  * @memberOf wfw.plugins.adminPanel
  * @param {Object.<string,Object.<string,ModuleParams|LogoutParams>>} $panels Liste des panels à créer sous la forme name=>{}
  * @param {String[]} $loadOrder Ordre d'appel des fonctions load() de chacun des modules à charger.
+ * @param {Integer} [$hbTimeout] Temps en ms entre deux HeartBeats (permet de maintenir en vie une session php
+ *                              lorsqu'un utilisateur travail dans le panel sans sauvegarder pendant
+ *                              un moment). Defaut : 600 000
  * @property {boolean} loaded True une fois les modules créé et les fonctions load() appelées,
  *                            false avant. A noter que si les fonction load() sont asynchrones,
  *                            les modules ne seront pas fini de charger lorsque ce booleen sera à true,

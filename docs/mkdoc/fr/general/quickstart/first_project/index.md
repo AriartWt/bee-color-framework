@@ -5,16 +5,12 @@ A la fin de cette section vous serez capable de créer de nouvelles pages, d'uti
 d'activer le panneau d'administration par défaut.
 
 !!! note "Note"
-	Pour pouvoir suivre les différentes explications présentes sur cette page, il vous faut avoir suivi
-	la [procédure d'installation](/general/start.md) au préalable.
-
-	De même, pensez à jeter un coup d'oeil à la section [environnement de développement](/general/quickstart/dev),
+	Pour pouvoir suivre les différentes explications présentes sur cette page, pensez à jeter un
+	coup d'oeil à la section [environnement de développement](/general/quickstart/dev),
 	particulièrement utile pour profiter d'un IDE tel que [PHPStorm](https://www.jetbrains.com/phpstorm/)
 	et vous permettre de travailler avec efficacité.
 
 ## Sommaire
-
-Voici le sommaire des différentes étapes :
 
 - [Création du projet](/general/quickstart/first_project/#creation-du-projet)
 - [Configuration](/general/quickstart/first_project/config)

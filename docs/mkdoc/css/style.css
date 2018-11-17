@@ -96,3 +96,8 @@ a:not(.md-source),
 .md-typeset .highlight .sx {
 	color : #22aaca;
 }
+
+.md-typeset blockquote{
+	color:rgba(255,255,255,0.5);
+	border-left-color: rgba(255,255,255,0.5);
+}

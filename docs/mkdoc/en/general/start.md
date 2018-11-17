@@ -273,4 +273,7 @@ sudo systemctl restart apache2
 
 Now that your framework is installed, your apache server ready and your first project created,
 let's see how to use `wfw` to start the developpement in the
-[first steps section](/general/first_steps/overview/).
+[Quick start section](/general/quickstart/first_project/).
+
+If you want to know more about the framework functionnalities, please read the
+[First steps section](/general/first_steps/overview).
