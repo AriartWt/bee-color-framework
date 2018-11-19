@@ -20,19 +20,21 @@ pages :
       - "Les handlers" : general/first_steps/handlers.md
       - "Les routeurs" : general/first_steps/routers.md
       - "Les modules" : general/first_steps/modules.md
+      - "Les vues" : general/first_steps/views.md
+      - "Les layouts" : general/first_steps/layouts.md
       - "Inclure des fichiers CSS et JavaScript" : general/first_steps/ressources_managers.md
   - "Démarrage rapide" :
     - "Environnement de développement" : general/quickstart/dev.md
     - "Créer un projet" :
       - "Introduction" : general/quickstart/first_project/index.md
       - "Configuration" : general/quickstart/first_project/config.md
-      - "Layout" : general/quickstart/first_project/layout.md
-      - "Créer une page" : general/quickstart/first_project/page.md
+      - "Créer les pages" : general/quickstart/first_project/page.md
       - "Restrictions d'accés" : general/quickstart/first_project/access.md
       - "Panneau d'administration" : general/quickstart/first_project/admin_panel.md
   - Informations :
     - 'Event sourcing' : general/event_sourcing.md
     - 'CQRS' : general/cqrs.md
+    - 'DIC' : general/dic.md
 - CLI :
   - backup :
       - 'Commande backup' : cli/backup/index.md
@@ -76,7 +78,8 @@ markdown_extensions:
   - codehilite:
       linenums: true
   - pymdownx.inlinehilite
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      preserve_tabs: true
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde

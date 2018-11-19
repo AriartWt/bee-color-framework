@@ -25,7 +25,7 @@ A partir d'ici, nous considérons que vous avez [installé](/general/start.md) *
 avez suivis les conseils de la section [environnement de développement](/general/quickstart/dev). Si
 ce n'est pas le cas, pensez à adapter les différents exemples.
 
-Trève de bavardage, prenons l'exemple concret de la création d'un site internet pour un projet que
+Trève de bavardages, prenons l'exemple concret de la création d'un site internet pour un projet que
 nous appellerons "Aperture" grâce à la commande [create](/cli/wfw/#creation-dun-projet):
 
 ```bash
@@ -72,6 +72,7 @@ Créons maintenant le dossier qui contiendra notre site (ou application), nommé
 			/layouts
 			/views
 			/webroot
+				/Css
 ```
 
 ???note "Note"
