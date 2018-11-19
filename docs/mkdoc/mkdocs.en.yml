@@ -15,6 +15,7 @@ pages :
       - "Overview" : general/first_steps/overview.md
       - "Tree" : general/first_steps/tree.md
       - "Configurations" : general/first_steps/config.md
+      - "Context" : general/first_steps/context.md
       - "Access restrictions" : general/first_steps/access.md
       - "Handlers" : general/first_steps/handlers.md
       - "Routers" : general/first_steps/routers.md
@@ -45,7 +46,7 @@ pages :
 - JavaScript :
   - "Introduction" : JavaScript/index.md
   - "WFW" : JavaScript/wfw.md
-  
+
 theme:
   name: 'material'
   logo: './images/logo.svg'

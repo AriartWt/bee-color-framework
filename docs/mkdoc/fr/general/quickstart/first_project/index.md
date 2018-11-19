@@ -1,7 +1,7 @@
-Cette section vise à vous permettre d'utiliser rapidement **WFW** pour créer un site web, sans
+La section *Démarrage rapide* vise à vous permettre d'utiliser rapidement **WFW** pour créer un site web, sans
 rentrer dans les détails de son fonctionnement.
 
-A la fin de cette section vous serez capable de créer de nouvelles pages, d'utiliser un `layout` et
+A la fin de cette partie vous serez capable de créer de nouvelles pages, d'utiliser un `layout` et
 d'activer le panneau d'administration par défaut.
 
 !!! note "Note"
@@ -26,7 +26,7 @@ avez suivis les conseils de la section [environnement de développement](/genera
 ce n'est pas le cas, pensez à adapter les différents exemples.
 
 Trève de bavardage, prenons l'exemple concret de la création d'un site internet pour un projet que
-nous appellerons "Aperture" :
+nous appellerons "Aperture" grâce à la commande [create](/cli/wfw/#creation-dun-projet):
 
 ```bash
 sudo wfw create Aperture /srv/wfw
@@ -50,8 +50,8 @@ mkdir Aperture
 	les fichiers du framework si nécessaire. Pour plus d'informations, voir la section expliquant
 	l'[arborescence](/general/first_steps/tree).
 
-Par la suite, à chaque fois que nous voudrons constater les changement effectués à notre site internet,
-nous utiliserons la commande suivante :
+Par la suite, à chaque fois que nous voudrons constater les changements effectués à notre site internet,
+nous utiliserons la commande [import](/cli/wfw/#importation-et-mise-a-jour-dun-projet) :
 ```bash
 sudo wfw import Aperture ~/Aperture
 ```
@@ -77,5 +77,5 @@ Créons maintenant le dossier qui contiendra notre site (ou application), nommé
 ???note "Note"
 	Pour plus d'informations, voir la section expliquant l'[arborescence](/general/first_steps/tree).
 
-Maintenant que nous sommes prêts à travailler, rendez-vous dans la section
+Maintenant que nous sommes prêts à travailler, passons à la section
 [Configuration](/general/quickstart/first_project/config)

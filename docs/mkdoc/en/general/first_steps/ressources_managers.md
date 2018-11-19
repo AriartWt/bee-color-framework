@@ -1,5 +1,3 @@
-# CSS and JavaScript ressources managers
+!!! warning "Writing in progress"
 
-!!! warning "Writting in progress"
-	
 	This page is under construction

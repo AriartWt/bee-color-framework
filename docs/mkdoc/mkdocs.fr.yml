@@ -15,6 +15,7 @@ pages :
       - "Tour d'horizon" : general/first_steps/overview.md
       - "L'arborescence" : general/first_steps/tree.md
       - "Les configurations" : general/first_steps/config.md
+      - "Le contexte" : general/first_steps/context.md
       - "Contrôle d'accès" : general/first_steps/access.md
       - "Les handlers" : general/first_steps/handlers.md
       - "Les routeurs" : general/first_steps/routers.md
@@ -45,6 +46,7 @@ pages :
 - JavaScript :
   - "Introduction" : JavaScript/index.md
   - "WFW" : JavaScript/wfw.md
+
 theme:
   name: 'material'
   logo: './images/logo.svg'

@@ -133,7 +133,7 @@ For the other options, nothing very hard to understand :
 - `mysqldump_path` : path to mysqldump, if not global
 - `tmp` : path to the `wfw` working dir.
 
-??? note
+!!! note
 
 	Even if `/tmp` is a public directory, all sensible files will be created with minimum permissions
 	for security concerns.

@@ -1,5 +1,3 @@
-# Les modules
+!!! warning "Writing in progress"
 
-!!! warning "Rédaction en cours"
-
-	Page en cours de construction
+	This page is under construction
