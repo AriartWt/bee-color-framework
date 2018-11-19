@@ -35,7 +35,7 @@ use wfw\engine\core\lang\Translator;
 use wfw\engine\core\notifier\FlashNotifier;
 use wfw\engine\core\notifier\INotifier;
 use wfw\engine\core\notifier\printer\IPrinter;
-use wfw\engine\core\notifier\printer\JSAPIBasedPrinter;
+use wfw\engine\core\notifier\printer\SimpleHTMLPrinter;
 use wfw\engine\core\request\IRequestData;
 use wfw\engine\core\request\RequestData;
 use wfw\engine\core\response\ResponseRouter;
@@ -369,7 +369,7 @@ class DefaultContext implements IWebAppContext {
 				'shared' => true
 			],
 			INotifier::class => [ 'instanceOf' => FlashNotifier::class, 'shared' => true ],
-			IPrinter::class => [ 'instanceOf' => JSAPIBasedPrinter::class, 'shared' => true ],
+			IPrinter::class => [ 'instanceOf' => SimpleHTMLPrinter::class, 'shared' => true ],
 			ICSSManager::class => [ 'instanceOf' => CSSManager::class, 'shared' => true ],
 			IJsScriptManager::class => [ 'instanceOf' => JsScriptManager::class, 'shared' => true ],
 			IViewFactory::class => [ 'instanceOf' => ViewFactory::class, 'shared' => true ],
