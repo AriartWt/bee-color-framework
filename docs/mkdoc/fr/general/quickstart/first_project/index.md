@@ -50,6 +50,21 @@ mkdir Aperture
 	les fichiers du framework si nécessaire. Pour plus d'informations, voir la section expliquant
 	l'[arborescence](/general/first_steps/tree).
 
+!!!warning "Attention"
+	N'oubliez pas de déplacer le fichier `/tmp/Aperture.cred` contenant le login et le mot de passe
+	de l'utilisateur créé par défaut pour votre projet, sinon il sera supprimé par le système au
+	prochain démarrage.
+
+	Si vous le perdez, il n'y a aucun moyen de le re-générer, il faudra [supprimer](/cli/wfw#supprimer-un-projet)
+	le projet et le réinstaller.
+
+	Ici, nous utiliserons la commande suivante pour mettre le fichier en lieu sûr jusqu'à ce que nous
+	en ayons besoin :
+
+	```bash
+	sudo mv /tmp/Aperture.cred ~/Aperture
+	```
+
 Par la suite, à chaque fois que nous voudrons constater les changements effectués à notre site internet,
 nous utiliserons la commande [import](/cli/wfw/#importation-et-mise-a-jour-dun-projet) :
 ```bash

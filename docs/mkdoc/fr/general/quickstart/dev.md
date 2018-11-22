@@ -65,7 +65,7 @@ machine virtuelle lorsque vous voulez tester vos modifications devrait sans aucu
 
 #### Importer le code source
 
-Pour bénéficier de l'auto-complétion du votre IDE, commencez par télécharger les sources du framework :
+Pour bénéficier de l'auto-complétion de votre IDE, commencez par télécharger les sources du framework :
 ```bash
 cd ~
 git clone https://framagit.org/Ariart/bee-color-framework.git

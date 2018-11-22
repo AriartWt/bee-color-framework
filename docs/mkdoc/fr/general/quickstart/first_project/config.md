@@ -13,7 +13,7 @@ Nous allons commencer par créer le fichier `~/Aperture/site/config/conf.json` :
 ```
 
 Pour le moment nous n'avons qu'à indiquer le package que nous utilisons, à savoir `web` disponible
-dans le dossier `site`.
+dans le dossier `site/package` désigné par `site`.
 
 !!! note "Note"
 	Puisque `wfw` s'occupe des identifiants et mots de passe mysql, msserver et kvs, inutile de les
@@ -22,7 +22,7 @@ dans le dossier `site`.
 	Pour plus de détail sur le fonctionnement exhaustif des configurations, merci de vous référer à la
 	section [correspondante](/general/first_steps/config).
 
-## Contexte
+## Contexte et layout
 
 A présent, nous allons définir les paramètres de contexte de notre site internet (pour plus
 d'informations, c'est [par ici](/general/first_steps/context)).
