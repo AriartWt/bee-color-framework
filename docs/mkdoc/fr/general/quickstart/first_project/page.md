@@ -1,14 +1,11 @@
 Maintenant que tout est prêt, nous pouvons commencer à créer notre site internet.
 
-## Page d'accueil
-
 La première chose à faire, c'est de créer la page d'accueil, sur laquelle les utilisateurs arriveront
 par défaut s'ils tentent d'accéder à la racine du site.
 
-### La vue
+## La vue
 
-Commençons par créer notre page d'accueil, que nous appellerons `Home`. Il nous faut d'abord créer
-la vue `Home` dans le dossier `~/Aperture/site/package/web/views/home` :
+Il nous faut d'abord créer la vue `Home` dans le dossier `~/Aperture/site/package/web/views/home` :
 
 ```php tab="Home.php"
 <?php
@@ -37,7 +34,7 @@ final class Home extends View{
 	Pour plus d'informations sur les vues, merci de vous référer à la section
 	[dédiée](/general/first_steps/views).
 
-### Le ResponseHandler
+## Le ResponseHandler
 
 Pour le moment, notre vue n'est pas encore accessible. Pour permettre aux visiteurs de la trouver,
 il nous faut définir un [ResponseHandler](/general/first_steps/handlers#ResponseHandler) dans le
@@ -48,10 +45,12 @@ rébarbatif lorsque l'on souhaite juste servir une vue relativement simple :
 
 ```php
 <?php
+// file : ~/Aperture/site/package/web/handlers/response/HomeHandler.php
+
 namespace wfw\site\package\web\handlers\response;
 
 use wfw\engine\core\response\DefaultResponseHandler;
-use wfw\site\package\web\views\Home;
+use wfw\site\package\web\views\home\Home;
 
 final class HomeHandler extends DefaultResponseHandler{
 	/**
@@ -71,7 +70,7 @@ Notre page d'accueil est dorénavant accessible via l'url `http://localhost/Aper
 `http://localhost/Aperture/science/home` (comme nous l'avons défini dans le [contexte](config#sitecontextphp)
 à l'étape précédente).
 
-### Paramètrage de l'url
+## Paramètrage de l'url
 
 Nous aimerions maintenant que notre page `Home` soit accessible via l'url
 `http://localhost/Aperture/science/Accueil` pour des raisons de référencement. Pour cela, il nous
@@ -130,7 +129,7 @@ return function(array $args = []){
 	écrites en premier.
 
 
-### Transmettre des données au layout depuis la vue
+## Transmettre des données au layout depuis la vue
 
 Puisque nous parlions justement de référencement à l'étape précédente, une bonne idée serait de
 pouvoir modifier la balise `<title></title>` de notre page, ainsi que la balise meta-description
@@ -195,7 +194,7 @@ $description = $infos["description"] ?? "Laboratoirs de recherche scientifique."
 	Pour plus d'informations, voir
 	[la documentation de PHP](http://php.net/manual/fr/migration70.new-features.php#migration70.new-features.null-coalesce-op).
 
-### CSS
+## CSS
 
 Nous avons deux options pour l'inclusion des règles **CSS** sur notre page :
 
@@ -269,3 +268,7 @@ h1{
 
 	Pour plus d'informations sur l'inclusion de fichiers CSS, merci de vous référer à la section
 	[dédiée](/general/first_steps/ressources_managers).
+
+
+Maintenant que nous savons créer des pages de contenu, voyons comment créer une
+[page de contact](/general/quickstart/first_project/contact) fonctionnelle.

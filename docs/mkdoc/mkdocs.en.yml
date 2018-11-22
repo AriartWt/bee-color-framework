@@ -23,14 +23,16 @@ pages :
       - "Views" : general/first_steps/views.md
       - "Layouts" : general/first_steps/layouts.md
       - "Include CSS and JavaScript files" : general/first_steps/ressources_managers.md
+      - "Forms" : general/first_steps/forms.md
   - "Quick start" :
       - "Dev environnement" : general/quickstart/dev.md
       - "Create a project" :
         - "Introduction" : general/quickstart/first_project/index.md
         - "Configuration" : general/quickstart/first_project/config.md
-        - "Create pages" : general/quickstart/first_project/page.md
-        - "Access restrictions" : general/quickstart/first_project/access.md
+        - "Home page" : general/quickstart/first_project/page.md
+        - "Contact page" : general/quickstart/first_project/contact.md
         - "Admin panel" : general/quickstart/first_project/admin_panel.md
+        - "Access restrictions" : general/quickstart/first_project/access.md
   - Informations :
     - 'Event sourcing' : general/event_sourcing.md
     - 'CQRS' : general/cqrs.md

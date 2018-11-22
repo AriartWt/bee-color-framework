@@ -162,3 +162,7 @@ html .md-nav--primary .md-nav__title{
 .superfences-tabs input:nth-child(n+1):checked + label + .superfences-content {
 	display: block;
 }
+
+.md-nav__link--active{
+	color:white!important;
+}
