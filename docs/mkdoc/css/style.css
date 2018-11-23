@@ -164,5 +164,5 @@ html .md-nav--primary .md-nav__title{
 }
 
 .md-nav__link--active{
-	color:white!important;
+	font-weight:bold;
 }
