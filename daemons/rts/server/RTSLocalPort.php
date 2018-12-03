@@ -158,7 +158,6 @@ final class RTSLocalPort {
 					}
 				}else $this->sendError($socket,"Field sessid have to be defined !");
 				break;
-				break;
 			case "login" :
 				if(is_string($data['login']??null) && is_string($data['password']??null)){
 					$sessId = $this->_environment->createSessionForUser(

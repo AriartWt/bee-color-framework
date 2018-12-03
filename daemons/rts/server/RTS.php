@@ -367,6 +367,10 @@ final class RTS{
 		if(!is_null($this->_localPort)) socket_close($this->_localPort);
 		if(!is_null($this->_networkPort)) socket_close($this->_networkPort);
 
+		foreach($this->_workersInfos as $pid=>$info){
+			posix_kill($pid,PCNTLSignalsHelper::SIGALRM);
+		}
+
 		if(!is_null($e)){
 			$this->errorLog($e);
 			exit(1);

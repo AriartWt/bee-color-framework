@@ -20,6 +20,7 @@ final class RTSNetworkPort{
 	private $_netSock;
 	/** @var IRTSEnvironment $_env */
 	private $_env;
+	private $_netSocks;
 
 	/**
 	 * RTSNetworkPort constructor.
@@ -32,6 +33,7 @@ final class RTSNetworkPort{
 		$this->_mainSock = $mainSocket;
 		$this->_netSock = $netSocket;
 		$this->_env = $env;
+		$this->_netSocks = [];
 	}
 
 	public function start():void{
