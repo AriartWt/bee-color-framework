@@ -1,0 +1,30 @@
+{
+	"working_dir" : "rts/data",
+	"socket_path" : "rts.socket",
+	"default_instance" : {
+		"users" : {
+			"root" : {
+				"password" : "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"
+			}
+		},
+		"modules_to_load_path" : "{ROOT}/site/config/load/rts.php",
+		"request_ttl" : 900,
+		"session_ttl" : 60,
+		"send_error_to_client" : true,
+		"error_logs" : "error_logs.txt",
+		"max_wsockets" : 2000,
+		"max_workers" : 50,
+		"allowed_wsockets_overflow" : -1
+	},
+	"instances" : {
+		"bee-color" : {
+			"modules_to_load_path" : "{ROOT}/BeeColor/config/load/rts.php",
+			"port" : 2670,
+			"users" : {
+				"bee-color_website" : {
+					"password" : "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"
+				}
+			}
+		}
+	}
+}
