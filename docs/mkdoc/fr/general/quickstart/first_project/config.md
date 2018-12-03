@@ -199,5 +199,5 @@ html{
 	En ce qui concerne la méthode `registerPostAction()`, vous trouverez les informations
 	correspondantes dans la section consacrée aux [vues](/general/first_steps/views).
 
-La configuration de notre site internet étant terminée, nous poouvons passer à la [création des
+La configuration de notre site internet étant terminée, nous pouvons passer à la [création des
 premières pages](/general/quickstart/first_project/page).

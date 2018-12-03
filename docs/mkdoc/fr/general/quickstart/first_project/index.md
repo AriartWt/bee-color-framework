@@ -4,7 +4,7 @@ rentrer dans les détails de son fonctionnement.
 A la fin de cette partie vous serez capable de créer de nouvelles pages, d'utiliser un `layout` et
 d'activer le panneau d'administration par défaut.
 
-!!! note "Note"
+!!!note "Note"
 	Pour pouvoir suivre les différentes explications présentes sur cette page, pensez à jeter un
 	coup d'oeil à la section [environnement de développement](/general/quickstart/dev),
 	particulièrement utile pour profiter d'un IDE tel que [PHPStorm](https://www.jetbrains.com/phpstorm/)
@@ -90,7 +90,7 @@ Créons maintenant le dossier qui contiendra notre site (ou application), nommé
 				/Css
 ```
 
-???note "Note"
+!!!note "Note"
 	Pour plus d'informations, voir la section expliquant l'[arborescence](/general/first_steps/tree).
 
 Maintenant que nous sommes prêts à travailler, passons à la section

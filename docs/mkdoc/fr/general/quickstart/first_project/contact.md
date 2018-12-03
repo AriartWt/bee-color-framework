@@ -343,9 +343,10 @@ h1{
 
 ## Le ActionHandler
 
-Puisque le rôle des `ResponseHandler` est simplement de désigner la vue à charger en fonction de la
-requête et que le fait d'enregistrer une demande de contact est une action d'un visiteur sur le site,
-nous utiliserons un `ActionHandler` pour traiter les données envoyées en `POST`.
+Puisque le rôle des `ResponseHandler` est simplement de désigner la vue à charger et à lui transmettre
+d'éventuelles données en fonction de la requête et que le fait d'enregistrer une demande de contact
+est une action d'un visiteur sur le site, nous utiliserons un `ActionHandler` pour traiter les
+données envoyées en `POST`.
 
 Pour le moment, nous allons simplement envoyer un mail lorsqu'un visiteur soumet un formulaire valide :
 
@@ -885,6 +886,6 @@ final class ContactHandler implements IActionHandler {
 
 	Bien entendu, ces techniques de protection anti-spam ne fonctionnent plus dans le cas d'une
 	attaque ciblée. Si tel venait à être le cas, vous pouvez créer une `IFormValidationPolicy`
-	permettant de contrer un spammer spécifique, ou utiliser d'autres polices existantes supplémentaires.
+	permettant de contrer un spammer spécifique, ou utiliser d'autres polices existantes  en supplément.
 
 Voyons maintenant comment activer le panneau d'administration à [l'étape suivante](admin_panel).
