@@ -336,7 +336,8 @@ final class RTS{
 		(new RTSNetworkPort(
 			$this->_mainProcessSocket,
 			$this->_networkPort,
-			$this->_environment
+			$this->_environment,
+			$this->_protocol
 		))->start();
 	}
 

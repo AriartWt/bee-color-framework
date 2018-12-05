@@ -9,6 +9,7 @@
 namespace wfw\daemons\rts\server;
 
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
+use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
 
 /**
  * Port network permettant de gérer les clients websocket.
@@ -26,10 +27,16 @@ final class RTSNetworkPort{
 	 * RTSNetworkPort constructor.
 	 *
 	 * @param resource        $mainSocket Socket de communication avec le processus principal
-	 * @param resource        $netSocket Port network (reception des websockets)
-	 * @param IRTSEnvironment $env Environnement RTS
+	 * @param resource        $netSocket  Port network (reception des websockets)
+	 * @param IRTSEnvironment $env        Environnement RTS
+	 * @param ISocketProtocol $protocol   Protocole de communication avec $mainSocket
 	 */
-	public function __construct($mainSocket, $netSocket, IRTSEnvironment $env) {
+	public function __construct(
+		$mainSocket,
+		$netSocket,
+		IRTSEnvironment $env,
+		ISocketProtocol $protocol
+	) {
 		$this->_mainSock = $mainSocket;
 		$this->_netSock = $netSocket;
 		$this->_env = $env;
