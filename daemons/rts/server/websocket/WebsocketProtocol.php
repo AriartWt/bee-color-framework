@@ -10,6 +10,7 @@ namespace wfw\daemons\rts\server\websocket;
  * same.
  */
 final class WebsocketProtocol implements IWebsocketProtocol {
+
 	/**
 	 * @param IWebsocketEvent[] $events Evenements à dispatcher
 	 */
@@ -18,19 +19,30 @@ final class WebsocketProtocol implements IWebsocketProtocol {
 	}
 
 	/**
-	 * Accepte une nouvelle connexion
+	 * Accepte une nouvelle connexion et crée un utilisateur
 	 *
 	 * @param resource $socket Socket network
+	 * @return IWebsocketUser
 	 */
-	public function accept($socket): void {
+	public function accept($socket): IWebsocketUser {
 		// TODO: Implement accept() method.
 	}
 
 	/**
-	 * Vérifie toutes les sockets et dispatch les événements en fonction des lectures/écritures dans
-	 * les socket clients
+	 * @param IWebsocketUser $user Utilisateur dont on doit lire les données
+	 * @return null|string Null si le message est incomplet. Le message sinon.
 	 */
-	public function process(): void {
-		// TODO: Implement process() method.
+	public function readUserMessage(IWebsocketUser $user): ?string {
+		// TODO: Implement readUserMessage() method.
+	}
+
+	/**
+	 * Envoie les données en attente destinées à l'utilisateur
+	 *
+	 * @param IWebsocketUser $user Utilisateur ayant des données à envoyer.
+	 * @return int|null Nombre de bytes écrits. Null si rien à écrire.
+	 */
+	public function writeUserMessages(IWebsocketUser $user): ?int {
+		// TODO: Implement writeUserMessages() method.
 	}
 }

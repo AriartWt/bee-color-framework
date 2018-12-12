@@ -11,6 +11,7 @@ namespace wfw\daemons\rts\server\environment;
 use stdClass;
 use wfw\daemons\rts\server\errors\UserGroupNotFound;
 use wfw\daemons\rts\server\errors\UserNotFound;
+use wfw\engine\lib\logger\ILogger;
 
 /**
  * Environment d'un serveur RTS
@@ -31,22 +32,50 @@ final class RTSEnvironment implements IRTSEnvironment{
 	/** @var int $_ttl */
 	private $_ttl;
 
+	private $_debug;
+	private $_maxWriteBuffer;
+	private $_maxReadBuffer;
+	private $_maxRequestHandshakeSize;
+	private $_headerOriginRequired;
+	private $_headerProtocolRequired;
+	private $_willSupportExtensions;
+	private $_maxSocketSelect;
+	private $_logger;
+
 	/**
 	 * MSServerEnvironment constructor.
 	 *
-	 * @param string       $workingDir   Dossier de travail du serveur.
-	 * @param stdClass     $users        Liste des utilisateurs du serveur
-	 * @param stdClass     $groups       Liste des groupes d'utilisateur du serveur
-	 * @param stdClass     $admins       Liste des droits d'administration du serveur
-	 * @param int          $sessionTtl   (optionnel defaut : 900) temps en secondes avant expiration d'une session inactive.
+	 * @param string       $workingDir Dossier de travail du serveur.
+	 * @param stdClass     $users      Liste des utilisateurs du serveur
+	 * @param stdClass     $groups     Liste des groupes d'utilisateur du serveur
+	 * @param stdClass     $admins     Liste des droits d'administration du serveur
+	 * @param int          $sessionTtl (optionnel defaut : 900) temps en secondes avant expiration d'une session inactive.
+	 * @param int          $maxWriteBuffer
+	 * @param int          $maxReadBuffer
+	 * @param int          $maxRequestHandshakeSize
+	 * @param bool         $headerOriginRequired
+	 * @param bool         $headerProtocolRequired
+	 * @param bool         $willSupportExtensions
+	 * @param int          $maxSocketSelect
+	 * @param null|ILogger $logger
+	 * @throws \InvalidArgumentException
 	 */
 	public function __construct(
 		string $workingDir,
 		stdClass $users,
 		stdClass $groups,
 		stdClass $admins,
-		int $sessionTtl = 900)
-	{
+		ILogger $logger,
+		int $sessionTtl = 900,
+		int $debugLevel = 0,
+		int $maxWriteBuffer = 49152,
+		int $maxReadBuffer = 49152,
+		int $maxRequestHandshakeSize = 1024,
+		bool $headerOriginRequired = false,
+		bool $headerProtocolRequired = false,
+		bool $willSupportExtensions = false,
+		int $maxSocketSelect = 1000
+	) {
 		if(!file_exists($workingDir)){
 			if(file_exists(dirname($workingDir))){
 				mkdir($workingDir);
@@ -111,6 +140,12 @@ final class RTSEnvironment implements IRTSEnvironment{
 		}
 
 		$this->_sessions = [];
+
+		if($debugLevel > 0){
+			$merges=[];
+			if($debugLevel & ILogger::LOG) $merges[ILogger::LOG];
+			if($debugLevel & ILogger::)
+		}
 	}
 
 	/**
@@ -259,5 +294,54 @@ final class RTSEnvironment implements IRTSEnvironment{
 				$this->destroyUserSession($id);
 			}
 		}
+	}
+
+	/**
+	 * @return bool True
+	 */
+	public function debugEnabled(): bool {
+		// TODO: Implement debugEnabled() method.
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getMaxRequestHandshakeSize(): int {
+		// TODO: Implement getMaxRequestHandshakeSize() method.
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isHeaderOriginRequired(): bool {
+		// TODO: Implement isHeaderOriginRequired() method.
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isHeaderProtocolRequired(): bool {
+		// TODO: Implement isHeaderProtocolRequired() method.
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function willSupportExtension(): bool {
+		// TODO: Implement willSupportExtension() method.
+	}
+
+	/**
+	 * @return int
+	 */
+	public function maxWriteBuffer(): int {
+		// TODO: Implement maxWriteBuffer() method.
+	}
+
+	/**
+	 * @return int
+	 */
+	public function maxReadBuffer(): int {
+		// TODO: Implement maxReadBuffer() method.
 	}
 }

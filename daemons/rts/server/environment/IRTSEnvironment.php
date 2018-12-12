@@ -101,4 +101,39 @@ interface IRTSEnvironment {
 	 *  Supprime les sessions inactives depuis un certain temps.
 	 */
 	public function destroyOutdatedSessions(): void;
+
+	/**
+	 * @return bool True
+	 */
+	public function debugEnabled():bool;
+
+	/**
+	 * @return int
+	 */
+	public function getMaxRequestHandshakeSize():int;
+
+	/**
+	 * @return bool
+	 */
+	public function isHeaderOriginRequired():bool;
+
+	/**
+	 * @return bool
+	 */
+	public function isHeaderProtocolRequired():bool;
+
+	/**
+	 * @return bool
+	 */
+	public function willSupportExtension():bool;
+
+	/**
+	 * @return int
+	 */
+	public function maxWriteBuffer():int;
+
+	/**
+	 * @return int
+	 */
+	public function maxReadBuffer():int;
 }

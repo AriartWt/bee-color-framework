@@ -11,10 +11,19 @@
 		"request_ttl" : 900,
 		"session_ttl" : 60,
 		"send_error_to_client" : true,
-		"error_logs" : "error_logs.txt",
+		"error_logs" : "error.log",
+		"debug_logs" : "debug.log",
 		"max_wsockets" : 2000,
 		"max_workers" : 50,
-		"allowed_wsockets_overflow" : -1
+		"allowed_wsockets_overflow" : -1,
+		"debug":true,
+		"max_write_buffer":49152,
+		"max_read_buffer":49152,
+		"max_request_handshake_size":1024,
+		"header_origin_required":false,
+		"header_protocol_required":false,
+		"will_support_extensions":false,
+		"max_socket_select" : 1000
 	},
 	"instances" : {
 		"bee-color" : {

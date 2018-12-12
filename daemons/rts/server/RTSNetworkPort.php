@@ -9,7 +9,7 @@ use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
 /**
  * Network port able to accept/read/write into websockets
  */
-final class RTSNetworkPort{
+class RTSNetworkPort{
 	/** @const int $max_client 1024 is the max with select(), we keep space for rejecting socket */
 	protected const MAX_SOCKET_SELECT = 1000;
 	/** @var resource $_mainSock */
@@ -20,7 +20,9 @@ final class RTSNetworkPort{
 	private $_env;
 	/** @var array $_netSocks */
 	private $_netSocks;
+	/** @var ISocketProtocol $_mainProtocol */
 	private $_mainProtocol;
+	/** @var IWebsocketProtocol $_wsProtocol */
 	private $_wsProtocol;
 
 	// Configuration Start
@@ -82,7 +84,8 @@ final class RTSNetworkPort{
 		while(true){
 			//check main read/write
 			//check net read/write
-			$this->_wsProtocol->process();
+			//check all users
 		}
 	}
+
 }
