@@ -8,7 +8,7 @@ use wfw\engine\lib\errors\PermissionDenied;
 /**
  * Permet d'écrire des logs dans un/plusieur fichier(s).
  */
-final class FileLogger implements ILogger {
+class FileLogger implements ILogger {
 	/** @var string[] fichiers de log. */
 	private $_files;
 	/** @var array $_disabled Fichiers de log désactivés */
@@ -44,7 +44,7 @@ final class FileLogger implements ILogger {
 	 * @param string $message Message à écrire
 	 * @param int    ...$type Type de log
 	 */
-	public function log(string $message, int... $type): void {
+	public final function log(string $message, int... $type): void {
 		if(empty($type)) $type=[self::LOG];
 		$alreadyLogged=[];
 		foreach($type as $t){
@@ -63,7 +63,7 @@ final class FileLogger implements ILogger {
 	 * @param array  $exclusions Fichiers déjà traités
 	 * @return bool True si au moins une redirection, false sinon
 	 */
-	public function applyRedirections(int $type,string $message,array &$exclusions):bool{
+	private function applyRedirections(int $type,string $message,array &$exclusions):bool{
 		$redirections = $this->getRedirections($type);
 		$redirected = false;
 		foreach($redirections as $r){
@@ -83,7 +83,7 @@ final class FileLogger implements ILogger {
 	 * @param string $message    Message à écrire dans les logs
 	 * @param array  $exclusions Liste des fichiers déjà traités
 	 */
-	public function applyMerges(int $type, string $message, array &$exclusions):void{
+	private function applyMerges(int $type, string $message, array &$exclusions):void{
 		$merges = $this->getMerges($type);
 		foreach($merges as $m){
 			if(!isset($exclusions["$m"]) && $this->isEnabled($m)){
@@ -140,7 +140,7 @@ final class FileLogger implements ILogger {
 	/**
 	 * @param int ...$type Désactive les logs spécifiés
 	 */
-	public function disable(int... $type): void {
+	public final function disable(int... $type): void {
 		foreach($type as $t){
 			$this->_disabled["$t"]=true;
 		}
@@ -149,7 +149,7 @@ final class FileLogger implements ILogger {
 	/**
 	 * @param int ...$type Active les logs spécifiés s'ils sont désactivés.
 	 */
-	public function enable(int... $type): void {
+	public final function enable(int... $type): void {
 		foreach($type as $t){
 			if(isset($this->_disabled["$t"])) unset($this->_disabled["$t"]);
 		}
@@ -161,46 +161,120 @@ final class FileLogger implements ILogger {
 	 * @param int $to      Destination de la redirection
 	 * @param int ...$from Cibles de la redirection
 	 */
-	public function redirect(int $to, int... $from): void {
-		$toRedirections = $this->getRedirections($to);
-		$recursives = array_intersect($toRedirections,$from);
-		if(count($recursives))
-			throw new \InvalidArgumentException(
-				"Can't set a recursive redirection. Attempting to redirect ".
-				implode(",",$from)." to $to, but $to is already redirected to "
-				.implode(",",$recursives)
-			);
-		if(is_bool(array_search($to,$from))) throw new \InvalidArgumentException(
-			"Can't set a recursive rediection: $to can't be in from args !"
-		);
+	public final function redirect(int $to, int... $from): void {
+		$this->checkRecurrence(false,$to,...$from);
 		foreach($from as $f){
-			if(!isset($this->_redirections["$f"])) $this->_redirections["$f"] = [$to];
-			else $this->_redirections["$f"][]=$to;
+			$this->addRecordTo($this->_redirections,$f,$to);
 		}
 	}
 
 	/**
 	 * Copie tous les logs $from vers $to sans duplication. Les entrées dans les logs de base seront
-	 * conservées.
 	 *
 	 * @param int $to      Destination de la copie
 	 * @param int ...$from Cibles de la copie
 	 */
-	public function merge(int $to, int... $from): void {
-		$toMerges = $this->getMerges($to);
-		$recursives = array_intersect($toMerges,$from);
-		if(count($recursives))
-			throw new \InvalidArgumentException(
-				"Can't set a recursive merge. Attempting to merges ".
-				implode(",",$from)." to $to, but $to is already merged into "
-				.implode(",",$recursives)
-			);
-		if(is_bool(array_search($to,$from))) throw new \InvalidArgumentException(
-			"Can't set a recursive merge: $to can't be in from args !"
-		);
+	public final function merge(int $to, int... $from): void {
+		$this->checkRecurrence(true,$to,...$from);
 		foreach($from as $f){
-			if(!isset($this->_merges["$f"])) $this->_merges["$f"] = [$to];
-			else $this->_merges["$f"][]=$to;
+			$this->addRecordTo($this->_merges,$f,$to);
 		}
+	}
+
+	/**
+	 * @param array $array
+	 * @param int   $from
+	 * @param int   $to
+	 */
+	private function addRecordTo(array &$array, int $from, int $to):void{
+		if(!isset($array["$from"])) $array["$from"] = [$to];
+		else $array["$from"][]=$to;
+	}
+
+	/**
+	 * @param bool $merge
+	 * @param int  $simulatedTo
+	 * @param int  ...$simulatedFroms
+	 */
+	private function checkRecurrence(
+		bool $merge=true,
+		int $simulatedTo,
+		int... $simulatedFroms
+	){
+		$records = ($merge) ? $this->_merges : $this->_redirections;
+		foreach($simulatedFroms as $f){
+			$this->addRecordTo($records,$f,$simulatedTo);
+		}
+		foreach($records as $from => $tos){
+			$consumed=[];
+			if($this->hasRecursion($records,$from,$consumed))
+				throw new \InvalidArgumentException(
+					"Infinite ".($merge?"merge":"redirection")." recursion found, "
+					."please check your logger config !"
+				);
+		}
+	}
+
+	/**
+	 * Verifie s'il exise une boucle infinie dans les définitions
+	 *
+	 * @param array    $records
+	 * @param int      $start
+	 * @param array    $consumed
+	 * @param int|null $checkFromsOf
+	 * @return bool
+	 */
+	private function hasRecursion(
+		array &$records,
+		int $start,
+		array &$consumed,
+		?int $checkFromsOf=null
+	):bool{
+		$froms = (is_null($checkFromsOf)) ? $records["$start"]??[] : $records["$checkFromsOf"]??[];
+		if(count($froms)>0){
+			if(count(array_intersect($consumed,$froms))>0){
+				return false;
+			}else if(!in_array($start,$froms)){
+				foreach($froms as $from){
+					$consumed[]=$from;
+					if(!$this->hasRecursion($records,$start,$consumed,$from)) return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Configure automatiquement un fichier de logs en fonction d'un niveau.
+	 * Ex : autoConfByLevel(ILogger::ERR | ILogger::LOG | ILogger::WARN, ILogger::DEBUG)
+	 * Permet de dupliquer tous les logs ERR,LOG et WARN dans DEBUG
+	 *
+	 * @param int  $level Niveau de logs
+	 * @param int  $to    Destination des logs
+	 * @param bool $merge Si true, merge. Sinon, redirections
+	 */
+	public final function auoConfFileByLevel(int $level, int $to, bool $merge = true){
+		$bytes = array_reverse(str_split(decbin($level)));
+		$froms=[];
+		foreach($bytes as $k=>$b){ if($b==='1') $froms[]=pow(2,$k); }
+		if(count($froms)>0){
+			if($merge) $this->merge($to,...$froms);
+			else $this->redirect($to,...$froms);
+		}
+	}
+
+	/**
+	 * Permet d'activer/désactiver des fichiers de log en fonction d'un niveau de log
+	 * @param int  $level  Niveau de log
+	 * @param bool $enable Si true, active les fichiers désigné par level. Les désactive sinon.
+	 */
+	public final function autoConfByLevel(int $level, bool $enable = true){
+		$bytes = array_reverse(str_split(decbin($level)));
+		$files=[];
+		foreach($bytes as $k=>$b){
+			if($b==='1') $files[]=pow(2,$k);
+		}
+		if($enable) $this->enable(...$files);
+		else $this->disable(...$files);
 	}
 }

@@ -18,6 +18,8 @@ use wfw\engine\lib\cli\argv\ArgvOptMap;
 use wfw\engine\lib\cli\argv\ArgvParser;
 use wfw\engine\lib\cli\argv\ArgvReader;
 use wfw\engine\lib\cli\signalHandler\PCNTLSignalsHelper;
+use wfw\engine\lib\logger\DefaultLogFormater;
+use wfw\engine\lib\logger\FileLogger;
 
 $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
    new ArgvOpt('-pid','Affiche le pid',0,null,true),
@@ -44,6 +46,15 @@ try{
 			$pidFile = $servWorkingDir."/rts.pid";
 			if(file_exists($pidFile))
 				posix_kill(file_get_contents($pidFile),PCNTLSignalsHelper::SIGALRM);
+			$logger = new FileLogger(
+				new DefaultLogFormater(),
+				$confs->getLogsPath($name),
+				$confs->getErrorLogsPath($name),
+				$confs->getWarningLogsPath($name),
+				$confs->getDebugLogsPath($name)
+			);
+			$level = $confs->getDebugLevel($name);
+			if($level > 0) $logger->auoConfFileByLevel($level, FileLogger::DEBUG);
 			$server = new RTS(
 				$confs->getSocketPath($name),
 				$confs->getPort($name),
@@ -53,6 +64,7 @@ try{
 					$confs->getUsers($name),
 					$confs->getGroups($name),
 					$confs->getAdmins($name),
+					$logger,
 					$confs->getSessionTtl($name)
 				),
 				$confs->getRequestTtl($name),

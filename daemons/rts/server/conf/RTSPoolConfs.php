@@ -23,7 +23,12 @@ final class RTSPoolConfs {
 	private const WORKING_DIR = "working_dir";
 	private const SOCKET_PATH = "socket_path";
 	private const REQUEST_TTL = "request_ttl";
-	private const ERROR_LOGS = "error_logs";
+	private const DEF_LOGS = "log_file";
+	private const ERR_LOGS = "err_logs";
+	private const WARN_LOGS = "warn_logs";
+	private const DEBUG_LOGS = "debug_logs";
+	private const DEBUG_LEVEL = "debug_level";
+	private const LOG_LEVEL = "log_level";
 
 	/** @var FileBasedConf $_conf */
 	private $_conf;
@@ -149,6 +154,17 @@ final class RTSPoolConfs {
 		if(!isset($this->_instancesConfs[$instance]))
 			throw new \InvalidArgumentException("Unknown instance $instance");
 		return $this->_instancesConfs[$instance]->find("users");
+	}
+
+	/**
+	 * @param string $instance Instance dont on souhaite connaitre le niveau de debug
+	 * @return int
+	 * @throws \InvalidArgumentException
+	 */
+	public function getDebugLevel(string $instance): int{
+		if(!isset($this->_instancesConfs[$instance]))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return $this->_instancesConfs[$instance]->find(self::DEBUG_LEVEL) ?? 0;
 	}
 
 	/**
@@ -291,7 +307,52 @@ final class RTSPoolConfs {
 	 */
 	public function getErrorLogsPath(?string $instance=null):string{
 		$errorPath = new PHPString(
-			$this->resolvePath($this->_conf->getString(self::ERROR_LOGS)??"error_logs.txt")
+			$this->resolvePath($this->_conf->getString(self::ERR_LOGS)??"err.log")
+		);
+		if(!$errorPath->startBy("/")){
+			return $this->getWorkingDir($instance).DS.$errorPath;
+		}else{
+			return $errorPath;
+		}
+	}
+
+	/**
+	 * @param null|string $instance Instance concernée
+	 * @return string
+	 */
+	public function getWarningLogsPath(?string $instance=null):string{
+		$errorPath = new PHPString(
+			$this->resolvePath($this->_conf->getString(self::WARN_LOGS)??"warn.log")
+		);
+		if(!$errorPath->startBy("/")){
+			return $this->getWorkingDir($instance).DS.$errorPath;
+		}else{
+			return $errorPath;
+		}
+	}
+
+	/**
+	 * @param null|string $instance Instance concernée
+	 * @return string
+	 */
+	public function getDebugLogsPath(?string $instance=null):string{
+		$errorPath = new PHPString(
+			$this->resolvePath($this->_conf->getString(self::DEBUG_LOGS)??"debug.log")
+		);
+		if(!$errorPath->startBy("/")){
+			return $this->getWorkingDir($instance).DS.$errorPath;
+		}else{
+			return $errorPath;
+		}
+	}
+
+	/**
+	 * @param null|string $instance Instance concernée
+	 * @return string
+	 */
+	public function getLogsPath(?string $instance=null):string{
+		$errorPath = new PHPString(
+			$this->resolvePath($this->_conf->getString(self::DEF_LOGS)??"rts.log")
 		);
 		if(!$errorPath->startBy("/")){
 			return $this->getWorkingDir($instance).DS.$errorPath;

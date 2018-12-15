@@ -49,6 +49,7 @@ final class RTSEnvironment implements IRTSEnvironment{
 	 * @param stdClass     $users      Liste des utilisateurs du serveur
 	 * @param stdClass     $groups     Liste des groupes d'utilisateur du serveur
 	 * @param stdClass     $admins     Liste des droits d'administration du serveur
+	 * @param null|ILogger $logger
 	 * @param int          $sessionTtl (optionnel defaut : 900) temps en secondes avant expiration d'une session inactive.
 	 * @param int          $maxWriteBuffer
 	 * @param int          $maxReadBuffer
@@ -57,7 +58,6 @@ final class RTSEnvironment implements IRTSEnvironment{
 	 * @param bool         $headerProtocolRequired
 	 * @param bool         $willSupportExtensions
 	 * @param int          $maxSocketSelect
-	 * @param null|ILogger $logger
 	 * @throws \InvalidArgumentException
 	 */
 	public function __construct(
@@ -67,7 +67,6 @@ final class RTSEnvironment implements IRTSEnvironment{
 		stdClass $admins,
 		ILogger $logger,
 		int $sessionTtl = 900,
-		int $debugLevel = 0,
 		int $maxWriteBuffer = 49152,
 		int $maxReadBuffer = 49152,
 		int $maxRequestHandshakeSize = 1024,
@@ -140,12 +139,6 @@ final class RTSEnvironment implements IRTSEnvironment{
 		}
 
 		$this->_sessions = [];
-
-		if($debugLevel > 0){
-			$merges=[];
-			if($debugLevel & ILogger::LOG) $merges[ILogger::LOG];
-			if($debugLevel & ILogger::)
-		}
 	}
 
 	/**

@@ -3,7 +3,10 @@
 namespace wfw\engine\lib\logger;
 
 /**
- * Interface IRTSLogger.
+ * Interface ILogger.
+ * /!\ : les constantes représentant des espaces de logs sont supposées avoir pour valeur des
+ * puissances de deux, afin qu'il soit possible de les combiner grâce aux opérateurs sur les bits.
+ *
  */
 interface ILogger {
 	public final const LOG=1;
@@ -43,18 +46,19 @@ interface ILogger {
 	public function merge(int $to, int... $from):void;
 
 	/**
-	 * COnfigure automatique un fichier de logs en fonction d'un niveau
-	 * TODO : limit explain
+	 * Configure automatiquement un fichier de logs en fonction d'un niveau.
+	 * Ex : autoConfByLevel(ILogger::ERR | ILogger::LOG | ILogger::WARN, ILogger::DEBUG)
+	 * Permet de dupliquer tous les logs ERR,LOG et WARN dans DEBUG
 	 * @param int   $level Niveau de logs
 	 * @param int   $to    Destination des logs
 	 * @param bool  $merge Si true, merge. Sinon, redirections
-	 * @param array $limit Limite pour les inclusions de log
-	 * @return int[] Liste des levels pris en compte
 	 */
-	public function autoConfByLevel(
-		int $level,
-		int $to,
-		bool $merge = true,
-		array $limit = ["from"=>self::LOG,"to"=>self::WARN]
-	):array;
+	public function auoConfFileByLevel(int $level, int $to, bool $merge = true);
+
+	/**
+	 * Permet d'activer/désactiver des fichiers de log en fonction d'un niveau de log
+	 * @param int  $level  Niveau de log
+	 * @param bool $enable Si true, active les fichiers désigné par level. Les désactive sinon.
+	 */
+	public function autoConfByLevel(int $level, bool $enable=true);
 }
