@@ -168,6 +168,17 @@ final class RTSPoolConfs {
 	}
 
 	/**
+	 * @param string $instance Instance dont on souhaite connaitre le niveau de debug
+	 * @return int
+	 * @throws \InvalidArgumentException
+	 */
+	public function getLogsLevel(string $instance): int{
+		if(!isset($this->_instancesConfs[$instance]))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return $this->_instancesConfs[$instance]->find(self::LOG_LEVEL) ?? 0;
+	}
+
+	/**
 	 * @param string $instance Instance dont on souhaite le nombre maximum de sockets par worker
 	 * @return int
 	 * @throws \InvalidArgumentException

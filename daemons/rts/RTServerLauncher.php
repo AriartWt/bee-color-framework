@@ -54,7 +54,12 @@ try{
 				$confs->getDebugLogsPath($name)
 			);
 			$level = $confs->getDebugLevel($name);
-			if($level > 0) $logger->auoConfFileByLevel($level, FileLogger::DEBUG);
+			if($level > 0){
+				$logger->autoConfByLevel($level);
+				$logger->auoConfFileByLevel($level, FileLogger::DEBUG);
+			}else{
+				$logger->autoConfByLevel($confs->getLogsLevel($name));
+			}
 			$server = new RTS(
 				$confs->getSocketPath($name),
 				$confs->getPort($name),
