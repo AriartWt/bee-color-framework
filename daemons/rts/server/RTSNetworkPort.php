@@ -3,13 +3,15 @@
 namespace wfw\daemons\rts\server;
 
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
+use wfw\daemons\rts\server\websocket\IWebsocketEventObserver;
+use wfw\daemons\rts\server\websocket\IWebsocketListener;
 use wfw\daemons\rts\server\websocket\IWebsocketProtocol;
 use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
 
 /**
  * Network port able to accept/read/write into websockets
  */
-class RTSNetworkPort{
+class RTSNetworkPort {
 	/** @const int $max_client 1024 is the max with select(), we keep space for rejecting socket */
 	protected const MAX_SOCKET_SELECT = 1000;
 	/** @var resource $_mainSock */
@@ -44,7 +46,7 @@ class RTSNetworkPort{
 	protected $userClass = 'WebSocketUser'; // redefine this if you want a custom user class.  The custom user class should inherit from WebSocketUser.
 	protected $maxBufferSize;
 	protected $master;
-	protected $readWatchers                         = array();
+	protected $readWatchers= array();
 	protected $writeWatchers                        = null;
 	protected $users                                = array();
 	protected $interactive                          = true;
@@ -69,7 +71,10 @@ class RTSNetworkPort{
 		ISocketProtocol $mainProtocol,
 		IWebsocketProtocol $wsProtocol,
 		bool $debug = false,
-		int $maxRequestHandshakeSize = 1024
+		int $maxRequestHandshakeSize = 1024,
+		bool $headerOriginRequired = false,
+		bool $headerProtocolRequired = false,
+		bool $willSupportExtensions = false
 	) {
 		$this->_mainSock = $mainSocket;
 		$this->_netSock = $netSocket;
@@ -78,6 +83,10 @@ class RTSNetworkPort{
 		$this->_debug = $debug;
 		$this->_mainProtocol = $mainProtocol;
 		$this->_wsProtocol = $wsProtocol;
+
+		$this->_maxRequestHandshakeSize = $maxRequestHandshakeSize;
+		$this->_headerOriginRequired = $headerOriginRequired;
+		$this->_headerProtocolRequired = $headerProtocolRequired;
 	}
 
 	public function start():void{
@@ -87,5 +96,4 @@ class RTSNetworkPort{
 			//check all users
 		}
 	}
-
 }

@@ -4,8 +4,10 @@ namespace wfw\daemons\rts\server\websocket;
 
 /**
  * Protocole permettant de gérer les écritures et les lectures dans des websockets.
+ *
+ * Le protocole va envoyer des événements pour chaque connexion, déconnexion, message reçu etc.
  */
-interface IWebsocketProtocol extends IWebsocketEventDispatcher {
+interface IWebsocketProtocol{
 	/**
 	 * Accepte une nouvelle connexion et crée un utilisateur
 	 *

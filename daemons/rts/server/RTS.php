@@ -11,6 +11,8 @@ namespace wfw\daemons\rts\server;
 use PHPMailer\PHPMailer\Exception;
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
 use wfw\daemons\rts\server\errors\MaxWorkerLimitReached;
+use wfw\daemons\rts\server\websocket\WebsocketEventObserver;
+use wfw\daemons\rts\server\websocket\WebsocketProtocol;
 use wfw\daemons\rts\server\worker\WorkerCommand;
 use wfw\engine\lib\cli\signalHandler\PCNTLSignalsHelper;
 use wfw\engine\lib\network\socket\errors\SocketFailure;
@@ -337,7 +339,9 @@ final class RTS{
 			$this->_mainProcessSocket,
 			$this->_networkPort,
 			$this->_environment,
-			$this->_protocol
+			$this->_protocol,
+			new WebsocketProtocol(new WebsocketEventObserver())
+			//TODO : using DICE TO create RTSNetworkPort.
 		))->start();
 	}
 

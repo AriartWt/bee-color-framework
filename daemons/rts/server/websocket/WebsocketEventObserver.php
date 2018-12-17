@@ -6,11 +6,24 @@ namespace wfw\daemons\rts\server\websocket;
  * Observer d'événements websocket de base.
  */
 final class WebsocketEventObserver implements IWebsocketEventObserver {
-	/** @var IWebsocketListener[] $_listeners */
+	/** @var IWebsocketListener[][] $_listeners */
 	private $_listeners;
 
-	public function __construct() {
+	/**
+	 * WebsocketEventObserver constructor.
+	 *
+	 * @param IWebsocketListener[][] $listeners Liste de listeners
+	 */
+	public function __construct(array $listeners = []) {
 		$this->_listeners = [];
+		foreach($listeners as $k=>$v){
+			if(is_string($k)){
+				$this->_listeners[$k]=[];
+				foreach($v as $listener){
+					if($listener instanceof IWebsocketListener) $this->_listeners[$k][]=$listener;
+				}
+			}
+		}
 	}
 
 	/**
@@ -28,7 +41,7 @@ final class WebsocketEventObserver implements IWebsocketEventObserver {
 	 * @param null|string        $event
 	 * @return mixed|void
 	 */
-	public function removeEventListener(IWebsocketListener $listener, ?string $event = null) {
+	public function removeEventListener(?IWebsocketListener $listener=null, ?string $event = null) {
 		$removeFrom=[];
 		if($event) $removeFrom[$event]=$this->_listeners[$event]??[];
 		else $removeFrom = $this->_listeners;
@@ -40,8 +53,18 @@ final class WebsocketEventObserver implements IWebsocketEventObserver {
 		}
 	}
 
-	public function dispatch(IWebsocketEvent $event) {
-		// TODO: Implement dispatch() method.
+	/**
+	 * Appelle les listeners correspondants aux événements.
+	 * @param IWebsocketEvent ...$events Evenement à dispatcher
+	 */
+	public function dispatch(IWebsocketEvent... $events):void {
+		foreach($events as $event){
+			if(isset($this->_listeners[$event->getName()])){
+				foreach($this->_listeners[$event->getName()] as $listener){
+					$listener->apply($event);
+				}
+			}
+		}
 	}
 
 	/**
@@ -49,6 +72,13 @@ final class WebsocketEventObserver implements IWebsocketEventObserver {
 	 * @return IWebsocketListener[][]
 	 */
 	public function getListeners(?string... $events): array {
-		// TODO: Implement getListeners() method.
+		if(count($events)===0) return $this->_listeners;
+		else{
+			$res =[];
+			foreach($events as $e){
+				$res[$e] = $this->_listeners[$e] ?? [];
+			}
+			return $res;
+		}
 	}
 }

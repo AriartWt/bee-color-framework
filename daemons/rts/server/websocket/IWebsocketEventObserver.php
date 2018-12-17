@@ -5,7 +5,7 @@ namespace wfw\daemons\rts\server\websocket;
 /**
  * Permet d'associer des listeners à des event et de dispatcher un event
  */
-interface IWebsocketEventObserver {
+interface IWebsocketEventObserver extends IWebsocketEventDispatcher {
 	/**
 	 * @param null|string ...$events Liste des événements dont on souhaite obtenir les listeners
 	 * @return IWebsocketListener[][]
