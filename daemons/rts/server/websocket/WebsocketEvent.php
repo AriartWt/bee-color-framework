@@ -1,6 +1,7 @@
 <?php
 
 namespace wfw\daemons\rts\server\websocket;
+use wfw\engine\lib\PHP\types\UUID;
 
 /**
  * Evenement websocket
@@ -12,34 +13,48 @@ namespace wfw\daemons\rts\server\websocket;
  *      msg_recieved : un message a été reçu,
  *      msg_sent : un message a été envoyé
  */
-final class WebsocketEvent implements IWebsocketEvent{
-	/** @var string $_name */
-	private $_name;
-	/** @var array $_data */
-	private $_data;
+abstract class WebsocketEvent implements IWebsocketEvent{
+	/** @var string $_id */
+	private $_id;
+	/** @var float $_creationDate */
+	private $_creationDate;
+	/** @var bool $_propagationStopped */
+	private $_propagationStopped;
 
 	/**
 	 * WebsocketEvent constructor.
-	 *
-	 * @param string $name Nom de l'événement
-	 * @param array  $data Données de l'événement
 	 */
-	public function __construct(string $name,array $data) {
-		$this->_name = $name;
-		$this->_data = $data;
+	public function __construct() {
+		$this->_id = (string) new UUID(UUID::V6);
+		$this->_creationDate = microtime(true);
+		$this->_propagationStopped = false;
 	}
 
 	/**
-	 * @return string Nom de l'événement
+	 * @return string Event Id
 	 */
-	public function getName(): string {
-		return $this->_name;
+	public function getId(): string {
+		return $this->_id;
 	}
 
 	/**
-	 * @return array Données associées à l'event
+	 * @return float event creation date in microseconds
 	 */
-	public function getData(): array {
-		return $this->_data;
+	public function getCreationDate(): float {
+		return $this->_creationDate;
+	}
+
+	/**
+	 * The event propagation MUST be stopped.
+	 */
+	public function stopPropagation(): void {
+		$this->_propagationStopped = true;
+	}
+
+	/**
+	 * @return bool True if the event propagation is stopped
+	 */
+	public function isPropagationStopped(): bool {
+		return $this->_propagationStopped;
 	}
 }

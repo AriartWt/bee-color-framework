@@ -7,12 +7,22 @@ namespace wfw\daemons\rts\server\websocket;
  */
 interface IWebsocketEvent {
 	/**
-	 * @return string Nom de l'événement
+	 * @return string Event Id
 	 */
-	public function getName():string;
+	public function getId():string;
 
 	/**
-	 * @return array Données associées à l'event
+	 * @return float event creation date in microseconds
 	 */
-	public function getData():array;
+	public function getCreationDate():float;
+
+	/**
+	 * The event propagation MUST be stopped.
+	 */
+	public function stopPropagation():void;
+
+	/**
+	 * @return bool True if the event propagation is stopped
+	 */
+	public function isPropagationStopped():bool;
 }

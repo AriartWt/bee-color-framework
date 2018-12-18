@@ -29,9 +29,8 @@ final class WebsocketEventObserver implements IWebsocketEventObserver {
 	/**
 	 * @param string             $event    Evenement à écouter
 	 * @param IWebsocketListener $listener Ecouteur
-	 * @return mixed|void
 	 */
-	public function addEventListener(string $event, IWebsocketListener $listener) {
+	public function addEventListener(string $event, IWebsocketListener $listener):void {
 		if(!isset($this->_listeners[$event])) $this->_listeners[$event]=[];
 		$this->_listeners[$event][]=$listener;
 	}
@@ -39,9 +38,8 @@ final class WebsocketEventObserver implements IWebsocketEventObserver {
 	/**
 	 * @param IWebsocketListener $listener
 	 * @param null|string        $event
-	 * @return mixed|void
 	 */
-	public function removeEventListener(?IWebsocketListener $listener=null, ?string $event = null) {
+	public function removeEventListener(?IWebsocketListener $listener=null, ?string $event = null):void {
 		$removeFrom=[];
 		if($event) $removeFrom[$event]=$this->_listeners[$event]??[];
 		else $removeFrom = $this->_listeners;
@@ -55,12 +53,13 @@ final class WebsocketEventObserver implements IWebsocketEventObserver {
 
 	/**
 	 * Appelle les listeners correspondants aux événements.
-	 * @param IWebsocketEvent ...$events Evenement à dispatcher
+	 *
+	 * @param IWebsocketEvent ...$events Evenements à dispatcher
 	 */
 	public function dispatch(IWebsocketEvent... $events):void {
 		foreach($events as $event){
-			if(isset($this->_listeners[$event->getName()])){
-				foreach($this->_listeners[$event->getName()] as $listener){
+			if(isset($this->_listeners[get_class($event)])){
+				foreach($this->_listeners[get_class($event)] as $listener){
 					$listener->apply($event);
 				}
 			}

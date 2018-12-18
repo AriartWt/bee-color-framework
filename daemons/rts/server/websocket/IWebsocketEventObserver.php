@@ -14,9 +14,8 @@ interface IWebsocketEventObserver extends IWebsocketEventDispatcher {
 	/**
 	 * @param string             $event Nom de l'événement à écouter
 	 * @param IWebsocketListener $listener Ecouteur
-	 * @return mixed
 	 */
-	public function addEventListener(string $event,IWebsocketListener $listener);
+	public function addEventListener(string $event,IWebsocketListener $listener):void;
 
 	/**
 	 * Si $listener est null, tous les listeners de $event sont supprimés.
@@ -24,7 +23,6 @@ interface IWebsocketEventObserver extends IWebsocketEventDispatcher {
 	 * Si $listener et $event sont null, tous les listeners sont supprimés.
 	 * @param IWebsocketListener $listener Nom de l'événement à écouter
 	 * @param null|string        $event Ecouteur
-	 * @return mixed
 	 */
-	public function removeEventListener(?IWebsocketListener $listener=null,?string $event=null);
+	public function removeEventListener(?IWebsocketListener $listener=null,?string $event=null):void;
 }

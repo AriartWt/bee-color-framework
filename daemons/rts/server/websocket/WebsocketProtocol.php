@@ -10,8 +10,14 @@ namespace wfw\daemons\rts\server\websocket;
  * same.
  */
 final class WebsocketProtocol implements IWebsocketProtocol {
+	/** @var IWebsocketEventDispatcher $_dispatcher */
 	private $_dispatcher;
 
+	/**
+	 * WebsocketProtocol constructor.
+	 *
+	 * @param IWebsocketEventDispatcher $dispatcher Dispatcher d'événements
+	 */
 	public function __construct(IWebsocketEventDispatcher $dispatcher) {
 		$this->_dispatcher = $dispatcher; //wills end connect, waitForWrite, etc... events
 	}
