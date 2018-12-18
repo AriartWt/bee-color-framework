@@ -56,7 +56,7 @@ final class ResponseRouter implements IResponseRouter {
 					while(!is_null($part = array_shift($path)) && $folding<$this->_foldingLimit){
 						$handlerClass.="\\";
 						$viewClass = str_replace("handlers\\response","views",$handlerClass)
-							.strtolower($part)."\\".ucfirst($part);
+							.lcfirst($part)."\\".ucfirst($part);
 						$tmpName = ucfirst($part)."Handler";
 						if(class_exists("wfw\\site\\".$handlerClass.$tmpName)){
 							$handlerClass = "wfw\\site\\".$handlerClass.$tmpName;
