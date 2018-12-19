@@ -3,7 +3,6 @@
 namespace wfw\daemons\rts\server;
 
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
-use wfw\daemons\rts\server\websocket\IWebsocketEventObserver;
 use wfw\daemons\rts\server\websocket\IWebsocketListener;
 use wfw\daemons\rts\server\websocket\IWebsocketProtocol;
 use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
@@ -11,7 +10,7 @@ use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
 /**
  * Network port able to accept/read/write into websockets
  */
-class RTSNetworkPort {
+final class RTSNetworkPort implements IWebsocketListener {
 	/** @const int $max_client 1024 is the max with select(), we keep space for rejecting socket */
 	protected const MAX_SOCKET_SELECT = 1000;
 	/** @var resource $_mainSock */
@@ -27,32 +26,6 @@ class RTSNetworkPort {
 	/** @var IWebsocketProtocol $_wsProtocol */
 	private $_wsProtocol;
 
-	// Configuration Start
-	/** @var bool $debug verbose mode */
-	private $_debug = false;
-	/** @var int $mxRequestHandshakeSize chrome : ~503B firefox : ~530B IE 11 : ~297B */
-	private $_maxRequestHandshakeSize = 1024;
-	/** @var bool $headerOriginRequired */
-	protected $_headerOriginRequired = false;
-	/** @var bool $headerProtocolRequired */
-	protected $_headerProtocolRequired = false;
-	/** @var bool $willSupportExtensions */
-	protected $_willSupportExtensions = false;
-	// TODO : these 2 variables will be used to protect OOM and dynamically set max_client based on mem allowed per user
-	protected $_maxWriteBuffer			  = 49152; //48K out
-	protected $_maxReadBuffer			  = 49152; //48K in
-	// Configuration End
-
-	protected $userClass = 'WebSocketUser'; // redefine this if you want a custom user class.  The custom user class should inherit from WebSocketUser.
-	protected $maxBufferSize;
-	protected $master;
-	protected $readWatchers= array();
-	protected $writeWatchers                        = null;
-	protected $users                                = array();
-	protected $interactive                          = true;
-	protected $nbclient                             = 0;
-	protected $mem;
-
 	/**
 	 * RTSNetworkPort constructor.
 	 *
@@ -61,39 +34,55 @@ class RTSNetworkPort {
 	 * @param IRTSEnvironment    $env        Environnement RTS
 	 * @param ISocketProtocol    $mainProtocol
 	 * @param IWebsocketProtocol $wsProtocol
-	 * @param bool               $debug
-	 * @param int                $maxRequestHandshakeSize
 	 */
 	public function __construct(
 		$mainSocket,
 		$netSocket,
 		IRTSEnvironment $env,
 		ISocketProtocol $mainProtocol,
-		IWebsocketProtocol $wsProtocol,
-		bool $debug = false,
-		int $maxRequestHandshakeSize = 1024,
-		bool $headerOriginRequired = false,
-		bool $headerProtocolRequired = false,
-		bool $willSupportExtensions = false
+		IWebsocketProtocol $wsProtocol
 	) {
 		$this->_mainSock = $mainSocket;
 		$this->_netSock = $netSocket;
 		$this->_env = $env;
 		$this->_netSocks = [];
-		$this->_debug = $debug;
 		$this->_mainProtocol = $mainProtocol;
 		$this->_wsProtocol = $wsProtocol;
-
-		$this->_maxRequestHandshakeSize = $maxRequestHandshakeSize;
-		$this->_headerOriginRequired = $headerOriginRequired;
-		$this->_headerProtocolRequired = $headerProtocolRequired;
 	}
 
 	public function start():void{
 		while(true){
+			sleep(1);
 			//check main read/write
 			//check net read/write
 			//check all users
+
+			//la classe RTSPort doit servir d'intialiseur pour l'application temps réel.
+			//Ce qui veut dire qu'elle va souscrire aux événements de la websocket :
+			// connect/disconnet/connected/disconnected/message/needread/needwrite...
+			// Si elle reçoit un type "message" elle va déclencher l'interface correspondante
+			//C'est elle qui met en place l'eventloop, du coup. Il y aura deux RTSNetworkPort :
+			//un normal, et un basé sur libevent, quand le premier fonctionnera
+
+			/*
+			 * Ensuite, elle sert de proxy pour le listener de l'application, et répliquera certains
+			 * événements (connect, disconnect, message...) mais pas d'autres, qui concernent plus
+			 * le fonctionnement spécifique des websocket (needWrite, needRead...)
+			 *
+			 * WebsocketListener accepte un WebsocketEvent, mais il doit être différent de l'observer
+			 * passé à NetworkPort.
+			 * Dans l'idéal, RTSPort va accepter en arguments une liste de IRTSApp
+			 * chaque interface disposera de méthodes ayant la même signature qu'en javascript,
+			 * pour des raisons de cohérence.
+			 *
+			 * En parallèle, le networkPort écoute aussi le LocalPort pour pouvoir broadcaster des messages
+			 * Le LocalPort est géré par un process dédié, et c'est par son intermédiaire que le RTS
+			 * demandera au networkPort d'accepter/rejeter une connexion, ou qu'il enverra une demande
+			 * de broadcast.
+			 *
+			 * La seule différence, c'est qu'on proposera un MessageHandler avec un WebsocketObserver
+			 * permettant de sauter l'étape
+			 * */
 		}
 	}
 }
