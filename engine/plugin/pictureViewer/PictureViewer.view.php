@@ -5,7 +5,7 @@ $opts = $this->getOptions();
 $svgImporter = $this->getSvgImporter();
 $pics = $this->getPictures();
 ?>
-<div class="css-slider" id="css-slider_<?php echo $id;?>" data-autoplay="<?php echo $opts->autoplayEnabled()?1:0; ?>">
+<div class="css-slider<?= ($opts->hasTrail())?" trail-enabled":"" ?>" id="css-slider_<?php echo $id;?>" data-autoplay="<?php echo $opts->autoplayEnabled()?1:0; ?>">
 	<?php if($opts->autoplayEnabled()): ?>
 		<input id="css-slider-autoplay_<?php echo $id;?>" type="checkbox" class="css-slider-input css-slider-input-autoplay" checked>
 	<?php endif; ?>
@@ -42,13 +42,17 @@ $pics = $this->getPictures();
 							<?php echo $svgImporter->import($opts->autoplayIcon()); ?>
 						</label>
 					<?php endif; ?>
-					<?php if($v->title() && $v->title()!== ""): ?>
-						<p class="picture-title"><?php echo $v->title(); ?></p>
-					<?php endif;?>
 					<img src="<?php echo $v->path(); ?>" alt="<?php echo $v->alt(); ?>">
-					<?php if($v->description() && $v->description() !== ""): ?>
-						<p class="picture-description"><?php echo $v->description(); ?></p>
-					<?php endif; ?>
+					<?php if($v->title() && $v->title()!== "" || $v->description() && $v->description() !== ""): ?>
+						<div class="picture-content<?= ($opts->hasBullets())?" bullets-enabled":"" ?>">
+							<?php if($v->title() && $v->title()!== ""): ?>
+								<p class="picture-title"><?php echo $v->title(); ?></p>
+							<?php endif;?>
+							<?php if($v->description() && $v->description() !== ""): ?>
+								<p class="picture-description"><?php echo $v->description(); ?></p>
+							<?php endif; ?>
+						</div>
+					<?php endif ?>
 					<?php if($opts->hasArrows()): ?>
 						<label for="btn_picture_<?php echo $id; ?>_<?php echo ($k<count($pics)-1)?$k+1:0; ?>" class="arrow arrow-next">
 							<?php echo $svgImporter->import($opts->arrowRightIcon()); ?>
@@ -57,13 +61,23 @@ $pics = $this->getPictures();
 				</li>
 			<?php endforeach; ?>
 		</ul>
-		<?php if($opts->hasBullets()): ?>
+		<?php if($opts->hasTrail()): ?>
+			<div class="slider-trail">
+				<div class="trail">
+					<?php foreach($pics as $k=>$v):?>
+						<label class="trail-picture trail-picture_<?php echo $k; ?>" for="btn_picture_<?php echo $id; ?>_<?php echo $k; ?>">
+							<img src="<?php echo $v->path(); ?>" alt="<?php echo $v->alt(); ?>">
+						</label>
+					<?php endforeach; ?>
+				</div>
+			</div>
+		<?php elseif($opts->hasBullets()): ?>
 			<div class="bullets">
 				<?php foreach($pics as $k=>$v): ?>
 					<label class="bullets_<?php echo $k; ?>" for="btn_picture_<?php echo $id; ?>_<?php echo $k; ?>">
 						<?php if($opts->hasBulletsPreview()): ?>
 							<span class="tooltip">
-								<img src="<?php echo $v->path(); ?>" alt="">
+								<img src="<?php echo $v->path(); ?>" alt="<?php echo $v->alt(); ?>">
 							</span>
 						<?php endif; ?>
 					</label>

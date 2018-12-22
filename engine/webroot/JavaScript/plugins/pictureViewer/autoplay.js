@@ -1,3 +1,4 @@
+wfw.require("api/dom/events/appears");
 wfw.ready(()=>{
 	let $autoplayTime = 20000; let $playSpeed = 6000;
 	if(wfw.defined('settings')){
@@ -10,7 +11,7 @@ wfw.ready(()=>{
 		if(!$active.checked){
 			let $attr=parseFloat($slider.getAttribute("data-lasttime"));
 			if($attr>0 && Date.now()-$attr > $autoplayTime){
-				$slider.setAttribute("data-lasttime",-1); $active.checked=true;
+				$slider.setAttribute("data-lasttime","-1"); $active.checked=true;
 			}
 		}else{
 			let $checked=$slider.querySelector(".css-slider-input-chooser:checked");
@@ -25,7 +26,7 @@ wfw.ready(()=>{
 		$slider.querySelector(".css-slider-input-autoplay").addEventListener("click",function($e){
 			$e.stopPropagation();
 		});
-		$slider.setAttribute("data-lasttime",-1);
+		$slider.setAttribute("data-lasttime","-1");
 		$slider.addEventListener("click",function(e){
 			let $aplay=this.querySelector(".css-slider-input-autoplay");
 			if(!(e.screenX===0 && e.screenY===0)){
@@ -33,6 +34,6 @@ wfw.ready(()=>{
 				if($aplay.checked) $aplay.checked=false;
 			}
 		});
-		setTimeout(()=>$autoplay($slider),$playSpeed);
+		wfw.dom.events.appears($slider,()=>setTimeout(()=>$autoplay($slider),$playSpeed));
 	});
 });
