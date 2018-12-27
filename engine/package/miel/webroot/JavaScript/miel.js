@@ -31,8 +31,11 @@ wfw.define("packages/miel",function($modules,$params){
 wfw.init(()=>wfw.ui.lang.load("plugins/miel/default",wfw.next));
 wfw.define("plugins/miel/default",function(){
 	let $register = ($node)=>{
-		$node.addEventListener('click',function($e){
-			$e.preventDefault();
+		let $disableDefault = ($e)=>{$e.stopPropagation(); $e.preventDefault();};
+		$node.addEventListener('click',$disableDefault);
+		$node.addEventListener('mouseup',$disableDefault);
+		$node.addEventListener('mousedown',function($e){
+			$disableDefault($e);
 			if($node.getAttribute('data-miel_editing') !== 'true'){
 				$node.classList.remove('miel-enabled-icon');
 				$node.setAttribute('data-miel_editing','true');
@@ -42,18 +45,23 @@ wfw.define("plugins/miel/default",function(){
 					wfw.dom.appendTo(
 						wfw.dom.create('div',{className : 'miel-module-default'}),
 						wfw.dom.create('input',{
-							type:'text', value:$text.trim(),
-							style:{'max-width':$width+'px',height:$height+'px'}}),
+							type:'text', value:$text.trim(), on : {
+								mousedown:($e)=>{
+									$disableDefault($e);$e.currentTarget.focus();
+								},click:$disableDefault,mouseup:$disableDefault
+							},style:{'max-width':$width+'px',height:$height+'px'}}),
 						wfw.dom.create('img',{
 							src:$webroot+"accept.png",className:'icon',title:"Enregistrer",
-							style:{'height':$height+'px'}, onclick : () => $update($node)
+							style:{'height':$height+'px'}, on:{ mousedown : ($e) =>{
+									$disableDefault($e); $update($node);
+							}, click:$disableDefault, mouseup:$disableDefault }
 						}),
 						wfw.dom.create('img',{
 							src:$webroot+"delete.png",className:'icon',title:"Annuler",
 							style:{'height':$height+'px'},
-							onclick : ($e) => {
-								$e.stopPropagation(); $e.preventDefault(); $cancel($node,$text);
-							}
+							on : { mousedown : ($e) => {
+								$disableDefault($e); $cancel($node,$text);
+							}, click:$disableDefault, mouseup:$disableDefault }
 						})
 					)
 				);
@@ -74,12 +82,12 @@ wfw.define("plugins/miel/default",function(){
 					.querySelectorAll('*[data-miel_modifiable="true"][data-miel_key="'+$k+'"]')
 					.forEach(($node)=>$cancel($node,$value));
 				wfw.ui.notifications.display(
-					{ message : wfw.ui.lang.get("packages/miel/modules/default/SAVE_DONE") }
+					{ message : wfw.ui.lang.get("plugins/miel/default/SAVE_DONE") }
 				);
 			},
 			error : ($res,$code) =>{
 				wfw.ui.notifications.display({
-					message : wfw.ui.lang.get("packages/miel/modules/default/ERROR")
+					message : wfw.ui.lang.get("plugins/miel/default/ERROR")
 					+' (code : '+$code+')',
 					icon : 'prohibit'
 				});

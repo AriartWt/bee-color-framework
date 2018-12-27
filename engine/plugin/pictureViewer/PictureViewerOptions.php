@@ -1,6 +1,8 @@
 <?php
 namespace wfw\engine\plugin\pictureViewer;
 
+use wfw\engine\core\router\IRouter;
+
 /**
  * Options de base pour un picture viewer
  */
@@ -31,28 +33,40 @@ final class PictureViewerOptions implements IPictureViewerOptions {
 	private $_css;
 	/** @var null|string $_viewPath */
 	private $_viewPath;
+	/** @var bool $_trail */
+	private $_trail;
+	/** @var null|string $_trailScript */
+	private $_trailScript;
+	/** @var string $_properties */
+	private $_properties;
 
 	/**
 	 * PictureViewerOptions constructor.
 	 *
+	 * @param IRouter     $router
 	 * @param bool[]      $options Liste des options
 	 * @param string[]    $icons   Liste des icones
 	 * @param null|string $css
 	 * @param null|string $autoplayJS
 	 * @param null|string $viewPath
+	 * @param null|string $trailScript
 	 */
 	public function __construct(
+		IRouter $router,
 		array $options=[],
 		array $icons=[],
 		?string $css=null,
 		?string $autoplayJS=null,
-		?string $viewPath=null
+		?string $viewPath=null,
+		?string $trailScript=null
 	){
 		(function(bool... $vals){})(...array_values($options));
 		$this->_fullscreen = $options['fullscreen'] ?? true;
 		$this->_arrows = $options['arrows'] ?? true;
 		$this->_bulletsPreview = $options['bulletsPreview'] ?? true;
 		$this->_bullets = $options['bullets'] ?? true;
+		$this->_trail = $options['trail'] ?? false;
+		$this->_properties = $options['htmlProperties'] ?? "";
 		if($this->_bullets){
 			if(isset($options['bulletsPreview'])){
 				$this->_bulletsPreview = $options['bulletsPreview'];
@@ -70,9 +84,10 @@ final class PictureViewerOptions implements IPictureViewerOptions {
 		$this->_fullscreenOffIcon = $icons['fullscreen_off'] ?? ENGINE.'/webroot/Image/svg/icons/collapse.svg';
 		$this->_autoplayIcon = $icons['autoplay'] ?? ENGINE.'/webroot/Image/svg/icons/play1.svg';
 
-		$this->_autoplayScript = $autoplayJS ?? '/website/JavaScript/plugins/pictureViewer/autoplay.js';
-		$this->_css = $css ?? '/website/Css/plugins/pictureViewer/default.css';
+		$this->_autoplayScript = $autoplayJS ?? $router->webroot("JavaScript/plugins/pictureViewer/autoplay.script.js");
+		$this->_css = $css ?? $router->webroot("Css/plugins/pictureViewer/default.css");
 		$this->_viewPath = $viewPath;
+		$this->_trailScript = $trailScript ?? $router->webroot("JavaScript/plugins/pictureViewer/trail.js");
 	}
 
 	/**
@@ -164,5 +179,27 @@ final class PictureViewerOptions implements IPictureViewerOptions {
 	 */
 	public function viewPath(): ?string {
 		return $this->_viewPath;
+	}
+
+	/**
+	 * @return bool True : une liste de photo horizontale apparait sous le slider
+	 */
+	public function hasTrail(): bool {
+		return $this->_trail;
+	}
+
+	/**
+	 * @return string Chemin d'accés au script permettant de synchroniser le trail avec la position
+	 *                courante du slide
+	 */
+	public function trailScript(): string {
+		return $this->_trailScript;
+	}
+
+	/**
+	 * @return string Renvoie une liste de propriétés html attachées à la balise css principale
+	 */
+	public function htmlProperties(): string {
+		return $this->_properties;
 	}
 }

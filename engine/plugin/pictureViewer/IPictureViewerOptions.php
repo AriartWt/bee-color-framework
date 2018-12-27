@@ -21,6 +21,17 @@ interface IPictureViewerOptions {
 	public function hasBullets():bool;
 
 	/**
+	 * @return bool True : une liste de photo horizontale apparait sous le slider
+	 */
+	public function hasTrail():bool;
+
+	/**
+	 * @return string Chemin d'accés au script permettant de synchroniser le trail avec la position
+	 *                courante du slide
+	 */
+	public function trailScript():string;
+
+	/**
 	 * @return bool True : aperçu lors du survol des bulles de progression disponible
 	 *              (nécessite hasBullets() : true
 	 */
@@ -70,4 +81,9 @@ interface IPictureViewerOptions {
 	 * @return null|string Chemind d'accés au fichier de vue
 	 */
 	public function viewPath():?string;
+
+	/**
+	 * @return string Renvoie une liste de propriétés html attachées à la balise css principale
+	 */
+	public function htmlProperties():string;
 }

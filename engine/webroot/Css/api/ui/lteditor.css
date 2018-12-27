@@ -1,3 +1,7 @@
+:root{
+	--lteditor-color:#FF9900;
+	--lteditor-color-lighter:#FFBB00;
+}
 .lteditor-hidden-input{
 	display:none;
 }
@@ -137,7 +141,7 @@
 }
 .lteditor-window button{
 	padding: 10px 30px;
-	background-color: #FF9900;
+	background-color: var(--lteditor-color);
 	border-radius: 100px;
 	border:none;
 	font-size:inherit;
@@ -150,7 +154,7 @@
 	font-weight: 500;
 }
 .lteditor-window button:hover{
-	background-color: #FFBB00;
+	background-color: var(--lteditor-color-lighter);
 }
 .lteditor-window button:not(:last-of-type){
 	margin-right:20px;
@@ -166,7 +170,7 @@
 	}
 }
 .lteditor-action-selected.link svg path{
-	fill:#FF9900;
+	fill:var(--lteditor-color);
 }
 
 .lteditor-action > .heading > *:first-child{
@@ -197,7 +201,7 @@
 	background-color: rgb(15,15,15);
 }
 .lteditor-action-selected{
-	color:#FF9900;
+	color:var(--lteditor-color);
 }
 .lteditor-body{
 	box-sizing: border-box;
@@ -245,7 +249,7 @@
 	transition: all 0.35s;
 }
 .media.lteditor-action-selected svg path{
-	fill:#FF9900;
+	fill:var(--lteditor-color);
 }
 .media-input{
 	display:flex;
@@ -286,7 +290,7 @@
 	transition:all 0.35s;
 }
 .media-input:hover .media-icon svg path{
-	fill:#FF9900;
+	fill:var(--lteditor-color);
 }
 .media-window.media-edition-mode > .media-input{
 	display:none;
@@ -336,8 +340,8 @@
 }
 .media-disposition input:checked ~ *,
 .media-disposition input:checked ~ svg path{
-	color:#FF9900;
-	fill:#FF9900;
+	color:var(--lteditor-color);
+	fill:var(--lteditor-color);
 }
 .media-disposition svg{
 	height:25px;
