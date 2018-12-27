@@ -3,6 +3,7 @@
  * @function eclipse
  * @memberOf wfw.ui.loaders
  * @param {string} [$message] Message à afficher
+ * @param {external:Document} [$doc] Document de référence
  * @property {HTMLElement} html Loader courant
  */
 /**

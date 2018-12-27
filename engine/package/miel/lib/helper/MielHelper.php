@@ -34,7 +34,7 @@ final class MielHelper implements IMielHelper {
 			.'data-miel_params=\''.json_encode($params).'\' '
 			.'data-miel_key=\''.$key.'\''
 			.(($params["module"]??"" === "medias")
-				? "data-miel-medias_data='".$this->_pot->get($key)."'"
+				? "data-miel-medias_data='".htmlspecialchars($this->_pot->get($key),ENT_QUOTES, 'UTF-8')."'"
 				: '');
 	}
 }

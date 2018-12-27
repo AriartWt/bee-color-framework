@@ -91,7 +91,7 @@ wfw.define("plugins/miel/medias",function($params){
 		$node.addEventListener("click",()=>$doc.body.appendChild($window));
 	};
 	let $displayLoader = ($message,$node)=>{
-		let $loader = new wfw.ui.loaders.eclipse($message);
+		let $loader = new wfw.ui.loaders.eclipse($message,$doc);
 		let $shadowLoader = wfw.dom.appendTo(wfw.dom.create("div",{className:"medias-loader"}),
 			wfw.dom.appendTo(wfw.dom.create("div",{className:"container"}),$loader.html)
 		);
