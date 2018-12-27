@@ -262,7 +262,7 @@ wfw.define("ui/fileExplorer",function($params){
 		});
 	};
 	let $displayLoader = ($message,$displayProgress)=>{
-		let $loader = new wfw.ui.loaders.eclipse($message); let $progress;
+		let $loader = new wfw.ui.loaders.eclipse($message,$doc); let $progress;
 		if($displayProgress){
 			$progress = wfw.dom.create("div",{className:"progress"});
 			$loader.html.querySelector(".loader").appendChild($progress);
