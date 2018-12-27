@@ -492,9 +492,9 @@ wfw.define("packages/users",function($params){
 	if('disableClientRole' in $params) $disableClientRole = $params.disableClientRole;
 	if('disableClientLogin' in $params) $disableClientLogin = $params.disableClientLogin;
 	else $disableClientLogin = true;
-	document.head.appendChild(wfw.dom.create("link",
-		{href:$params.css ? $params.css : wfw.webroot+"Css/users/default.css",rel:"stylesheet"})
-	);
+	document.head.appendChild(wfw.dom.create("link", {href:$params.css ? $params.css :
+			wfw.url("Css/users/default.css"),rel:"stylesheet"
+	}));
 	$users = new wfw.ui.table([
 		{name:$lstr('USER_NAME'),sort:{default:"asc",first:"asc"}},
 		{name:$lstr('EMAIL')},

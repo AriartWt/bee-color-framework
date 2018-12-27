@@ -3,7 +3,7 @@ let WFW = function($webroot,$app_infos){
 	let $fnsOnReady = [], $laterPush = [], $toProcess = 0, $init = [];
 	$webroot = $webroot.charAt($webroot.length-1) === '/' ? $webroot : $webroot+'/';
 	let $loaded = function(){ $fnsOnReady.concat($laterPush).some( ($fn) =>{ return $fn() })};
-	let $formatUrl = function($lib){ return $webroot+"JavaScript/"+$lib+".js"; };
+	let $formatUrl = function($lib){ return $url("JavaScript/"+$lib+".js"); };
 	let $redefineError = function(){ throw new Error("Cannot redefine wfw's properties !"); };
 	let $addRequired = function($lib){
 		if($loadedLibs.indexOf($lib)<0 && $loadingLibs.indexOf($lib)<0) $requiredLibs.push($lib);
@@ -76,6 +76,7 @@ let WFW = function($webroot,$app_infos){
 		if($inited) throw new Error("wfw have already been fully initialized !");
 		if($init.length > 0) $init.shift()(); else{ $loaded(); $inited=true }
 	};
+	let $url = ($path,$cache)=>{ return $webroot+$path+(!$cache?$get('app/cache_burst'):''); };
 
 	let $params=JSON.parse($app_infos);
 	let $getRef = function($path,$forSet){
@@ -111,6 +112,7 @@ let WFW = function($webroot,$app_infos){
 		webroot : { get : () => $webroot, set : $redefineError },
 		init : { get : () => $asyncInit, set : $redefineError },
 		next : { get : () => $nextInit, set : $redefineError },
+		url : { get : () => $url, set : $redefineError },
 		settings : { get : () => $settings, set : $redefineError }
 	});
 };

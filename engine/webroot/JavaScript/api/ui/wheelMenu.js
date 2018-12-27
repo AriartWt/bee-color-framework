@@ -5,7 +5,7 @@ wfw.require(
 let $loaded = {};
 wfw.define("ui/wheelMenu", function ($params) {
 	$params = $params || {}; let $current, $prev, $centerToRotate, $inst = this, $radius = 160;
-	let $assoc = new WeakMap(), $html, $items = [], $css = wfw.webroot + "Css/api/ui/wheelMenu.css";
+	let $assoc = new WeakMap(), $html, $items = [], $css = wfw.url("Css/api/ui/wheelMenu.css");
 
 	if( !('items' in $params) || !Array.isArray($params.items) || $params.items.length === 0)
 		throw new Error("items have to be a non empty array !");

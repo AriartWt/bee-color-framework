@@ -32,7 +32,7 @@ wfw.define("plugins/miel/medias",function($params){
 		let $o = {params:$params,list:null}; $nodes.set($node,$o);
 		let $doc = $o.doc = $node.ownerDocument, $panel;
 		let $window = $o.window = wfw.dom.create('div',{className:"panel-window medias-window"});
-		let $css = $params.css ? $params.css : wfw.webroot+"Css/miel/medias.css";
+		let $css = $params.css ? $params.css : wfw.url("Css/miel/medias.css");
 		if(!$docsCss.has($doc)) $docsCss.set($doc,[]);
 		if($docsCss.get($doc).indexOf($css) < 0) $docsCss.get($doc).push($css);
 		$active = $node;

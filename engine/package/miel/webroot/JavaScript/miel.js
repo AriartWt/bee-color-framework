@@ -9,7 +9,7 @@ wfw.define("packages/miel",function($modules,$params){
 	$params = $params || {};
 	$modules = (typeof $modules === "object") ? $modules : {};
 	$doc = $params.doc || document;
-	let $css = $params.css ? $params.css : wfw.webroot+"Css/miel/default.css";
+	let $css = $params.css ? $params.css : wfw.url("Css/miel/default.css");
 	if(!$doc.head.querySelector("link[href=\""+$css+"\"]")){
 		$doc.head.appendChild(wfw.dom.create("link",{href:$css,rel:"stylesheet"}));
 	}

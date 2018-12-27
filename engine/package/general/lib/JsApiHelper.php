@@ -19,17 +19,20 @@ final class JsApiHelper {
 	private $_webroot;
 	/** @var null|string $_csrfToken */
 	private $_csrfToken;
+
 	/**
 	 * JsApiHelper constructor.
 	 *
-	 * @param IRouter          $router
-	 * @param IConf            $conf
-	 * @param null|string      $csrfToken
+	 * @param IRouter     $router
+	 * @param IConf       $conf
+	 * @param null|string $csrfToken
+	 * @param null|string $cacheBurst
 	 */
 	public function __construct(
 		IRouter $router,
 		IConf $conf,
-		?string $csrfToken = null
+		?string $csrfToken = null,
+		?string $cacheBurst = null
 	) {
 		$this->_apiPath = $router->webroot("JavaScript/api/api.js");
 		$this->_libsToLoad[] = $router->webroot("JavaScript/api/settings.js");
@@ -38,7 +41,8 @@ final class JsApiHelper {
 		$params = $conf->getObject("app/params");
 		$params->app = [
 			"name" => $conf->getString("app/name"),
-			"version" => $conf->getString("app/version")
+			"version" => $conf->getString("app/version"),
+			"cache_burst" => $cacheBurst ?? ''
 		];
 		$params->uploader = [
 			"quotas" => $conf->getString("server/uploader/quotas"),
