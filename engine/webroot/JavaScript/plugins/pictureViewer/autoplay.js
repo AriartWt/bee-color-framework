@@ -1,11 +1,10 @@
 wfw.require("api/dom/events/appears");
-wfw.ready(()=>{
+wfw.define("plugins/pictureViewer/autoplay",function($params){
+	$params = $params || {}; let $doc = $params.doc || document;
 	let $autoplayTime = 20000; let $playSpeed = 6000;
-	if(wfw.defined('settings')){
-		let $at = wfw.settings.get('ui/pictureViewer/autoplayTime');
-		let $ps = wfw.settings.get('ui/pictureViewer/playSpeed');
-		$autoplayTime = $at ? $at : $autoplayTime; $playSpeed = $ps ? $ps : $playSpeed;
-	}
+	let $at = wfw.settings.get('ui/pictureViewer/autoplayTime');
+	let $ps = wfw.settings.get('ui/pictureViewer/playSpeed');
+	$autoplayTime = $at ? $at : $autoplayTime; $playSpeed = $ps ? $ps : $playSpeed;
 	let $autoplay = ($slider)=>{
 		let $active=$slider.querySelector(".css-slider-input-autoplay");
 		if(!$active.checked){
@@ -21,7 +20,7 @@ wfw.ready(()=>{
 		}
 		setTimeout(function(){$autoplay($slider);},$playSpeed);
 	};
-	let $sliders = document.querySelectorAll(".css-slider[data-autoplay=\"1\"]");
+	let $sliders = $doc.querySelectorAll(".css-slider[data-autoplay=\"1\"]");
 	$sliders.forEach(($slider)=>{
 		$slider.querySelector(".css-slider-input-autoplay").addEventListener("click",function($e){
 			$e.stopPropagation();
@@ -34,6 +33,6 @@ wfw.ready(()=>{
 				if($aplay.checked) $aplay.checked=false;
 			}
 		});
-		wfw.dom.events.appears($slider,()=>setTimeout(()=>$autoplay($slider),$playSpeed));
+		wfw.dom.events.appears($slider,()=>setTimeout(()=>$autoplay($slider),$playSpeed),null,$doc);
 	});
 });

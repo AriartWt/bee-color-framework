@@ -1,7 +1,7 @@
 wfw.require("api/dom/nodeHelper");
 wfw.define("ui/adminPanel",(function(){
-	let $load = []; let $hide = []; let $show = []; let $iframe = null;let $cmd =  null;let $loaded;
-	let $frameDoc = null;let $icon = null; let $panels = {}; let $css = null; let $frameLoad = [];
+	let $load = [], $hide = [], $show = [], $iframe = null, $cmd =  null, $loaded, $oCss={};
+	let $frameDoc = null, $icon = null, $panels = {}, $css = null, $frameLoad = [];
 	let $inIFrame = ()=>{ try{ return window.self !== window.top; } catch(e){ return true; } };
 	let $init = () => {
 		$iframe = wfw.dom.create("iframe",{src:'about:blank',on:{load:$onframeload}});
@@ -28,6 +28,30 @@ wfw.define("ui/adminPanel",(function(){
 		if(wfw.defined("browserfixes/edgeJumps")) wfw.browserfixes.edgeJumps.disabled = true;
 		$load.forEach(($fn)=>$fn());
 		$loaded = true;
+	};
+	let $addCssFile = ($paths)=>{
+		let $add = ($path)=>{
+			let $node = wfw.dom.create("link",{ rel:"stylesheet", href:$path });
+			$oCss[$node.href]=$node;
+		};
+		if(Array.isArray($paths)) $paths.forEach($path=>$add($path)); else $add($paths);
+		$updateCssFiles();
+	};
+	let $updateCssFiles = ()=>{
+		let $head = document.head;
+		Object.keys($oCss).forEach($k=>{
+			if($oCss[$k].parentNode === $head) $head.removeChild($oCss[$k]);
+			$head.appendChild($oCss[$k]);
+		});
+	};
+	let $overwriteCssFiles = ()=>{
+		let $head =  document.head;
+		let $mutationObserver = new MutationObserver(function(mutations) {
+			mutations.forEach(function($mutation) { $mutation.addedNodes.forEach($n=>{
+				if(!($n.href in $oCss)) $updateCssFiles();
+			});});
+		});
+		$mutationObserver.observe($head,{ childList : true });
 	};
 	let $onframeload = function(){
 		$frameDoc = ($iframe.contentDocument || $iframe.contentWindow.document);
@@ -130,6 +154,7 @@ wfw.define("ui/adminPanel",(function(){
 	};
 	wfw.ready(()=>{ if(!$inIFrame()){ $init(); return true; } });
 	wfw.init(()=>{ if(!$inIFrame()){ wfw.next(); } });
+	$load.push(()=>$overwriteCssFiles());
 	let $res={};
 	Object.defineProperties($res,{
 		get : { get : () => $getPanel, set : $redefineError},
@@ -148,8 +173,9 @@ wfw.define("ui/adminPanel",(function(){
 		show : { get : () => ()=>(!$cmd.checked) ? $cmd.click() : undefined, set : $redefineError},
 		createMainPanel : { get : ()=> $createMainPanel, set : $redefineError },
 		createButton : { get:()=>$createButton, set:$redefineError },
-		createLogout : {get:()=>$logout, set:$redefineError},
-		loaded : { get : ()=>()=>!!$loaded, set : $redefineError }
+		createLogout : { get:()=>$logout, set:$redefineError },
+		loaded : { get : ()=>()=>!!$loaded, set : $redefineError },
+		addCssFile : { get : ()=>$addCssFile, set : $redefineError }
 	});
 	return $res;
 })(),true);

@@ -37,6 +37,8 @@ final class PictureViewerOptions implements IPictureViewerOptions {
 	private $_trail;
 	/** @var null|string $_trailScript */
 	private $_trailScript;
+	/** @var string $_properties */
+	private $_properties;
 
 	/**
 	 * PictureViewerOptions constructor.
@@ -64,6 +66,7 @@ final class PictureViewerOptions implements IPictureViewerOptions {
 		$this->_bulletsPreview = $options['bulletsPreview'] ?? true;
 		$this->_bullets = $options['bullets'] ?? true;
 		$this->_trail = $options['trail'] ?? false;
+		$this->_properties = $options['htmlProperties'] ?? "";
 		if($this->_bullets){
 			if(isset($options['bulletsPreview'])){
 				$this->_bulletsPreview = $options['bulletsPreview'];
@@ -81,7 +84,7 @@ final class PictureViewerOptions implements IPictureViewerOptions {
 		$this->_fullscreenOffIcon = $icons['fullscreen_off'] ?? ENGINE.'/webroot/Image/svg/icons/collapse.svg';
 		$this->_autoplayIcon = $icons['autoplay'] ?? ENGINE.'/webroot/Image/svg/icons/play1.svg';
 
-		$this->_autoplayScript = $autoplayJS ?? $router->webroot("JavaScript/plugins/pictureViewer/autoplay.js");
+		$this->_autoplayScript = $autoplayJS ?? $router->webroot("JavaScript/plugins/pictureViewer/autoplay.script.js");
 		$this->_css = $css ?? $router->webroot("Css/plugins/pictureViewer/default.css");
 		$this->_viewPath = $viewPath;
 		$this->_trailScript = $trailScript ?? $router->webroot("JavaScript/plugins/pictureViewer/trail.js");
@@ -191,5 +194,12 @@ final class PictureViewerOptions implements IPictureViewerOptions {
 	 */
 	public function trailScript(): string {
 		return $this->_trailScript;
+	}
+
+	/**
+	 * @return string Renvoie une liste de propriétés html attachées à la balise css principale
+	 */
+	public function htmlProperties(): string {
+		return $this->_properties;
 	}
 }

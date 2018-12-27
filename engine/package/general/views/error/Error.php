@@ -10,6 +10,8 @@ use wfw\engine\lib\network\http\HTTPStatus;
 final class Error extends View {
 	/** @var string $_msg */
 	protected $_msg;
+	/** @var int|null $_code */
+	protected $_code;
 
 	/**
 	 * Error constructor.
@@ -25,6 +27,7 @@ final class Error extends View {
 				http_response_code($code);
 			}
 		}
+		$this->_code = $code;
 		$this->_msg = $msg;
 	}
 }

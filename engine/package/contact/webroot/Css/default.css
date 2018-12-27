@@ -1,3 +1,6 @@
+:root{
+	--contact-color:#FF9900;
+}
 #contact-panel ~ .main-panel > .panel-window > .body > div:not(.file-explorer) > .buttons .button:last-child::after{
 	content:'';
 	width:80%;
@@ -37,7 +40,7 @@
 }
 .contact-window .body > .content > div > span:first-child{
 	margin-right:20px;
-	color:#FF9900;
+	color:var(--contact-color);
 	font-weight:400;
 }
 .contact-window .body > .content pre{

@@ -7,7 +7,7 @@ use wfw\engine\lib\HTML\helpers\forms\inputs\Text;
 use wfw\engine\lib\HTML\helpers\forms\validation\Honeypot;
 use wfw\engine\lib\HTML\helpers\forms\validation\MinTimeValidity;
 use wfw\engine\lib\HTML\helpers\forms\validation\MultiValidationPolicy;
-use wfw\site\package\web\security\data\LoginRule;
+use wfw\engine\package\users\security\data\LoginRule;
 
 /**
  * Formulaire de connexion

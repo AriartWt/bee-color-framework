@@ -4,6 +4,7 @@ namespace wfw\engine\package\news\data\model;
 use wfw\engine\core\data\DBAccess\NOSQLDB\msServer\IMSServerAccess;
 use wfw\engine\core\data\model\IArraySorter;
 use wfw\engine\core\data\specification\ISpecification;
+use wfw\engine\lib\PHP\types\UUID;
 use wfw\engine\package\news\data\model\DTO\Article;
 use wfw\engine\package\news\data\model\specs\IsOffline;
 use wfw\engine\package\news\data\model\specs\IsOnline;
@@ -77,5 +78,16 @@ final class ArticleModelAccess implements IArticleModelAccess {
 			ArticleModel::class,
 			"$sort:".($spec ? "$spec:" : "")."(online & notArchived)"
 		);
+	}
+
+	/**
+	 * @param string $id identifiant de l'article recherché
+	 * @return Article
+	 */
+	public function getById(string $id): ?Article {
+		return $this->_db->query(
+			ArticleModel::class,
+			"id='$id'"
+		)[0] ?? null;
 	}
 }

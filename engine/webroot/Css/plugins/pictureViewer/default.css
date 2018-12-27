@@ -4,7 +4,7 @@
 	--pictureViewer-fullscreen:90%;
 	--pictureViewer-trail-height:20%;
 	--pictureViewer-trailPicture-width:150px;
-	--pictureViewer-trail-outset:1px solid var(--pictureViewer-color);
+	--pictureViewer-trail-outset:2px solid var(--pictureViewer-color);
 	--pictureViewer-background-color:rgba(0,0,0,0.55);
 	--pictureViewer-fullscreen-background-color:rgba(0,0,0,0.6);
 	--pictureViewer-pictureContent-background-color:rgba(0,0,0,0.6);
@@ -79,8 +79,7 @@
 		color:white;
 		text-align:center;
 		font-weight:200;
-		padding:20px;
-		font-size:110%;
+		padding:10px 20px 0 20px;
 		box-sizing:border-box;
 		border-radius:10px;
 		margin:-20px auto;
@@ -97,7 +96,7 @@
 		font-weight:400;
 	}
 	.css-slider .picture .picture-description{
-		padding:0;
+		padding:0 0 10px 0;
 		margin:0;
 	}
 /*--------------------------------------BUTLLETS-------------------------------------*/

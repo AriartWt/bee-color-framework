@@ -5,7 +5,7 @@ $opts = $this->getOptions();
 $svgImporter = $this->getSvgImporter();
 $pics = $this->getPictures();
 ?>
-<div class="css-slider<?= ($opts->hasTrail())?" trail-enabled":"" ?>" id="css-slider_<?php echo $id;?>" data-autoplay="<?php echo $opts->autoplayEnabled()?1:0; ?>">
+<div class="css-slider<?= ($opts->hasTrail())?" trail-enabled":"" ?>" id="css-slider_<?php echo $id;?>" data-autoplay="<?php echo $opts->autoplayEnabled()?1:0; ?>" <?= $opts->htmlProperties() ?>>
 	<?php if($opts->autoplayEnabled()): ?>
 		<input id="css-slider-autoplay_<?php echo $id;?>" type="checkbox" class="css-slider-input css-slider-input-autoplay" checked>
 	<?php endif; ?>

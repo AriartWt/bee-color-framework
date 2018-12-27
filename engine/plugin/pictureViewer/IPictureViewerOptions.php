@@ -81,4 +81,9 @@ interface IPictureViewerOptions {
 	 * @return null|string Chemind d'accés au fichier de vue
 	 */
 	public function viewPath():?string;
+
+	/**
+	 * @return string Renvoie une liste de propriétés html attachées à la balise css principale
+	 */
+	public function htmlProperties():string;
 }
