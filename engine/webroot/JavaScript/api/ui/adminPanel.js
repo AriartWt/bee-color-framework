@@ -21,7 +21,7 @@ wfw.define("ui/adminPanel",(function(){
 			($e)=>$e.parentNode.removeChild($e)
 		);
 		document.head.appendChild($css = wfw.dom.create("link",
-			{rel:"stylesheet",href:wfw.webroot+"Css/api/ui/adminPanel.css"}
+			{rel:"stylesheet",href: wfw.url("Css/api/ui/adminPanel.css")}
 		));
 		document.body.insertBefore($cmd,$iframe);
 		document.body.appendChild($icon);
@@ -29,8 +29,9 @@ wfw.define("ui/adminPanel",(function(){
 		$load.forEach(($fn)=>$fn());
 		$loaded = true;
 	};
-	let $addCssFile = ($paths)=>{
+	let $addCssFile = ($paths,$cache)=>{
 		let $add = ($path)=>{
+			$path = $path.match(/^@/) ? $path.replace(/^@/,'') : wfw.url($path,$cache);
 			let $node = wfw.dom.create("link",{ rel:"stylesheet", href:$path });
 			$oCss[$node.href]=$node;
 		};

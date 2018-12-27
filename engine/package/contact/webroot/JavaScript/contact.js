@@ -190,9 +190,9 @@ wfw.define("packages/contact",function($params){
 	let $on = {edit:[],write:[],archive:[],markAsUnread:[],markAsRead:[],load:[],reload:[]};
 	let $dispatch = ($event,$data)=>$on[$event].forEach($fn=>$fn($data));
 
-	document.head.appendChild(wfw.dom.create("link",
-		{href:$params.css ? $params.css : wfw.webroot+"Css/contact/default.css",rel:"stylesheet"})
-	);
+	document.head.appendChild(wfw.dom.create("link", { href:$params.css ? $params.css :
+		wfw.url("Css/contact/default.css"), rel:"stylesheet"
+	}));
 	$contacts = new wfw.ui.table([
 		{name:$lstr('LABEL'),comparator:($a,$b)=>{return $a.toString().toLowerCase().localeCompare($b.toString().toLowerCase());}},
 		{name:$lstr('CONTENT'),comparator:($a,$b)=>{return $a.toString().toLowerCase().localeCompare($b.toString().toLowerCase());}},

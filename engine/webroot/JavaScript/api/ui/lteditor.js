@@ -16,7 +16,7 @@ wfw.define("ui/lteditor",function($name,$actions,$params){
 	$params = $params || {}; let $content, $textarea, $editor = null, $head, $inst = this;
 	let $fnOnChange = []; let $escaped = false; let $body; let $res = this; let $lastSel;
 	const defParagraphSeparator = $params['defaultParagraphSeparator'] || 'div';
-	let $css = $params.css || wfw.webroot+"Css/api/ui/lteditor.css";
+	let $css = $params.css || wfw.url("Css/api/ui/lteditor.css");
 	if(!$params.disableAutoCss && !$requestedCss[$css]){
 		$requestedCss[$css]=true;
 		document.head.appendChild(wfw.dom.create('link',{rel:"stylesheet",href:$css}));

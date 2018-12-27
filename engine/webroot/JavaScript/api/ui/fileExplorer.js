@@ -32,7 +32,7 @@ wfw.define("ui/fileExplorer",function($params){
 		if($svg[$key].tagName==="OBJECT") return $svg[$key]; else return $svg[$key].cloneNode(true);
 	};
 
-	let $css = $params.css ? $params.css : wfw.webroot+"Css/api/ui/fileExplorer.css";
+	let $css = $params.css ? $params.css : wfw.url("Css/api/ui/fileExplorer.css");
 	let $doc = $params.doc ? $params.doc : document;
 	if(!$doc.head.querySelector("link[href=\""+$css+"\"]")){
 		$doc.head.appendChild(wfw.dom.create("link",{href:$css,rel:"stylesheet"}));

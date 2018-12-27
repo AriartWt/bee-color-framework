@@ -256,9 +256,9 @@ wfw.define("packages/news",function($params){
 	let $on = {edit:[],write:[],archive:[],putOnline:[],putOffline:[],load:[],reload:[]};
 	let $dispatch = ($event,$data)=>$on[$event].forEach($fn=>$fn($data));
 
-	document.head.appendChild(wfw.dom.create("link",
-		{href:$params.css ? $params.css : wfw.webroot+"Css/news/default.css",rel:"stylesheet"})
-	);
+	document.head.appendChild(wfw.dom.create("link", {href:$params.css ? $params.css :
+		wfw.url("Css/news/default.css"),rel:"stylesheet"
+	}));
 	$articles = new wfw.ui.table([
 		{name:$lstr('TITLE'),comparator:($a,$b)=>{return $a.toString().toLowerCase().localeCompare($b.toString().toLowerCase());}},
 		{name:$lstr('CDATE'),sort:{default:"desc",first:"desc"}, displayer:($val)=>{return (new Date($val*1000)).toLocaleString()}},
