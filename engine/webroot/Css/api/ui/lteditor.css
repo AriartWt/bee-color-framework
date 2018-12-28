@@ -226,6 +226,9 @@
 .lteditor-content b{
 	font-weight:600;
 }
+.lteditor-content div{
+	min-height:1em;
+}
 .lteditor-content img,
 .lteditor-content video,
 .lteditor-content audio{

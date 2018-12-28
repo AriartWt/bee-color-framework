@@ -50,7 +50,6 @@ wfw.define("plugins/miel/medias",function($params){
 		});
 
 		wfw.dom.appendTo($window,
-			wfw.dom.create("div",{className:"dark-bg"}),
 			wfw.dom.appendTo(wfw.dom.create("div",{className:"head"}),
 				wfw.dom.appendTo(wfw.dom.create("div",{className:"title"}),
 					wfw.dom.create("span",{innerHTML:$lstr("MANAGE")}),
