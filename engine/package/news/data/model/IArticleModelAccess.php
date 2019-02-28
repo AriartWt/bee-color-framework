@@ -10,6 +10,12 @@ use wfw\engine\package\news\data\model\DTO\Article;
  */
 interface IArticleModelAccess {
 	/**
+	 * @param string $id identifiant de l'article recherché
+	 * @return Article
+	 */
+	public function getById(string $id):?Article;
+
+	/**
 	 * Retourne tous les articles.
 	 * @return Article[]
 	 */

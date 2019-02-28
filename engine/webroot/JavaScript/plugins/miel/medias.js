@@ -32,7 +32,7 @@ wfw.define("plugins/miel/medias",function($params){
 		let $o = {params:$params,list:null}; $nodes.set($node,$o);
 		let $doc = $o.doc = $node.ownerDocument, $panel;
 		let $window = $o.window = wfw.dom.create('div',{className:"panel-window medias-window"});
-		let $css = $params.css ? $params.css : wfw.webroot+"Css/miel/medias.css";
+		let $css = $params.css ? $params.css : wfw.url("Css/miel/medias.css");
 		if(!$docsCss.has($doc)) $docsCss.set($doc,[]);
 		if($docsCss.get($doc).indexOf($css) < 0) $docsCss.get($doc).push($css);
 		$active = $node;
@@ -50,7 +50,6 @@ wfw.define("plugins/miel/medias",function($params){
 		});
 
 		wfw.dom.appendTo($window,
-			wfw.dom.create("div",{className:"dark-bg"}),
 			wfw.dom.appendTo(wfw.dom.create("div",{className:"head"}),
 				wfw.dom.appendTo(wfw.dom.create("div",{className:"title"}),
 					wfw.dom.create("span",{innerHTML:$lstr("MANAGE")}),
@@ -91,7 +90,7 @@ wfw.define("plugins/miel/medias",function($params){
 		$node.addEventListener("click",()=>$doc.body.appendChild($window));
 	};
 	let $displayLoader = ($message,$node)=>{
-		let $loader = new wfw.ui.loaders.eclipse($message);
+		let $loader = new wfw.ui.loaders.eclipse($message,$doc);
 		let $shadowLoader = wfw.dom.appendTo(wfw.dom.create("div",{className:"medias-loader"}),
 			wfw.dom.appendTo(wfw.dom.create("div",{className:"container"}),$loader.html)
 		);

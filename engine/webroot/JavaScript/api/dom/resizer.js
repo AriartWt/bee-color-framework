@@ -100,7 +100,8 @@ wfw.define("dom/resizer",function($elem,$workingContainer,$mode,$refNode){
 	let $onPosUpdate = ($fn) => $posUpdate.push($fn);
 	let $onAllPosUpdate = ($fn) => $allPosUpdate.push($fn);
 	let $redefineError = ()=>{throw new Error("Can't redefine resizer properties !")};
-	Object.defineProperties(this,{
+	let $res = {};
+	Object.defineProperties($res,{
 		update : { get : ()=>$updateAll, set : $redefineError},
 		display : { get : ()=>$displayHandles, set : $hideHandles},
 		hide : { get : ()=>$hideHandles, set : $redefineError},
@@ -110,5 +111,5 @@ wfw.define("dom/resizer",function($elem,$workingContainer,$mode,$refNode){
 		onHandlePosUpdate : { get : ()=>$onPosUpdate, set : $redefineError},
 		onAllHandlesPosUpdate : {get : ()=>$onAllPosUpdate, set : $redefineError}
 	});
-	return this;
+	return $res;
 });

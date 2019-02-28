@@ -204,7 +204,7 @@ wfw.ready(()=>{
 						$node.contentEditable=false;
 						$initEventsOnMedia(
 							$node, $editor,
-							$node.parentNode ? $node.parentNode //Sorry
+							$node.parentNode ? $node.parentNode
 								: $record.nextSibling ? $record.nextSibling : $editor.content
 						);
 					});

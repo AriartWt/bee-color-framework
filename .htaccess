@@ -7,6 +7,6 @@ RewriteRule (.*) engine/$1 [L]
 SetOutputFilter DEFLATE
 AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/x-javascript application/x-httpd-php
 
-<FilesMatch "\.(ico|jpe?g|png|gif|css|mp4|mp3)$">
+<FilesMatch "\.(ico|jpe?g|png|gif|css|mp4|mp3|js)?|">
  Header set Cache-Control "max-age=2592000, public"
 </FilesMatch>

@@ -20,7 +20,7 @@ final class IsPassword extends ForEachFieldRule {
 				$data
 			);
 			if(!$res) $this->changeMessage(
-				"Votre mot de passe doit être composé de chiffre, lettres majuscules et minuscules "
+				"Votre mot de passe doit être composé de chiffres, lettres majuscules et minuscules "
 				."et au moins un caractère spécial pour une taille maximale de 128 caractères."
 			);
 			return $res;

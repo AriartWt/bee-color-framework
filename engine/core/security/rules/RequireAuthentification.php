@@ -15,7 +15,14 @@ use wfw\engine\core\session\ISession;
 use wfw\engine\lib\network\http\HTTPStatus;
 
 /**
- * Permet de protéger des URL. Applique des
+ * Protect URLS from being accessed publicly.
+ * Can be set to match regexp against the full url (default)
+ * Or can be set to match exact parts of the url splited on /
+ * ex : [ "admin" => ["panel","logs" => [ "edit","remove" ]], "private" ]
+ * Will deny public access to:
+ *  - "panel" directory or handler in "admin" package
+ *  - "edit","remove" handlers or directories in "logs" directory in "admin" package
+ *  - "private" package
  */
 final class RequireAuthentification implements IAccessRule {
 	/** @var string[] $_paths */
@@ -30,6 +37,8 @@ final class RequireAuthentification implements IAccessRule {
 	private $_redirUrl;
 	/** @var null|IMessage $_message */
 	private $_message;
+	/** @var bool $_treeBased */
+	private $_treeBased;
 
 	/**
 	 * RequireAuthentification constructor.
@@ -40,6 +49,7 @@ final class RequireAuthentification implements IAccessRule {
 	 * @param string        $sessionKey
 	 * @param null|string   $redirUrl
 	 * @param null|IMessage $message
+	 * @param bool          $treeBased (optionnal) MUST BE TRUE if you want a tree based rule set !
 	 */
 	public function __construct(
 		ISession $session,
@@ -47,9 +57,11 @@ final class RequireAuthentification implements IAccessRule {
 		array $pathsToProtect = [],
 		?string $sessionKey = null,
 		?string $redirUrl = null,
-		?IMessage $message = null
+		?IMessage $message = null,
+		bool $treeBased = false
 	){
-		$pathsToProtect = (function(string ...$paths){
+		$this->_treeBased = !!$treeBased;
+		if(!$this->_treeBased) $pathsToProtect = (function(string ...$paths){
 			return $paths;
 		})(...$pathsToProtect);
 
@@ -70,20 +82,67 @@ final class RequireAuthentification implements IAccessRule {
 	 *                        vérifications.
 	 */
 	public function check(IAction $action): ?IAccessPermission {
-		foreach($this->_paths as $path){
-			if(preg_match("#".$path."#",$action->getInternalPath())){
-				if(!$this->_session->exists($this->_sessionKey)){
-					if(!$action->getRequest()->isAjax())
-						$this->_notifier->addMessage($this->_message);
-					return new AccessPermission(
-						false,
-						HTTPStatus::FORBIDDEN,
-						"Access denied : you must be logged",
-						new Redirection($this->_redirUrl,HTTPStatus::FORBIDDEN)
-					);
-				}else return new AccessPermission(true);
+		if($this->_treeBased) return $this->treeCheck($action);
+		else return $this->linearCheck($action);
+	}
+
+	/**
+	 * Tree check (tree based rules set (no regexp) )
+	 * ex : [ "admin" => ["panel","logs" => [ "edit","remove" ]], "private" ]
+	 * Will deny public access to:
+	 *  - "panel" directory or handler in "admin" package
+	 *  - "edit","remove" handlers or directories in "logs" directory in "admin" package
+	 *  - "private" package
+	 *
+	 * @param IAction $action
+	 * @return null|AccessPermission
+	 */
+	private function treeCheck(IAction $action): ?AccessPermission{
+		$internalPath = explode("/",$action->getInternalPath());
+		$array = $this->_paths;
+		foreach($internalPath as $pathPart){
+			foreach($array as $k=>$path){
+				if(is_int($k)){
+					if($path === lcfirst($pathPart)) return $this->denyPublicAccess($action);
+				}else if($k === lcfirst($pathPart)){
+					if(is_array($path)){
+						$array = $path;
+						break;
+					} else if($path === lcfirst($pathPart)) return $this->denyPublicAccess($action);
+				}
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Linear check (non tree based regexp set)
+	 * @param IAction $action
+	 * @return null|AccessPermission
+	 */
+	private function linearCheck(IAction $action): ?AccessPermission{
+		foreach($this->_paths as $path){
+			if(preg_match("#".$path."#",$action->getInternalPath()))
+				return $this->denyPublicAccess($action);
+		}
+		return null;
+	}
+
+	/**
+	 * If user is not logged, then deny access.
+	 * @param IAction $action
+	 * @return AccessPermission
+	 */
+	private function denyPublicAccess(IAction $action):AccessPermission{
+		if(!$this->_session->exists($this->_sessionKey)){
+			if(!$action->getRequest()->isAjax())
+				$this->_notifier->addMessage($this->_message);
+			return new AccessPermission(
+				false,
+				HTTPStatus::FORBIDDEN,
+				(string) $this->_message,
+				new Redirection($this->_redirUrl,HTTPStatus::FORBIDDEN)
+			);
+		}else return new AccessPermission(true);
 	}
 }

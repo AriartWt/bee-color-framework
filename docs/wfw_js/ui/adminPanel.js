@@ -112,3 +112,12 @@
  * @function loaded
  * @memberOf wfw.ui.adminPanel
  */
+/**
+ * Permet de maintenir une liste de fichiers Css en bas dans document.head pour garantir la possibilité
+ * d'écraser les règles css existantes. L'url sera auto-formatté par wfw.url, sauf si elle est
+ * précédée d'un @ : @https://css.com/file.css -> https://css.com/file.css
+ * @function addCssFile
+ * @memberOf wfw.ui.adminPanel
+ * @param {string|string[]} $paths Fichiers ou liste de fichiers Css.
+ * @param {boolean} [$cache], directement passé à wfw.url. Si true : annule l'ajoute du cache_burst
+ */

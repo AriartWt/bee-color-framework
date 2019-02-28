@@ -1,22 +1,22 @@
 <?php
 namespace wfw\engine\core\view;
 
-use Dice\Dice;
+use wfw\engine\core\app\factory\IGenericAppFactory;
 
 /**
  * Factory basée sur Dice pour la création d'un layout
  */
 final class LayoutFactory implements ILayoutFactory {
-	/** @var Dice $_dice */
-	private $_dice;
+	/** @var IGenericAppFactory $_factory */
+	private $_factory;
 
 	/**
 	 * LayoutFactory constructor.
 	 *
-	 * @param Dice $dice Dice
+	 * @param IGenericAppFactory $factory
 	 */
-	public function __construct(Dice $dice) {
-		$this->_dice = $dice;
+	public function __construct(IGenericAppFactory $factory) {
+		$this->_factory = $factory;
 	}
 
 	/**
@@ -27,12 +27,6 @@ final class LayoutFactory implements ILayoutFactory {
 	 * @return ILayout
 	 */
 	public function create(string $layoutClass, array $params = []): ILayout {
-		if(is_a($layoutClass,ILayout::class,true)){
-			/** @var ILayout $layout */
-			$layout = $this->_dice->create($layoutClass,$params);
-			return $layout;
-		}else{
-			throw new \InvalidArgumentException("$layoutClass doesn't implements ".ILayout::class);
-		}
+		return $this->_factory->create($layoutClass,$params,[ILayout::class]);
 	}
 }
