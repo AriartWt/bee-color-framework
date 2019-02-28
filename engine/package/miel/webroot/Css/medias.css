@@ -1,3 +1,11 @@
+:root{
+	--mielMedias-color:#FF9900;
+	--mielMedias-color-lighter:#FFBB00 ;
+	--mielMedias-height:90%;
+	--mielMedias-width:90%;
+	--mielMedias-top:5%;
+	--mielMedias-left:5%;
+}
 [contentEditable=true]:empty:not(:focus):before{
 	content:attr(data-text);
 	opacity : 0.7;
@@ -72,7 +80,7 @@
 	position:absolute;
 	left:125%;
 	top:50%;
-	color:#FF9900;
+	color:var(--mielMedias-color);
 	font-size:16px;
 	font-weight: 400;
 	opacity:0;
@@ -128,10 +136,10 @@
 }
 .medias-window{
 	position:fixed;
-	top:10%;
-	left:10%;
-	height:80%;
-	width:80%;
+	height:var(--mielMedias-height);
+	width:var(--mielMedias-width);
+	left:var(--mielMedias-left);
+	top:var(--mielMedias-top);
 	box-shadow:10px 10px 20px rgba(0,0,0,0.6);
 	background-color: rgb(35,35,35);
 	animation-name: media-window_fade-in;
@@ -165,7 +173,7 @@
 	padding-right:15px;
 }
 .panel-window .head .buttons .close:hover{
-	color:#FF9900;
+	color:var(--mielMedias-color);
 }
 .panel-window .head .buttons .close > span{
 	display:block;
@@ -195,7 +203,7 @@
 }
 .panel-window button{
 	padding: 10px 30px;
-	background-color: #FF9900;
+	background-color: var(--mielMedias-color);
 	border-radius: 100px;
 	border:none;
 	font-size:inherit;
@@ -208,7 +216,7 @@
 	font-weight: 500;
 }
 .panel-window button:hover{
-	background-color: #FFBB00;
+	background-color: var(--mielMedias-color-lighter);
 }
 .panel-window button:not(:last-of-type){
 	margin-right:20px;
@@ -257,7 +265,7 @@
 	height: 10px;
 	width: 10px;
 	border-radius: 100px;
-	background-color: #FF9900;
+	background-color: var(--mielMedias-color);
 	opacity: 0;
 	transition: all 0.15s;
 }
@@ -286,7 +294,7 @@
 	flex:initial;
 }
 .medias-window .panel .item .title{
-	color:#FF9900;
+	color:var(--mielMedias-color);
 	font-size:105%;
 	font-weight:400;
 	margin: 10px 0 10px 0;
@@ -318,14 +326,14 @@
 }
 .medias-window .panel .item .mime{
 	margin-left:20px;
-	color:#FF9900;
+	color:var(--mielMedias-color);
 	font-weight: 300;
 }
 .medias-window .panel .item .position{
 	display:flex;
 	flex-direction:column;
 	justify-content: center;
-	color:#FF9900;
+	color:var(--mielMedias-color);
 	font-size:250%;
 	font-weight:400;
 	text-align: center;

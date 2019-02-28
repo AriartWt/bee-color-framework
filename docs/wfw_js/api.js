@@ -62,3 +62,13 @@
  * @instance
  * @memberOf WFW#
  */
+
+/**
+ * Permet de formater une url locale en ajoutant wfw.webroot devant et un cache burst derrière
+ * définis dans app_infos sous sal clé "app/cache_burst".
+ * @method url
+ * @instance
+ * @memberOf WFW
+ * @param {string} $url Si true, n'ajoute pas le cache_burst à la fin de l'url.
+ * @param {boolean} [$cache] Si true, n'ajoute pas le cache_burst à la fin de l'url.
+ */

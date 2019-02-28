@@ -1,9 +1,11 @@
+:root{
+	--fileExplorer-color:#FF9900;
+}
 .file-explorer{
 	display:flex;
 	flex-direction: column;
 	justify-content: center;
 	overflow:auto;
-	flex:1;
 	flex:1;
 }
 .file-explorer .fs-head,
@@ -43,7 +45,7 @@
 	font-size:120%;
 }
 .file-explorer .fs-head .path-part:hover{
-	color:#FF9900;
+	color:var(--fileExplorer-color);
 }
 .file-explorer .fs-head .path-part:not(:last-child)::after{
 	content:'/';
@@ -83,7 +85,7 @@
 	cursor:grabbing;
 }
 .fs-element:hover{
-	color:#FF9900;
+	color:var(--fileExplorer-color);
 }
 .fs-element .icon{
 	margin-right:20px;
@@ -101,7 +103,7 @@
 }
 .fs-element:hover .icon svg path,
 .fs-element:hover .icon svg polygon{
-	fill:#FF9900;
+	fill:var(--fileExplorer-color);
 }
 
 .fs-element .infos{
@@ -125,7 +127,7 @@
 	height:8px;
 	width:8px;
 	border-radius: 20px;
-	background-color: #FF9900;
+	background-color: var(--fileExplorer-color);
 	position:absolute;
 	top:10px;
 	right:10px;
@@ -182,6 +184,22 @@
 	animation-name: fs-fadeIn;
 	border-radius:10px;
 }
+.fs-create input{
+	display: block;
+	margin: 10px auto;
+	padding: 10px;
+	border-radius: 100px;
+	border: none;
+	font-size: inherit;
+	text-align: inherit;
+	min-height: 17px;
+	min-width: 17px;
+	outline: none;
+}
+.fs-create .buttons{
+	display: flex;
+	justify-content: center;
+}
 .fs-remove{
 	max-width: 350px;
 }
@@ -227,6 +245,6 @@
 }
 .file-explorer .fs-quotas .fs-quotas-size{
 	content: '';
-	background-color: #FF9900;
+	background-color: var(--fileExplorer-color);
 	transition:all 0.35s;
 }

@@ -32,41 +32,45 @@ final class WebApp {
 	private function run():void{
 		$action = $this->_context->getAction();
 		$permission = $this->_context->getAccessControlCenter()->checkPermissions($action);
-		if($permission->isGranted()){
-			try{
-				$actionRouter = $this->_context->getActionRouter();
-				$handler = $actionRouter->findActionHandler($action);
-				$response = $handler->handle($action);
-			}catch(ActionResolutionFailure $e){
-				if($action->getRequest()->isAjax()){
+		$response = $this->_context->getActionHook()->hook($action,$permission);
+		if(is_null($response)){
+			if($permission->isGranted()){
+				try{
+					$actionRouter = $this->_context->getActionRouter();
+					$handler = $actionRouter->findActionHandler($action);
+					$response = $handler->handle($action);
+				}catch(ActionResolutionFailure $e){
+					if($action->getRequest()->isAjax()){
+						$response = new ErrorResponse(
+							500,
+							"No action handler found for ".$action->getInternalPath()
+						);
+					}else{
+						$response = new StaticResponse($action);
+					}
+				}catch(\Error $e){
 					$response = new ErrorResponse(
 						500,
-						"No action handler found for ".$action->getInternalPath()
+						"Internal error $e"
 					);
-				}else{
-					$response = new StaticResponse($action);
-				}
-			}catch(\Error $e){
-				$response = new ErrorResponse(
-					500,
-					"Internal error $e"
-				);
-			}
-		}else{
-			if(is_null($permission->getResponse())){
-				if($action->getRequest()->isAjax()){
-					$response = new ErrorResponse(
-						100,
-						'Access denied : you must be logged !'
-					);
-				}else{
-					$this->_context->getNotifier()->addMessage(
-						new Message($permission->getCode()." : ".$permission->getMessage(),'error')
-					);
-					$response = new Redirection("users/login");
 				}
 			}else{
-				$response = $permission->getResponse();
+				if(is_null($permission->getResponse())){
+					if($action->getRequest()->isAjax()){
+						$response = new ErrorResponse(
+							100,
+							'Access denied : you must be logged !'
+						);
+					}else{
+						$this->_context->getNotifier()->addMessage(new Message(
+							$permission->getCode()." : ".$permission->getMessage(),
+							'error'
+						));
+						$response = $permission->getResponse() ?? new Redirection("users/login");
+					}
+				}else{
+					$response = $permission->getResponse();
+				}
 			}
 		}
 
@@ -99,7 +103,7 @@ final class WebApp {
 		}
 		$this->_context->getRenderer()->render($layout);
 		if(!$action->getRequest()->isAjax()
-			&& $this->_context->getConf()->getString("server/display_loading_time")){
+			&& $this->_context->getConf()->getBoolean("server/display_loading_time")){
 			echo "<div style=\"background-color:red;position:fixed;color:white;text-align:center;width:100%;bottom:0;\">Page générée en ".((microtime(1)-START_TIME)*1000)."ms</div>";
 		}
 		$this->_context->getSession()->set('previous_action',$action);

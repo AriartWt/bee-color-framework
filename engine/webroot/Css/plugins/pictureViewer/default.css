@@ -1,10 +1,19 @@
+:root{
+	--pictureViewer-color:#FF9900;
+	--pictureViewer-transition:all 0.5s;
+	--pictureViewer-fullscreen:90%;
+	--pictureViewer-trail-height:20%;
+	--pictureViewer-trailPicture-width:150px;
+	--pictureViewer-trail-outset:2px solid var(--pictureViewer-color);
+	--pictureViewer-background-color:rgba(0,0,0,0.55);
+	--pictureViewer-fullscreen-background-color:rgba(0,0,0,0.6);
+	--pictureViewer-pictureContent-background-color:rgba(0,0,0,0.6);
+	--pictureViewer-pictureContent-boxShadow: 10px 10px 20px rgba(0,0,0,0.6);
+}
+
 .css-slider{
 	display: block;
 	position: relative;
-	background-color: rgba(0,0,0,0.55);
-	/* padding: 10px; */
-	border-radius: 5px;
-	/* overflow: hidden; */
 }
 
 .css-slider .slider{
@@ -18,224 +27,289 @@
 .css-slider .css-slider-input,
 .css-slider .full-screen-buttons .full-screen-off,
 .css-slider-fullscreen-button:checked ~ .full-screen-buttons .full-screen-on,
-.css-slider .bullets span,
-.css-slider .picture-title{
+.css-slider .bullets span{
 	display: none;
 }
 
 /*-----------------------------------------PICTURES----------------------------------*/
-	.css-slider .picture-list{
-		position: relative;
-		height: 100%;
-		width: 100%;
-	}
-	.css-slider .picture-list,
-	.css-slider .picture{
-		padding: 0;
-		margin: 0;
-	}
-	.css-slider .slider .picture-list .picture{
-		position: absolute;
-		top: 0;
-		left: 0;
-		opacity: 0;
-		width: 100%;
-		height: 100%;
-		display: flex;
-		justify-content: center;
-		transition: all 0.5s;
-	}
-	.css-slider .slider .picture-list .picture img{
-		height: 100%;
-		width: initial!important;
-		max-width: 100%;
-	}
-	.css-slider .slider .picture-list .css-slider-input:checked+.picture{
-		/* position: relative; */
-		opacity: 1;
-	}
-	.css-slider .slider .picture-list .css-slider-input:checked+label{
-		background-color: orange;
-	}
-	.css-slider .slider .picture-list .css-slider-input:not(:checked)+.picture{
-		opacity: 0;
-	}
-	.css-slider .picture .picture-description{
-		position:absolute;
-		width: 100%;
-		margin: 0;
-		left: 0;
-		bottom: 0;
-		background-color: rgba(255,255,255,0.5);
-		color: black;
-		text-align: center;
-		padding-left: 25px;
-		padding-right: 25px;
-		padding-bottom: 35px;
-		padding-top: 10px;
-		font-size: 110%;
-		font-weight: 300;
-	}
+.css-slider .picture-list{
+	position: relative;
+	height: 100%;
+	width: 100%;
+	background-color: var(--pictureViewer-background-color);
+	border-radius: 10px;
+}
+.css-slider .picture-list,
+.css-slider .picture{
+	padding: 0;
+	margin: 0;
+}
+.css-slider .slider .picture-list .picture{
+	position: absolute;
+	top: 0;
+	left: 0;
+	opacity: 0;
+	width: 100%;
+	height: 100%;
+	display: block;
+	text-align:center;
+	transition: var(--pictureViewer-transition);
+}
+.css-slider .slider .picture-list .picture img{
+	height: 100%;
+	width: initial!important;
+	max-width: 100%;
+	display:block;
+	margin:0 auto;
+}
+.css-slider .slider .picture-list .css-slider-input:checked+.picture{
+	/* position: relative; */
+	opacity: 1;
+}
+.css-slider .slider .picture-list .css-slider-input:checked+label{
+	background-color: var(--pictureViewer-color);
+}
+.css-slider .slider .picture-list .css-slider-input:not(:checked)+.picture{
+	opacity: 0;
+}
+.css-slider .picture .picture-content{
+	display:inline-block;
+	background-color: var(--pictureViewer-pictureContent-background-color);
+	box-shadow: var(--pictureViewer-pictureContent-boxShadow);
+	color:white;
+	text-align:center;
+	font-weight:200;
+	padding:10px 20px 0 20px;
+	box-sizing:border-box;
+	border-radius:10px;
+	margin:-20px auto;
+	max-width:90%;
+	transform: translateY(-100%);
+}
+.css-slider .picture .picture-content.bullets-enabled{
+	margin-top:-30px;
+}
+.css-slider .picture .picture-title{
+	margin:0;
+	padding:0 0 10px 0;
+	font-size:110%;
+	font-weight:400;
+}
+.css-slider .picture .picture-description{
+	padding:0 0 10px 0;
+	margin:0;
+}
 /*--------------------------------------BUTLLETS-------------------------------------*/
-	.css-slider .slider .bullets{
-		width: 100%;
-		display: flex;
-		justify-content: center;
+.css-slider .slider .bullets{
+	width: 100%;
+	display: flex;
+	justify-content: center;
 
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		padding: 10px;
-	}
-	.css-slider .slider .bullets label{
-		position: relative;
-		height: 12px;
-		width: 12px;
-		background-color: white;
-		box-shadow: inset 0 1px 2px rgba(0,0,0,0.55);
-		border-radius: 10px;
-		margin-right: 5px;
-		margin-left: 5px;
-		cursor: pointer;
-		transition: all 0.5s;
-	}
-	.css-slider .slider .bullets label:hover{
-		background-color: #FF9900;
-	}
-	.css-slider .slider .bullets label:hover span{
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		position: absolute;
-		bottom: 100%;
-		left: 50%;
-		width: 150px;
-		transform: translate(-75px);
-		background-color: rgba(220,220,220,0.5);
-		padding: 5px;
-		margin-bottom: 10px;
-		border-radius: 5px;
-	}
-	.css-slider .slider .bullets label:hover span > img{
-		width: 100%;
-	}
-	.css-slider .slider .bullets label:hover span::after{
-		content: '';
-		position: absolute;
-		top: 100%;
-		left: 50%;
-		transform: translate(-13px);
-		border-top: 8px solid rgba(220,220,220,0.5);
-		border-left: 8px solid transparent;
-		border-right: 8px solid transparent;
-	}
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	padding: 10px;
+}
+.css-slider .slider .bullets label{
+	position: relative;
+	height: 12px;
+	width: 12px;
+	background-color: white;
+	box-shadow: inset 0 1px 2px rgba(0,0,0,0.55);
+	border-radius: 10px;
+	margin-right: 5px;
+	margin-left: 5px;
+	cursor: pointer;
+	transition: all 0.5s;
+}
+.css-slider .slider .bullets label:hover{
+	background-color: var(--pictureViewer-color);
+}
+.css-slider .slider .bullets label:hover span{
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	width: 150px;
+	transform: translate(-75px);
+	background-color: rgba(220,220,220,0.5);
+	padding: 5px;
+	margin-bottom: 10px;
+	border-radius: 5px;
+}
+.css-slider .slider .bullets label:hover span > img{
+	width: 100%;
+}
+.css-slider .slider .bullets label:hover span::after{
+	content: '';
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	transform: translate(-13px);
+	border-top: 8px solid rgba(220,220,220,0.5);
+	border-left: 8px solid transparent;
+	border-right: 8px solid transparent;
+}
 /*--------------------------------------ARROWS---------------------------------------*/
-	.css-slider:hover .picture .arrow{
-		opacity: 1;
-	}
-	.css-slider .picture .arrow{
-		position: absolute;
-		z-index: 200;
-		height: 56px;
-		top: 50%;
-		transform: translateY(-28px);
-		opacity: 0;
-		transition: all 0.5s;
-		cursor: pointer;
-	}
-	.css-slider .picture .arrow-prev{
-		left: 20px;
-	}
-	.css-slider .picture .arrow-next{
-		right: 20px;
-	}
-	.css-slider .picture .arrow svg{
-		display: block;
-		height: 100%;
-	}
-	.css-slider .picture .arrow svg g{
-		opacity: 1;
-	}
-	.css-slider .picture .arrow svg path{
-		stroke: white;
-		stroke-width: 5px;
-		fill: rgba(0,0,0,0.55);
-		transition: all 0.5s;
-	}
-	.css-slider .picture .arrow:hover svg path{
-		fill: #FF9900;
-	}
+.css-slider .picture .arrow{
+	position: absolute;
+	z-index: 200;
+	height: 56px;
+	top: 50%;
+	transform: translateY(-28px);
+	opacity: 0;
+	visibility:hidden;
+	cursor: pointer;
+	transition:all 0.5s;
+	pointer-events:none;
+}
+.css-slider:hover .picture .arrow{
+	opacity: 1;
+	visibility:visible;
+}
+.css-slider .picture .arrow-prev{
+	left: 20px;
+}
+.css-slider .picture .arrow-next{
+	right: 20px;
+}
+.css-slider .picture .arrow svg{
+	display: block;
+	height: 100%;
+}
+.css-slider .picture .arrow svg g{
+	opacity: 1;
+}
+.css-slider .picture .arrow svg path{
+	stroke: white;
+	stroke-width: 5px;
+	fill: rgba(0,0,0,0.55);
+	transition: all 0.5s;
+}
+.css-slider .picture .arrow:hover svg path{
+	fill: var(--pictureViewer-color);
+}
 
 /*------------------------------------PLAY----------------------------------------*/
-	.css-slider .slider .play-button{
-		position: absolute;
-		top: 10px;
-		left: 10px;
-		cursor: pointer;
-		opacity: 0;
-		z-index: 200;
-		transition: all 0.5s;
-	}
-	.css-slider .slider .play-button svg{
-		width: 25px;
-		height: 25px;
-	}
-	.css-slider .slider .play-button svg path{
-		fill: white;
-		stroke: white;
-	}
-	.css-slider:hover .css-slider-input-autoplay:not(:checked) ~ .slider .play-button{
-		opacity: 1;
-	}
+.css-slider .slider .play-button{
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	cursor: pointer;
+	opacity: 0;
+	z-index: 200;
+	transition: all 0.5s;
+}
+.css-slider .slider .play-button svg{
+	width: 25px;
+	height: 25px;
+}
+.css-slider .slider .play-button svg path{
+	fill: white;
+	stroke: white;
+}
+.css-slider:hover .css-slider-input-autoplay:not(:checked) ~ .slider .play-button{
+	opacity: 1;
+}
 /*------------------------------------FULLSCREEN----------------------------------*/
-	.css-slider:hover .full-screen-buttons label{
-		opacity: 1;
-	}
-	.css-slider .full-screen-buttons label{
-		position: absolute;
-		cursor: pointer;
-		top: 0;
-		right: 0;
-		margin: 10px;
-		z-index: 200;
-		opacity: 0;
-		transition: all 0.5s;
-	}
-	.css-slider .full-screen-buttons label svg{
-		width: 25px;
-		height: 25px;
-	}
-	.css-slider .full-screen-buttons label svg path{
-		fill: white;
-	}
+.css-slider:hover .full-screen-buttons label{
+	opacity: 1;
+}
+.css-slider .full-screen-buttons label{
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	right: 0;
+	margin: 10px;
+	z-index: 200;
+	opacity: 0;
+	transition: all 0.5s;
+}
+.css-slider .full-screen-buttons label svg{
+	width: 25px;
+	height: 25px;
+}
+.css-slider .full-screen-buttons label svg path{
+	fill: white;
+}
 
-	.css-slider-fullscreen-button:checked ~ .slider{
-		position: fixed;
-		width: 80%;
-		height: 80%;
-		top: 10%;
-		left: 10%;
-		z-index: 9999;
+.css-slider-fullscreen-button:checked ~ .slider{
+	position: fixed;
+	width: var(--pictureViewer-fullscreen);
+	height: var(--pictureViewer-fullscreen);
+	top: calc((100% - var(--pictureViewer-fullscreen))/2);
+	left: calc((100% - var(--pictureViewer-fullscreen))/2);
+	z-index: 99999;
+}
+.css-slider .slider .full-screen-background{
+	display: none;
+}
+.css-slider-fullscreen-button:checked ~ .slider .full-screen-background{
+	display: block;
+	position: fixed;
+	background-color: var(--pictureViewer-fullscreen-background-color);
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+}
+.css-slider-fullscreen-button:checked ~ .slider .full-screen-buttons .full-screen-on{
+	display: none;
+}
+.css-slider-fullscreen-button:checked ~ .slider .full-screen-buttons .full-screen-off{
+	display: block;
+}
+.css-slider-fullscreen-button:checked ~ .slider .picture-list{
+	background-color: var(--pictureViewer-background-color);
+	border-radius: 10px;
+}
+
+/* ------------------- TRAIL -------------------- */
+.css-slider.trail-enabled .slider .picture-list{
+	height:calc(100% - var(--pictureViewer-trail-height));
+}
+.slider-trail{
+	position:absolute;
+	left:0;
+	bottom:0;
+	height:var(--pictureViewer-trail-height);
+	width:100%;
+	overflow:hidden;
+	overflow-x:auto;
+}
+.slider-trail .trail{
+	position:absolute;
+	top:0;
+	left:0;
+	height:100%;
+	display:flex;
+}
+.slider-trail .trail .trail-picture{
+	width:var(--pictureViewer-trailPicture-width);
+	margin:5px;
+	position:relative;
+	overflow:hidden;
+}
+.slider-trail .trail .trail-picture img{
+	position:absolute;
+	width:100%;
+	top:50%;
+	bottom:0;
+	transform:translateY(-50%);
+	cursor:pointer;
+}
+@media (max-width:1000px){
+	.gallery .css-slider{
+		max-height:100vh;
 	}
-	.css-slider .slider .full-screen-background{
-		display: none;
+}
+@media (min-height:500px) and (max-width:1000px){
+	.gallery .css-slider{
+		max-height:60vw;
 	}
-	.css-slider-fullscreen-button:checked ~ .slider .full-screen-background{
-		display: block;
-		position: fixed;
-		background-color: rgba(0,0,0,0.6);
-		width: 100%;
-		height: 100%;
-		top: 0;
-		left: 0;
+	.gallery .css-slider .picture-content{
+		display:none!important;
 	}
-	.css-slider-fullscreen-button:checked ~ .slider .full-screen-buttons .full-screen-on{
-		display: none;
-	}
-	.css-slider-fullscreen-button:checked ~ .slider .full-screen-buttons .full-screen-off{
-		display: block;
-	}
-	.css-slider-fullscreen-button:checked ~ .slider .picture-list{
-		background-color: rgba(0,0,0,0.55);
-		border-radius: 10px;
-	}
+}

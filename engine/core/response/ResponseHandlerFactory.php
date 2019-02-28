@@ -1,22 +1,22 @@
 <?php
 namespace wfw\engine\core\response;
 
-use Dice\Dice;
+use wfw\engine\core\app\factory\IGenericAppFactory;
 
 /**
  * Crée un ResponseHandler en utilisant Dice.
  */
 final class ResponseHandlerFactory implements IResponseHandlerFactory {
-	/** @var Dice $_dice */
-	private $_dice;
+	/** @var IGenericAppFactory $_factory */
+	private $_factory;
 
 	/**
 	 * ResponseHandlerFactory constructor.
 	 *
-	 * @param Dice $dice Container pour les injection de dépendances du handler.
+	 * @param IGenericAppFactory $factory Factory pour la création du handler
 	 */
-	public function __construct(Dice $dice) {
-		$this->_dice = $dice;
+	public function __construct(IGenericAppFactory $factory) {
+		$this->_factory = $factory;
 	}
 
 	/**
@@ -27,14 +27,6 @@ final class ResponseHandlerFactory implements IResponseHandlerFactory {
 	 * @return IResponseHandler
 	 */
 	public function create(string $class, array $params = []): IResponseHandler {
-		if(is_a($class,IResponseHandler::class,true)){
-			/** @var IResponseHandler $handler */
-			$handler = $this->_dice->create($class,$params);
-			return $handler;
-		}else{
-			throw new \InvalidArgumentException(
-				"$class doesn't implements ".IResponseHandler::class
-			);
-		}
+		return $this->_factory->create($class,$params,[IResponseHandler::class]);
 	}
 }

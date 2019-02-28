@@ -2,6 +2,7 @@
 Description=Gestionnaire de models de données du framework bee-color wfw
 After=wfw-kvs.service mysql.service
 Requires=wfw-kvs.service mysql.service
+PartOf=mysql.service
 
 [Service]
 Type=simple

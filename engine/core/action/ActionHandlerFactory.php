@@ -1,22 +1,22 @@
 <?php
 namespace wfw\engine\core\action;
 
-use Dice\Dice;
+use wfw\engine\core\app\factory\IGenericAppFactory;
 
 /**
  * Factory de ActionHandler basée sur Dice pour la résolution des dépendances à injecter.
  */
 final class ActionHandlerFactory implements IActionHandlerFactory {
-	/** @var Dice $_dice */
-	private $_dice;
+	/** @var IGenericAppFactory $_factory */
+	private $_factory;
 
 	/**
 	 * ActionHandlerFactory constructor.
 	 *
-	 * @param Dice $dice Container permettant la résolution des dépendances des handlers.
+	 * @param IGenericAppFactory $factory factory permettant de créer un ActionHandler
 	 */
-	public function __construct(Dice $dice) {
-		$this->_dice = $dice;
+	public function __construct(IGenericAppFactory $factory) {
+		$this->_factory = $factory;
 	}
 
 	/**
@@ -27,12 +27,6 @@ final class ActionHandlerFactory implements IActionHandlerFactory {
 	 * @return IActionHandler
 	 */
 	public function create(string $className, array $params = []): IActionHandler {
-		if(is_a($className,IActionHandler::class,true)){
-			/** @var IActionHandler $handler */
-			$handler = $this->_dice->create($className,$params);
-			return $handler;
-		}else{
-			throw new \InvalidArgumentException("$className doesn't implements ".IActionHandler::class);
-		}
+		return $this->_factory->create($className,$params,[IActionHandler::class]);
 	}
 }

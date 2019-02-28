@@ -1,3 +1,6 @@
+:root{
+	--news-color:#FF9900;
+}
 .main-panel > div{
 	overflow:auto;
 }
@@ -82,7 +85,7 @@
 	position:absolute;
 	left:125%;
 	top:50%;
-	color:#FF9900;
+	color:var(--news-color);
 	font-size:16px;
 	font-weight: 400;
 	opacity:0;

@@ -7,7 +7,14 @@ use SessionHandlerInterface;
 use wfw\daemons\modelSupervisor\client\IMSInstanceAddrResolver;
 use wfw\daemons\modelSupervisor\client\MSInstanceAddrResolver;
 use wfw\engine\core\action\ActionHandlerFactory;
+use wfw\engine\core\action\ActionHookFactory;
 use wfw\engine\core\action\IAction;
+use wfw\engine\core\action\IActionHook;
+use wfw\engine\core\action\IActionHookFactory;
+use wfw\engine\core\action\MultiHook;
+use wfw\engine\core\action\NoHook;
+use wfw\engine\core\app\factory\DiceBasedFactory;
+use wfw\engine\core\app\factory\IGenericAppFactory;
 use wfw\engine\core\command\CommandHandlerFactory;
 use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\command\ICommandHandlerFactory;
@@ -136,6 +143,7 @@ class DefaultContext implements IWebAppContext {
 	 * @param array       $connections        Connexions d'urls
 	 * @param array       $langs              Langues disponibles
 	 * @param array       $accessRules        Liste des régles d'accés
+	 * @param array       $hooks              Liste des hooks
 	 * @param array       $diceRules          Regles à ajouter à Dice
 	 * @param array       $globals            Contient la variables globales de php aux index _GET,_POST,_FILES,_SERVER
 	 * @param array       $confFiles          Liste des fichiers de configuration à charger
@@ -151,13 +159,14 @@ class DefaultContext implements IWebAppContext {
 		array $connections = [],
 		array $langs = [],
 		array $accessRules = [],
+		array $hooks = [],
 		array $diceRules = [],
 		array $globals = [],
 		?array $confFiles = null,
 		?string $baseurl = BASE_URL,
 		?string $projectName = ROOT
 	){
-		$this->_dice = $dice = new Dice();
+		$genericFactory = new DiceBasedFactory($this->_dice = $dice = new Dice());
 		$this->_dice->addRules([
 			ICacheSystem::class => [
 				'instanceOf' => APCUBasedCache::class,
@@ -200,8 +209,6 @@ class DefaultContext implements IWebAppContext {
 			$baseurl
 		);
 		$this->_translator = $translator =  $this->initTranslator($langs,null);
-		$actionHandlerDice = $this->createActionHandlerDice();
-		$responseHandlerDice = $this->createActionResponseHandlerDice();
 		$instance = $this;
 
 		$this->_dice->addRules([
@@ -217,70 +224,52 @@ class DefaultContext implements IWebAppContext {
 					],
 					ITranslator::class => [
 						Dice::INSTANCE => function() use($translator){ return $translator; }
+					],
+					IGenericAppFactory::class => [
+						Dice::INSTANCE => function() use ($genericFactory) {return $genericFactory;},
+						"shared"=>true
 					]
 				]
 			],
 			IActionHandlerFactory::class => [
-				'substitutions' => [
-					Dice::class => [
-						Dice::INSTANCE => function() use ($actionHandlerDice){
-							return $actionHandlerDice;
-						}
-					]
-				]
+				'instanceOf' => ActionHandlerFactory::class,
+				'shared' => true
 			],
 			IResponseHandlerFactory::class => [
-				'substitutions' => [
-					Dice::class => [
-						Dice::INSTANCE => function() use ($responseHandlerDice){
-							return $responseHandlerDice;
-						}
-					]
-				]
+				'instanceOf' => ResponseHandlerFactory::class,
+				'shared' => true
 			],
 			ILayoutFactory::class => [
-				'substitutions' => [
-					Dice::class => [
-						Dice::INSTANCE => function() use ($responseHandlerDice){
-							return $responseHandlerDice;
-						}
-					]
-				]
+				'instanceOf' => LayoutFactory::class,
+				'shared' => true
 			],
 			IAccessRuleFactory::class => [
-				'substitutions' => [
-					Dice::class => [ Dice::INSTANCE => function() use ($dice){ return $dice; } ]
-				]
+				'instanceOf' => AccessRuleFactory::class,
+				'shared' => true
 			],
 			IViewFactory::class => [
-				'substitutions' => [
-					Dice::class => [
-						Dice::INSTANCE => function() use($responseHandlerDice){
-							return $responseHandlerDice;
-						}
-					]
-				]
+				'instanceOf' => ViewFactory::class,
+				'shared' => true
 			],
 			IMailFactory::class => [
 				'instanceOf' => MailFactory::class,
+				'shared' => true
+			],
+			IActionHookFactory::class=>[
+				'instanceOf' => ActionHookFactory::class,
+				'shared' => true
+			],
+			IActionHook::class => [
+				'instanceOf' => MultiHook::class,
 				'shared' => true,
-				'substitutions' => [
-					Dice::class => [
-						Dice::INSTANCE => function() use($dice){
-							return $dice;
-						}
-					]
-				]
+				'constructParams' => [ $hooks ]
 			],
 			ICommandBus::class => [ 'instanceOf' => SynchroneCommandBus::class, 'shared' => true ],
 			ICommandInflector::class => [
 				'instanceOf' => NamespaceBasedInflector::class, 'shared' => true
 			],
 			ICommandHandlerFactory::class => [
-				'instanceOf' => CommandHandlerFactory::class,
-				'substitutions' => [
-					Dice::class => [ Dice::INSTANCE => function() use($dice){ return $dice; } ]
-				]
+				'instanceOf' => CommandHandlerFactory::class,'shared'=>true
 			],
 			IEventStore::class => [ 'instanceOf' => DBBasedEventStore::class ],
 			IDBAccess::class => [
@@ -316,79 +305,65 @@ class DefaultContext implements IWebAppContext {
 			],
 			IDomainEventListenerFactory::class => [
 				'instanceOf' => DomainEventListenerFactory::class,
-				'substitutions' => [ Dice::INSTANCE => function() use ($dice){ return $dice; } ],
-				'shared' => true
-			]
-		]);
-		$this->_dice->addRules([
-			ISession::class => [
-				'instanceOf' => Session::class,
-				'constructParams' => [ "user", $conf->getString("server/tmp/dir") ],
 				'shared' => true
 			],
-			SessionHandlerInterface::class => [ 'instanceOf' => PHPSessionHandler::class ],
-			IRequestData::class => [
-				'instanceOf' => RequestData::class,
-				'shared' => true,
-				'constructParams' => [
-					$globals["_GET"] ?? $_GET,
-					$globals["_POST"] ?? $_POST,
-					$globals["_FILES"] ?? $_FILES
-				]
-			],
-			IRequest::class => [
-				'instanceOf' => Request::class,
-				'shared' => true,
-				'constructParams' => [
-					$globals["_SERVER"] ?? $_SERVER
-				]
-			],
-			IActionHandlerFactory::class => [
-				'instanceOf' => ActionHandlerFactory::class, 'shared' => true
-			],
-			IResponseHandlerFactory::class => [
-				'instanceOf' => ResponseHandlerFactory::class, 'shared' => true
-			],
-			IActionRouter::class => [ 'instanceOf' => ActionRouter::class, 'shared' => true],
-			IRenderer::class => [ 'instanceOf' => Renderer::class, 'shared' => true ],
-			IResponseRouter::class => ['instanceOf' => ResponseRouter::class, 'shared' => true ],
-			ILayoutFactory::class => [ 'instanceOf' => LayoutFactory::class, 'shared' => true ],
-			ILayoutResolver::class => [
-				'instanceOf' => LayoutResolver::class,
-				'constructParams' => [ $defaultLayoutClass ],
-				'shared' => true
-			],
-			ErrorHandler::class => [ 'constructParams' => [ $errorViewPath ] ],
-			AjaxHandler::class => [ 'constructParams' => [ $ajaxViewPath ] ],
-			IAccessRuleFactory::class => [
-				'instanceOf' => AccessRuleFactory::class, 'shared' => true
-			],
-			IAccessControlCenter::class => [
-				'instanceOf' => AccessControlCenter::class,
-				'constructParams' => [ $accessRules ],
-				'shared' => true
-			],
-			INotifier::class => [ 'instanceOf' => FlashNotifier::class, 'shared' => true ],
-			IPrinter::class => [ 'instanceOf' => SimpleHTMLPrinter::class, 'shared' => true ],
-			ICSSManager::class => [ 'instanceOf' => CSSManager::class, 'shared' => true ],
-			IJsScriptManager::class => [ 'instanceOf' => JsScriptManager::class, 'shared' => true ],
-			IViewFactory::class => [ 'instanceOf' => ViewFactory::class, 'shared' => true ],
-			IUserModelAccess::class => [ 'instanceOf' => UserModelAccess::class, 'shared' => true ],
-			IArticleRepository::class => [ 'instanceOf' => ArticleRepository::class, 'shared' => true],
-			IAggregateRootRepository::class => ['instanceOf' => AggregateRootRepository::class, 'shared'=>true],
-			LightSerializer::class => ['substitutions' => [ ISerializer::class => PHPSerializer::class ]],
-			ISerializer::class => ['instanceOf'=>LightSerializer::class, 'shared'=>true],
-			IStringCompressor::class => ['instanceOf'=>GZCompressor::class, 'shared'=>true],
-			IJSONEncoder::class => ["instanceOf"=>JSONEncoder::class, 'shared'=>true],
-			IArticleModelAccess::class => ['instanceOf'=>ArticleModelAccess::class, 'shared'=>true],
-			IHTMLSanitizer::class => ['instanceOf'=>HTMLPurifierBasedSanitizer::class, 'shared'=>true],
-			IUserConfirmationCodeGenerator::class => [ 'instanceOf'=>UUIDBasedUserConfirmationCodeGenerator::class,'shared'=>true],
-			IUserRegisteredMail::class => [ 'instanceOf'=>UserRegisteredMail::class],
-			IUserMailChangedMail::class => [ 'instanceOf'=>UserMailChangedMail::class],
-			IUserResetPasswordMail::class => [ 'instanceOf'=>UserResetPasswordMail::class],
-			IUserRepository::class => [ 'instanceOf'=>UserRepository::class,'shared'=>true],
-			IContactRepository::class => ['instanceOf'=>ContactRepository::class,'shared'=>true],
-			IContactModelAccess::class => ['instanceOf'=>ContactModelAccess::class,'shared'=>true]
+            ISession::class => [
+                'instanceOf' => Session::class,
+                'constructParams' => [ "user", $conf->getString("server/tmp/dir") ],
+                'shared' => true
+            ],
+            SessionHandlerInterface::class => [ 'instanceOf' => PHPSessionHandler::class ],
+            IRequestData::class => [
+                'instanceOf' => RequestData::class,
+                'shared' => true,
+                'constructParams' => [
+                    $globals["_GET"] ?? $_GET,
+                    $globals["_POST"] ?? $_POST,
+                    $globals["_FILES"] ?? $_FILES
+                ]
+            ],
+            IRequest::class => [
+                'instanceOf' => Request::class,
+                'shared' => true,
+                'constructParams' => [
+                    $globals["_SERVER"] ?? $_SERVER
+                ]
+            ],
+            IActionRouter::class => [ 'instanceOf' => ActionRouter::class, 'shared' => true],
+            IRenderer::class => [ 'instanceOf' => Renderer::class, 'shared' => true ],
+            IResponseRouter::class => ['instanceOf' => ResponseRouter::class, 'shared' => true ],
+            ILayoutResolver::class => [
+                'instanceOf' => LayoutResolver::class,
+                'constructParams' => [ $defaultLayoutClass ],
+                'shared' => true
+            ],
+            ErrorHandler::class => [ 'constructParams' => [ $errorViewPath ] ],
+            AjaxHandler::class => [ 'constructParams' => [ $ajaxViewPath ] ],
+            IAccessControlCenter::class => [
+                'instanceOf' => AccessControlCenter::class,
+                'constructParams' => [ $accessRules ],
+                'shared' => true
+            ],
+            INotifier::class => [ 'instanceOf' => FlashNotifier::class, 'shared' => true ],
+            IPrinter::class => [ 'instanceOf' => SimpleHTMLPrinter::class, 'shared' => true ],
+            ICSSManager::class => [ 'instanceOf' => CSSManager::class, 'shared' => true ],
+            IJsScriptManager::class => [ 'instanceOf' => JsScriptManager::class, 'shared' => true ],
+            IUserModelAccess::class => [ 'instanceOf' => UserModelAccess::class, 'shared' => true ],
+            IArticleRepository::class => [ 'instanceOf' => ArticleRepository::class, 'shared' => true],
+            IAggregateRootRepository::class => ['instanceOf' => AggregateRootRepository::class, 'shared'=>true],
+            LightSerializer::class => ['substitutions' => [ ISerializer::class => PHPSerializer::class ]],
+            ISerializer::class => ['instanceOf'=>LightSerializer::class, 'shared'=>true],
+            IStringCompressor::class => ['instanceOf'=>GZCompressor::class, 'shared'=>true],
+            IJSONEncoder::class => ["instanceOf"=>JSONEncoder::class, 'shared'=>true],
+            IArticleModelAccess::class => ['instanceOf'=>ArticleModelAccess::class, 'shared'=>true],
+            IHTMLSanitizer::class => ['instanceOf'=>HTMLPurifierBasedSanitizer::class, 'shared'=>true],
+            IUserConfirmationCodeGenerator::class => [ 'instanceOf'=>UUIDBasedUserConfirmationCodeGenerator::class,'shared'=>true],
+            IUserRegisteredMail::class => [ 'instanceOf'=>UserRegisteredMail::class],
+            IUserMailChangedMail::class => [ 'instanceOf'=>UserMailChangedMail::class],
+            IUserResetPasswordMail::class => [ 'instanceOf'=>UserResetPasswordMail::class],
+            IUserRepository::class => [ 'instanceOf'=>UserRepository::class,'shared'=>true],
+            IContactRepository::class => ['instanceOf'=>ContactRepository::class,'shared'=>true],
+            IContactModelAccess::class => ['instanceOf'=>ContactModelAccess::class,'shared'=>true]
 		]);
 		$this->_action = $action = $this->getRouter()->parse($this->getRequest());
 		$this->_dice->addRules([
@@ -450,16 +425,6 @@ class DefaultContext implements IWebAppContext {
 	protected final function addDiceRules(array $rules){
 		$this->_dice->addRules($rules);
 	}
-
-	/**
-	 * @return Dice Instance pour la création des ActionHandlers.
-	 */
-	private function createActionHandlerDice():Dice{ return $this->_dice; }
-
-	/**
-	 * @return Dice Instance pour la création des ResponseHandlers.
-	 */
-	private function createActionResponseHandlerDice():Dice{ return $this->_dice; }
 
 	/**
 	 * @param array $confFiles Fichiers de configurations à charger
@@ -627,4 +592,13 @@ class DefaultContext implements IWebAppContext {
 	 * @return IAction Action correspondant à la requête courante.
 	 */
 	public final function getAction(): IAction { return $this->_action; }
+
+	/**
+	 * @return IActionHook Hook.
+	 */
+	public function getActionHook(): IActionHook {
+		/** @var IActionHook $actionHook */
+		$actionHook = $this->_dice->create(IActionHook::class);
+		return $actionHook;
+	}
 }

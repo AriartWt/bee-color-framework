@@ -1,3 +1,6 @@
+:root{
+	--users-color:#FF9900;
+}
 .users-loader{
 	position:absolute;
 	top:0;
@@ -142,7 +145,7 @@
 }
 .users-window .body .info > div{
 	padding:10px;
-	color:#FF9900;
+	color:var(--users-color);
 	margin-left:20px;
 }
 .users-window .body .info.editable{
@@ -157,7 +160,7 @@
 	transition: all 0.35s;
 }
 .users-window .body .info:hover > svg path{
-	fill:#FF9900;
+	fill:var(--users-color);
 }
 .users-window .body > button{
 	white-space: nowrap;

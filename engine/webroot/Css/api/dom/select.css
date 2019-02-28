@@ -1,3 +1,6 @@
+:root{
+	--advancedSelect-color:#FF9900;
+}
 .advanced-select{
 	display:inline-block;
 	min-width:100px;
@@ -61,7 +64,7 @@
 	transition: all 0.35s;
 }
 .advanced-select:hover .select-icon svg path{
-	fill:#FF9900;
+	fill:var(--advancedSelect-color);
 }
 .advanced-select.open .select-icon{
 	transform: rotate(180deg);
@@ -94,7 +97,7 @@
 }
 
 .advanced-select .highlighted{
-	background-color: #FF9900;
+	background-color: var(--advancedSelect-color);
 	color:white;
 }
 .advanced-select .select-multi-values{
@@ -133,5 +136,5 @@
 	margin-left:10px;
 }
 .advanced-select .select-multi-value .unselect-value:hover{
-	color:#FF9900;
+	color:var(--advancedSelect-color);
 }
