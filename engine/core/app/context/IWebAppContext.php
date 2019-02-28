@@ -2,6 +2,7 @@
 namespace wfw\engine\core\app\context;
 
 use wfw\engine\core\action\IAction;
+use wfw\engine\core\action\IActionHook;
 use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\notifier\INotifier;
 use wfw\engine\core\response\IResponseRouter;
@@ -100,4 +101,9 @@ interface IWebAppContext {
 	 * @return IAction Action correspondant à la requête courante.
 	 */
 	public function getAction():IAction;
+
+	/**
+	 * @return IActionHook Hook.
+	 */
+	public function getActionHook():IActionHook;
 }

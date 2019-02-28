@@ -1,22 +1,22 @@
 <?php
 namespace wfw\engine\core\view;
 
-use Dice\Dice;
+use wfw\engine\core\app\factory\IGenericAppFactory;
 
 /**
  * Crée des vues en se basant sur Dice.
  */
 final class ViewFactory implements IViewFactory {
-	/** @var Dice $_dice */
-	private $_dice;
+	/** @var IGenericAppFactory $_factory */
+	private $_factory;
 
 	/**
 	 * ViewFactory constructor.
 	 *
-	 * @param Dice $dice dice
+	 * @param IGenericAppFactory $factory
 	 */
-	public function __construct(Dice $dice) {
-		$this->_dice = $dice;
+	public function __construct(IGenericAppFactory $factory) {
+		$this->_factory = $factory;
 	}
 
 	/**
@@ -25,12 +25,6 @@ final class ViewFactory implements IViewFactory {
 	 * @return IView
 	 */
 	public function create(string $viewClass, array $params = []): IView {
-		if(is_a($viewClass,IView::class,true)){
-			/** @var IView $view */
-			$view = $this->_dice->create($viewClass,$params);
-			return $view;
-		}else{
-			throw new \InvalidArgumentException("$viewClass doesn't implements ".IView::class);
-		}
+		return $this->_factory->create($viewClass,$params,[IView::class]);
 	}
 }

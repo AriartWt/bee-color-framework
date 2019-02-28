@@ -1,22 +1,22 @@
 <?php
 namespace wfw\engine\core\domain\events;
 
-use Dice\Dice;
+use wfw\engine\core\app\factory\IGenericAppFactory;
 
 /**
  * Factroy de DomainEventListener basée sur Dice
  */
 final class DomainEventListenerFactory implements IDomainEventListenerFactory {
-	/** @var Dice $_dice */
-	private $_dice;
+	/** @var IGenericAppFactory $_factory */
+	private $_factory;
 
 	/**
 	 * DomainEventListenerFactory constructor.
 	 *
-	 * @param Dice $dice
+	 * @param IGenericAppFactory $factory
 	 */
-	public function __construct(Dice $dice) {
-		$this->_dice = $dice;
+	public function __construct(IGenericAppFactory $factory) {
+		$this->_factory = $factory;
 	}
 
 	/**
@@ -25,8 +25,6 @@ final class DomainEventListenerFactory implements IDomainEventListenerFactory {
 	 * @return IDomainEventListener
 	 */
 	public function build(string $listenerClass,array $params=[]): IDomainEventListener {
-		/** @var IDomainEventListener $factory */
-		$factory = $this->_dice->create($listenerClass,$params);
-		return $factory;
+		return $this->_factory->create($listenerClass,$params,[IDomainEventListener::class]);
 	}
 }
