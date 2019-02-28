@@ -2,7 +2,7 @@
 	"server": {
 		"framework": {
 			"name": "wfw",
-			"version": "STABLE-1.1.3"
+			"version": "STABLE-1.2"
 		},
 		"daemons": {
 			"kvs": "kvstore\/server\/config\/conf.json",

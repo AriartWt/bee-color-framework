@@ -1,21 +1,21 @@
 <?php
 namespace wfw\engine\lib\network\mail;
 
-use Dice\Dice;
+use wfw\engine\core\app\factory\IGenericAppFactory;
 
 /**
  * Permet de créer des mails concernant les utilisateurs en se basant sur Dice
  */
 final class MailFactory implements IMailFactory{
-	/** @var Dice $_dice */
-	private $_dice;
+	/** @var IGenericAppFactory $_factory */
+	private $_factory;
 
 	/**
 	 * UserMailFactory constructor.
-	 * @param Dice $dice Instance de dice pour les création des mails
+	 * @param IGenericAppFactory $factory Instance de dice pour les création des mails
 	 */
-	public function __construct(Dice $dice){
-		$this->_dice = $dice;
+	public function __construct(IGenericAppFactory $factory){
+		$this->_factory = $factory;
 	}
 
 	/**
@@ -24,10 +24,6 @@ final class MailFactory implements IMailFactory{
 	 * @return IMail
 	 */
 	public function create(string $type, array $args = []): IMail{
-		if(!is_a($type,IMail::class,true))
-			throw new \InvalidArgumentException("$type is not an instance of ".IMail::class);
-		/** @var IMail $res */
-		$res = $this->_dice->create($type,$args);
-		return $res;
+		return $this->_factory->create($type,$args,[IMail::class]);
 	}
 }

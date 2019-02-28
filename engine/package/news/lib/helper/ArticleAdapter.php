@@ -35,7 +35,7 @@ final class ArticleAdapter implements IArticle {
 		$str = preg_replace("/(<br>){2,}/","<br>",$str);
 		$str = preg_replace("/^<br>/","",$str);
 		$str = preg_replace("/<br>$/","",$str);
-		$this->_shortDescription = substr($str,0,200)."...";
+		$this->_shortDescription = mb_substr($str,0,200,"utf-8")."...";
 	}
 
 	/**

@@ -2,21 +2,22 @@
 namespace wfw\engine\core\security;
 
 use Dice\Dice;
+use wfw\engine\core\app\factory\IGenericAppFactory;
 
 /**
  * Factory d'AccessRule basée sur Dice
  */
 final class AccessRuleFactory implements IAccessRuleFactory {
-	/** @var Dice $_dice */
-	private $_dice;
+	/** @var IGenericAppFactory $_factory */
+	private $_factory;
 
 	/**
 	 * AccessRuleFactory constructor.
 	 *
-	 * @param Dice $dice Dice
+	 * @param IGenericAppFactory $factory
 	 */
-	public function __construct(Dice $dice) {
-		$this->_dice = $dice;
+	public function __construct(IGenericAppFactory $factory) {
+		$this->_factory = $factory;
 	}
 
 	/**
@@ -27,14 +28,6 @@ final class AccessRuleFactory implements IAccessRuleFactory {
 	 * @return IAccessRule
 	 */
 	public function create(string $ruleClass, array $params = []): IAccessRule {
-		if(is_a($ruleClass,IAccessRule::class,true)){
-			/** @var IAccessRule $rule */
-			$rule = $this->_dice->create($ruleClass,$params);
-			return $rule;
-		}else{
-			throw new \InvalidArgumentException(
-				"$ruleClass doesn't implements ".IAccessRule::class
-			);
-		}
+		return $this->_factory->create($ruleClass,$params,[IAccessRule::class]);
 	}
 }
