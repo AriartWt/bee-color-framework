@@ -209,6 +209,14 @@ class PHPString {
 	}
 
 	/**
+	 * @param string $sub Substitution for all non-alphanum chars
+	 * @return PHPString
+	 */
+	public function stripNonAlphanum(string $sub="_"):PHPString{
+		return new static(preg_replace('/[^a-z0-9]+/i', $sub,$this->_str));
+	}
+
+	/**
 	 *  Explose une chaine de caractère sur ses majuscules
 	 * @return array     Tableau contenant la chaine explosée
 	 */

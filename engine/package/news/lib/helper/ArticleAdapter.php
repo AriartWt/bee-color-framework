@@ -116,6 +116,6 @@ final class ArticleAdapter implements IArticle {
 	 * @return string
 	 */
 	public function getSlug():string{
-		return (new PHPString($this->getTitle()))->removeAccents()->replaceAll(" ","-")->encodeURIComponent();
+		return (new PHPString($this->getTitle()))->removeAccents()->stripNonAlphanum()->encodeURIComponent();
 	}
 }
