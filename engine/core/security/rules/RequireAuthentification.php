@@ -2,6 +2,7 @@
 namespace wfw\engine\core\security\rules;
 
 use wfw\engine\core\action\IAction;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\notifier\IMessage;
 use wfw\engine\core\notifier\INotifier;
 use wfw\engine\core\notifier\Message;
@@ -43,21 +44,23 @@ final class RequireAuthentification implements IAccessRule {
 	/**
 	 * RequireAuthentification constructor.
 	 *
-	 * @param ISession      $session
-	 * @param INotifier     $notifier
-	 * @param string[]      ...$pathsToProtect Chemins à protéger.
-	 * @param string        $sessionKey
-	 * @param null|string   $redirUrl
-	 * @param null|IMessage $message
-	 * @param bool          $treeBased (optionnal) MUST BE TRUE if you want a tree based rule set !
+	 * @param ISession    $session
+	 * @param INotifier   $notifier
+	 * @param ITranslator $translator
+	 * @param string[]    ...$pathsToProtect Chemins à protéger.
+	 * @param string      $sessionKey
+	 * @param null|string $redirUrl
+	 * @param null|string $translationKey
+	 * @param bool        $treeBased         (optionnal) MUST BE TRUE if you want a tree based rule set !
 	 */
 	public function __construct(
 		ISession $session,
 		INotifier $notifier,
+		ITranslator $translator,
 		array $pathsToProtect = [],
 		?string $sessionKey = null,
 		?string $redirUrl = null,
-		?IMessage $message = null,
+		?string $translationKey = null,
 		bool $treeBased = false
 	){
 		$this->_treeBased = !!$treeBased;
@@ -70,8 +73,10 @@ final class RequireAuthentification implements IAccessRule {
 		$this->_notifier = $notifier;
 		$this->_session = $session;
 		$this->_redirUrl = $redirUrl ?? "users/login";
-		$this->_message = $message ?? new Message(
-			"You must be logged to perform this action !",
+		$this->_message = new Message(
+			$translator->getAndTranslate(
+				$translationKey ?? "server/engine/core/app/MUST_BE_LOGGED"
+			),
 			MessageTypes::ERROR
 		);
 	}
@@ -101,16 +106,19 @@ final class RequireAuthentification implements IAccessRule {
 		$internalPath = explode("/",$action->getInternalPath());
 		$array = $this->_paths;
 		foreach($internalPath as $pathPart){
+			$continue = false;
 			foreach($array as $k=>$path){
 				if(is_int($k)){
 					if($path === lcfirst($pathPart)) return $this->denyPublicAccess($action);
 				}else if($k === lcfirst($pathPart)){
 					if(is_array($path)){
-						$array = $path;
+						$array = $array[$k];
+						$continue = true;
 						break;
 					} else if($path === lcfirst($pathPart)) return $this->denyPublicAccess($action);
 				}
 			}
+			if(!$continue) break;
 		}
 		return null;
 	}

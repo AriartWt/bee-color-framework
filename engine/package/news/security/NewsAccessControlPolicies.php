@@ -7,4 +7,5 @@ namespace wfw\engine\package\news\security;
  */
 final class NewsAccessControlPolicies{
 	public const REQUIRE_AUTH = ["news"];
+	public const DISABLE = ["^news(/.*|)"];
 }

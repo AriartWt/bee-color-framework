@@ -72,7 +72,7 @@ wfw.define("packages/news",function($params){
 				$editor.html,
 				wfw.dom.appendTo(wfw.dom.create("div",{className:"buttons"}),
 					wfw.dom.create("button",{innerHTML:$lstr($d ? "EDIT" : "CREATE"),on:{click:()=>{
-						let $loader = $displayLoader($lstr("WAITING_"+ $d ? "EDIT" : "CREATE" ));
+						let $loader = $displayLoader($lstr("WAITING_"+ ($d ? "EDIT" : "CREATE")));
 						wfw.network.wfwAPI(wfw.webroot+"news/"+($d?"edit":"create"),{
 							type : "POST",
 							postData : {
