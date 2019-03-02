@@ -7,4 +7,5 @@ namespace wfw\engine\package\contact\security;
  */
 final class ContactAccessControlPolicies{
 	public const REQUIRE_AUTH = ["contact"];
+	public const DISABLE = ["^contact(/.*|)"];
 }

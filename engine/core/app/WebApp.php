@@ -31,6 +31,7 @@ final class WebApp {
 
 	private function run():void{
 		$action = $this->_context->getAction();
+		$translator = $this->_context->getTranslator();
 		$permission = $this->_context->getAccessControlCenter()->checkPermissions($action);
 		$response = $this->_context->getActionHook()->hook($action,$permission);
 		if(is_null($response)){
@@ -43,7 +44,11 @@ final class WebApp {
 					if($action->getRequest()->isAjax()){
 						$response = new ErrorResponse(
 							500,
-							"No action handler found for ".$action->getInternalPath()
+							$translator->getTranslateAndReplace(
+								"server/engine/core/app/ACTION_HANDLER_NOT_FOUND",
+								null,
+								$action->getInternalPath()
+							)
 						);
 					}else{
 						$response = new StaticResponse($action);
@@ -51,7 +56,11 @@ final class WebApp {
 				}catch(\Error $e){
 					$response = new ErrorResponse(
 						500,
-						"Internal error $e"
+						$translator->getTranslateAndReplace(
+							"server/engine/core/app/INTERNAL_ERROR",
+							null,
+							$e
+						)
 					);
 				}
 			}else{
@@ -59,7 +68,7 @@ final class WebApp {
 					if($action->getRequest()->isAjax()){
 						$response = new ErrorResponse(
 							100,
-							'Access denied : you must be logged !'
+							$translator->getAndTranslate("server/engine/core/app/MUST_BE_LOGGED")
 						);
 					}else{
 						$this->_context->getNotifier()->addMessage(new Message(
@@ -89,7 +98,11 @@ final class WebApp {
 		}catch(ResponseResolutionFailure $e){
 			$response = new ErrorResponse(
 				404,
-				"Page not found : no response handler for ".$action->getInternalPath()
+				$translator->getTranslateAndReplace(
+					"server/engine/core/app/404_NOT_FOUND",
+					null,
+					$action->getInternalPath()
+				)
 			);
 			$handler = $responseRouter->findResponseHandler($action,$response);
 		}

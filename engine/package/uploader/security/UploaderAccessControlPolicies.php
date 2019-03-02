@@ -7,4 +7,5 @@ namespace wfw\engine\package\uploader\security;
  */
 final class UploaderAccessControlPolicies{
 	public const REQUIRE_AUTH = ["uploader"];
+	public const DISABLE = ["^uploader(/.*|)"];
 }
