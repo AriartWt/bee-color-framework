@@ -7,4 +7,5 @@ namespace wfw\engine\package\miel\security;
  */
 final class MielAccessControlPolicies{
 	public const REQUIRE_AUTH = ["miel"];
+	public const DISABLE = ["^uploader(/.*|)"];
 }
