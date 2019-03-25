@@ -11,6 +11,8 @@ use wfw\engine\core\request\IRequest;
 final class Router implements IRouter {
 	/** @var array $_routes */
 	private $_routes;
+	/** @var array $_langRoutes */
+	private $_langRoutes;
 	/** @var array $_langs */
 	private $_langs;
 	/** @var null|string $_lang */
@@ -36,9 +38,19 @@ final class Router implements IRouter {
 		$this->_baseUrl = $baseUrl ?? BASE_URL ?? '';
 		$this->_langs = [];
 		$this->_routes = [];
-		foreach($connections as $redir => $url){
-			$this->addConnection($redir,$url);
+		$this->_langRoutes = [];
+		if(count(array_intersect(array_keys($connections),$langs)) > 0){
+			foreach ($connections as $lang => $conn){
+				foreach($conn as $redir => $url){
+					$this->addConnection($redir,$url,["lang"=>$lang]);
+				}
+			}
+		}else{
+			foreach($connections as $redir => $url){
+				$this->addConnection($redir,$url);
+			}
 		}
+
 		foreach($langs as $l){
 			$this->addLang($l);
 		}
@@ -53,20 +65,38 @@ final class Router implements IRouter {
 	 */
 	public function url(string $url = ''): string {
 		trim($url,'/');
-		foreach($this->_routes as $v){
-			if(preg_match($v['originreg'],$url,$match)){
-				$url = $v['redir'];
-				foreach($match as $k=>$w){
-					$url = str_replace(":$k:",$w,$url);
+		$tmp = explode("/",$url);
+		$tmpLang = null;
+		if(in_array($tmp[0]??'',$this->_langs)) $tmpLang = array_shift($tmp);
+		$url = implode("/",$tmp);
+
+		if($tmpLang && isset($this->_langRoutes[$tmpLang])) $routes = array_merge(
+			[$tmpLang => $this->_langRoutes[$tmpLang]],
+			array_diff_key($this->_langRoutes,[$tmpLang])
+		);
+		else if($this->_lang && isset($this->_langRoutes[$this->_lang]))$routes = array_merge(
+			[$tmpLang => $this->_langRoutes[$this->_lang]],
+			array_diff_key($this->_langRoutes,[$this->_lang])
+		);
+		else if(!empty($this->_langRoutes)) $routes = $this->_langRoutes;
+		else $routes = [$this->_routes];
+
+		foreach($routes as $r){
+			foreach($r as $v){
+				if(preg_match($v['originreg'],$url,$match)){
+					$url = $v['redir'];
+					foreach($match as $k=>$w){
+						$url = str_replace(":$k:",$w,$url);
+					}
 				}
 			}
 		}
 
 		$preUrl = (empty($this->_baseUrl)?'':$this->_baseUrl.'/');
 
-		if(!is_null($this->_lang)){
-			$preUrl.=$this->_lang;
-		}
+		if(!is_null($tmpLang)) $preUrl.=$tmpLang."/";
+		else if(!is_null($this->_lang)) $preUrl.=$this->_lang."/";
+
 		return (strpos($preUrl,"/")!==0?'/':'').$preUrl.($url==='/'?'':$url);
 	}
 
@@ -94,29 +124,43 @@ final class Router implements IRouter {
 			$url = '/';
 		}
 		$match = false;
-		foreach($this->_routes as $v){
-			if(preg_match($v['redirreg'],$url,$match)){
-				$url = $v['origin'];
-				/**
-				 * @var  $k string
-				 * @var  $v array
-				 * @var  $match array
-				 */
-				foreach($match as $k=>$m){
-					$url = str_replace(':'.$k.':',$m,$url);
-				}
-				break;
-			}
-		}
-
 		$tab = explode('/',$url);
 		$lang = null;
 		if(in_array($tab[0],$this->_langs)){
 			$lang = array_shift($tab);
+			$this->_lang = $lang;
 		}
+		$url = implode('/',$tab);
+
+		if($this->_lang && isset($this->_langRoutes[$this->_lang]))
+			//will search in the most probable urls first
+			$routes = array_merge(
+				[$this->_lang => $this->_langRoutes[$this->_lang]],
+				array_diff_key($this->_langRoutes,[$this->_lang])
+			);
+		else if(!empty($this->_langRoutes)) $routes = $this->_langRoutes;
+		else $routes = [$this->_routes];
+
+		foreach($routes as $r){
+			foreach($r as $v){
+				if(preg_match($v['redirreg'],$url,$match)){
+					$url = $v['origin'];
+					/**
+					 * @var  $k string
+					 * @var  $v array
+					 * @var  $match array
+					 */
+					foreach($match as $k=>$m){
+						$url = str_replace(':'.$k.':',$m,$url);
+					}
+					break 2;
+				}
+			}
+		}
+
 		return new Action(
 			$request,
-			implode('/',$tab),
+			$url,
 			$lang,
 			$this->_langs
 		);
@@ -139,11 +183,13 @@ final class Router implements IRouter {
 	 *
 	 * @param string $redir URL à connecter
 	 * @param string $url   URL de connexion
+	 * @param array  $opts (optionnal) depends of the implementation
 	 */
-	public function addConnection(string $redir, string $url): void {
+	public function addConnection(string $redir, string $url, array $opts=[]): void {
 		$r = [];
 		$r['params'] = [];
 		$r['url'] = $url;
+		$r['opts'] = $opts;
 
 		$r['originreg'] = preg_replace('/([a-z0-9]+):([^\/]+)/','${1}:(?P<${1}>${2})',$url);
 		$r['originreg'] = str_replace('/*','(?P<args>/?.*)',$r['originreg']);
@@ -170,6 +216,9 @@ final class Router implements IRouter {
 		$r['redir'] = preg_replace('/:([a-z0-9]+)/',':${1}:',$redir);
 		$r['redir'] = str_replace('/*',':args:',$r['redir']);
 
-		$this->_routes[] = $r;
+		if(isset($opts['lang'])){
+			if(!isset($this->_langRoutes[$opts['lang']])) $this->_langRoutes[$opts['lang']] = [];
+			$this->_langRoutes[$opts['lang']][] = $r;
+		}else $this->_routes[] = $r;
 	}
 }
