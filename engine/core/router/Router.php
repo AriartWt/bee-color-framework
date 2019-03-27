@@ -40,9 +40,9 @@ final class Router implements IRouter {
 		$this->_routes = [];
 		$this->_langRoutes = [];
 		if(count(array_intersect(array_keys($connections),$langs)) > 0){
-			foreach ($connections as $lang => $conn){
+			foreach ($connections as $l => $conn){
 				foreach($conn as $redir => $url){
-					$this->addConnection($redir,$url,["lang"=>$lang]);
+					$this->addConnection($redir,$url,["lang"=>$l]);
 				}
 			}
 		}else{

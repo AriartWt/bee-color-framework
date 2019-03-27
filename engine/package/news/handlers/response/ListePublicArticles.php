@@ -4,6 +4,7 @@ namespace wfw\engine\package\news\handlers\response;
 
 use wfw\engine\core\data\model\IArraySorter;
 use wfw\engine\core\data\model\ModelSorter;
+use wfw\engine\core\data\specification\ISpecification;
 use wfw\engine\core\response\IResponse;
 use wfw\engine\core\response\IResponseHandler;
 use wfw\engine\core\view\IView;
@@ -33,6 +34,8 @@ abstract class ListePublicArticles implements IResponseHandler{
 	private $_offset;
 	/** @var array|IArraySorter[] $_sorters */
 	private $_sorters;
+	/** @var null|ISpecification $_spec */
+	private $_spec;
 
 	/**
 	 * ListeHandler constructor.
@@ -42,6 +45,7 @@ abstract class ListePublicArticles implements IResponseHandler{
 	 * @param string              $view
 	 * @param int                 $offset
 	 * @param int                 $length
+	 * @param null|ISpecification $spec
 	 * @param IArraySorter[]      $sorters
 	 */
 	public function __construct(
@@ -50,6 +54,7 @@ abstract class ListePublicArticles implements IResponseHandler{
 		string $view,
 		int $offset = 0,
 		int $length = 0,
+		?ISpecification $spec=null,
 		IArraySorter... $sorters
 	){
 		$this->_factory = $factory;
@@ -57,6 +62,7 @@ abstract class ListePublicArticles implements IResponseHandler{
 		$this->_length = $length;
 		$this->_offset = $offset;
 		$this->_view = $view;
+		$this->_spec = $spec;
 		$this->_sorters = (count($sorters)>0) ? $sorters : [new ArticleSorter()];
 	}
 
@@ -67,7 +73,8 @@ abstract class ListePublicArticles implements IResponseHandler{
 	public function handleResponse(IResponse $response): IView {
 		return $this->_factory->create(Liste::class,[$this->convert(
 			...$this->_access->getArticleToDisplayInPublic(
-				new ModelSorter($this->_offset,$this->_length,...$this->_sorters)
+				new ModelSorter($this->_offset,$this->_length,...$this->_sorters),
+				$this->_spec
 			)
 		)]);
 	}
