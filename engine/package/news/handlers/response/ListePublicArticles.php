@@ -71,7 +71,7 @@ abstract class ListePublicArticles implements IResponseHandler{
 	 * @return IView Vue à retourner au client
 	 */
 	public function handleResponse(IResponse $response): IView {
-		return $this->_factory->create(Liste::class,[$this->convert(
+		return $this->_factory->create($this->_view,[$this->convert(
 			...$this->_access->getArticleToDisplayInPublic(
 				new ModelSorter($this->_offset,$this->_length,...$this->_sorters),
 				$this->_spec
