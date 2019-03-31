@@ -248,3 +248,6 @@
 	background-color: var(--fileExplorer-color);
 	transition:all 0.35s;
 }
+.file-explorer .fs-name{
+	word-break: break-all;
+}
