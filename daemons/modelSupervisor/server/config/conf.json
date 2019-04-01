@@ -30,42 +30,6 @@
         "error_logs": "error_logs.txt"
     },
     "instances": {
-        "test": {
-            "models_to_load_path": "{ROOT}\/engine\/config\/default.models.php",
-            "kvs": {
-                "login": "tester",
-                "password": "test",
-                "container": "test_db"
-            },
-            "components": {
-                "writer": {
-                    "kvs": {
-                        "login": "tester",
-                        "password": "test",
-                        "container": "test_db"
-                    },
-                    "mysql": {
-                        "host": "localhost",
-                        "database": "event_store_test",
-                        "login": "tester",
-                        "password": "test"
-                    },
-                    "permissions": {
-                        "users": {
-                            "tester": {
-                                "write": true,
-                                "read": true,
-                                "admin": true
-                            }
-                        }
-                    }
-                }
-            },
-            "users": {
-                "tester": {
-                    "password": "test"
-                }
-            }
-        }
+
     }
 }
