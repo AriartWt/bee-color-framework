@@ -62,6 +62,20 @@ abstract class UploadHandler implements IActionHandler {
 	}
 
 	/**
+	 * Purifie le dernier élément d'un chemin en retirant tous les caractères susceptibles de poser
+	 * problème dans un nom de fichier ou de dossier
+	 *
+	 * @param string $path Chemin à purifier
+	 * @return string
+	 */
+	protected function sanitize(string $path):string{
+		$tmp = explode("/",strip_tags($path));
+		$tmp[count($tmp)-1] = (new PHPString(array_pop($tmp)))
+			->removeAccents()->stripNonAlphanum("_",".-");
+		return implode("/",$tmp);
+	}
+
+	/**
 	 * Résoud un chemin relatif en chemin absolu.
 	 * @param string $path Chemin à résoudre
 	 * @return string

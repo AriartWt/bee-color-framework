@@ -40,14 +40,16 @@ final class RenameHandler extends UploadHandler {
 				try{
 					$oldPaths = $data["oldPaths"];
 					$newPaths = $data["newPaths"];
+					$newNames = [];
 					if(count($oldPaths)===count($newPaths) && count($oldPaths) > 0){
 						for($i=0;$i<count($oldPaths);$i++){
+							$newNames[$oldPaths[$i]] = $nName = $this->sanitize($newPaths[$i]);
 							rename(
 								$this->realPath(strip_tags($oldPaths[$i])),
-								$this->realPath(strip_tags($newPaths[$i]))
+								$this->realPath($nName)
 							);
 						}
-						return new Response();
+						return new Response($newNames);
 					}else return new ErrorResponse("201","Elems to rename list doesn't match new name list !");
 				}catch(\InvalidArgumentException $e){
 					return new ErrorResponse(201,$e->getMessage());

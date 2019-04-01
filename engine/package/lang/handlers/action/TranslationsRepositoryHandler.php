@@ -8,6 +8,7 @@ use wfw\engine\core\request\IRequestData;
 use wfw\engine\core\response\IResponse;
 use wfw\engine\core\response\responses\ErrorResponse;
 use wfw\engine\core\response\responses\Response;
+use wfw\engine\core\session\ISession;
 use wfw\engine\package\lang\security\data\TranslationPathRule;
 
 /**
