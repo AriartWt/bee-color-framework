@@ -1,8 +1,255 @@
 {
 	"server" : {
-
+		"engine" : {
+			"core" : {
+				"app" : {
+					"ACTION_HANDLER_NOT_FOUND" : "ActionHandler [[$]] doesn't exists !",
+					"INTERNAL_ERROR" : "Internal error : [$]",
+					"MUST_BE_LOGGED" : "Access denied : you must be connected !",
+					"404_NOT_FOUND" : "Page '[$]' not found !"
+				}
+			}
+		}
 	},
 	"client" : {
-
+		"Default" : {},
+		"ui" : {
+			"fileExplorer" : {
+				"FOLDER_NAME" : "Directory name",
+				"CREATE_BTN" : "Create",
+				"WAITING_FOLDER_CREATION" : "Creating folder in progress, please wait...",
+				"ERR_FOLDER_CREATION" : "Can't create folder !",
+				"CANCEL" : "Cancel",
+				"WARN_MUST_CHOOSE_ONE" : "You must choose at least one element !",
+				"CONFIRM_REMOVE_SELECTED" : "Do you really want to delete all selected items ?",
+				"REMOVE_BTN" : "Delete",
+				"WAITING_REMOVE_SELECTED" : "Deleting elements in progress, please wait...",
+				"ERR_REMOVE_SELECTED" : "An error occurred while trying to remove selected items ([$])",
+				"WAITING_RENAME" : "Renaming in progress, please wait...",
+				"WAITING_MOVE" : "Moving items in progress, please wait...",
+				"ERR_RENAME_MOVE" : "Can't move or rename this element !",
+				"CREATE_FOLDER" : "Create a directory",
+				"WARN_MEDIA_TYPE_ACCEPTED" : "Only audio mp3, video mp4 and picture files are allowed !",
+				"WAITING_SEND_FILE" : "Sending file in progress, please wait...",
+				"ERR_SERVER_REFUSES_FILE" : "The server can't save your file.\nOnly pictures, mp4 and mp3 files are allowed (max 300Mo) \nIf you sent a valid file, maybe your storage space is full, please remove useless files.",
+				"ADD_FILE" : "Add a file",
+				"REMOVE_SELECTED" : "Delete selected items",
+				"LOADING" : "Loading in progress, please wait..."
+			},
+			"lteditor" : {
+				"BOLD" : "Bold",
+				"ITALIC" : "Italic",
+				"UNDERLINE" : "Underline",
+				"STRIKE_THROUGH" : "Strike through",
+				"O_LIST" : "Ordered list",
+				"U_LIST" : "List",
+				"JUSTIFY_FULL" : "Justify",
+				"JUSTIFY_LEFT" : "Left align",
+				"JUSTIFY_CENTER" : "Center",
+				"JUSTIFY_RIGHT" : "Right align",
+				"INDENT" : "Indent",
+				"OUTDENT" : "Outdent",
+				"INSERT_TITLE" : "Insert a title",
+				"TITLE_N" : "Title [$]",
+				"CLEAN" : "Remove all selection styles",
+				"LINK" : "Insert/manage a link"
+			},
+			"Notifications" : {
+				"_BUBLE_CLICK_TO_CLOSE" : "Click to close the notification"
+			}
+		},
+		"packages" : {
+			"news" : {
+				"CREATE_NEW" : "Create an article",
+				"EDIT_NEW" : "Edit an article",
+				"TITLE_NEW" : "Article title",
+				"VISUAL" : "Article illustration",
+				"EDIT" : "Edit",
+				"CREATE" : "Create",
+				"CANCEL" : "Cancel",
+				"ARCHIVE" : "Delete",
+				"WAITING_CREATE" : "Creating article in progress, please wait...",
+				"WAITING_EDIT" : "Editing article in progress, please wait...",
+				"ERR_EDIT" : "Can't edit this article !",
+				"ERR_CREATE" : "Can't create this article !",
+				"WARN_MUST_SELECT_ONE" : "You must select at least one article !",
+				"CONFIRM_ARCHIVING" : "Do you really want to delete this article ?",
+				"WAIT_ARCHIVING" : "Selected articles will be removed, please wait...",
+				"ERR_ARCHIVING" : "Can't remove selected articles !",
+				"WAIT_PUT_ONLINE" : "Selected articles will be put online, please wait...",
+				"ONLINE" : "Online",
+				"EDATE" : "Edit date",
+				"CDATE" : "Creation date",
+				"TITLE" : "Title",
+				"YES" : "Yes",
+				"NO" : "No",
+				"ERR_PUT_ONLINE" : "Can't put online selected articles !",
+				"WAIT_PUT_OFFLINE" : "Selected articles will be put offline, please wait...",
+				"ERR_PUT_OFFLINE" : "Can't put offline selected articles !",
+				"BTN_WRITE" : "Writting a new article",
+				"BTN_ARCHIVE" : "Delete selected articles",
+				"BTN_PUT_ONLINE" : "Put online selected articles",
+				"BTN_PUT_OFFLINE" : "Put offline selected articles",
+				"WAIT_LOADING_NEWS" : "Loading articles in progress, please wait...",
+				"ERR_LOADING_NEWS" : "Can't load article list !",
+				"CHOOSE_PICTURE" : "Choose a picture",
+				"CHOOSE" : "Choose",
+				"WARN_ONLY_CHOOSE_ONE" : "You can't select more than one picture !",
+				"WARN_MUST_SELECT_PICTURE" : "You must select a picture !"
+			},
+			"contact" : {
+				"EDIT_CONTACT" : "See a message",
+				"LABEL" : "Origin",
+				"READ" : "Message detail",
+				"CANCEL" : "Cancel",
+				"ARCHIVE" : "Delete",
+				"WARN_MUST_SELECT_ONE" : "You must select at least one message !",
+				"CONFIRM_ARCHIVING" : "Do you really want to delete those messages ?",
+				"WAIT_ARCHIVING" : "Selected messages will be deleted, please wait...",
+				"ERR_ARCHIVING" : "Can't remove selected messages !",
+				"WAIT_MARK_AS_READ" : "Selected messages will be marked as read, please wait...",
+				"STATE_DESC" : "State",
+				"STATE" : "Read",
+				"NOT_READ" : "Unread",
+				"CLOSE" : "Close",
+				"RDATE" : "Read",
+				"CDATE" : "Recieved",
+				"CDATE_DESC" : "Receipt date",
+				"CONTENT" : "Message",
+				"YES" : "Yes",
+				"NO" : "No",
+				"ERR_MARK_AS_READ" : "Can't mark selected messages as read !",
+				"WAIT_MARK_AS_UNREAD" : "Selected messages will be marked as read, please wait...",
+				"ERR_MARK_AS_UNREAD" : "Can't mark selected messages as unread !",
+				"BTN_ARCHIVE" : "Delete selected messages",
+				"BTN_MARK_AS_READ" : "Mark all selected messages as read",
+				"BTN_MARK_AS_UNREAD" : "Mark all selected messages as unread",
+				"WAIT_LOADING_CONTACTS" : "Loading messages list, please wait...",
+				"ERR_LOADING_CONTACTS" : "Can't load messages list !"
+			},
+			"users" : {
+				"CREATE_USER" : "Create a new user",
+				"EDIT_USER" : "Edit an user",
+				"SAFE_PWD" : "Secured",
+				"PWD_HINT" : "This password is unsecure !\nIt must contains at least 8 characters with at least : \n-one lowercase letter\n-one uppercase letter\n-one digit\n-one special character (ex: -/@'.+*$%)",
+				"WARN_PWD_NOT_MATCH" : "Passwords doesn't match !",
+				"WAIT_EDIT_MAIL" : "Changing mail address, please wait...",
+				"ERR_EDIT_MAIL" : "Can't change this user's mail address !",
+				"CLICK_TO_DISABLE" : "Click to disable this user",
+				"CLICK_TO_ENABLE" : "Click to enable this user",
+				"CLICK_TO_CANCEL_MAIL" : "Click to discard this user mail update request",
+				"CLICK_TO_CANCEL_PWD" : "Click to discard this user password recovery process",
+				"CLICK_TO_CANCEL_REGISTRATION" : "Click to discard this user mail confirmation (will assign a disabled state)",
+				"WAIT_EDIT_USER_STATE" : "Changing user state, please wait...",
+				"USER_NAME" : "Login",
+				"ROLE" : "Role",
+				"EMAIL" : "Mail",
+				"STATE" : "State",
+				"ERR_EDIT_USER_STATE" : "Can't change user's state !",
+				"WAIT_PWD_RESET" : "Resetting user password, please wait...",
+				"ERR_PWD_RESET" : "Can't reset user password !",
+				"BTN_RESET_PWD" : "Reset user password",
+				"PWD" : "Password",
+				"PWD_CONFIRM" : "Password confirmation",
+				"RESET" : "Reset",
+				"CANCEL" : "Cancel",
+				"ADMIN" : "Administrator",
+				"CLIENT" : "Client",
+				"CREATE" : "Create",
+				"WAIT_CREATE_USER" : "Creating user, please wait...",
+				"ERR_CREATE_USER" : "Can't create a new user !",
+				"WARN_MUST_SELECT_ONE" : "You must select at least one user !",
+				"WAIT_ENABLE_USERS" : "Selected users will be enabled, please wait...",
+				"ERR_ENABLE_USERS" : "Can't enable selected users !",
+				"WAIT_DISABLE_USERS" : "Selected users will be disabled, please wait...",
+				"ERR_DISABLE_USERS" : "Can't disable selected users !",
+				"CONFIRM_REMOVE_USERS" : "Do you really want to delete selected users ?",
+				"REMOVE" : "Delete",
+				"WAIT_REMOVE_USERS" : "Selected users will be deleted, please wait...",
+				"ERR_REMOVE_USERS" : "Can't delete selected users !",
+				"BTN_CREATE" : "Create a new user",
+				"BTN_REMOVE" : "Delete selected users",
+				"BTN_ENABLE" : "Enable selected users",
+				"BTN_DISABLE" : "Disable selected users",
+				"WAIT_LOADING_USERS" : "Loading user list, please wait...",
+				"ERR_LOADING_USERS" : "Can't load user list !",
+				"EMPLOYEE" : "Employee",
+				"ENABLED" : "Enabled",
+				"DISABLED" : "Disabled",
+				"WAITING_MAIL" : "&#9203; mail confirmation",
+				"PWD_RESET" : "Reset password",
+				"WAITING_REGISTRATION" : "&#9203; registering confirmation"
+			}
+		},
+		"plugins" : {
+			"adminPanel" : {
+				"default" : {
+					"USER_PANEL_TITLE" : "User management",
+					"USER_PANEL_HINT" : "Manage your users",
+					"NEWS_PANEL_TITLE" : "Articles management",
+					"NEWS_PANEL_HINT" : "Manage your articles",
+					"CONTACT_PANEL_TITLE" : "Message management",
+					"CONTACT_PANEL_HINT" : "Manage your messages",
+					"LOGOUT" : "Logout",
+					"CONFIRM_LOGOUT" : "Do you really want to logout ?",
+					"YES" : "Yes",
+					"NO" : "No"
+				}
+			},
+			"lteditor" : {
+				"advancedLink" : {
+					"DESCRIPTION" : "Insert/manage a link",
+					"LINK_DESC" : "Link description",
+					"LINK_ADDR" : "Link url",
+					"OPEN_NEW_TAB" : "Open in a new tab",
+					"EDIT" : "Edit",
+					"CREATE" : "Create",
+					"CANCEL" : "Cancel",
+					"REMOVE" : "Delete",
+					"WARN_LINK_REQUIRED" : "Url required !",
+					"WARN_DESC_REQUIRED" : "Link description required !"
+				},
+				"limitedForeColor" : {
+					"WRITING_COLOR" : "Text color",
+					"DEFAULT_COLOR" : "Default color"
+				},
+				"medias" : {
+					"DESCRIPTION" : "Import/manage a media",
+					"CHOOSE_MEDIA_TO_IMPORT" : "Choose a media to import",
+					"CHOOSE_MEDIA" : "Choose media",
+					"CHOOSE" : "Choose",
+					"EDIT" : "Edit",
+					"CREATE" : "Create",
+					"CANCEL" : "Cancel",
+					"LAYOUT" : "Layout",
+					"WARN_ONLY_ONE_ALLOWED" : "You can't import more than one media !",
+					"WARN_MUST_CHOOSE_ONE" : "You must choose a file !",
+					"WARN_MUST_SELECT_MEDIA" : "You must choose a media !"
+				}
+			},
+			"miel" : {
+				"default" : {
+					"ERROR" : "Can't save your data. </br>Please check you're logged !",
+					"SAVE_DONE" : "Changes successfully saved !"
+				},
+				"medias" : {
+					"SAVE" : "Save",
+					"CANCEL" : "Cancel",
+					"MANAGE" : "Media management",
+					"WAIT_UPDATE" : "Saving change, please wait...</br>(Once saved, this page will be automatically refreshed)",
+					"ERROR" : "Can't edit media list !",
+					"BTN_ADD" : "Add one or more media",
+					"BTN_REMOVE" : "Delete",
+					"CHOOSE" : "Choose",
+					"CHOOSE_MEDIAS" : "Media list",
+					"WARN_MUST_SELECT_MEDIA" : "You must select at least one media !\n(Allowed medias : [$])",
+					"IMAGE" : "Pictures",
+					"VIDEO" : "Videos",
+					"AUDIO" : "Audios",
+					"CONFIRM_REMOVE" : "Do you really want to remove selected medias ?",
+					"WARN_MUST_SELECT_ONE" : "You must select at least one item !"
+				}
+			}
+		}
 	}
 }

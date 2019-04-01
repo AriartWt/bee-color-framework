@@ -193,7 +193,7 @@ wfw.define("ui/fileExplorer",function($params){
 						wfw.network.wfwAPI($create.url,{
 							type : "POST",
 							postData : {[$create.paramName.paths+'[]']:$displayed+'/'+$input.value},
-							"000":()=>{$l.remove();$load($displayed);$explorer.removeChild($win);},
+							"001":()=>{$l.remove();$load($displayed);$explorer.removeChild($win);},
 							error : ($res)=>{
 								$l.remove();alert($lstr("ERR_FOLDER_CREATION")+"\n"+$res);}
 						});
@@ -253,7 +253,7 @@ wfw.define("ui/fileExplorer",function($params){
 					return $dest+((!$isRename)?"/"+$e.split('/').pop():'');
 				})
 			},
-			"000" : () => {$loader.remove(); $load($displayed);},
+			"001" : () => {$loader.remove(); $load($displayed);},
 			error : ($res)=>{
 				$loader.remove();
 				if(typeof $errorCallBack === "function") $errorCallBack($res);
@@ -309,7 +309,7 @@ wfw.define("ui/fileExplorer",function($params){
 								"001" : ($name)=>{
 									$loader.remove();
 									let $d = $getData($displayed); let $f={
-										name : $files.files[0].name.split('/').pop(),
+										name : $name.split('/').pop(),
 										mime : $files.files[0].type,
 										ctime : Date.now(), mtime : Date.now(),
 										size : $files.files[0].size, type : "file",

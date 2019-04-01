@@ -36,8 +36,10 @@ interface IRouter {
 
 	/**
 	 * Connecte deux URL.
+	 *
 	 * @param string $redir URL à connecter
 	 * @param string $url   URL de connexion
+	 * @param array  $params (optionnal) connection params (depends oo the implementation)
 	 */
-	public function addConnection(string $redir, string $url):void;
+	public function addConnection(string $redir, string $url,array $params=[]):void;
 }

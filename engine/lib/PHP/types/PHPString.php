@@ -210,10 +210,11 @@ class PHPString {
 
 	/**
 	 * @param string $sub Substitution for all non-alphanum chars
+	 * @param string $except
 	 * @return PHPString
 	 */
-	public function stripNonAlphanum(string $sub="_"):PHPString{
-		return new static(preg_replace('/[^a-z0-9]+/i', $sub,$this->_str));
+	public function stripNonAlphanum(string $sub="_",string $except=""):PHPString{
+		return new static(preg_replace('/[^a-z0-9'.$except.']+/i', $sub,$this->_str));
 	}
 
 	/**

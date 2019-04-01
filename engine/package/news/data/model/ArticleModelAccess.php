@@ -76,7 +76,7 @@ final class ArticleModelAccess implements IArticleModelAccess {
 	public function getArticleToDisplayInPublic(IArraySorter $sort, ISpecification $spec = null): array {
 		return $this->_db->query(
 			ArticleModel::class,
-			"$sort:".($spec ? "$spec:" : "")."(online & notArchived)"
+			"$sort:(".($spec ? "$spec & " : "")."online & notArchived)"
 		);
 	}
 

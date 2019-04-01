@@ -39,8 +39,12 @@ final class CreatePathHandler extends UploadHandler {
 			if($res->satisfied()){
 				$paths = $data["paths"];
 				try{
-					foreach($paths as $path){mkdir($this->realPath(strip_tags($path)));}
-					return new Response();
+					$newPaths = [];
+					foreach($paths as $path){
+						$newPaths[$path] = $nName = $this->sanitize($path);
+						mkdir($this->realPath($nName));
+					}
+					return new Response($newPaths);
 				}catch(\InvalidArgumentException $e){
 					return new ErrorResponse(201,$e->getMessage());
 				}catch(\Exception $e){

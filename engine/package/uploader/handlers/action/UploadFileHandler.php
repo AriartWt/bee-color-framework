@@ -9,6 +9,7 @@ use wfw\engine\core\response\IResponse;
 use wfw\engine\core\response\responses\ErrorResponse;
 use wfw\engine\core\response\responses\Response;
 use wfw\engine\lib\PHP\types\Byte;
+use wfw\engine\lib\PHP\types\PHPString;
 use wfw\engine\package\uploader\security\data\UploadFileRule;
 
 /**
@@ -52,11 +53,12 @@ final class UploadFileHandler extends UploadHandler {
 					);
 				}
 				try{
-					$name = $this->realPath(strip_tags($data["name"]));
+					$fname = $this->sanitize($data["name"]);
+					$name = $this->realPath($fname);
 					if(!is_dir(dirname($name)))
 						throw new \InvalidArgumentException("Unknown folder $name");
 					move_uploaded_file($data["file"]["tmp_name"],$name);
-					return new Response($this->getUploadFolderName().strip_tags($data["name"]));
+					return new Response($this->getUploadFolderName().$fname);
 				}catch (\InvalidArgumentException $e){
 					return new ErrorResponse(201,$e->getMessage());
 				}

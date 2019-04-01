@@ -1,6 +1,5 @@
 wfw.require("api/dom/nodeHelper");
 wfw.define("ui/loaders/eclipse",function($message, $doc){
-	console.log($doc);
 	let $style; let $span; $doc = $doc || document;
 	let $loader = wfw.dom.appendTo(wfw.dom.create("div",{className:"eclipse-loader"}),
 		wfw.dom.create("div",{className:"loader"}),
