@@ -33,10 +33,10 @@ final class HTMLPurifierBasedSanitizer implements IHTMLSanitizer {
 		$config->set('HTML.SafeIframe', true);
 		$config->set('URI.SafeIframeRegexp', '%^(http:|https:)?//(www.youtube(?:-nocookie)?.com/embed/|player.vimeo.com/video/)%');
 
-		$config->set('HTML.AllowedElements', 'a,i,u,p,div,span,font,b,strike,ul,ol,video,audio,h1,h2,h3,br,img,li,source');
+		$config->set('HTML.AllowedElements', 'a,i,u,p,div,span,font,b,strike,ul,ol,video,audio,h1,h2,h3,br,img,li,source,blockquote');
 		$config->set('HTML.AllowedAttributes','a.target,a.href,*.class,*.style,*.id,img.src,img.style,font.color,'
 			.'video.src,video.controls,video.muted,video.type,video.autoplay,video.loop,video.preload,video.poster,video.style,'
-			.'audio.src,audio.controls,audio.type,audio.autoplay,audio.loop,audio.preload,source.src,source.type');
+			.'audio.src,audio.controls,audio.type,audio.autoplay,audio.loop,audio.preload,source.src,source.type,blockquote.style');
 		// Set some HTML5 properties
 		$config->set('HTML.DefinitionID', 'html5-definitions'); // unqiue id
 		$config->set('HTML.DefinitionRev', 1);
