@@ -4,5 +4,8 @@
 	"daemons" : [
 		"kvs",
 		"msserver"
-	]
+	],
+	"logs" : {
+		"level" : 2
+	}
 }
