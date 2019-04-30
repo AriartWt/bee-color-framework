@@ -8,6 +8,8 @@ use wfw\engine\lib\cli\argv\ArgvOptMap;
 use wfw\engine\lib\cli\argv\ArgvParser;
 use wfw\engine\lib\cli\argv\ArgvReader;
 use wfw\engine\lib\cli\signalHandler\PCNTLSignalsHelper;
+use wfw\engine\lib\logger\DefaultLogFormater;
+use wfw\engine\lib\logger\FileLogger;
 
 require_once dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR."init.environment.php";
 
@@ -35,7 +37,7 @@ try{
 		echo getmypid().PHP_EOL;
 
 	$sctlServer = new SCTLServer(
-		new SCTLConf(
+		$conf = new SCTLConf(
 			ENGINE."/config/conf.json",
 			SITE."/config/conf.json",
 			DAEMONS,
@@ -43,7 +45,16 @@ try{
 			$argvReader->exists('-path') ? $argvReader->get('-path')[0] : null,
 			...($argvReader->exists('-daemons') ? $argvReader->get('-daemons') : [])
 		),
-		new DefaultProtocol()
+		new DefaultProtocol(),
+		(new FileLogger(new DefaultLogFormater(),
+				$conf->getLogFile("log"),
+				$conf->getLogFile("err"),
+				$conf->getLogFile("warn"),
+				$conf->getLogFile("debug")
+		))->autoConfFileByLevel(
+			FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
+			FileLogger::DEBUG,true
+		)->autoConfByLevel($conf->getLogLevel())
 	);
 
 	//On prépare les handlers de signaux
