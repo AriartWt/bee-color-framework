@@ -33,6 +33,7 @@ final class MSServerPool {
 	private $_instancesPath;
 	/** @var ILogger $_logger */
 	private $_logger;
+	private $_aliveCheckerPID;
 
 	/**
 	 * MSServerPool constructor.
@@ -43,6 +44,7 @@ final class MSServerPool {
 	 * @param int[]           &$pids          Liste des pids des MSServer à gérer
 	 * @param string[]        $instancesPaths Liste des instances sous la forme $name => $socketPath
 	 * @param ILogger         $logger         Logger
+	 * @param callable        $restartInstance Function that allow to restart an instance.
 	 * @throws IllegalInvocation
 	 */
 	public function __construct(
@@ -51,7 +53,8 @@ final class MSServerPool {
 		ISocketProtocol $protocol,
 		array &$pids,
 		array $instancesPaths,
-		ILogger $logger
+		ILogger $logger,
+		callable $restartInstance
 	){
 		$this->_instancesPath = $instancesPaths;
 		$this->_logger = $logger;
@@ -81,6 +84,44 @@ final class MSServerPool {
 
 		if($res) throw new IllegalInvocation("A MSServerPool instance is already running for this directory !");
 		else file_put_contents("$workingDir/msserver.pid",getmypid());
+
+		$pid = pcntl_fork();
+		if($pid < 0) $this->_logger->log(
+			"[MSServerPool] Unable to fork to create AliveChecker : maybe insufficient ressources or max process limit reached.",
+			ILogger::ERR
+		);
+		else if($pid === 0){
+			$checkInterval = 60; $firstCheck = 60;
+			$this->_logger->log(
+				"[MSServerPool] [AliveChecker] Started (pid : ".getmypid()
+				."). First check in $firstCheck sec. Check interval : $checkInterval sec",
+				ILogger::LOG
+			);
+			sleep($firstCheck);
+			while(true){
+				foreach($this->_pids as $pid=>$instance){
+					$out=[];
+					exec("ps -p $pid > /dev/null && echo active || echo inactive",$out);
+					if(array_pop($out) === "inactive"){
+						$this->_logger->log(
+							"[MSServerPool] [AliveChecker] $instance is not running. Trying to restart...",
+							ILogger::ERR
+						);
+						$res = $restartInstance($instance,$pid);
+						if($res) exit(0);
+						else if(is_null($res)) $this->_logger->log(
+							"[MSServerPool] [AliveChecker] Unable to restart instance $instance.",
+							ILogger::ERR
+						);
+						else $this->_logger->log(
+							"[MSServerPool] [AliveChecker] Instance $instance successfully restarted",
+							ILogger::ERR
+						);
+					}
+				}
+				sleep($checkInterval);
+			}
+		}else $this->_aliveCheckerPID = $pid;
 	}
 
 	public function start():void{
@@ -173,7 +214,8 @@ final class MSServerPool {
 		if(file_exists($this->_workingDir."/msserver.pid"))
 			unlink($this->_workingDir."/msserver.pid");
 
-		foreach($this->_pids as $pid){
+		posix_kill($this->_aliveCheckerPID,PCNTLSignalsHelper::SIGKILL);
+		foreach($this->_pids as $pid=>$instance){
 			posix_kill($pid,PCNTLSignalsHelper::SIGALRM);
 		}
 		$this->_logger->log("Gracefull shutdown.",ILogger::LOG);

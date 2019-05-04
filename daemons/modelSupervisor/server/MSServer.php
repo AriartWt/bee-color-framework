@@ -146,9 +146,13 @@ final class MSServer {
 			$this->_protocol = $protocol;
 			$this->_components = [];
 			$this->_queries = [];
-
+			$this->_logger->log("[MSServer] Launching components...",ILogger::LOG);
 			//On initialise et on démarre chaque composant.
 			foreach($this->_environment->getComponents() as $k=>$component){
+				$this->_logger->log(
+					"[MSServer] Init and start ".$component->getName()."...",
+					ILogger::LOG
+				);
 				$component->init(
 					$this->_socketAddr,
 					$this->_serverKey,
@@ -158,6 +162,9 @@ final class MSServer {
 					$logger
 				);
 				$component->start();
+				$this->_logger->log(
+					"[MSServer] ".$component->getName()." started.",ILogger::LOG
+				);
 			}
 		}
 	}
@@ -166,6 +173,10 @@ final class MSServer {
 	 *  Démarre le serveur
 	 */
 	public function start():void{
+		$this->_logger->log(
+			"[MSServer] Server started (pid : ".getmypid().").",
+			ILogger::LOG
+		);
 		while(true){
 			$socket = socket_accept($this->_socket);
 			$this->configureSocket($socket);
@@ -178,6 +189,7 @@ final class MSServer {
 	 * @param resource $socket Socket connectée
 	 */
 	public function process($socket){
+		$this->_logger->log("[MSServer] New incoming connection.",ILogger::LOG);
 		try{
 			$data = $this->read($socket);
 			if(strlen($data)===0){
@@ -205,14 +217,6 @@ final class MSServer {
 			$errorCode = socket_last_error($socket);
 			socket_clear_error($socket);
 
-			$this->errorLog(print_r([
-				"socket_last_error" => [
-					"code" => $errorCode,
-					"message" =>socket_strerror($errorCode)
-				],
-				"error" => (string)$e
-			],true));
-
 			if($errorCode === 0){
 				if(!($e instanceof MSServerDataParsingFailure)){
 					//l'erreur ne provient pas de la déserialisation
@@ -220,21 +224,23 @@ final class MSServer {
 						$this->tryWrite($socket,new RequestError($e));
 					}
 					socket_close($socket);
+					$this->_logger->log("[MSServer] Request error sent to client : $e",ILogger::WARN);
 					if($this->_shutdownOnError){
 						$this->shutdown($e);
 					}
 				}else{
+					$this->_logger->log("[MSServer] Invalid request recieved : $e",ILogger::WARN);
 					$this->tryWrite($socket,new InvalidRequestError($e));
 					socket_close($socket);
 				}
 			}else{
-				$this->errorLog(print_r([
+				$this->_logger->log("[MSServer] Request error : ".print_r([
 					"socket_last_error" => [
 						"code" => $errorCode,
 						"message" =>socket_strerror($errorCode)
 					],
 					"error" => (string)$e
-				],true));
+				],true), ILogger::ERR);
 			}
 		}
 	}
@@ -282,12 +288,23 @@ final class MSServer {
 		}else if($parsed->instanceOf(IMSServerComponentResponse::class)){
 			//On sait qu'on peut clore la connexion immédiatement.
 			socket_close($socket);
+			$this->_logger->log(
+				"[MSServer] Component response recieved. Trying to send it to the matching client...",
+				ILogger::LOG
+			);
 			if(isset($this->_queries[$parsed->getQueryId()])){
 				$query = $this->_queries[$parsed->getQueryId()];
 				$query->getIO()->write($parsed->getData());
 				$query->getIO()->closeConnection();
 				unset($this->_queries[$parsed->getQueryId()]);
-			}
+				$this->_logger->log(
+					"[MSServer] Component response successfully sent to client.",
+					ILogger::LOG
+				);
+			}else $this->_logger->log(
+				"[MSServer] Client response abort : no client waiting for this response anymore.",
+				ILogger::WARN
+			);
 			return null;
 		}else if(!is_null($sessId) && $this->_environment->existsUserSession($sessId)){
 			$session = $this->_environment->getUserSession($sessId);
@@ -312,6 +329,10 @@ final class MSServer {
 						"Access denied : you have not enough permissions to perform this action."
 					));
 				}else{
+					$this->_logger->log(
+						"[MSServer] Trying to find one or more components listening for this request...",
+						ILogger::LOG
+					);
 					$query = new MSServerQuery(
 						new MSServerSocketIO($this->_protocol,$socket),
 						new MSServerInternalRequest(
@@ -327,8 +348,11 @@ final class MSServer {
 					$hits = $this->_requestHandlerManager->dispatch($query);
 
 					if($hits === 0){
-						throw new NoHandlerForRequest("No request handler trigerred this request !");
-					}
+						throw new NoHandlerForRequest("No request handler trigered this request !");
+					}else $this->_logger->log(
+						"Request successfully sent to one or more components",
+						ILogger::LOG
+					);
 					return null;
 				}
 			}
@@ -384,14 +408,13 @@ final class MSServer {
 			return 0;
 		}catch(\Exception $e){
 			$errorCode = socket_last_error();
-			$this->errorLog(print_r([
-				"date" => date('l j F Y, H:i:s'),
+			$this->_logger->log("[MSServer] Unable to write in socket : ".print_r([
 				"socket_last_error" => [
 					"code" => $errorCode,
 					"message" =>socket_strerror($errorCode)
 				],
 				"error" => (string)$e
-			],true));
+			],true), ILogger::ERR);
 			socket_clear_error();
 			return $errorCode;
 		}
@@ -421,18 +444,15 @@ final class MSServer {
 			unlink($this->_environment->getWorkingDir()."/msserver.pid");
 
 		if(is_null($e) || $e instanceof ExternalShutdown){
+			$this->_logger->log("[MSServer] Gracefull shutdown.",ILogger::LOG);
 			exit(0);
 		}else{
-			$this->errorLog((string)$e);
+			$this->_logger->log(
+				"[MSServer] A fatal error occured, forcing the server to stop : $e",
+				ILogger::ERR
+			);
 			exit(1);
 		}
-	}
-
-	/**
-	 * @param string $log Log to write
-	 */
-	private function errorLog(string $log){
-		error_log($log.PHP_EOL,3,$this->_errorLogsFile);
 	}
 
 	/**

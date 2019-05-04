@@ -138,7 +138,7 @@ final class SCTLServer implements ISCTLServer {
 					]);
 				}catch(\Exception $err){
 					$this->_logger->log(
-						"An unexpected error occured while trying to send error to client : $e".PHP_EOL.$err.PHP_EOL,
+						"An unexpected error occured while trying to send error to client : $e".PHP_EOL.$err,
 						ILogger::ERR
 					);
 				}

@@ -29,8 +29,7 @@ $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 ])),$argv);
 
 try{
-	if($argvReader->exists('-pid'))
-		fwrite(STDOUT,getmypid().PHP_EOL);
+	if($argvReader->exists('-pid')) fwrite(STDOUT,getmypid().PHP_EOL);
 
 	//On récupère les configurations.
 	$confs = new MSServerPoolConfs(
@@ -39,8 +38,10 @@ try{
 	);
 
 	$pids = [];
-
-	foreach($confs->getInstances() as $name){
+	//if can't fork : return null
+	//if fork child : true
+	//if fork parent : false
+	$startInstance = function(string $name, ?string $oldPID=null) use (&$pids,$confs) : ?bool{
 		$pid = pcntl_fork();
 		if($pid === 0 ){
 			cli_set_process_title("WFW MSServer $name instance");
@@ -85,27 +86,38 @@ try{
 
 			$pcntlHelper = new PCNTLSignalsHelper(true);
 			$pcntlHelper->handleAll([
-					PCNTLSignalsHelper::SIGINT,
-					PCNTLSignalsHelper::SIGHUP,
-					PCNTLSignalsHelper::SIGTERM,
-					PCNTLSignalsHelper::SIGUSR1,
-					PCNTLSignalsHelper::SIGUSR2,
-					PCNTLSignalsHelper::SIGALRM //socket_accept workaround
-				],function($signo)use($server){
+				                        PCNTLSignalsHelper::SIGINT,
+				                        PCNTLSignalsHelper::SIGHUP,
+				                        PCNTLSignalsHelper::SIGTERM,
+				                        PCNTLSignalsHelper::SIGUSR1,
+				                        PCNTLSignalsHelper::SIGUSR2,
+				                        PCNTLSignalsHelper::SIGALRM //socket_accept workaround
+			                        ],function($signo)use($server){
 				$server->shutdown(
 					new ExternalShutdown("PCNTL signal $signo recieved. Server shutdown gracefully.")
 				);
 			});
 
 			$server->start();
-			//If something goes wrong, break the loop for not spawning some out of controls army
-			//of machiavellian childs
-			break;
+			return true;
 		}else if($pid < 0 ){
-			throw new Exception("Unable to fork, maybe insufficient ressources or max process limit reached.");
+			$confs->getLogger()->log(
+				"[MSServerPool] Unable to fork to create instance '$name', maybe insufficient ressources or max process limit reached.",
+				ILogger::ERR
+			);
+			return null;
+		}else{
+			if(!is_null($oldPID) && isset($pids[$oldPID])) unset($pids[$oldPID]);
+			$pids[$pid]=$name;
+			return false;
 		}
-		else $pids[]=$pid;
+	};
+
+	foreach($confs->getInstances() as $name){
+		$res = $startInstance($name);
+		if($res) break;
 	}
+
 	if(count($pids) > 0 || count($confs->getInstances()) === 0){
 		cli_set_process_title("WFW MSServer pool");
 		$poolServer = new MSServerPool(
@@ -120,7 +132,8 @@ try{
 					$confs->getInstances()
 				)
 			),
-			$confs->getLogger()
+			$confs->getLogger(),
+			$startInstance
 		);
 
 		$pcntlHelper = new PCNTLSignalsHelper(true);
