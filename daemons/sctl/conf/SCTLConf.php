@@ -92,7 +92,7 @@ final class SCTLConf {
 	 * @return int
 	 */
 	public function getLogLevel():int{
-		return $this->_conf->getInt("logs/level");
+		return $this->_conf->getInt("logs/level") ?? ILogger::ERR;
 	}
 
 	/**

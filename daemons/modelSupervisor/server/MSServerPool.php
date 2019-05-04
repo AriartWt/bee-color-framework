@@ -2,6 +2,7 @@
 namespace wfw\daemons\modelSupervisor\server;
 
 use wfw\engine\lib\cli\signalHandler\PCNTLSignalsHelper;
+use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
 use wfw\engine\lib\PHP\errors\IllegalInvocation;
 
@@ -30,8 +31,8 @@ final class MSServerPool {
 	private $_pids;
 	/** @var string[] $_instancesPath */
 	private $_instancesPath;
-	/** @var string $_errorLogs */
-	private $_errorLogs;
+	/** @var ILogger $_logger */
+	private $_logger;
 
 	/**
 	 * MSServerPool constructor.
@@ -39,20 +40,21 @@ final class MSServerPool {
 	 * @param string          $socketPath     Chemin vers la socket du serveur courant
 	 * @param string          $workingDir     Chemin vers le dossier de travail du pool de serveurs
 	 * @param ISocketProtocol $protocol       Protocole de communication à utiliser
-	 * @param int[]           $pids           Liste des pids des MSServer à gérer
+	 * @param int[]           &$pids          Liste des pids des MSServer à gérer
 	 * @param string[]        $instancesPaths Liste des instances sous la forme $name => $socketPath
-	 * @param string          $errorLogPath   Chemin d'accés au fichier de log d'erreurs
+	 * @param ILogger         $logger         Logger
+	 * @throws IllegalInvocation
 	 */
 	public function __construct(
 		string $socketPath,
 		string $workingDir,
 		ISocketProtocol $protocol,
-		array $pids,
+		array &$pids,
 		array $instancesPaths,
-		string $errorLogPath
+		ILogger $logger
 	){
 		$this->_instancesPath = $instancesPaths;
-		$this->_errorLogs = $errorLogPath;
+		$this->_logger = $logger;
 		$this->_workingDir = $workingDir;
 		$this->_socketAddr = $socketPath;
 		$this->_protocol = $protocol;
@@ -82,6 +84,7 @@ final class MSServerPool {
 	}
 
 	public function start():void{
+		$this->_logger->log("ServerPool started (pid : ".getmypid().").",ILogger::LOG);
 		while(true){
 		   try{
 			   $socket = socket_accept($this->_socket);
@@ -106,23 +109,24 @@ final class MSServerPool {
 	 * @param resource $socket Socket emettrice d'une requête
 	 */
 	private function process($socket){
+		$this->_logger->log("New incoming connection.",ILogger::LOG);
 		try{
 			$data = $this->read($socket);
 			if(isset($this->_instancesPath[$data])){
 				$this->write($socket,$this->_instancesPath[$data]);
 			}else $this->write($socket,'');
 			socket_close($socket);
+			$this->_logger->log("Response successfully sent.",ILogger::LOG);
 		}catch(\Exception $e){
 			$errorCode = socket_last_error($socket);
 			socket_clear_error($socket);
-
-			$this->errorLog(print_r([
+			$this->_logger->log("Can't send response to client : ".print_r([
 				"socket_last_error" => [
 					"code" => $errorCode,
 					"message" =>socket_strerror($errorCode)
 				],
 				"error" => (string)$e
-			],true));
+			],true),ILogger::ERR);
 		}
 	}
 
@@ -172,13 +176,6 @@ final class MSServerPool {
 		foreach($this->_pids as $pid){
 			posix_kill($pid,PCNTLSignalsHelper::SIGALRM);
 		}
-	}
-
-	/**
-	 * Ecrit un message dans le fichier d'erreurs
-	 * @param string $message Message à ecrire
-	 */
-	private function errorLog(string $message):void{
-		error_log("$message\n",3,$this->_errorLogs);
+		$this->_logger->log("Gracefull shutdown.",ILogger::LOG);
 	}
 }

@@ -6,6 +6,9 @@ use wfw\daemons\kvstore\server\conf\KVSConfs;
 use wfw\daemons\modelSupervisor\server\IMSServerPoolConf;
 use wfw\engine\core\conf\FileBasedConf;
 use wfw\engine\core\conf\io\adapters\JSONConfIOAdapter;
+use wfw\engine\lib\logger\DefaultLogFormater;
+use wfw\engine\lib\logger\FileLogger;
+use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\PHP\objects\StdClassOperator;
 use wfw\engine\lib\PHP\types\PHPString;
 
@@ -17,7 +20,7 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 	private const WORKING_DIR = "working_dir";
 	private const SOCKET_PATH = "socket_path";
 	private const REQUEST_TTL = "request_ttl";
-	private const ERROR_LOGS = "error_logs";
+	private const LOGS = "logs/files";
 	private const KVS_ADDR = "kvs/addr";
 
 	/** @var FileBasedConf $_conf */
@@ -28,6 +31,8 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 	private $_kvsAddr;
 	/** @var StdClassOperator[] $_instancesConfs */
 	private $_instancesConfs = [];
+	private $_logger;
+	private $_instanceLoggers=[];
 
 	/**
 	 * KVSConfs constructor.
@@ -64,6 +69,15 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 		}
 
 		$this->_conf = new FileBasedConf($confPath,$confIO);
+		$this->_logger = (new FileLogger(new DefaultLogFormater(),...[
+			$this->getLogPath(null,$this->_conf->getString(self::LOGS."/log")),
+			$this->getLogPath(null,$this->_conf->getString(self::LOGS."/err")),
+			$this->getLogPath(null,$this->_conf->getString(self::LOGS."/warn")),
+			$this->getLogPath(null,$this->_conf->getString(self::LOGS."/debug"))
+		]))->autoConfFileByLevel(
+			FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
+			FileLogger::DEBUG,true
+		)->autoConfByLevel($this->_conf->getInt("logs/level") ?? ILogger::ERR);
 
 		//On détermine les configurations de chaque instance à créer
 		$this->_instancesConfs = [];
@@ -73,6 +87,15 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 			$tmp->mergeStdClass($defInstance);
 			$tmp->mergeStdClass($instanceConf);
 			$this->_instancesConfs[$instanceName] = $tmp;
+			$this->_instanceLoggers[$instanceName] = (new FileLogger(new DefaultLogFormater(),...[
+				$this->getLogPath($instanceName,$this->_conf->getString("instances/$instanceName/".self::LOGS."/log")),
+				$this->getLogPath($instanceName,$this->_conf->getString("instances/$instanceName/".self::LOGS."/err")),
+				$this->getLogPath($instanceName,$this->_conf->getString("instances/$instanceName/".self::LOGS."/warn")),
+				$this->getLogPath($instanceName,$this->_conf->getString("instances/$instanceName/".self::LOGS."/debug"))
+			]))->autoConfFileByLevel(
+				FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
+				FileLogger::DEBUG,true
+			)->autoConfByLevel($this->_conf->getInt("instances/$instanceName/logs/level") ?? ILogger::ERR);
 		}
 	}
 
@@ -260,11 +283,15 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 
 	/**
 	 * @param null|string $instance Instance concernée
+	 * @param string      $level
 	 * @return string
 	 */
-	public function getErrorLogsPath(?string $instance=null):string{
+	private function getLogPath(?string $instance=null,string $level="err"):string{
 		$errorPath = new PHPString(
-			$this->resolvePath($this->_conf->getString(self::ERROR_LOGS)??"error_logs.txt")
+			$this->resolvePath(
+				$this->_conf->getString(self::LOGS."/$level")
+				?? "msserver-$level.log"
+			)
 		);
 		if(!$errorPath->startBy("/")){
 			return $this->getWorkingDir($instance).DS.$errorPath;
@@ -371,5 +398,15 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 	 */
 	public function getInstances():array{
 		return array_keys($this->_instancesConfs);
+	}
+
+	/**
+	 * @param null|string $instance
+	 * @return ILogger
+	 */
+	public function getLogger(?string $instance=null): ILogger {
+		if($instance && !isset($this->_instancesConfs[$instance]))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return (!is_null($instance) ? $this->_logger : $this->_instanceLoggers[$instance]);
 	}
 }

@@ -1,6 +1,9 @@
 {
     "working_dir": "modelSupervisor\/data",
     "socket_path": "ModelSupervisor.socket",
+    "logs" : {
+        "level" : 2
+    },
     "default_instance": {
         "initializers_path": "{ROOT}\/daemons\/modelSupervisor\/server\/config\/initializers.components.php",
         "components": {
@@ -27,6 +30,9 @@
         "session_ttl": 900,
         "shutdown_on_error": false,
         "send_error_to_client": true,
+        "logs" : {
+            "level" : 2
+        },
         "error_logs": "error_logs.txt"
     },
     "instances": {

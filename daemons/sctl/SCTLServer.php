@@ -62,7 +62,8 @@ final class SCTLServer implements ISCTLServer {
 			if($pid === 0){
 				//Sometimes, a daemon fails or is killed by another programm.
 				$firstCheck = 1800; $checkInterval = 60;
-				$logger->log("[SCTL-AliveChecker] Started. First check will occurs in $firstCheck sec.");
+				cli_set_process_title("WFW SCTL AliveChecker");
+				$logger->log("[SCTL-AliveChecker] Started (pid : ".getmypid()."). First check will occurs in $firstCheck sec.");
 				sleep($firstCheck);
 				$logger->log("[SCTL-AliveChecker] Ready to check every $checkInterval sec.");
 				while(true){
@@ -80,6 +81,7 @@ final class SCTLServer implements ISCTLServer {
 					sleep($checkInterval);
 				}
 			}else if($pid > 0){
+				cli_set_process_title("WFW SCTL server");
 				$this->_aliveCheckerPID = $pid;
 				$this->_protocol = $protocol;
 				$this->_pwd = new UUID(UUID::V4);
@@ -98,7 +100,10 @@ final class SCTLServer implements ISCTLServer {
 				socket_bind($this->_socket,$socketPath);
 				$this->exec("chmod 0666 \"$socketPath\"");
 				socket_listen($this->_socket);
-			}else $logger->log("Error : Unable to fork. Maybe max process limit problem ?",ILogger::ERR);
+			}else $logger->log(
+				"Error : Unable to fork. Maybe insufficient ressources or max process limit reached.",
+				ILogger::ERR
+			);
 		}
 	}
 
@@ -114,7 +119,7 @@ final class SCTLServer implements ISCTLServer {
 	}
 
 	public function start(): void {
-		$this->_logger->log("Server started.",ILogger::LOG);
+		$this->_logger->log("Server started (pid : ".getmypid().").",ILogger::LOG);
 		while(true){
 			$socket = socket_accept($this->_socket);
 			$this->_logger->log("New incomming connection accepted.",ILogger::LOG);

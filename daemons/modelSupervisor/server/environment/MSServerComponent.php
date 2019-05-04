@@ -5,6 +5,7 @@ use wfw\daemons\modelSupervisor\server\components\IMSServerComponentsInitializer
 use wfw\daemons\modelSupervisor\server\requestHandler\IMSServerRequestHandlerManager;
 
 use wfw\engine\lib\data\string\serializer\ISerializer;
+use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\network\socket\data\IDataParser;
 
 /**
@@ -38,18 +39,20 @@ final class MSServerComponent implements IMSServerClientComponent {
 	}
 
 	/**
-	 * @param string                                 $socket_path           Chemin vers la socket du MSServer
-	 * @param string                                 $serverKey             Clé du serveur.
+	 * @param string                         $socket_path           Chemin vers la socket du MSServer
+	 * @param string                         $serverKey             Clé du serveur.
 	 * @param IMSServerRequestHandlerManager $requestHandlerManager Gestionnaire de requête handler du serveur
 	 * @param ISerializer                    $serializer            Serializer utilisé pour la serialisation/deserialisation par le MSServer pour les communications avec ses workers
 	 * @param IDataParser                    $dataParser            Parseur de données pour les IO des sockets
+	 * @param ILogger                        $logger                Logger
 	 */
 	public function init(
 		string $socket_path,
 		string $serverKey,
 		IMSServerRequestHandlerManager $requestHandlerManager,
 		ISerializer $serializer,
-		IDataParser $dataParser
+		IDataParser $dataParser,
+		ILogger $logger
 	):void{
 		$this->_component = $this->_initializer->init(
 			$socket_path,
@@ -58,7 +61,8 @@ final class MSServerComponent implements IMSServerClientComponent {
 			$serializer,
 			$dataParser,
 			$this->_environment,
-			$requestHandlerManager
+			$requestHandlerManager,
+			$logger
 		);
 	}
 

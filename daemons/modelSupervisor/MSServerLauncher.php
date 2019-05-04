@@ -21,6 +21,7 @@ use wfw\engine\lib\cli\signalHandler\PCNTLSignalsHelper;
 use wfw\engine\lib\data\string\compressor\GZCompressor;
 use wfw\engine\lib\data\string\serializer\LightSerializer;
 use wfw\engine\lib\data\string\serializer\PHPSerializer;
+use wfw\engine\lib\logger\ILogger;
 
 $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 	new ArgvOpt('-pid','Affiche le pid',0,null,true),
@@ -42,6 +43,7 @@ try{
 	foreach($confs->getInstances() as $name){
 		$pid = pcntl_fork();
 		if($pid === 0 ){
+			cli_set_process_title("WFW MSServer $name instance");
 			//clean previous servers before restart.
 			$servWorkingDir = $confs->getWorkingDir($name);
 			$pidFile = $servWorkingDir."/msserver.pid";
@@ -67,17 +69,18 @@ try{
 					$confs->getGroups($name),
 					$confs->getAdmins($name),
 					$confs->getComponents($name),
+					$confs->getLogger($name),
 					$confs->getSessionTtl($name)
 				),
 				new MSServerRequestHandlerManager(),
+				$confs->getLogger($name),
 				new LightSerializer(
 					new GZCompressor(),
 					new PHPSerializer()
 				),
 				$confs->getRequestTtl($name),
 				$confs->haveToSendErrorToClient($name),
-				$confs->haveToShutdownOnError($name),
-				$confs->getErrorLogsPath($name)
+				$confs->haveToShutdownOnError($name)
 			);
 
 			$pcntlHelper = new PCNTLSignalsHelper(true);
@@ -99,11 +102,12 @@ try{
 			//of machiavellian childs
 			break;
 		}else if($pid < 0 ){
-			throw new Exception("How did that happend ? Why are you not able to fork ? ");
+			throw new Exception("Unable to fork, maybe insufficient ressources or max process limit reached.");
 		}
 		else $pids[]=$pid;
 	}
 	if(count($pids) > 0 || count($confs->getInstances()) === 0){
+		cli_set_process_title("WFW MSServer pool");
 		$poolServer = new MSServerPool(
 			$confs->getSocketPath(),
 			$confs->getWorkingDir(),
@@ -116,7 +120,7 @@ try{
 					$confs->getInstances()
 				)
 			),
-			$confs->getErrorLogsPath()
+			$confs->getLogger()
 		);
 
 		$pcntlHelper = new PCNTLSignalsHelper(true);
@@ -135,19 +139,17 @@ try{
 	}
 }catch(\InvalidArgumentException $e){
 	fwrite(STDOUT,"\e[33mWFW_msserver WRONG_USAGE\e[0m : {$e->getMessage()}".PHP_EOL);
-	error_log(
-		"\e[33mWFW_msserver WRONG_USAGE\e[0m : {$e->getMessage()}".PHP_EOL,
-		3,
-		$confs->getErrorLogsPath()
+	$confs->getLogger()->log(
+		"\e[33mWFW_msserver WRONG_USAGE\e[0m : {$e->getMessage()}",
+		ILogger::WARN
 	);
 	exit(1);
 }catch(\Exception $e){
 	if($argvReader->exists('--debug')){
 		fwrite(STDOUT,"\e[31mWFW_msserver ERROR\e[0m : ".PHP_EOL."$e".PHP_EOL);
-		error_log(
-			"\e[31mWFW_msserver ERROR\e[0m : ".PHP_EOL."$e".PHP_EOL,
-			3,
-			$confs->getErrorLogsPath()
+		$confs->getLogger()->log(
+			"\e[31mWFW_msserver ERROR\e[0m : ".PHP_EOL."$e",
+			ILogger::ERR
 		);
 	}
 	else{
@@ -155,20 +157,14 @@ try{
 			STDOUT,
 			"\e[31mWFW_msserver ERROR\e[0m (try --debug for more) : {$e->getMessage()}".PHP_EOL
 		);
-		error_log(
-			"\e[31mWFW_msserver ERROR\e[0m (try --debug for more) : {$e->getMessage()}".PHP_EOL,
-			3,
-			$confs->getErrorLogsPath()
-		);
+		$confs->getLogger()->log("\e[31mWFW_msserver ERROR\e[0m (try --debug for more) : {$e->getMessage()}", ILogger::ERR);
 	}
 	exit(2);
 }catch(\Error $e){
 	if($argvReader->exists('--debug')){
-		fwrite(STDOUT,"\e[31mWFW_msserver FATAL_ERROR\e[0m : ".PHP_EOL."$e".PHP_EOL);
-		error_log(
-			"\e[31mWFW_msserver FATAL_ERROR\e[0m : ".PHP_EOL."$e".PHP_EOL,
-			3,
-			$confs->getErrorLogsPath()
+		$confs->getLogger()->log(
+			"\e[31mWFW_msserver FATAL_ERROR\e[0m : ".PHP_EOL."$e",
+			ILogger::ERR
 		);
 	}
 	else{
@@ -176,10 +172,9 @@ try{
 			STDOUT,
 			"\e[31mWFW_msserver FATAL_ERROR\e[0m (try --debug for more) : {$e->getMessage()}".PHP_EOL
 		);
-		error_log(
-			"\e[31mWFW_msserver FATAL_ERROR\e[0m (try --debug for more) : {$e->getMessage()}".PHP_EOL,
-			3,
-			$confs->getErrorLogsPath()
+		$confs->getLogger()->log(
+			"\e[31mWFW_msserver FATAL_ERROR\e[0m (try --debug for more) : {$e->getMessage()}",
+			ILogger::ERR
 		);
 	}
 	exit(3);

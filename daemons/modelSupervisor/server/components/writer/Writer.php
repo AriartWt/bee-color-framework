@@ -20,6 +20,7 @@ use wfw\engine\core\data\model\storage\KVSBasedModelStorage;
 use wfw\engine\core\data\model\synchronizer\IModelSynchronizer;
 use wfw\engine\core\data\model\synchronizer\ModelSynchronizer;
 use wfw\engine\lib\data\string\serializer\ISerializer;
+use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\network\socket\data\IDataParser;
 use wfw\engine\lib\PHP\types\PHPString;
 
@@ -37,14 +38,16 @@ final class Writer implements IMSServerComponent {
 	/**
 	 *  Appelé par le MSServerModuleInitializer
 	 *
-	 * @param string                                 $socket_path
-	 * @param string                                 $serverKey
-	 * @param array                                  $modelList
+	 * @param string                         $socket_path
+	 * @param string                         $serverKey
+	 * @param array                          $modelList
 	 * @param ISerializer                    $serializer
 	 * @param IDataParser                    $dataParser
 	 * @param IMSServerComponentEnvironment  $environment
 	 * @param IMSServerRequestHandlerManager $requestHandlerManager
 	 *
+	 * @param ILogger                        $logger
+	 * @throws \InvalidArgumentException
 	 * @throws \wfw\daemons\kvstore\client\errors\AlreadyLogged
 	 * @throws \wfw\daemons\kvstore\client\errors\KVSClientFailure
 	 * @throws \wfw\daemons\kvstore\errors\KVSFailure
@@ -56,7 +59,8 @@ final class Writer implements IMSServerComponent {
 		ISerializer $serializer,
 		IDataParser $dataParser,
 		IMSServerComponentEnvironment $environment,
-		IMSServerRequestHandlerManager $requestHandlerManager
+		IMSServerRequestHandlerManager $requestHandlerManager,
+		ILogger $logger
 	) {
 		$this->_serverkey = $serverKey;
 		//On initialise le mode de stockage par défaut pour les KVSAccess
@@ -75,7 +79,14 @@ final class Writer implements IMSServerComponent {
 			$environment->getString("kvs/container"),
 			$defaultStorage
 		);
-		$kvsAccessLoader->login();
+		try{
+			$kvsAccessLoader->login();
+		}catch(\Exception | \Error $e){
+			$environment->getLogger()->log(
+				"[WRITER] Error while trying to login to KVS for ModelLoader : $e",ILogger::ERR
+			);
+			throw $e;
+		}
 
 		//Access pour le ModelStorage
 		$kvsAccessStorage = new KVSAccess(
@@ -85,6 +96,15 @@ final class Writer implements IMSServerComponent {
 			$environment->getString("kvs/container"),
 			$defaultStorage
 		);
+		try{
+			$kvsAccessLoader->login();
+		}catch(\Exception | \Error $e){
+			$environment->getLogger()->log(
+				"[WRITER] Error while trying to login to KVS for ModelStorage : $e",
+				ILogger::ERR
+			);
+			throw $e;
+		}
 		$kvsAccessStorage->login();
 
 		//Si le serveur n'a pas été éteint correctement et qu'un worker est toujours actif,

@@ -32,6 +32,7 @@ use wfw\engine\lib\data\string\compressor\GZCompressor;
 use wfw\engine\lib\data\string\serializer\LightSerializer;
 use wfw\engine\lib\data\string\serializer\PHPSerializer;
 use wfw\engine\lib\data\string\serializer\ISerializer;
+use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\PHP\errors\IllegalInvocation;
 use wfw\engine\lib\PHP\types\UUID;
 
@@ -45,8 +46,8 @@ final class MSServer {
 	private $_serverKey;
 	/** @var string $_socketAddr */
 	private $_socketAddr;
-	/** @var string $_errorLogsFile */
-	private $_errorLogsFile;
+	/** @var string $_logger */
+	private $_logger;
 	/** @var resource $_acquiredLockFile */
 	private $_acquiredLockFile;
 	/** @var resource $_socket */
@@ -83,16 +84,15 @@ final class MSServer {
 	 *
 	 * ATTENTION : Le serializer utilisé doit être le même que celui du KVSContainer !
 	 *
-	 * @param string $socketPath Chemin vers la socket à créer.
-	 * @param MSServerSocketProtocol $protocol               Protocol de communication du serveur.
-	 * @param IMSServerEnvironment $MSServerEnvironement     Environnement de travail du serveur.
-	 * @param IMSServerRequestHandlerManager $requestHandler Gestionnaire de requêtes du serveur.
-	 * @param null|ISerializer $serializer (optionnel defaut : LightSerializer(GZCompressor)) Objet utilisé pour la serialisation et le désérialisaton
-	 * @param int    $requestTtl           (optionnel defaut : 60) Temps avant expiration des requêtes.
-	 * @param bool   $sendErrorsToClient   (optionnel defaut : true) Force le serveur à envoyer son erreur au client.
-	 * @param bool   $shutdownOnError      (optionnel defaut : false) Force le serveur à s'éteindre si une erreur survient.
-	 * @param string $errorLogs            (optionnel deffaut : __DIR__."/logs/error_logs.txt") Chemin vers le fichier de logs d'erreur.
-	 *
+	 * @param string                         $socketPath           Chemin vers la socket à créer.
+	 * @param MSServerSocketProtocol         $protocol             Protocol de communication du serveur.
+	 * @param IMSServerEnvironment           $MSServerEnvironement Environnement de travail du serveur.
+	 * @param IMSServerRequestHandlerManager $requestHandler       Gestionnaire de requêtes du serveur.
+	 * @param ILogger                        $logger
+	 * @param null|ISerializer               $serializer           (optionnel defaut : LightSerializer(GZCompressor)) Objet utilisé pour la serialisation et le désérialisaton
+	 * @param int                            $requestTtl           (optionnel defaut : 60) Temps avant expiration des requêtes.
+	 * @param bool                           $sendErrorsToClient   (optionnel defaut : true) Force le serveur à envoyer son erreur au client.
+	 * @param bool                           $shutdownOnError      (optionnel defaut : false) Force le serveur à s'éteindre si une erreur survient.
 	 * @throws IllegalInvocation
 	 */
 	public function __construct(
@@ -100,12 +100,13 @@ final class MSServer {
 		MSServerSocketProtocol $protocol,
 		IMSServerEnvironment $MSServerEnvironement,
 		IMSServerRequestHandlerManager $requestHandler,
+		ILogger $logger,
 		?ISerializer $serializer=null,
 		int $requestTtl = 60,
 		bool $sendErrorsToClient = true,
-		bool $shutdownOnError = false,
-		string $errorLogs = __DIR__."/logs/error_logs.txt"
+		bool $shutdownOnError = false
 	) {
+		$this->_logger = $logger;
 		$this->_serializer = $serializer ?? new LightSerializer(
 			new GZCompressor(),
 			new PHPSerializer()
@@ -140,7 +141,6 @@ final class MSServer {
 			$this->_serverKey = new UUID(UUID::V4);
 			$this->_environment = $MSServerEnvironement;
 			$this->_shutdownOnError = $shutdownOnError;
-			$this->_errorLogsFile = $errorLogs;
 			$this->_socketAddr = $socketPath;
 			$this->_requestTtl = $requestTtl;
 			$this->_protocol = $protocol;
@@ -154,7 +154,8 @@ final class MSServer {
 					$this->_serverKey,
 					$requestHandler,
 					$this->_serializer,
-					$this->_dataParser
+					$this->_dataParser,
+					$logger
 				);
 				$component->start();
 			}

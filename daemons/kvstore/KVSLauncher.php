@@ -29,7 +29,7 @@ try{
 
 	//On récupère les configurations du server
 	$conf = new KVSConfs(ENGINE.DS."config".DS."conf.json", SITE.DS."config".DS."conf.json");
-
+	cli_set_process_title("WFW KVS server");
 	//On prépare le serveur
 	$KVSServer = new KVSServer(
 		$conf->getSocketPath(),

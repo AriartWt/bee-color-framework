@@ -118,6 +118,7 @@ final class ContainerWorker extends Worker {
 		if($res) throw new IllegalInvocation(
 			"A worker is already running for the container ".$this->_workerParams->getContainer()->getName()
 		);
+		cli_set_process_title("WFW KVS ".$this->_workerParams->getContainer()->getName()." instance");
 		//On écrit le PID dans un fichier.
 		file_put_contents($this->getPidFilePath(),getmypid());
 
