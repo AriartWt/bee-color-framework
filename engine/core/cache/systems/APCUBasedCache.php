@@ -28,7 +28,7 @@ final class APCUBasedCache implements ICacheSystem{
 		$this->_namespace = $namespace ?? '';
 	}
 	public function get(string $key){
-		if($this->contains("$this->_namespace::$key")){
+		if($this->contains($key)){
 			return apcu_fetch("$this->_namespace::$key");
 		}else{
 			return null;
@@ -41,7 +41,7 @@ final class APCUBasedCache implements ICacheSystem{
 		return apcu_store("$this->_namespace::$key",$data,$timeout);
 	}
 	public function delete(string $key):bool{
-		if($this->contains("$this->_namespace::$key")){
+		if($this->contains($key)){
 			return apcu_delete("$this->_namespace::$key");
 		}else{
 			return false;

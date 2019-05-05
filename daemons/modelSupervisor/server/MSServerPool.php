@@ -62,7 +62,7 @@ final class MSServerPool {
 		$this->_workingDir = $workingDir;
 		$this->_socketAddr = $socketPath;
 		$this->_protocol = $protocol;
-		$this->_pids = $pids;
+		$this->_pids =& $pids;
 
 		if(!is_dir($workingDir)) mkdir($workingDir,0777,true);
 		//On commence par vérifier l'existence du fichier lock permettant d'obtenir le lock
@@ -101,25 +101,34 @@ final class MSServerPool {
 			);
 			sleep($firstCheck);
 			while(true){
+				$this->_logger->log(
+					"[MSServerPool] [AliveChecker] Wake up. PID list : "
+					.implode(",",array_map(function($k,$v){return "$v($k)";},array_keys($this->_pids),$this->_pids)),
+					ILogger::LOG
+				);
 				foreach($this->_pids as $pid=>$instance){
 					$out=[];
-					exec("ps -p $pid > /dev/null && echo active || echo inactive",$out);
+					exec("ps --no-headers -p $pid | grep -v \"<defunct>\" > /dev/null && echo active || echo inactive",$out);
 					if(array_pop($out) === "inactive"){
 						$this->_logger->log(
 							"[MSServerPool] [AliveChecker] $instance is not running. Trying to restart...",
 							ILogger::ERR
 						);
 						$res = $restartInstance($instance,$pid);
-						if($res) exit(0);
-						else if(is_null($res)) $this->_logger->log(
+						if(is_null($res)) $this->_logger->log(
 							"[MSServerPool] [AliveChecker] Unable to restart instance $instance.",
 							ILogger::ERR
 						);
+						else if(!$res) exit(0);
 						else $this->_logger->log(
-							"[MSServerPool] [AliveChecker] Instance $instance successfully restarted",
+							"[MSServerPool] [AliveChecker] Instance $instance successfully restarted. New PID list : "
+							.implode(",",array_map(function($k,$v){return "$v($k)";},array_keys($this->_pids),$this->_pids)),
 							ILogger::ERR
 						);
-					}
+					}else $this->_logger->log(
+						"[MSServerPool] [AliveChecker] $instance ($pid) is running.",
+						ILogger::LOG
+					);
 				}
 				sleep($checkInterval);
 			}

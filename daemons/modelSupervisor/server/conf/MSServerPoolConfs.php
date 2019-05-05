@@ -73,13 +73,14 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 		if(!is_dir($workingDir)) mkdir($workingDir,0700,true);
 
 		$this->_logger = (new FileLogger(new DefaultLogFormater(),...[
-			$this->getLogPath(null,$this->_conf->getString(self::LOGS."/log")??"log"),
-			$this->getLogPath(null,$this->_conf->getString(self::LOGS."/err")??"err"),
-			$this->getLogPath(null,$this->_conf->getString(self::LOGS."/warn")??"warn"),
-			$this->getLogPath(null,$this->_conf->getString(self::LOGS."/debug")??"debug")
+			$this->getLogPath(null,"log"),
+			$this->getLogPath(null,"err"),
+			$this->getLogPath(null,"warn"),
+			$this->getLogPath(null,"debug")
 		]))->autoConfFileByLevel(
 			FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
-			FileLogger::DEBUG,true
+			FileLogger::DEBUG,
+			$this->isCopyLogModeEnabled()
 		)->autoConfByLevel($this->_conf->getInt("logs/level") ?? ILogger::ERR);
 
 		//On détermine les configurations de chaque instance à créer
@@ -91,13 +92,14 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 			$tmp->mergeStdClass($instanceConf);
 			$this->_instancesConfs[$instanceName] = $tmp;
 			$this->_instanceLoggers[$instanceName] = (new FileLogger(new DefaultLogFormater(),...[
-				$this->getLogPath($instanceName,$this->_conf->getString("instances/$instanceName/".self::LOGS."/log")??"log"),
-				$this->getLogPath($instanceName,$this->_conf->getString("instances/$instanceName/".self::LOGS."/err")??"err"),
-				$this->getLogPath($instanceName,$this->_conf->getString("instances/$instanceName/".self::LOGS."/warn")??"warn"),
-				$this->getLogPath($instanceName,$this->_conf->getString("instances/$instanceName/".self::LOGS."/debug")??"debug")
+				$this->getLogPath($instanceName,"log"),
+				$this->getLogPath($instanceName,"err"),
+				$this->getLogPath($instanceName,"warn"),
+				$this->getLogPath($instanceName,"debug")
 			]))->autoConfFileByLevel(
 				FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
-				FileLogger::DEBUG,true
+				FileLogger::DEBUG,
+				$this->isCopyLogModeEnabled($instanceName)
 			)->autoConfByLevel($this->_conf->getInt("instances/$instanceName/logs/level") ?? ILogger::ERR);
 		}
 	}
@@ -290,14 +292,16 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 	 * @return string
 	 */
 	private function getLogPath(?string $instance,string $level="err"):string{
-		$errorPath = new PHPString(
-			$this->resolvePath(
-				$this->_conf->getString(self::LOGS."/$level")
-				?? "msserver-$level.log"
-			)
-		);
-		if(!$errorPath->startBy("/")){
-			return $this->getWorkingDir($instance).DS.$errorPath;
+		if($instance) $path = $this->_conf->getString("instances/$instance/".self::LOGS."/$level");
+		else $path = $this->_conf->getString(self::LOGS."/$level");
+		$errorPath = $path ?? "msserver".(($instance)?"-$instance":"")."-$level.log";
+
+		if(strpos($errorPath,"/")!==0){
+			if($instance) $basePath = $this->_conf->getString("instances/$instance/logs/default_path");
+			else $basePath = $this->_conf->getString("logs/default_path");
+			if(!$basePath) $basePath = $this->getWorkingDir($instance);
+			if(!is_dir($basePath)) mkdir($basePath,0700,true);
+			return "$basePath/$errorPath";
 		}else{
 			return $errorPath;
 		}
@@ -411,5 +415,15 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 		if($instance && !isset($this->_instancesConfs[$instance]))
 			throw new \InvalidArgumentException("Unknown instance $instance");
 		return (is_null($instance) ? $this->_logger : $this->_instanceLoggers[$instance]);
+	}
+
+	/**
+	 * @param null|string $instance
+	 * @return bool
+	 */
+	public function isCopyLogModeEnabled(?string $instance=null):bool{
+		$res = $this->_conf->getBoolean(($instance ? "instances/$instance/" : "") ."logs/copy");
+		if(is_null($res)) return true;
+		else return $res;
 	}
 }

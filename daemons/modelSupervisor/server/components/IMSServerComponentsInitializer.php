@@ -25,6 +25,7 @@ interface IMSServerComponentsInitializer {
 	 *                                                              du serveur
 	 *
 	 * @param ILogger                        $logger
+	 * @param array                          $params
 	 * @return IMSServerComponent Le composant initialisé.
 	 */
 	public function init(
@@ -35,6 +36,7 @@ interface IMSServerComponentsInitializer {
 		IDataParser $parser,
 		IMSServerComponentEnvironment $environment,
 		IMSServerRequestHandlerManager $requestHandlerManager,
-		ILogger $logger
+		ILogger $logger,
+		array $params=[]
 	):IMSServerComponent;
 }

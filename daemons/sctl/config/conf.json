@@ -6,6 +6,8 @@
 		"msserver"
 	],
 	"logs" : {
-		"level" : 2
+		"level" : 2,
+		"copy" : true,
+		"default_path" : "/var/log/wfw/sctl"
 	}
 }

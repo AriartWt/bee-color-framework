@@ -1,5 +1,4 @@
 {
-    "error_logs" : "/tmp/mserrors.logs.txt",
     "max_attempts" : 10,
     "delay" : 0.1,
     "save_frequency" : 30

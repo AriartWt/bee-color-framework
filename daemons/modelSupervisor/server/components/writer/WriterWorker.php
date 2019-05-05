@@ -315,7 +315,7 @@ final class WriterWorker extends Worker {
 	 */
 	private function handle(IWriterRequest $clientRequest, MSServerDataParserResult $request):bool{
 		$this->_environment->getLogger()->log(
-			"[WRITER] [WORKER] Processing ".get_class($request)."...",
+			"[WRITER] [WORKER] Processing ".get_class($clientRequest)."...",
 			ILogger::LOG
 		);
 		if($clientRequest instanceof IWriterAdminRequest){
@@ -581,6 +581,11 @@ final class WriterWorker extends Worker {
 			}else if ($pid === 0){
 				fclose($this->_acquiredLockFile);
 				cli_set_process_title(cli_get_process_title()." Periodic Saver");
+				file_put_contents(
+					$this->_environment->getWorkingDir()."/"
+					.$this->_environment->getName()."-PeriodicSaver.pid",
+					getmypid()
+				);
 				$this->_environment->getLogger()->log(
 					"$tags Started (pid : ".getmypid().").",
 					ILogger::LOG

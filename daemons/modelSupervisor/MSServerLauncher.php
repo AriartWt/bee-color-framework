@@ -51,9 +51,16 @@ try{
 			$servWorkingDir = $confs->getWorkingDir($name);
 			if(!is_dir($servWorkingDir))
 				mkdir($servWorkingDir,0700,true);
-			$pidFile = $servWorkingDir."/msserver.pid";
-			if(file_exists($pidFile))
+			//$pidFile = $servWorkingDir."/msserver.pid";
+			$out=[];
+			exec("find $servWorkingDir -name *.pid",$out);
+			foreach ($out as $pidf){
+				posix_kill((int)file_get_contents($pidf),PCNTLSignalsHelper::SIGALRM);
+			}
+			/*if(file_exists($pidFile)){
 				posix_kill((int)file_get_contents($pidFile),PCNTLSignalsHelper::SIGALRM);
+			}*/
+
 			$server = new MSServer(
 				$confs->getSocketPath($name),
 				new MSServerSocketProtocol(),
@@ -90,13 +97,13 @@ try{
 
 			$pcntlHelper = new PCNTLSignalsHelper(true);
 			$pcntlHelper->handleAll([
-				                        PCNTLSignalsHelper::SIGINT,
-				                        PCNTLSignalsHelper::SIGHUP,
-				                        PCNTLSignalsHelper::SIGTERM,
-				                        PCNTLSignalsHelper::SIGUSR1,
-				                        PCNTLSignalsHelper::SIGUSR2,
-				                        PCNTLSignalsHelper::SIGALRM //socket_accept workaround
-			                        ],function($signo)use($server){
+				PCNTLSignalsHelper::SIGINT,
+				PCNTLSignalsHelper::SIGHUP,
+				PCNTLSignalsHelper::SIGTERM,
+				PCNTLSignalsHelper::SIGUSR1,
+				PCNTLSignalsHelper::SIGUSR2,
+				PCNTLSignalsHelper::SIGALRM //socket_accept workaround
+			],function($signo)use($server){
 				$server->shutdown(
 					new ExternalShutdown("PCNTL signal $signo recieved. Server shutdown gracefully.")
 				);

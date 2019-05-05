@@ -45,6 +45,7 @@ final class MSServerComponent implements IMSServerClientComponent {
 	 * @param ISerializer                    $serializer            Serializer utilisé pour la serialisation/deserialisation par le MSServer pour les communications avec ses workers
 	 * @param IDataParser                    $dataParser            Parseur de données pour les IO des sockets
 	 * @param ILogger                        $logger                Logger
+	 * @param array                          $params
 	 */
 	public function init(
 		string $socket_path,
@@ -52,7 +53,8 @@ final class MSServerComponent implements IMSServerClientComponent {
 		IMSServerRequestHandlerManager $requestHandlerManager,
 		ISerializer $serializer,
 		IDataParser $dataParser,
-		ILogger $logger
+		ILogger $logger,
+		array $params=[]
 	):void{
 		$this->_component = $this->_initializer->init(
 			$socket_path,
@@ -62,7 +64,8 @@ final class MSServerComponent implements IMSServerClientComponent {
 			$dataParser,
 			$this->_environment,
 			$requestHandlerManager,
-			$logger
+			$logger,
+			$params
 		);
 	}
 

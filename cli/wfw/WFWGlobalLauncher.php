@@ -20,6 +20,7 @@ use wfw\engine\lib\cli\argv\ArgvReader;
 use wfw\engine\lib\data\string\compressor\GZCompressor;
 use wfw\engine\lib\data\string\serializer\LightSerializer;
 use wfw\engine\lib\data\string\serializer\PHPSerializer;
+use wfw\engine\lib\network\http\HTTPRequest;
 use wfw\engine\lib\PHP\system\filesystem\json\JSONFile;
 use wfw\engine\lib\PHP\types\UUID;
 use wfw\engine\package\general\domain\Email;
@@ -144,6 +145,7 @@ try{
 			}
 			//shutdown daemons while updating folders
 			$exec("wfw self service stop -all");
+
 			$exec("cp -R \"$path/.\" \"$p\"");
 			foreach($confs as $c=>$v){
 				if(file_exists("$p/$v")) unlink("$p/$v");
@@ -153,6 +155,11 @@ try{
 			//reset all permissions
 			$exec("chmod -R $unixPerm \"$p\"");
 			$exec("chown -R $unixUser:$unixUser \"$p\"");
+
+			//clear all caches to be sure all will be reloaded
+			(new HTTPRequest("http://127.0.0.1/wfw/clear_caches.php",[],["method" =>  "GET"]))
+				->send();
+
 			//start and restart daemons
 			$exec("wfw self service start -all");
 			$exec("wfw self service restart sctl");
@@ -486,6 +493,11 @@ try{
 		//then, set the unix owner for the new project and give-it to the given user (apache,ngnix..)
 		$exec("chmod -R $unixPerm $pPath");
 		$exec("chown -R $unixUser:$unixUser $pPath");
+
+		//clear all caches to be sure all will reloaded.
+		(new HTTPRequest("http://127.0.0.1/wfw/clear_caches.php",[],["method" =>  "GET"]))
+			->send();
+
 		//restart all daemons to take conf changes in consideration
 		$exec("wfw self service restart -all");
 	} else if($argvReader->exists('locate')){

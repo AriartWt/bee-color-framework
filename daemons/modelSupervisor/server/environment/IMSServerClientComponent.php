@@ -20,6 +20,7 @@ interface IMSServerClientComponent extends IMSServerComponent {
 	 *                                                              utilisé par le MSServer pour les communications.
 	 * @param IDataParser                    $dataParser            Parseur de données pour les IO des sockets
 	 * @param ILogger                        $logger                Logger
+	 * @param array                          $params
 	 */
 	public function init(
 		string $socket_path,
@@ -27,6 +28,7 @@ interface IMSServerClientComponent extends IMSServerComponent {
 		IMSServerRequestHandlerManager $requestHandlerManager,
 		ISerializer $serializer,
 		IDataParser $dataParser,
-		ILogger $logger
+		ILogger $logger,
+		array $params=[]
 	):void;
 }

@@ -115,10 +115,8 @@ final class MSServer {
 
 		//On commence par vérifier l'existence du fichier sempahore permettant d'obtenir le lock
 		//Un seul MSServer est autorisé par repertoir de travail.
-		$this->_lockFile = $MSServerEnvironement->getWorkingDir().DS."server.lock";
-		if(!file_exists($this->_lockFile)){
-			touch($this->_lockFile);
-		}
+		$this->_lockFile = $MSServerEnvironement->getWorkingDir()."/server.lock";
+		if(!file_exists($this->_lockFile)) touch($this->_lockFile);
 
 		//On vérifie qu'on peut acquérir le lock.
 		$fp = fopen($this->_lockFile,"r+");
@@ -149,18 +147,28 @@ final class MSServer {
 			$this->_logger->log("[MSServer] Launching components...",ILogger::LOG);
 			//On initialise et on démarre chaque composant.
 			foreach($this->_environment->getComponents() as $k=>$component){
-				$component->init(
-					$this->_socketAddr,
-					$this->_serverKey,
-					$requestHandler,
-					$this->_serializer,
-					$this->_dataParser,
-					$logger
-				);
-				$component->start();
-				$this->_logger->log(
-					"[MSServer] ".$component->getName()." started.",ILogger::LOG
-				);
+				try{
+					$component->init(
+						$this->_socketAddr,
+						$this->_serverKey,
+						$requestHandler,
+						$this->_serializer,
+						$this->_dataParser,
+						$logger,
+						[
+							'streams_to_close' => [ $this->_acquiredLockFile ]
+						]
+					);
+					$component->start();
+					$this->_logger->log(
+						"[MSServer] ".$component->getName()." started.",ILogger::LOG
+					);
+				}catch(\Exception | \Error $e){
+					$this->_logger->log(
+						"[MSServer] Error while trying to start component : $e",
+						ILogger::WARN
+					);
+				}
 			}
 		}
 	}
@@ -197,6 +205,10 @@ final class MSServer {
 			$this->cleanOutdatedQueries();
 
 			if($parsed->instanceOf(IMSServerRequest::class)){
+				$this->_logger->log(
+					"[MSServer] Request recieved : ".$parsed->getClass(),
+					ILogger::LOG
+				);
 				$response = $this->processRequest(
 					$socket,
 					$parsed,
@@ -205,6 +217,10 @@ final class MSServer {
 				if(!is_null($response)){
 					$this->write($socket,$response);
 					socket_close($socket);
+					$this->_logger->log(
+						"[MSServer] Response sent to client : ".get_class($response),
+						ILogger::LOG
+					);
 				}
 			}else{
 				throw new \InvalidArgumentException("MSServer request have to be instanceof ".IMSServerRequest::class. " but ".$parsed->getClass()." given.");

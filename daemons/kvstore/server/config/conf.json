@@ -12,5 +12,10 @@
     "request_ttl": 900,
     "shutdown_on_error": false,
     "send_error_to_client": true,
-    "error_logs": "error_logs.txt"
+    "error_logs": "error_logs.txt",
+    "logs" : {
+        "level" : 2,
+        "copy" : true,
+        "default_path" : "/var/log/wfw/kvs"
+    }
 }

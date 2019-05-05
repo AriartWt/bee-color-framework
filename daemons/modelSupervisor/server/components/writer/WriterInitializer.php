@@ -24,7 +24,9 @@ final class WriterInitializer implements IMSServerComponentsInitializer {
 	 * @param IMSServerRequestHandlerManager $requestHandlerManager Gestionnaire de requête handler du serveur
 	 *
 	 * @param ILogger                        $logger                Logger
+	 * @param array                          $params
 	 * @return IMSServerComponent Le composant initialisé.
+	 * @throws \InvalidArgumentException
 	 * @throws \wfw\daemons\kvstore\client\errors\AlreadyLogged
 	 * @throws \wfw\daemons\kvstore\client\errors\KVSClientFailure
 	 * @throws \wfw\daemons\kvstore\errors\KVSFailure
@@ -37,7 +39,8 @@ final class WriterInitializer implements IMSServerComponentsInitializer {
 		IDataParser $dataParser,
 		IMSServerComponentEnvironment $environment,
 		IMSServerRequestHandlerManager $requestHandlerManager,
-		ILogger $logger
+		ILogger $logger,
+		array $params=[]
 	): IMSServerComponent {
 		$component = new Writer(
 			$socket_path,
@@ -47,7 +50,8 @@ final class WriterInitializer implements IMSServerComponentsInitializer {
 			$dataParser,
 			$environment,
 			$requestHandlerManager,
-			$logger
+			$logger,
+			$params
 		);
 		return $component;
 	}

@@ -179,11 +179,8 @@ class DefaultContext implements IWebAppContext {
 			ENGINE."/config/conf.json",
 			SITE."/config/conf.json"
 		]);
-
-		$msserverAddr = $conf->getString("server/msserver/addr");
-		if(strpos($msserverAddr,"/")!==0) $msserverAddr = ROOT."/$msserverAddr";
-		$msinstanceAddr = (new MSInstanceAddrResolver($msserverAddr))->find(
-			$conf->getString('server/msserver/db')
+		$msinstanceAddr = $this->getMSServerAddr(
+			$msserverAddr = $this->_conf->getString("server/msserver/addr")
 		);
 
 		$this->_dice->addRules([
@@ -375,6 +372,25 @@ class DefaultContext implements IWebAppContext {
 		]);
 		$this->_translator->changeCurrentLanguage($action->getLang());
 		$this->_dice->addRules($diceRules);
+	}
+
+	/**
+	 * @param string $msserverAddr Resolver socket
+	 * @return string MSServer socket instance
+	 * @throws \wfw\daemons\modelSupervisor\client\errors\MSClientFailure
+	 */
+	protected function getMSServerAddr(string $msserverAddr):string{
+		$cache = $this->getCacheSystem();
+		if($cache->contains("server/msserver/addr") && is_string($res = $cache->get("server/msserver/addr")))
+			return $res;
+		else{
+			if(strpos($msserverAddr,"/")!==0) $msserverAddr = ROOT."/$msserverAddr";
+			$msinstanceAddr = (new MSInstanceAddrResolver($msserverAddr))->find(
+				$this->_conf->getString('server/msserver/db')
+			);
+			$cache->set("server/msserver/addr",$msinstanceAddr);
+			return $msinstanceAddr;
+		}
 	}
 	
 	/**

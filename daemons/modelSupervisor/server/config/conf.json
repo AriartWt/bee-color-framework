@@ -2,7 +2,9 @@
     "working_dir": "modelSupervisor\/data",
     "socket_path": "ModelSupervisor.socket",
     "logs" : {
-        "level" : 2
+        "level" : 2,
+        "copy" : true,
+        "default_path" : "/var/log/wfw/msserver"
     },
     "default_instance": {
         "initializers_path": "{ROOT}\/daemons\/modelSupervisor\/server\/config\/initializers.components.php",
@@ -31,9 +33,10 @@
         "shutdown_on_error": false,
         "send_error_to_client": true,
         "logs" : {
-            "level" : 2
-        },
-        "error_logs": "error_logs.txt"
+            "level" : 2,
+            "copy" : true,
+            "default_path" : "/var/log/wfw/msserver/instances"
+        }
     },
     "instances": {
 

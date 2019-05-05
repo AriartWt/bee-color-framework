@@ -47,10 +47,8 @@ final class Writer implements IMSServerComponent {
 	 * @param IMSServerRequestHandlerManager $requestHandlerManager
 	 *
 	 * @param ILogger                        $logger
+	 * @param array                          $params
 	 * @throws \InvalidArgumentException
-	 * @throws \wfw\daemons\kvstore\client\errors\AlreadyLogged
-	 * @throws \wfw\daemons\kvstore\client\errors\KVSClientFailure
-	 * @throws \wfw\daemons\kvstore\errors\KVSFailure
 	 */
 	public function __construct(
 		string $socket_path,
@@ -60,7 +58,8 @@ final class Writer implements IMSServerComponent {
 		IDataParser $dataParser,
 		IMSServerComponentEnvironment $environment,
 		IMSServerRequestHandlerManager $requestHandlerManager,
-		ILogger $logger
+		ILogger $logger,
+		array $params=[]
 	) {
 		$this->_serverkey = $serverKey;
 		//On initialise le mode de stockage par défaut pour les KVSAccess
@@ -70,6 +69,8 @@ final class Writer implements IMSServerComponent {
 		}else{
 			$defaultStorage = null;
 		}
+		if(isset($params["streams_to_close"]) && is_array($params["streams_to_close"]))
+			array_map('fclose',$params["streams_to_close"]);
 
 		//Acces pour le ModelLoader
 		$kvsAccessLoader = new KVSAccess(
