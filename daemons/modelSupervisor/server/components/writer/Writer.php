@@ -97,7 +97,7 @@ final class Writer implements IMSServerComponent {
 			$defaultStorage
 		);
 		try{
-			$kvsAccessLoader->login();
+			$kvsAccessStorage->login();
 		}catch(\Exception | \Error $e){
 			$environment->getLogger()->log(
 				"[WRITER] Error while trying to login to KVS for ModelStorage : $e",
@@ -105,7 +105,6 @@ final class Writer implements IMSServerComponent {
 			);
 			throw $e;
 		}
-		$kvsAccessStorage->login();
 
 		//Si le serveur n'a pas été éteint correctement et qu'un worker est toujours actif,
 		//on le tue.

@@ -149,10 +149,6 @@ final class MSServer {
 			$this->_logger->log("[MSServer] Launching components...",ILogger::LOG);
 			//On initialise et on démarre chaque composant.
 			foreach($this->_environment->getComponents() as $k=>$component){
-				$this->_logger->log(
-					"[MSServer] Init and start ".$component->getName()."...",
-					ILogger::LOG
-				);
 				$component->init(
 					$this->_socketAddr,
 					$this->_serverKey,

@@ -55,34 +55,13 @@ final class SCTLServer implements ISCTLServer {
 		$this->_semFile  = sem_get($id,1,0666,0);
 		$res = sem_acquire($this->_semFile ,true);
 
-		if(!$res)
-			throw new IllegalInvocation("Another instance of sctl is already running in ".dirname($semFile));
+		if(!$res) throw new IllegalInvocation(
+			"Another instance of sctl is already running in ".dirname($semFile)
+		);
 		else{
-			$pid = pcntl_fork();
-			if($pid === 0){
-				//Sometimes, a daemon fails or is killed by another programm.
-				$firstCheck = 1800; $checkInterval = 60;
-				cli_set_process_title("WFW SCTL AliveChecker");
-				$logger->log("[SCTL-AliveChecker] Started (pid : ".getmypid()."). First check will occurs in $firstCheck sec.");
-				sleep($firstCheck);
-				$logger->log("[SCTL-AliveChecker] Ready to check every $checkInterval sec.");
-				while(true){
-					foreach($this->_conf->getDaemons() as $d){
-						if(!$this->isAlive($d)){
-							$logger->log("[SCTL-AliveChecker] $d isn't running. Trying to restart...",ILogger::ERR);
-							try{
-								$this->exec("systemctl start wfw-$d.service");
-							}catch(SCTLFailure $e){
-								$logger->log("[SCTL-AliveChecker] Unable to restart $d : ".$e->getMessage(),ILogger::ERR);
-							}
-							$logger->log("[SCTL-AliveChecker] $d successfully restarted.",ILogger::LOG,ILogger::ERR);
-						}
-					}
-					sleep($checkInterval);
-				}
-			}else if($pid > 0){
+			$res = $this->startAliveChecker();
+			if($res){
 				cli_set_process_title("WFW SCTL server");
-				$this->_aliveCheckerPID = $pid;
 				$this->_protocol = $protocol;
 				$this->_pwd = new UUID(UUID::V4);
 				file_put_contents($conf->getWorkingDir()."/sctl.pid",getmypid());
@@ -100,10 +79,51 @@ final class SCTLServer implements ISCTLServer {
 				socket_bind($this->_socket,$socketPath);
 				$this->exec("chmod 0666 \"$socketPath\"");
 				socket_listen($this->_socket);
-			}else $logger->log(
-				"Error : Unable to fork. Maybe insufficient ressources or max process limit reached.",
+			}
+		}
+	}
+
+	/**
+	 * Start the SCTL-AliveChecker
+	 * This processus will check if a daemon terminated and is not restarted by the system
+	 * @return bool|null false in child, true in parent, null if fork failed
+	 */
+	private function startAliveChecker():?bool{
+		$logger = $this->_logger;
+		$pid = pcntl_fork();
+		if($pid === 0){
+			$firstCheck = 1800; $checkInterval = 60;
+			cli_set_process_title("WFW SCTL AliveChecker");
+			$logger->log(
+				"[SCTL-AliveChecker] Started (pid : ".getmypid()
+				."). First check will occurs in $firstCheck sec.",
+				ILogger::LOG
+			);
+			sleep($firstCheck);
+			$logger->log("[SCTL-AliveChecker] Ready to check every $checkInterval sec.");
+			while(true){
+				foreach($this->_conf->getDaemons() as $d){
+					if(!$this->isAlive($d)){
+						$logger->log("[SCTL-AliveChecker] $d isn't running. Trying to restart...",ILogger::ERR);
+						try{
+							$this->exec("systemctl start wfw-$d.service");
+						}catch(SCTLFailure $e){
+							$logger->log("[SCTL-AliveChecker] Unable to restart $d : ".$e->getMessage(),ILogger::ERR);
+						}
+						$logger->log("[SCTL-AliveChecker] $d successfully restarted.",ILogger::LOG,ILogger::ERR);
+					}
+				}
+				sleep($checkInterval);
+			}
+		}else if($pid > 0){
+			$this->_aliveCheckerPID = $pid;
+			return true;
+		}else{
+			$logger->log(
+				"Error : Unable to fork to create the AliveChecker. Maybe insufficient ressources or max process limit reached.",
 				ILogger::ERR
 			);
+			return null;
 		}
 	}
 

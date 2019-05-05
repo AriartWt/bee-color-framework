@@ -33,6 +33,7 @@ final class MSServerPool {
 	private $_instancesPath;
 	/** @var ILogger $_logger */
 	private $_logger;
+	/** @var int $_aliveCheckerPID */
 	private $_aliveCheckerPID;
 
 	/**
@@ -92,6 +93,7 @@ final class MSServerPool {
 		);
 		else if($pid === 0){
 			$checkInterval = 60; $firstCheck = 60;
+			cli_set_process_title("WFW MSServerPool AliveChecker");
 			$this->_logger->log(
 				"[MSServerPool] [AliveChecker] Started (pid : ".getmypid()
 				."). First check in $firstCheck sec. Check interval : $checkInterval sec",
@@ -125,7 +127,7 @@ final class MSServerPool {
 	}
 
 	public function start():void{
-		$this->_logger->log("ServerPool started (pid : ".getmypid().").",ILogger::LOG);
+		$this->_logger->log("[MSServerPool] Serveur started (pid : ".getmypid().").",ILogger::LOG);
 		while(true){
 		   try{
 			   $socket = socket_accept($this->_socket);
@@ -150,18 +152,18 @@ final class MSServerPool {
 	 * @param resource $socket Socket emettrice d'une requête
 	 */
 	private function process($socket){
-		$this->_logger->log("New incoming connection.",ILogger::LOG);
+		$this->_logger->log("[MSServerPool] New incoming connection.",ILogger::LOG);
 		try{
 			$data = $this->read($socket);
 			if(isset($this->_instancesPath[$data])){
 				$this->write($socket,$this->_instancesPath[$data]);
 			}else $this->write($socket,'');
 			socket_close($socket);
-			$this->_logger->log("Response successfully sent.",ILogger::LOG);
+			$this->_logger->log("[MSServerPool] Response successfully sent.",ILogger::LOG);
 		}catch(\Exception $e){
 			$errorCode = socket_last_error($socket);
 			socket_clear_error($socket);
-			$this->_logger->log("Can't send response to client : ".print_r([
+			$this->_logger->log("[MSServerPool] Can't send response to client : ".print_r([
 				"socket_last_error" => [
 					"code" => $errorCode,
 					"message" =>socket_strerror($errorCode)
@@ -218,6 +220,6 @@ final class MSServerPool {
 		foreach($this->_pids as $pid=>$instance){
 			posix_kill($pid,PCNTLSignalsHelper::SIGALRM);
 		}
-		$this->_logger->log("Gracefull shutdown.",ILogger::LOG);
+		$this->_logger->log("[MSServerPool] Gracefull shutdown.",ILogger::LOG);
 	}
 }

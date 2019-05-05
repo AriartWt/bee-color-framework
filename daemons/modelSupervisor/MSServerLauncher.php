@@ -28,6 +28,8 @@ $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 	new ArgvOpt('--debug','Affiche le détail des erreurs',0,null,true)
 ])),$argv);
 
+$confs = null;
+
 try{
 	if($argvReader->exists('-pid')) fwrite(STDOUT,getmypid().PHP_EOL);
 
@@ -39,17 +41,19 @@ try{
 
 	$pids = [];
 	//if can't fork : return null
-	//if fork child : true
-	//if fork parent : false
+	//if fork parent : true
+	//if fork child : false
 	$startInstance = function(string $name, ?string $oldPID=null) use (&$pids,$confs) : ?bool{
 		$pid = pcntl_fork();
 		if($pid === 0 ){
 			cli_set_process_title("WFW MSServer $name instance");
 			//clean previous servers before restart.
 			$servWorkingDir = $confs->getWorkingDir($name);
+			if(!is_dir($servWorkingDir))
+				mkdir($servWorkingDir,0700,true);
 			$pidFile = $servWorkingDir."/msserver.pid";
 			if(file_exists($pidFile))
-				posix_kill(file_get_contents($pidFile),PCNTLSignalsHelper::SIGALRM);
+				posix_kill((int)file_get_contents($pidFile),PCNTLSignalsHelper::SIGALRM);
 			$server = new MSServer(
 				$confs->getSocketPath($name),
 				new MSServerSocketProtocol(),
@@ -99,7 +103,7 @@ try{
 			});
 
 			$server->start();
-			return true;
+			return false;
 		}else if($pid < 0 ){
 			$confs->getLogger()->log(
 				"[MSServerPool] Unable to fork to create instance '$name', maybe insufficient ressources or max process limit reached.",
@@ -109,17 +113,17 @@ try{
 		}else{
 			if(!is_null($oldPID) && isset($pids[$oldPID])) unset($pids[$oldPID]);
 			$pids[$pid]=$name;
-			return false;
+			return true;
 		}
 	};
 
 	foreach($confs->getInstances() as $name){
 		$res = $startInstance($name);
-		if($res) break;
+		if(!is_null($res) && !$res) break;
 	}
 
 	if(count($pids) > 0 || count($confs->getInstances()) === 0){
-		cli_set_process_title("WFW MSServer pool");
+		cli_set_process_title("WFW MSServerPool");
 		$poolServer = new MSServerPool(
 			$confs->getSocketPath(),
 			$confs->getWorkingDir(),
