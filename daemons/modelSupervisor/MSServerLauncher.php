@@ -44,22 +44,21 @@ try{
 	//if fork parent : true
 	//if fork child : false
 	$startInstance = function(string $name, ?string $oldPID=null) use (&$pids,$confs) : ?bool{
+		$servWorkingDir = $confs->getWorkingDir($name);
 		$pid = pcntl_fork();
 		if($pid === 0 ){
 			cli_set_process_title("WFW MSServer $name instance");
 			//clean previous servers before restart.
-			$servWorkingDir = $confs->getWorkingDir($name);
 			if(!is_dir($servWorkingDir))
 				mkdir($servWorkingDir,0700,true);
-			//$pidFile = $servWorkingDir."/msserver.pid";
+
 			$out=[];
 			exec("find $servWorkingDir -name *.pid",$out);
 			foreach ($out as $pidf){
 				posix_kill((int)file_get_contents($pidf),PCNTLSignalsHelper::SIGALRM);
 			}
-			/*if(file_exists($pidFile)){
-				posix_kill((int)file_get_contents($pidFile),PCNTLSignalsHelper::SIGALRM);
-			}*/
+
+			if($oldPID) sleep(10); //ugly but let the time for childs to die;...
 
 			$server = new MSServer(
 				$confs->getSocketPath($name),
@@ -119,7 +118,7 @@ try{
 			return null;
 		}else{
 			if(!is_null($oldPID) && isset($pids[$oldPID])) unset($pids[$oldPID]);
-			$pids[$pid]=$name;
+			$pids[$pid]=["name" => $name, "working_dir" => $servWorkingDir ];
 			return true;
 		}
 	};

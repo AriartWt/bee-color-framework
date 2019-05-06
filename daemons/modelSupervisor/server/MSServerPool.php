@@ -101,34 +101,52 @@ final class MSServerPool {
 			);
 			sleep($firstCheck);
 			while(true){
+				$pidList = $this->_pids;
 				$this->_logger->log(
 					"[MSServerPool] [AliveChecker] Wake up. PID list : "
-					.implode(",",array_map(function($k,$v){return "$v($k)";},array_keys($this->_pids),$this->_pids)),
+					.implode(",",array_map(
+						function($k,$v){return $v["name"]."($k)";},
+						array_keys($pidList),
+						$this->_pids)
+					),
 					ILogger::LOG
 				);
-				foreach($this->_pids as $pid=>$instance){
+				foreach($pidList as $pid => $infos){
+					$instance = $infos["name"];
+					//get all pids
 					$out=[];
-					exec("ps --no-headers -p $pid | grep -v \"<defunct>\" > /dev/null && echo active || echo inactive",$out);
-					if(array_pop($out) === "inactive"){
-						$this->_logger->log(
-							"[MSServerPool] [AliveChecker] $instance is not running. Trying to restart...",
-							ILogger::ERR
+					exec("find \"".$infos["working_dir"]."\" -name *.pid",$out);
+					foreach ($out as $pidf){
+						$tpid = (int)file_get_contents($pidf);
+						$out = [];
+						exec("ps --no-headers -p $tpid | grep -v \"<defunct>\" > /dev/null && echo active || echo inactive",$out);
+						if(array_pop($out) === "inactive"){
+							$this->_logger->log(
+								"[MSServerPool] [AliveChecker] $instance ($pidf) is not running. Trying to restart...",
+								ILogger::ERR
+							);
+							$res = $restartInstance($instance,$pid);
+							if(is_null($res)) $this->_logger->log(
+								"[MSServerPool] [AliveChecker] Unable to restart instance $instance.",
+								ILogger::ERR
+							);
+							else if(!$res) exit(0);
+							else $this->_logger->log(
+								"[MSServerPool] [AliveChecker] Instance $instance successfully restarted. New PID list : "
+								.implode(",",array_map(
+									function($k,$v){return $v["name"]."($k)";},
+									array_keys($pidList),
+									$this->_pids)
+								),
+								ILogger::ERR
+							);
+							break;
+						}else $this->_logger->log(
+							"[MSServerPool] [AliveChecker] $instance ("
+							.basename($pidf)."=>$pid) is running.",
+							ILogger::LOG
 						);
-						$res = $restartInstance($instance,$pid);
-						if(is_null($res)) $this->_logger->log(
-							"[MSServerPool] [AliveChecker] Unable to restart instance $instance.",
-							ILogger::ERR
-						);
-						else if(!$res) exit(0);
-						else $this->_logger->log(
-							"[MSServerPool] [AliveChecker] Instance $instance successfully restarted. New PID list : "
-							.implode(",",array_map(function($k,$v){return "$v($k)";},array_keys($this->_pids),$this->_pids)),
-							ILogger::ERR
-						);
-					}else $this->_logger->log(
-						"[MSServerPool] [AliveChecker] $instance ($pid) is running.",
-						ILogger::LOG
-					);
+					}
 				}
 				sleep($checkInterval);
 			}

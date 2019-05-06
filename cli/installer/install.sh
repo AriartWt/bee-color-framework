@@ -14,6 +14,8 @@ A2CONF="$INSTALLPATH/config/wfw-global.conf"
 A2CONF_PATH="/etc/apache2/conf-available"
 LOGPATH="/var/log/wfw"
 LOGPATH_OWNER="www-data:www-data"
+LOGROTATE_PATH="/etc/logrotate.d"
+LOGROTATE_CONF="$INSTALLPATH/config/wfw"
 CONFPATH="/etc/wfw"
 
 CONFSDIR=()
@@ -68,7 +70,7 @@ echo ""
 echo "Creating $A2CONF...";
 cat "$INSTALLPATH/config/wfw-global.conf.template" | sed -e "s+@ROOT+$ROOTPATH+g" >> "$A2CONF"
 echo "Moving $A2CONF to $A2CONF_PATH..."
-mv "$INSTALLPATH/config/wfw-global.conf" "/etc/apache2/conf-available"
+mv "$A2CONF" "$A2CONF_PATH"
 echo "Enabling wfw-global.conf..."
 a2enconf wfw-global
 echo "Reloading apache2..."
@@ -92,6 +94,15 @@ echo "Creating $LOGPATH..."
 mkdir -p "$LOGPATH"
 echo "Setting $LOGPATH_OWNER as owner..."
 chown -R "$LOGPATH_OWNER" "$LOGPATH"
-echo ""
 
+if [ -d "$LOGROTATE_PATH" ]
+then
+	echo ""
+	echo "Creating $LOGROTATE_CONF..."
+	cat "$INSTALLPATH/config/logrotate.template" | sed -e "s+@LOGDIR+$LOGPATH+g" >> "$LOGROTATE_CONF"
+	echo "Moving $LOGROTATE_CONF to $LOGROTATE_PATH..."
+	mv "$LOGROTATE_CONF" "$LOGROTATE_PATH"
+fi
+
+echo ""
 echo "Done."

@@ -807,11 +807,11 @@ final class WriterWorker extends Worker {
 				$this->_lastAttemptError
 				?? new MSServerComponentFailure("Unable to contact writer worker.")
 			);
-			$this->_lastAttemptError = null;
 			$this->_environment->getLogger()->log(
 				"[WRITER] [CLIENT] Unable to connect to worker ($tries attempts). Last error : $this->_lastAttemptError",
 				ILogger::ERR
 			);
+			$this->_lastAttemptError = null;
 			//On tente de renvoyer la réponse sur la socket du MSServeur.
 			try{
 				$socket = $this->createClientSocket($this->getResponseSocketName());
@@ -855,7 +855,7 @@ final class WriterWorker extends Worker {
 				);
 				socket_close($socket);
 				return true;
-			}catch(\Exception $e){
+			}catch(\Exception | \Error $e){
 				$this->_lastAttemptError = $e;
 				return false;
 			}
