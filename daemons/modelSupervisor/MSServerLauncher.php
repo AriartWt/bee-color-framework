@@ -40,10 +40,12 @@ try{
 	);
 
 	$pids = [];
+	$restarts = [];
+	$lastMailSent = 0;
 	//if can't fork : return null
 	//if fork parent : true
 	//if fork child : false
-	$startInstance = function(string $name, ?string $oldPID=null) use (&$pids,$confs) : ?bool{
+	$startInstance = function(string $name, ?string $oldPID=null) use (&$pids,$confs,&$restarts,&$lastMailSent) : ?bool{
 		$servWorkingDir = $confs->getWorkingDir($name);
 		$pid = pcntl_fork();
 		if($pid === 0 ){
@@ -58,7 +60,28 @@ try{
 				posix_kill((int)file_get_contents($pidf),PCNTLSignalsHelper::SIGALRM);
 			}
 
-			if($oldPID) sleep(10); //ugly but let the time for childs to die;...
+			if($oldPID){
+				sleep(10);//ugly but let the time for childs to die;...
+				if(!isset($restarts[$name])) $restarts[$name]=[];
+				$li = count($restarts[$name])-1;
+				if($li>=0) $last = $restarts[$name][$li];
+				else $last = null;
+				$restarts[$name][]= $new = microtime(true);
+				$mail = $confs->getAdminMailAddr($name);
+				//limit sending mail once every 30min, avoid spamming in case of fail chain,
+				//execpt for the 3 first attempts.
+				if((($last && $new - $lastMailSent > 1800) || count($restarts[$name]) < 4) && $mail){
+					$file = $confs->getLogPath($name,$confs->isCopyLogModeEnabled()?"err":"debug");
+					$lastMailSent=microtime(true);
+					exec("tail -n150 $file | mail -s \"[MSSERVER][ERROR] $name instance have been restarted "
+					     .count($restarts[$name])." times from now.\" $mail"
+					);
+					$confs->getLogger()->log(
+						"[MSServerPool] [AliveChecker] Error notification mail sent to $mail.",
+						ILogger::LOG
+					);
+				}
+			}
 
 			$server = new MSServer(
 				$confs->getSocketPath($name),

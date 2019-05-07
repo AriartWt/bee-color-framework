@@ -114,7 +114,7 @@ try{
 		$unixPerm = $wfwConf->getString("permissions") ?? 700;
 		$tmpDir = $wfwConf->getString('tmp');
 		if(strpos($tmpDir,"/")!==0) $tmpDir = ROOT."/$tmpDir";
-		//nex create a working dir in tmp folder
+		//next create a working dir in tmp folder
 		if(!is_dir($tmp = "$tmpDir/wfw"))mkdir($tmp,700);
 		foreach($pMap as $n=>$p){
 			if(!is_dir("$tmp/$n")) mkdir("$tmp/$n",700);
@@ -152,6 +152,8 @@ try{
 				//mv conf file in the updated directory
 				$exec("mv \"$tmp/$n/$c\" \"$p/$v\"");
 			}
+			if(!is_link("/etc/wfw/$n") && $n!=="self")
+				$exec("ln -s \"$p/site/config\" \"/etc/wfw/$n\"");
 			//reset all permissions
 			$exec("chmod -R $unixPerm \"$p\"");
 			$exec("chown -R $unixUser:$unixUser \"$p\"");
@@ -188,6 +190,11 @@ try{
 			if(is_link(ROOT."/$args[0]")) unlink(ROOT."/$args[0]");
 			//create the symlink to the ROOT folder
 			$exec("ln -s \"$args[1]/$args[0]\" \"".ROOT."/$args[0]\"");
+			//unlink an existing symlink with same name in case it's a corrupted link
+			if(is_link("/etc/wfw/$args[0]")) unlink("/etc/wfw/$args[0]");
+			//create the symlink to site confs into /etc/wfw
+			$exec("ln -s \"$args[1]/$args[0]/config\" \"/etc/wfw/$args[0]\"");
+
 			//write the project root path in DB
 			$data[$args[0]] = $path;
 			$db->write($data);
@@ -201,7 +208,7 @@ try{
 		if(!is_dir($args[1]))
 			throw new InvalidArgumentException("$path is not a valid directory !");
 		$path = "$path/$pName";
-		mkdir($path);
+		if(!file_exists($path)) mkdir($path);
 
 		$exec("cp -Rp ".ROOT."/cli/wfw/templates/site $path");
 		if(!is_dir("$path/site/package")) mkdir("$path/site/package");
@@ -215,7 +222,7 @@ try{
 			$exec("cp -Rp ".ROOT."/$dir $path");
 		}
 
-		mkdir("$path/daemons");
+		if(!file_exists("$path/daemons")) mkdir("$path/daemons");
 		//copy all daemons/* without daemons/*/data
 		$daemons = array_diff(scandir(ROOT."/daemons"),['..','.']);
 		foreach($daemons as $dir){
@@ -245,7 +252,7 @@ try{
 		$wfwConf = new FileBasedConf(CLI."/wfw/config/conf.json");
 		$tmpDir = $wfwConf->getString('tmp');
 		if(strpos($tmpDir,"/")!==0) $tmpDir = ROOT."/$tmpDir";
-
+		$adminMail = $wfwConf->getString("admin_mail");
 		$dbFile = "$tmpDir/$pName.sql";
 		$dbCredentials = "$tmpDir/$pName.credentials";
 		$mysqlRootUser = $wfwConf->getString("mysql/root/login");
@@ -289,6 +296,7 @@ try{
 		$users = $kvs->getArray("users");
 		$users[$kvsUser] = [ "password" => $kvsPwd ];
 		$kvs->set("users",$users);
+		$kvs->set("admin_mail",$adminMail);
 		$containers = $kvs->getArray("containers");
 		$containers[$kvsContainer] = [
 			"permissions" => [
@@ -301,6 +309,7 @@ try{
 
 		//next MSServer (global framework file):
 		$mss = ($msConf = new MSServerPoolConfs(ENGINE."/config/conf.json"))->getConfFile();
+		$mss->set("admin_mail",$adminMail);
 		$mss->set("instances/$pName",[
 			"models_to_load_path" => "{ROOT}/$pName/config/load/models.php",
 			"kvs" => [ "login" => $kvsUser, "password" => $kvsPwd, "container" => $kvsContainer ],
@@ -325,6 +334,13 @@ try{
 			"sctl" => $sctlPath
 		]);
 		$engine->save();
+
+		//sctl's confs
+		$sctlConf = new FileBasedConf($sctlPath);
+		$sctlConf->set("admin_mail",$adminMail);
+		$sctlConf->set("auth.pwd_owner",$wfwConf->getString("unix_user"));
+		$sctlConf->save();
+
 		//website's confs :
 		file_put_contents("$path/site/config/conf.json",new SiteConfTemplate(
 			"localhost",$dbName,$pName,$dbPwd,
@@ -436,6 +452,8 @@ try{
 		}
 		//unlink is ROOT
 		if(is_link(ROOT."/$project")) unlink(ROOT."/$project");
+		//unlink conf link
+		if(is_link("/etc/wfw/$project")) unlink("/etc/wfw/$project");
 		//delete data from projects db
 		unset($data[$project]);
 		$db->write($data);
@@ -489,6 +507,9 @@ try{
 		$wfwConf = new FileBasedConf(CLI."/wfw/config/conf.json");
 		$unixUser = $wfwConf->getString("unix_user") ?? "www-data";
 		$unixPerm = $wfwConf->getString("permissions") ?? 700;
+
+		if(!is_link("/etc/wfw/$pName"))
+			$exec("ln -s \"$pPath/site/config\" \"/etc/wfw/$pName\"");
 
 		//then, set the unix owner for the new project and give-it to the given user (apache,ngnix..)
 		$exec("chmod -R $unixPerm $pPath");

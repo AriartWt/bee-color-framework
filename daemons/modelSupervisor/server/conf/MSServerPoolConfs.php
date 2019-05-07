@@ -31,7 +31,9 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 	private $_kvsAddr;
 	/** @var StdClassOperator[] $_instancesConfs */
 	private $_instancesConfs = [];
+	/** @var ILogger $_logger */
 	private $_logger;
+	/** @var ILogger[] $_instanceLoggers */
 	private $_instanceLoggers=[];
 
 	/**
@@ -291,7 +293,7 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 	 * @param string      $level
 	 * @return string
 	 */
-	private function getLogPath(?string $instance,string $level="err"):string{
+	public function getLogPath(?string $instance,string $level="err"):string{
 		if($instance) $path = $this->_conf->getString("instances/$instance/".self::LOGS."/$level");
 		else $path = $this->_conf->getString(self::LOGS."/$level");
 		$errorPath = $path ?? "msserver".(($instance)?"-$instance":"")."-$level.log";
@@ -425,5 +427,14 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 		$res = $this->_conf->getBoolean(($instance ? "instances/$instance/" : "") ."logs/copy");
 		if(is_null($res)) return true;
 		else return $res;
+	}
+
+	/**
+	 * @param null|string $instance
+	 * @return null|string
+	 */
+	public function getAdminMailAddr(?string $instance=null):?string{
+		if($instance) return $this->_conf->getString("instances/$instance/admin_mail") ?? $this->getAdminMailAddr();
+		else return $this->_conf->getString("admin_mail");
 	}
 }

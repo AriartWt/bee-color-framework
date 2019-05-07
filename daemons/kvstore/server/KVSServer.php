@@ -5,6 +5,7 @@ use wfw\daemons\kvstore\server\containers\ContainerWorker;
 use wfw\daemons\kvstore\server\containers\params\client\ContainerWorkerClientParams;
 use wfw\daemons\kvstore\server\containers\params\worker\ContainerWorkerParams;
 use wfw\daemons\kvstore\server\containers\request\admin\ShutdownContainerWorkerRequest;
+use wfw\daemons\kvstore\server\environment\IKVSContainer;
 use wfw\daemons\kvstore\server\environment\IKVSServerEnvironment;
 use wfw\daemons\kvstore\server\errors\AccessDenied;
 use wfw\daemons\kvstore\server\errors\ExternalShutdown;
@@ -33,6 +34,9 @@ use wfw\engine\lib\data\string\compressor\GZCompressor;
 use wfw\engine\lib\data\string\serializer\LightSerializer;
 use wfw\engine\lib\data\string\serializer\PHPSerializer;
 use wfw\engine\lib\data\string\serializer\ISerializer;
+use wfw\engine\lib\logger\DefaultLogFormater;
+use wfw\engine\lib\logger\FileLogger;
+use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\PHP\errors\IllegalInvocation;
 use wfw\engine\lib\PHP\types\UUID;
 
@@ -74,6 +78,7 @@ final class KVSServer {
 	private $_dataParser;
 	/** @var null|string $_lastLinearisation */
 	private $_lastLinearisation;
+	private $_logger;
 
 	/**
 	 *  Timeout des socket sur RCV et SND
@@ -86,29 +91,31 @@ final class KVSServer {
 	 *
 	 * ATTENTION : le Serializer utilisé doit être le mếme que celui utilisé par la serialsiation !
 	 *
-	 * @param string  $socketPath Chemin d'accés à la socket unix.
-	 * @param string  $dbPath     Chemin d'accés à la base de données.
-	 * @param KVSSocketProtocol     $protocol        Protocol de communication à utiliser
-	 * @param IKVSServerEnvironment $KVSEnvironement Environnement de travail du serveur.
-	 * @param null|ISerializer      $serializer      (optionnel : defaut LightSerializer (GZCompressor)) Objet utilisé pour la serialisation/déserialistation.
-	 * @param int    $requestTtl         (optionnel : defaut 60) Temps en secondes avant expiration des requêtes en attente.
-	 * @param bool   $sendErrorsToClient (optionnel : defaut true) Envoyer les erreurs au client
-	 * @param bool   $shutdownOnError    (optionnel : defaut false) Eteindre le serveur sur erreur
-	 * @param string $errorLogs          (optionnel : defaut __DIR__.DS."logs"."error_logs.txt") Fichier de logs d'erreurs.
+	 * @param string                $socketPath         Chemin d'accés à la socket unix.
+	 * @param string                $dbPath             Chemin d'accés à la base de données.
+	 * @param KVSSocketProtocol     $protocol           Protocol de communication à utiliser
+	 * @param IKVSServerEnvironment $KVSEnvironement    Environnement de travail du serveur.
+	 * @param ILogger               $logger
+	 * @param null|ISerializer      $serializer         (optionnel : defaut LightSerializer (GZCompressor)) Objet utilisé pour la serialisation/déserialistation.
+	 * @param int                   $requestTtl         (optionnel : defaut 60) Temps en secondes avant expiration des requêtes en attente.
+	 * @param bool                  $sendErrorsToClient (optionnel : defaut true) Envoyer les erreurs au client
+	 * @param bool                  $shutdownOnError    (optionnel : defaut false) Eteindre le serveur sur erreur
 	 *
 	 * @throws IllegalInvocation
+	 * @throws \InvalidArgumentException
 	 */
 	public function __construct(
 		string $socketPath,
 		string $dbPath,
 		KVSSocketProtocol $protocol,
 		IKVSServerEnvironment $KVSEnvironement,
+		ILogger $logger,
 		?ISerializer $serializer =null,
 		int $requestTtl = 60,
 		bool $sendErrorsToClient = true,
-		bool $shutdownOnError = false,
-		string $errorLogs = __DIR__."/error_logs.txt"
+		bool $shutdownOnError = false
 	) {
+		$this->_logger = $logger;
 		$this->_serializer = $serializer ?? new LightSerializer(
 			new GZCompressor(),
 			new PHPSerializer()
@@ -134,7 +141,6 @@ final class KVSServer {
 			$this->_protocol = $protocol;
 			$this->_socketAddr = $socketPath;
 			$this->_dbPath = $dbPath;
-			$this->_errorLogsFile = $errorLogs;
 			$this->_shutdownOnError = $shutdownOnError;
 			$this->_sendErrorToClient = $sendErrorsToClient;
 			$this->_environment = $KVSEnvironement;
@@ -150,33 +156,42 @@ final class KVSServer {
 
 			$this->_workers = [];
 			foreach($this->_environment->getContainers() as $container){
-				$pidFile = $container->getSavePath().DS."pid";
-				//Si le KVServer a été arrêté soudainement et que les worker sont toujours en cours d'execution,
-				//on les tue
-				if(file_exists($pidFile)){
-					posix_kill(file_get_contents($pidFile),9);
-					unlink($pidFile);
-				}
-				$worker = new ContainerWorker(
-					$this->_socketAddr,
-					$this->_protocol,
-					$this->_serializer,
-					$this->_dataParser,
-					new ContainerWorkerParams(
-						$container,
-						$this->_serverKey,
-						$this->_dbPath,
-						dirname($this->_socketAddr)
-					),
-					new ContainerWorkerClientParams(
-						$container,
-						dirname($this->_socketAddr)
-					)
-				);
-				$this->_workers[$container->getName()] = $worker;
-				$worker->start();
+				$this->startContainer($container);
 			}
 		}
+	}
+
+	/**
+	 * @param IKVSContainer $container
+	 * @param bool          $restart
+	 * @throws \InvalidArgumentException
+	 */
+	private function startContainer(IKVSContainer $container,bool $restart=false):void{
+		$pidFile = $container->getSavePath().DS."container.pid";
+		//Si le KVServer a été arrêté soudainement et que les worker sont toujours en cours d'execution,
+		//on les tue
+		if(file_exists($pidFile)){
+			posix_kill(file_get_contents($pidFile),9);
+			unlink($pidFile);
+		}
+		$worker = new ContainerWorker(
+			$this->_socketAddr,
+			$this->_protocol,
+			$this->_serializer,
+			$this->_dataParser,
+			new ContainerWorkerParams(
+				$container,
+				$this->_serverKey,
+				$this->_dbPath,
+				dirname($this->_socketAddr)
+			),
+			new ContainerWorkerClientParams(
+				$container,
+				dirname($this->_socketAddr)
+			)
+		);
+		$this->_workers[$container->getName()] = $worker;
+		$worker->start();
 	}
 
 	/**

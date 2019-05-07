@@ -43,14 +43,14 @@ try{
 			$conf->getDbPath(),
 			$conf->getSessionTtl()
 		),
+		$conf->getLogger(),
 		new LightSerializer(
 			new GZCompressor(),
 			new PHPSerializer()
 		),
 		$conf->getRequestTtl(),
 		$conf->haveToSendErrorToClient(),
-		$conf->haveToShutdownOnError(),
-		$conf->getErrorLogsPath()
+		$conf->haveToShutdownOnError()
 	);
 
 	//On prépare les handlers de signaux

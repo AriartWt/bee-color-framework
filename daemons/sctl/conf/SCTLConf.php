@@ -116,6 +116,13 @@ final class SCTLConf {
 	}
 
 	/**
+	 * @return null|string
+	 */
+	public function getAdminMailAddr():?string{
+		return $this->_conf->getString("admin_mail");
+	}
+
+	/**
 	 * @return bool
 	 */
 	public function isCopyLogModeEnabled():bool{

@@ -3,6 +3,7 @@ namespace wfw\daemons\kvstore\server\environment;
 
 use stdClass;
 use wfw\daemons\kvstore\server\KVSModes;
+use wfw\engine\lib\logger\ILogger;
 
 /**
  *  Container kvs
@@ -18,6 +19,7 @@ final class KVSContainer implements IKVSContainer {
 	private $_groups;
 	/** @var int $_defaultStorageMode */
 	private $_defaultStorageMode;
+	private $_logger;
 
 	/**
 	 * KVSContainer constructor.
@@ -28,6 +30,8 @@ final class KVSContainer implements IKVSContainer {
 	 * @param array    $groupDefs          Définition des groupes (stdClass type "groupeName"=>string[] (user names)
 	 * @param int      $defaultStorageMode Mode de stockage par défaut du container
 	 * @param string   $dbPath             Chemin d'accés au repertoire parent du container
+	 * @param ILogger  $logger
+	 * @throws \InvalidArgumentException
 	 */
 	public function __construct(
 		string $name,
@@ -35,8 +39,10 @@ final class KVSContainer implements IKVSContainer {
 		stdClass $groups,
 		array $groupDefs,
 		int $defaultStorageMode,
-		string $dbPath
+		string $dbPath,
+		ILogger $logger
 	) {
+		$this->_logger = $logger;
 		if(KVSModes::existsValue($defaultStorageMode)){
 			$this->_defaultStorageMode = $defaultStorageMode;
 			$this->_name = $name;
@@ -128,5 +134,12 @@ final class KVSContainer implements IKVSContainer {
 	 */
 	public function getSavePath(): string {
 		return $this->_dbPath.DS.$this->getName();
+	}
+
+	/**
+	 * @return ILogger
+	 */
+	public function getLogger(): ILogger {
+		return $this->_logger;
 	}
 }

@@ -7,6 +7,7 @@ use wfw\daemons\kvstore\server\errors\ContainerNotFound;
 use wfw\daemons\kvstore\server\errors\UserGroupNotFound;
 use wfw\daemons\kvstore\server\errors\UserNotFound;
 use wfw\daemons\kvstore\server\requests\ShutdownKVSServerRequest;
+use wfw\engine\lib\logger\ILogger;
 
 /**
  *  Environnement du serveur KVS
@@ -120,7 +121,8 @@ final class KVSServerEnvironment implements IKVSServerEnvironment {
 				$containerInfos->permissions->groups??new stdClass(),
 				$this->_groupDefs,
 				$defaultStorage,
-				$containerInfos->path ?? $dbPath
+				$containerInfos->path ?? $dbPath,
+				$containerInfos->logger
 			);
 		}
 		$this->_sessions = [];

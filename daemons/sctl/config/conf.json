@@ -1,4 +1,5 @@
 {
+	"admin_mail" : null,
 	"auth.pwd_owner" : "www-data",
 	"working_dir" : "sctl/data",
 	"daemons" : [

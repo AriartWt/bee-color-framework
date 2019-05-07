@@ -101,16 +101,43 @@ final class SCTLServer implements ISCTLServer {
 			);
 			sleep($firstCheck);
 			$logger->log("[SCTL-AliveChecker] Ready to check every $checkInterval sec.");
+			$restarts=[];
+			$lastMailSent=0;
+			$mail = $this->_conf->getAdminMailAddr();
 			while(true){
 				foreach($this->_conf->getDaemons() as $d){
 					if(!$this->isAlive($d)){
 						$logger->log("[SCTL-AliveChecker] $d isn't running. Trying to restart...",ILogger::ERR);
+						if(!isset($restarts[$d])) $restarts[$d]=[];
+						$restarted = true;
 						try{
 							$this->exec("systemctl start wfw-$d.service");
 						}catch(SCTLFailure $e){
+							$restarted = false;
 							$logger->log("[SCTL-AliveChecker] Unable to restart $d : ".$e->getMessage(),ILogger::ERR);
 						}
+						$li = count($restarts[$d])-1;
+						if($li>=0) $last = $restarts[$d][$li];
+						else $last = null;
+						$restarts[$d][]= $new = microtime(true);
+						//limit sending mail once to 30min, avoid spamming in case of fail chain,
+						//execpt for the 3 first attempts.
+						if((($last && $new - $lastMailSent > 1800) || count($restarts[$d]) < 4) && $mail){
+							$file = $this->_conf->getLogFile($this->_conf->isCopyLogModeEnabled()?"err":"debug");
+							$lastMailSent = microtime(true);
+							exec("tail -n150 $file | mail -s \"[SCTL][ERROR] $d daemon "
+							     .(($restarted)?"have been restarted":"failed to restart")
+							     .count($restarts[$d])." times from now.\" $mail"
+							);
+							$logger->log(
+								"[SCTL-AliveChecker] Error notification mail sent to $mail after a"
+								.(($restarted)?" successfull restart":" failed restart")." of $d.",
+								ILogger::LOG
+							);
+						}
 						$logger->log("[SCTL-AliveChecker] $d successfully restarted.",ILogger::LOG,ILogger::ERR);
+					}else{
+						$logger->log("[SCTL-AliveChecker] $d is still alive.",ILogger::LOG);
 					}
 				}
 				sleep($checkInterval);

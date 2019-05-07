@@ -6,8 +6,10 @@
         "copy" : true,
         "default_path" : "/var/log/wfw/msserver"
     },
+    "admin_mail" : null,
     "default_instance": {
         "initializers_path": "{ROOT}\/daemons\/modelSupervisor\/server\/config\/initializers.components.php",
+        "admin_mail" : null,
         "components": {
             "writer": {
                 "max_attempts": 10,

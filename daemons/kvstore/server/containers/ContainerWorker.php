@@ -36,6 +36,7 @@ use wfw\daemons\kvstore\socket\data\KVSDataParser;
 use wfw\daemons\kvstore\socket\data\KVSDataParserResult;
 use wfw\daemons\multiProcWorker\Worker;
 use wfw\engine\lib\data\string\serializer\ISerializer;
+use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
 use wfw\engine\lib\PHP\errors\IllegalInvocation;
 use wfw\engine\lib\PHP\types\Type;
@@ -86,7 +87,6 @@ final class ContainerWorker extends Worker {
 		$this->_serializer = $serializer;
 		$this->_dataParser = $dataParser;
 		$this->_socketAddr = $socket_addr;
-
 		if(!is_null($clientParams)){
 			$this->_clientParams = $clientParams;
 		}

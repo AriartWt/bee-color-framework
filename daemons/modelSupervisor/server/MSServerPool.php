@@ -143,7 +143,7 @@ final class MSServerPool {
 							break;
 						}else $this->_logger->log(
 							"[MSServerPool] [AliveChecker] $instance ("
-							.basename($pidf)."=>$pid) is running.",
+							.basename($pidf)."=>$tpid) is running.",
 							ILogger::LOG
 						);
 					}

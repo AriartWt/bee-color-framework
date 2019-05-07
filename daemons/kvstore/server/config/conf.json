@@ -2,6 +2,7 @@
     "working_dir": "kvstore\/data",
     "socket_path": "KVSServer.socket",
     "db_path": "kvs_db",
+    "admin_mail" : null,
     "containers": {
 
     },
