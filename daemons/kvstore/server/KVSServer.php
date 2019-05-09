@@ -535,11 +535,6 @@ final class KVSServer {
 	 *  Donne l'ordre de terminer à tous les workers.
 	 */
 	private function shutdownContainers():void{
-		$out = [];
-		exec("ps -aux | grep \"WFW KVS\"",$out);
-		$this->_logger->log(
-			"[KVS] Process list : \n".implode("\n",$out),ILogger::LOG
-		);
 		foreach($this->_workers as $name => $worker){
 			$this->_logger->log(
 				"[KVS] Attempting to stop container $name...",ILogger::LOG
