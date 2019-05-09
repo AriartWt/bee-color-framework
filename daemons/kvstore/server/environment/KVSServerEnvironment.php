@@ -7,7 +7,6 @@ use wfw\daemons\kvstore\server\errors\ContainerNotFound;
 use wfw\daemons\kvstore\server\errors\UserGroupNotFound;
 use wfw\daemons\kvstore\server\errors\UserNotFound;
 use wfw\daemons\kvstore\server\requests\ShutdownKVSServerRequest;
-use wfw\engine\lib\logger\ILogger;
 
 /**
  *  Environnement du serveur KVS

@@ -135,7 +135,8 @@ try{
 			return false;
 		}else if($pid < 0 ){
 			$confs->getLogger()->log(
-				"[MSServerPool] Unable to fork to create instance '$name', maybe insufficient ressources or max process limit reached.",
+				"[MSServerPool] Unable to fork to create instance '$name', maybe"
+				." insufficient ressources or max process limit reached.",
 				ILogger::ERR
 			);
 			return null;
@@ -191,37 +192,30 @@ try{
 	);
 	exit(1);
 }catch(\Exception $e){
-	if($argvReader->exists('--debug')){
-		fwrite(STDOUT,"\e[31mWFW_msserver ERROR\e[0m : ".PHP_EOL."$e".PHP_EOL);
-		$confs->getLogger()->log(
-			"\e[31mWFW_msserver ERROR\e[0m : ".PHP_EOL."$e",
-			ILogger::ERR
-		);
-	}
-	else{
-		fwrite(
-			STDOUT,
-			"\e[31mWFW_msserver ERROR\e[0m (try --debug for more) : {$e->getMessage()}".PHP_EOL
-		);
-		$confs->getLogger()->log("\e[31mWFW_msserver ERROR\e[0m (try --debug for more) : {$e->getMessage()}", ILogger::ERR);
-	}
+	if($argvReader->exists('--debug'))fwrite(
+		STDOUT,"\e[31mWFW_msserver ERROR\e[0m : ".PHP_EOL."$e".PHP_EOL
+	);
+	else fwrite(
+		STDOUT,
+		"\e[31mWFW_msserver ERROR\e[0m (try --debug for more) : {$e->getMessage()}".PHP_EOL
+	);
+	$confs->getLogger()->log(
+		"\e[31mWFW_msserver ERROR\e[0m : $e",
+		ILogger::ERR
+	);
 	exit(2);
 }catch(\Error $e){
-	if($argvReader->exists('--debug')){
-		$confs->getLogger()->log(
-			"\e[31mWFW_msserver FATAL_ERROR\e[0m : ".PHP_EOL."$e",
-			ILogger::ERR
-		);
-	}
-	else{
-		fwrite(
-			STDOUT,
-			"\e[31mWFW_msserver FATAL_ERROR\e[0m (try --debug for more) : {$e->getMessage()}".PHP_EOL
-		);
-		$confs->getLogger()->log(
-			"\e[31mWFW_msserver FATAL_ERROR\e[0m (try --debug for more) : {$e->getMessage()}",
-			ILogger::ERR
-		);
-	}
+	if($argvReader->exists('--debug')) fwrite(
+		STDOUT,
+		"\e[31mWFW_msserver FATAL_ERROR\e[0m (try --debug for more) : $e".PHP_EOL
+	);
+	else fwrite(
+		STDOUT,
+		"\e[31mWFW_msserver FATAL_ERROR\e[0m (try --debug for more) : {$e->getMessage()}".PHP_EOL
+	);
+	$confs->getLogger()->log(
+		"\e[31mWFW_msserver FATAL_ERROR\e[0m : $e",
+		ILogger::ERR
+	);
 	exit(3);
 }

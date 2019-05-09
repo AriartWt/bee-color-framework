@@ -19,6 +19,7 @@ final class KVSContainer implements IKVSContainer {
 	private $_groups;
 	/** @var int $_defaultStorageMode */
 	private $_defaultStorageMode;
+	/** @var ILogger $_logger */
 	private $_logger;
 
 	/**

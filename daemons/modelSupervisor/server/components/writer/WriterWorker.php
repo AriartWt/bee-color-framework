@@ -177,7 +177,7 @@ final class WriterWorker extends Worker {
 			$accepted = socket_accept($this->_socket);
 			$this->configureSocket($accepted);
 			$this->_environment->getLogger()->log(
-				"[WRITER] [WORKER] New incoming connexion accepted.",
+				"[WRITER] [WORKER] New incoming connection accepted.",
 				ILogger::LOG
 			);
 			$continue = $this->process($accepted);
@@ -279,14 +279,14 @@ final class WriterWorker extends Worker {
 								"$tags Report successfully sent to client",
 								ILogger::LOG
 							);
-						}catch(\Exception $e){
+						}catch(\Exception | \Error $e){
 							$this->_environment->getLogger()->log(
 								"$tags Unable to send error to client : $e",
 								ILogger::ERR
 							);
 						}
 					}else $this->_environment->getLogger()->log(
-						"$tags Client request ignored : wrong server key given",
+						"$tags Client request ignored : wrong server key given.",
 						ILogger::WARN
 					);
 				}else $this->_environment->getLogger()->log(
@@ -315,7 +315,8 @@ final class WriterWorker extends Worker {
 	 */
 	private function handle(IWriterRequest $clientRequest, MSServerDataParserResult $request):bool{
 		$this->_environment->getLogger()->log(
-			"[WRITER] [WORKER] Processing ".get_class($clientRequest)."...",
+			"[WRITER] [WORKER] Processing ".get_class($clientRequest)." (query id : "
+			.$request->getQueryId().")...",
 			ILogger::LOG
 		);
 		if($clientRequest instanceof IWriterAdminRequest){
@@ -880,13 +881,15 @@ final class WriterWorker extends Worker {
 					$socket
 				);
 				$this->_environment->getLogger()->log(
-					"[WRITER] [WORKER] Response successfully sent to the MSServer",
+					"[WRITER] [WORKER] Response successfully sent to the MSServer (query id : "
+					.$response->getQueryId().")",
 					ILogger::LOG
 				);
 			}catch(\Exception $e){
 				$socketError = socket_last_error();
 				$this->_environment->getLogger()->log(
 					"[WRITER] [WORKER] Unable to send response to the MSServer : ".print_r([
+						"query_id"=>$response->getQueryId(),
 						"socket" => [
 							"code" => $socketError,
 							"str" => socket_strerror($socketError)

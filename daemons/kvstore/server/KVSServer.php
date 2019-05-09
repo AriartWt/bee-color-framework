@@ -1,6 +1,7 @@
 <?php
 namespace wfw\daemons\kvstore\server;
 
+use PHPMailer\PHPMailer\Exception;
 use wfw\daemons\kvstore\server\containers\ContainerWorker;
 use wfw\daemons\kvstore\server\containers\params\client\ContainerWorkerClientParams;
 use wfw\daemons\kvstore\server\containers\params\worker\ContainerWorkerParams;
@@ -34,8 +35,6 @@ use wfw\engine\lib\data\string\compressor\GZCompressor;
 use wfw\engine\lib\data\string\serializer\LightSerializer;
 use wfw\engine\lib\data\string\serializer\PHPSerializer;
 use wfw\engine\lib\data\string\serializer\ISerializer;
-use wfw\engine\lib\logger\DefaultLogFormater;
-use wfw\engine\lib\logger\FileLogger;
 use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\PHP\errors\IllegalInvocation;
 use wfw\engine\lib\PHP\types\UUID;
@@ -52,8 +51,6 @@ final class KVSServer {
 	private $_socketAddr;
 	/** @var string $_dbPath */
 	private $_dbPath;
-	/** @var string $_errorLogsFile */
-	private $_errorLogsFile;
 	/** @var string $_fileLockPath */
 	private $_fileLockPath;
 	/** @var resource $_acquiredFileLock */
@@ -78,6 +75,7 @@ final class KVSServer {
 	private $_dataParser;
 	/** @var null|string $_lastLinearisation */
 	private $_lastLinearisation;
+	/** @var ILogger $_logger */
 	private $_logger;
 
 	/**
@@ -155,8 +153,20 @@ final class KVSServer {
 			socket_listen($this->_socket);
 
 			$this->_workers = [];
+			$logger->log("[KVS] Launching containers...",ILogger::LOG);
 			foreach($this->_environment->getContainers() as $container){
-				$this->startContainer($container);
+				try{
+					$this->startContainer($container);
+					$logger->log(
+						"[KVS] Container ".$container->getName()." started.",
+						ILogger::LOG
+					);
+				}catch(\Error | Exception $e){
+					$logger->log(
+						"[KVS] Error while trying to launch container : ".$container->getName(),
+						ILogger::ERR
+					);
+				}
 			}
 		}
 	}
@@ -198,6 +208,7 @@ final class KVSServer {
 	 *  Démarre le serveur.
 	 */
 	public function start():void{
+		$this->_logger->log("[KVS] Server started (pid : ".getmypid().")",ILogger::LOG);
 		while(true){
 			$socket = socket_accept($this->_socket);
 			$this->configureSocket($socket);
@@ -210,6 +221,7 @@ final class KVSServer {
 	 * @param resource $socket Socket acceptée
 	 */
 	public function process($socket){
+		$this->_logger->log("[KVS] New incoming connection.",ILogger::LOG);
 		try{
 			$data = $this->read($socket);
 			if(strlen($data)===0){
@@ -240,14 +252,28 @@ final class KVSServer {
 						socket_close($socket);
 					}
 				}else if($parsed->instanceOf(IKVSContainerResponse::class)){
+					$this->_logger->log(
+						"[KVS] Container response recieved. Trying to send it to the matching client...",
+						ILogger::LOG
+					);
 					if(isset($this->_queries[$parsed->getQueryId()])){
 						$query = $this->_queries[$parsed->getQueryId()];
 						$query->getIO()->write($parsed->getData());
 						$query->getIO()->closeConnection();
 						unset($this->_queries[$parsed->getQueryId()]);
+						$this->_logger->log(
+							"[KVS] Component response successfully sent to client (query id : "
+							.$parsed->getQueryId().").",
+							ILogger::LOG
+						);
 					}else{
 						//Sinon la requête est ignorée
 						socket_close($socket);
+						$this->_logger->log(
+							"[KVS] Client response abort : no client waiting for this response anymore (query id : "
+							.$parsed->getQueryId().").",
+							ILogger::WARN
+						);
 					}
 				}else if($this->_environment->existsUserSession($parsed->getSessionId())){
 					if($parsed->instanceOf(LogoutRequest::class)){
@@ -300,13 +326,24 @@ final class KVSServer {
 									if($tries>=$max_tries){
 										$this->_workers[$userSession->getContainer()->getName()]->startWorker();
 										//Si on a dépassé le nombre d'essais, et que le worker n'est toujours pas joignable,
-										//on envoie l'erreur au client et on pass eà la requête suivante.
+										//on envoie l'erreur au client et on passe à la requête suivante.
 										$error = new InternalRequestTimeout($userSession->getContainer()->getName());
-										$this->errorLog($error);
+										$this->_logger->log(
+											"[KVS] Unable to send client's request to container "
+											.$userSession->getContainer()->getName()." after $tries attempts (query id : "
+											.$query->getInternalRequest()->getQueryId().") : ".$error->getError(),
+											ILogger::ERR
+										);
 										unset($this->_queries[$query->getInternalRequest()->getQueryId()]);
 										$query->getIO()->write($this->_dataParser->lineariseData($error));
 										$query->getIO()->closeConnection();
-									}
+									}else $this->_logger->log(
+										"[KVS] Client's request successfully sent to container "
+										.$userSession->getContainer()->getName()." (query id : "
+										.$query->getInternalRequest()->getQueryId()."). Request queued, "
+										."waiting for container's response...",
+										ILogger::LOG
+									);
 								}
 							}else{
 								//Sinon la requête est ignorée.
@@ -325,7 +362,6 @@ final class KVSServer {
 				throw new \InvalidArgumentException("KVSServer requests have to be instanceof ".IKVSRequest::class." but ".$parsed->getClass()." given.");
 			}
 		}catch(\Exception $e){
-			$this->errorLog($e);
 			$errorCode = socket_last_error($socket);
 			socket_clear_error($socket);
 
@@ -336,21 +372,23 @@ final class KVSServer {
 						$this->tryWrite($socket,new RequestError($e));
 					}
 					socket_close($socket);
+					$this->_logger->log("[KVS] Request error sent to client : $e",ILogger::WARN);
 					if($this->_shutdownOnError){
 						$this->shutdown($e);
 					}
 				}else{
+					$this->_logger->log("[KVS] Invalid request recieved : $e",ILogger::WARN);
 					$this->tryWrite($socket,new InvalidRequestError($e));
 					socket_close($socket);
 				}
 			}else{
-				$this->errorLog(serialize([
+				$this->_logger->log("[KVS] Request error : ".print_r([
 					"socket_last_error" => [
 						"code" => $errorCode,
 						"message" =>socket_strerror($errorCode)
 					],
 					"error" => (string)$e
-				]));
+				],true), ILogger::ERR);
 			}
 		}
 	}
@@ -386,7 +424,16 @@ final class KVSServer {
 				try{
 					$query->getIO()->write($this->_dataParser->lineariseData(new RequestTimeout()));
 					$query->getIO()->closeConnection();
-				}catch(\Exception $e){}
+					$this->_logger->log("[KVS] Request timeout sent to client (query id : "
+						.$query->getInternalRequest()->getQueryId().")",
+						ILogger::WARN
+					);
+				}catch(\Exception | \Error $e){
+					$this->_logger->log("[KVS] Unable to send request timeout to client (query id : "
+						.$query->getInternalRequest()->getQueryId().") : $e",
+						ILogger::WARN
+					);
+				}
 				unset($this->_queries[$id]);
 				$cleaned++;
 			}
@@ -420,14 +467,13 @@ final class KVSServer {
 			return 0;
 		}catch(\Exception $e){
 			$errorCode = socket_last_error();
-			$this->errorLog(serialize([
-				"date" => date('l j F Y, H:i:s'),
+			$this->_logger->log("[KVS] Unable to write in socket : ".print_r([
 				"socket_last_error" => [
 					"code" => $errorCode,
 					"message" =>socket_strerror($errorCode)
 				],
 				"error" => (string)$e
-			]));
+			],true), ILogger::ERR);
 			socket_clear_error();
 			return $errorCode;
 		}
@@ -454,25 +500,25 @@ final class KVSServer {
 		$this->shutdownContainers();
 		$this->closeConnections();
 
-		flock($this->_acquiredFileLock,LOCK_UN);
-		unlink($this->_fileLockPath);
+		if(is_resource($this->_acquiredFileLock)){
+			flock($this->_acquiredFileLock,LOCK_UN);
+			fclose($this->_acquiredFileLock);
+		}
+		if(file_exists($this->_fileLockPath)) unlink($this->_fileLockPath);
 
 		if(file_exists("$this->_dbPath/kvs.pid"))
 			unlink("$this->_dbPath/kvs.pid");
 
 		if(is_null($e) || $e instanceof ExternalShutdown){
+			$this->_logger->log("[KVS] Gracefull shutdown.",ILogger::LOG);
 			exit(0);
 		}else{
-			$this->errorLog((string)$e);
+			$this->_logger->log(
+				"[KVS] A fatal error occured, forcing the server to stop : $e",
+				ILogger::ERR
+			);
 			exit(1);
 		}
-	}
-
-	/**
-	 * @param string $log Log to write
-	 */
-	private function errorLog(string $log){
-		error_log($log.PHP_EOL,3,$this->_errorLogsFile);
 	}
 
 	/**
@@ -489,8 +535,21 @@ final class KVSServer {
 	 *  Donne l'ordre de terminer à tous les workers.
 	 */
 	private function shutdownContainers():void{
-		foreach($this->_workers as $worker){
-			$worker->shutdown($this->_serverKey);
+		$out = [];
+		exec("ps -aux | grep \"WFW KVS\"",$out);
+		$this->_logger->log(
+			"[KVS] Process list : \n".implode("\n",$out),ILogger::LOG
+		);
+		foreach($this->_workers as $name => $worker){
+			$this->_logger->log(
+				"[KVS] Attempting to stop container $name...",ILogger::LOG
+			);
+			try{
+				$worker->shutdown($this->_serverKey);
+				$this->_logger->log("[KVS] Container $name stopped.",ILogger::LOG);
+			}catch(\Error | \Exception $e){
+				$this->_logger->log("[KVS] Unable to stop container $name : $e",ILogger::ERR);
+			}
 		}
 	}
 

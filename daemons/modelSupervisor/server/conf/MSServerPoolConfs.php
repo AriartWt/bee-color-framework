@@ -102,7 +102,9 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 				FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
 				FileLogger::DEBUG,
 				$this->isCopyLogModeEnabled($instanceName)
-			)->autoConfByLevel($this->_conf->getInt("instances/$instanceName/logs/level") ?? ILogger::ERR);
+			)->autoConfByLevel($this->_conf->getInt("instances/$instanceName/logs/level")
+				?? $this->_conf->getInt("logs/level") ?? ILogger::ERR
+			);
 		}
 	}
 
@@ -299,7 +301,8 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 		$errorPath = $path ?? "msserver".(($instance)?"-$instance":"")."-$level.log";
 
 		if(strpos($errorPath,"/")!==0){
-			if($instance) $basePath = $this->_conf->getString("instances/$instance/logs/default_path");
+			if($instance) $basePath = $this->_conf->getString("instances/$instance/logs/default_path")
+										?? $this->_conf->getString("logs/default_path")."/instances";
 			else $basePath = $this->_conf->getString("logs/default_path");
 			if(!$basePath) $basePath = $this->getWorkingDir($instance);
 			if(!is_dir($basePath)) mkdir($basePath,0700,true);

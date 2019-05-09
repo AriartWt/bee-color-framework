@@ -310,11 +310,13 @@ final class MSServer {
 				$query->getIO()->closeConnection();
 				unset($this->_queries[$parsed->getQueryId()]);
 				$this->_logger->log(
-					"[MSServer] Component response successfully sent to client.",
+					"[MSServer] Component response successfully sent to client (query id : "
+					.$parsed->getQueryId().").",
 					ILogger::LOG
 				);
 			}else $this->_logger->log(
-				"[MSServer] Client response abort : no client waiting for this response anymore.",
+				"[MSServer] Client response abort : no client waiting for this response anymore (query id : "
+				.$parsed->getQueryId().").",
 				ILogger::WARN
 			);
 			return null;
@@ -362,7 +364,8 @@ final class MSServer {
 					if($hits === 0){
 						throw new NoHandlerForRequest("No request handler trigered this request !");
 					}else $this->_logger->log(
-						"Request successfully sent to one or more components",
+						"Request successfully sent to one or more components (queue id : "
+						.$query->getInternalRequest()->getQueryId().")",
 						ILogger::LOG
 					);
 					return null;
@@ -388,7 +391,16 @@ final class MSServer {
 				try{
 					$query->getIO()->write($this->_dataParser->lineariseData(new RequestTimeout()));
 					$query->getIO()->closeConnection();
-				}catch(\Exception $e){}
+					$this->_logger->log("[MSServer] Request timeout sent to client (query id : "
+						.$query->getInternalRequest()->getQueryId().")",
+						ILogger::WARN
+					);
+				}catch(\Exception | \Error $e){
+					$this->_logger->log("[MSServer] Unable to send request timeout to client (query id : "
+						.$query->getInternalRequest()->getQueryId().") : $e",
+						ILogger::WARN
+					);
+				}
 				unset($this->_queries[$id]);
 				$cleaned++;
 			}
@@ -449,8 +461,10 @@ final class MSServer {
 		$this->shutdownComponent();
 		$this->closeConnections();
 
-		flock($this->_acquiredLockFile,LOCK_UN);
-		fclose($this->_acquiredLockFile);
+		if(is_resource($this->_acquiredLockFile)){
+			flock($this->_acquiredLockFile,LOCK_UN);
+			fclose($this->_acquiredLockFile);
+		}
 		unlink($this->_lockFile);
 		if(file_exists($this->_environment->getWorkingDir()."/msserver.pid"))
 			unlink($this->_environment->getWorkingDir()."/msserver.pid");
@@ -482,7 +496,15 @@ final class MSServer {
 	 */
 	private function shutdownComponent():void{
 		foreach($this->_environment->getComponents() as $component){
+			$this->_logger->log(
+				"[MSServer] Trying to stop component : ".$component->getName()."...",
+				ILogger::LOG
+			);
 			$component->shutdown();
+			$this->_logger->log(
+				"[MSServer] Component ".$component->getName()." stopped.",
+				ILogger::LOG
+			);
 		}
 	}
 

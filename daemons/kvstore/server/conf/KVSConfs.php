@@ -32,7 +32,9 @@ final class KVSConfs {
 	private $_conf;
 	/** @var string $_basePath */
 	private $_basePath;
+	/** @var ILogger $_logger */
 	private $_logger;
+	/** @var ILogger[] $_instanceLoggers */
 	private $_instanceLoggers=[];
 
 	/**
@@ -71,7 +73,18 @@ final class KVSConfs {
 		$workingDir = $this->getWorkingDir();
 		if(!is_dir($workingDir)) mkdir($workingDir,0700,true);
 
-		foreach($this->getContainers() as $containerName=>$data){
+		$this->_logger = (new FileLogger(new DefaultLogFormater(),...[
+			$this->getLogPath(null,"log"),
+			$this->getLogPath(null,"err"),
+			$this->getLogPath(null,"warn"),
+			$this->getLogPath(null,"debug")
+		]))->autoConfFileByLevel(
+			FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
+			FileLogger::DEBUG,
+			$this->isCopyLogModeEnabled(null)
+		)->autoConfByLevel($this->_conf->getInt("logs/level") ?? ILogger::ERR);
+
+		foreach($this->getContainers(false) as $containerName=>$data){
 			$this->_instanceLoggers[$containerName] = (new FileLogger(new DefaultLogFormater(),...[
 				$this->getLogPath($containerName,"log"),
 				$this->getLogPath($containerName,"err"),
@@ -81,7 +94,9 @@ final class KVSConfs {
 				FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
 				FileLogger::DEBUG,
 				$this->isCopyLogModeEnabled($containerName)
-			)->autoConfByLevel($this->_conf->getInt("containers/$containerName/logs/level") ?? ILogger::ERR);
+			)->autoConfByLevel($this->_conf->getInt("containers/$containerName/logs/level")
+					?? $this->_conf->getInt("logs/level") ?? ILogger::ERR
+			);
 		}
 	}
 
@@ -187,13 +202,17 @@ final class KVSConfs {
 	}
 
 	/**
+	 * @param bool $withLoggers
 	 * @return stdClass
+	 * @throws \InvalidArgumentException
 	 * @throws \wfw\engine\lib\errors\InvalidTypeSupplied
 	 */
-	public function getContainers():stdClass{
+	public function getContainers(bool $withLoggers = true):stdClass{
 		$res = $this->_conf->getObject(self::CONTAINERS);
-		foreach($res as $name=>$container){
-			$container->logger = $this->getLogger($name);
+		if($withLoggers){
+			foreach($res as $name=>$container){
+				$container->logger = $this->getLogger($name);
+			}
 		}
 		return $res;
 	}
@@ -256,12 +275,13 @@ final class KVSConfs {
 	 * @return null|string
 	 */
 	private function getLogPath(?string $container,string $level="err"):?string{
-		if($container) $path = $this->_conf->getString("instances/$container/".self::LOGS."/$level");
+		if($container) $path = $this->_conf->getString("containers/$container/".self::LOGS."/$level");
 		else $path = $this->_conf->getString(self::LOGS."/$level");
-		$errorPath = $path ?? "msserver".(($container)?"-$container":"")."-$level.log";
+		$errorPath = $path ?? "kvs".(($container)?"-$container":"")."-$level.log";
 
 		if(strpos($errorPath,"/")!==0){
-			if($container) $basePath = $this->_conf->getString("instances/$container/logs/default_path");
+			if($container) $basePath = $this->_conf->getString("containers/$container/logs/default_path")
+										?? $this->_conf->getString("logs/default_path")."/containers";
 			else $basePath = $this->_conf->getString("logs/default_path");
 			if(!$basePath) $basePath = $this->getWorkingDir($container);
 			if(!is_dir($basePath)) mkdir($basePath,0700,true);
@@ -274,11 +294,10 @@ final class KVSConfs {
 	/**
 	 * @param null|string $container
 	 * @return ILogger
-	 * @throws \InvalidArgumentException
 	 */
 	public function getLogger(?string $container=null):ILogger{
-		if($container && !isset($this->_instancesConfs[$container]))
-			throw new \InvalidArgumentException("Unknown instance $container");
+		if($container && !isset($this->_instanceLoggers[$container]))
+			throw new \InvalidArgumentException("No Logger defined for $container !");
 		return (is_null($container) ? $this->_logger : $this->_instanceLoggers[$container]);
 	}
 	/**
