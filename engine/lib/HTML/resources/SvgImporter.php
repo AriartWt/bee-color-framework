@@ -39,6 +39,7 @@ final class SvgImporter {
 	public function import(string $svgName,bool $absolutePath = false):string{
 		$path = $absolutePath?$svgName:$this->_basePath."/".$svgName;
 		if(!isset(self::$_hits[$path])) self::$_hits[$path] = 0;
+		else self::$_hits[$path]++;
 		$res = $this->_cache->get(self::CACHE_KEY.$path.self::$_hits[$path]);
 		if(is_null($res)){
 			ob_start();
@@ -62,7 +63,8 @@ final class SvgImporter {
 		foreach($ids as $id){
 			$subs[]=str_replace("-","",new UUID(UUID::V4));
 		}
-		$content = preg_replace("/(\<\?xml.*\?\>)/s","",$content);
+		$content = preg_replace("/(<!.*>)/","",$content);
+		$content = preg_replace("/(<\?xml.*\?>)/","",$content);
 		return preg_replace($ids,$subs,$content);
 	}
 }
