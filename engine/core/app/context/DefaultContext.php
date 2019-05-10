@@ -4,7 +4,6 @@ namespace wfw\engine\core\app\context;
 use Dice\Dice;
 use PHPMailer\PHPMailer\PHPMailer;
 use SessionHandlerInterface;
-use wfw\daemons\modelSupervisor\client\errors\MSClientFailure;
 use wfw\daemons\modelSupervisor\client\IMSInstanceAddrResolver;
 use wfw\daemons\modelSupervisor\client\MSInstanceAddrResolver;
 use wfw\engine\core\action\ActionHandlerFactory;
@@ -13,7 +12,6 @@ use wfw\engine\core\action\IAction;
 use wfw\engine\core\action\IActionHook;
 use wfw\engine\core\action\IActionHookFactory;
 use wfw\engine\core\action\MultiHook;
-use wfw\engine\core\action\NoHook;
 use wfw\engine\core\app\factory\DiceBasedFactory;
 use wfw\engine\core\app\factory\IGenericAppFactory;
 use wfw\engine\core\command\CommandHandlerFactory;
@@ -151,7 +149,6 @@ class DefaultContext implements IWebAppContext {
 	 * @param null|string $baseurl            Base url
 	 * @param null|string $projectName        Nom du projet. Sert de namespace pour les clés du cache.
 	 * @throws \InvalidArgumentException
-	 * @throws MSClientFailure
 	 */
 	public function __construct(
 		string $defaultLayoutClass,
@@ -180,10 +177,13 @@ class DefaultContext implements IWebAppContext {
 			ENGINE."/config/conf.json",
 			SITE."/config/conf.json"
 		]);
+
+		//Trying to dynamicaly resolve the msserver socket addr. If MSServerPool is unavailable,
+		//we maked the assumption that the sockets are in their default locations.
 		$msinstanceAddr = $this->getMSServerAddr(
 			$msserverAddr = $this->_conf->getString("server/msserver/addr")
-			?? "/srv/wfw/global/"
-		);
+				?? "/srv/wfw/global/daemons/modelSupervisor/data/ModelSupervisor.socket"
+		) ?? "/srv/wfw/global/daemons/modelSupervisor/data/".basename(ROOT)."/".basename(ROOT).".socket";
 
 		$this->_dice->addRules([
 			ILanguageLoader::class => [
@@ -306,63 +306,63 @@ class DefaultContext implements IWebAppContext {
 				'instanceOf' => DomainEventListenerFactory::class,
 				'shared' => true
 			],
-            ISession::class => [
-                'instanceOf' => Session::class,
-                'constructParams' => [ "user", $conf->getString("server/tmp/dir") ],
-                'shared' => true
-            ],
-            SessionHandlerInterface::class => [ 'instanceOf' => PHPSessionHandler::class ],
-            IRequestData::class => [
-                'instanceOf' => RequestData::class,
-                'shared' => true,
-                'constructParams' => [
-                    $globals["_GET"] ?? $_GET,
-                    $globals["_POST"] ?? $_POST,
-                    $globals["_FILES"] ?? $_FILES
-                ]
-            ],
-            IRequest::class => [
-                'instanceOf' => Request::class,
-                'shared' => true,
-                'constructParams' => [
-                    $globals["_SERVER"] ?? $_SERVER
-                ]
-            ],
-            IActionRouter::class => [ 'instanceOf' => ActionRouter::class, 'shared' => true],
-            IRenderer::class => [ 'instanceOf' => Renderer::class, 'shared' => true ],
-            IResponseRouter::class => ['instanceOf' => ResponseRouter::class, 'shared' => true ],
-            ILayoutResolver::class => [
-                'instanceOf' => LayoutResolver::class,
-                'constructParams' => [ $defaultLayoutClass ],
-                'shared' => true
-            ],
-            ErrorHandler::class => [ 'constructParams' => [ $errorViewPath ] ],
-            AjaxHandler::class => [ 'constructParams' => [ $ajaxViewPath ] ],
-            IAccessControlCenter::class => [
-                'instanceOf' => AccessControlCenter::class,
-                'constructParams' => [ $accessRules ],
-                'shared' => true
-            ],
-            INotifier::class => [ 'instanceOf' => FlashNotifier::class, 'shared' => true ],
-            IPrinter::class => [ 'instanceOf' => SimpleHTMLPrinter::class, 'shared' => true ],
-            ICSSManager::class => [ 'instanceOf' => CSSManager::class, 'shared' => true ],
-            IJsScriptManager::class => [ 'instanceOf' => JsScriptManager::class, 'shared' => true ],
-            IUserModelAccess::class => [ 'instanceOf' => UserModelAccess::class, 'shared' => true ],
-            IArticleRepository::class => [ 'instanceOf' => ArticleRepository::class, 'shared' => true],
-            IAggregateRootRepository::class => ['instanceOf' => AggregateRootRepository::class, 'shared'=>true],
-            LightSerializer::class => ['substitutions' => [ ISerializer::class => PHPSerializer::class ]],
-            ISerializer::class => ['instanceOf'=>LightSerializer::class, 'shared'=>true],
-            IStringCompressor::class => ['instanceOf'=>GZCompressor::class, 'shared'=>true],
-            IJSONEncoder::class => ["instanceOf"=>JSONEncoder::class, 'shared'=>true],
-            IArticleModelAccess::class => ['instanceOf'=>ArticleModelAccess::class, 'shared'=>true],
-            IHTMLSanitizer::class => ['instanceOf'=>HTMLPurifierBasedSanitizer::class, 'shared'=>true],
-            IUserConfirmationCodeGenerator::class => [ 'instanceOf'=>UUIDBasedUserConfirmationCodeGenerator::class,'shared'=>true],
-            IUserRegisteredMail::class => [ 'instanceOf'=>UserRegisteredMail::class],
-            IUserMailChangedMail::class => [ 'instanceOf'=>UserMailChangedMail::class],
-            IUserResetPasswordMail::class => [ 'instanceOf'=>UserResetPasswordMail::class],
-            IUserRepository::class => [ 'instanceOf'=>UserRepository::class,'shared'=>true],
-            IContactRepository::class => ['instanceOf'=>ContactRepository::class,'shared'=>true],
-            IContactModelAccess::class => ['instanceOf'=>ContactModelAccess::class,'shared'=>true]
+			ISession::class => [
+				'instanceOf' => Session::class,
+				'constructParams' => [ "user", $conf->getString("server/tmp/dir") ],
+				'shared' => true
+			],
+			SessionHandlerInterface::class => [ 'instanceOf' => PHPSessionHandler::class ],
+			IRequestData::class => [
+				'instanceOf' => RequestData::class,
+				'shared' => true,
+				'constructParams' => [
+					$globals["_GET"] ?? $_GET,
+					$globals["_POST"] ?? $_POST,
+					$globals["_FILES"] ?? $_FILES
+				]
+			],
+			IRequest::class => [
+				'instanceOf' => Request::class,
+				'shared' => true,
+				'constructParams' => [
+					$globals["_SERVER"] ?? $_SERVER
+				]
+			],
+			IActionRouter::class => [ 'instanceOf' => ActionRouter::class, 'shared' => true],
+			IRenderer::class => [ 'instanceOf' => Renderer::class, 'shared' => true ],
+			IResponseRouter::class => ['instanceOf' => ResponseRouter::class, 'shared' => true ],
+			ILayoutResolver::class => [
+				'instanceOf' => LayoutResolver::class,
+				'constructParams' => [ $defaultLayoutClass ],
+				'shared' => true
+			],
+			ErrorHandler::class => [ 'constructParams' => [ $errorViewPath ] ],
+			AjaxHandler::class => [ 'constructParams' => [ $ajaxViewPath ] ],
+			IAccessControlCenter::class => [
+				'instanceOf' => AccessControlCenter::class,
+				'constructParams' => [ $accessRules ],
+				'shared' => true
+			],
+			INotifier::class => [ 'instanceOf' => FlashNotifier::class, 'shared' => true ],
+			IPrinter::class => [ 'instanceOf' => SimpleHTMLPrinter::class, 'shared' => true ],
+			ICSSManager::class => [ 'instanceOf' => CSSManager::class, 'shared' => true ],
+			IJsScriptManager::class => [ 'instanceOf' => JsScriptManager::class, 'shared' => true ],
+			IUserModelAccess::class => [ 'instanceOf' => UserModelAccess::class, 'shared' => true ],
+			IArticleRepository::class => [ 'instanceOf' => ArticleRepository::class, 'shared' => true],
+			IAggregateRootRepository::class => ['instanceOf' => AggregateRootRepository::class, 'shared'=>true],
+			LightSerializer::class => ['substitutions' => [ ISerializer::class => PHPSerializer::class ]],
+			ISerializer::class => ['instanceOf'=>LightSerializer::class, 'shared'=>true],
+			IStringCompressor::class => ['instanceOf'=>GZCompressor::class, 'shared'=>true],
+			IJSONEncoder::class => ["instanceOf"=>JSONEncoder::class, 'shared'=>true],
+			IArticleModelAccess::class => ['instanceOf'=>ArticleModelAccess::class, 'shared'=>true],
+			IHTMLSanitizer::class => ['instanceOf'=>HTMLPurifierBasedSanitizer::class, 'shared'=>true],
+			IUserConfirmationCodeGenerator::class => [ 'instanceOf'=>UUIDBasedUserConfirmationCodeGenerator::class,'shared'=>true],
+			IUserRegisteredMail::class => [ 'instanceOf'=>UserRegisteredMail::class],
+			IUserMailChangedMail::class => [ 'instanceOf'=>UserMailChangedMail::class],
+			IUserResetPasswordMail::class => [ 'instanceOf'=>UserResetPasswordMail::class],
+			IUserRepository::class => [ 'instanceOf'=>UserRepository::class,'shared'=>true],
+			IContactRepository::class => ['instanceOf'=>ContactRepository::class,'shared'=>true],
+			IContactModelAccess::class => ['instanceOf'=>ContactModelAccess::class,'shared'=>true]
 		]);
 		$this->_action = $action = $this->getRouter()->parse($this->getRequest());
 		$this->_dice->addRules([
