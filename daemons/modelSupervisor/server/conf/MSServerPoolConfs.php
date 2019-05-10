@@ -53,7 +53,7 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 		string $basePath = DAEMONS,
 		bool $noLogger = false
 	){
-		$this->_kvsAddr = (new KVSConfs($engineConfs,$siteConfs))->getSocketPath();
+		$this->_kvsAddr = (new KVSConfs($engineConfs,$siteConfs,DAEMONS,true))->getSocketPath();
 		$this->_basePath = $basePath;
 		$this->_instancesConfs = [];
 		$confIO = new JSONConfIOAdapter();

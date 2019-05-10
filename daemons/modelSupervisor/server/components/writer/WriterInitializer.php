@@ -27,9 +27,6 @@ final class WriterInitializer implements IMSServerComponentsInitializer {
 	 * @param array                          $params
 	 * @return IMSServerComponent Le composant initialisé.
 	 * @throws \InvalidArgumentException
-	 * @throws \wfw\daemons\kvstore\client\errors\AlreadyLogged
-	 * @throws \wfw\daemons\kvstore\client\errors\KVSClientFailure
-	 * @throws \wfw\daemons\kvstore\errors\KVSFailure
 	 */
 	public function init(
 		string $socket_path,

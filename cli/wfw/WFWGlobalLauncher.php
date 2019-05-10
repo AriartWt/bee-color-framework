@@ -473,8 +473,8 @@ try{
 				chmod($userCredentialsPath,700);
 				file_put_contents($userCredentialsPath,"$pName\n$firstUser");
 				fwrite(STDOUT,"Admin user created. Credentials path : $userCredentialsPath\n");
-				fwrite(STDOUT,"[WARNING] Move those credentials in a safe place, they can't be generated again.\n");
-				fwrite(STDOUT,"Project successfully created.\n");
+				fwrite(STDOUT,"\e[33m[WARN] Move those credentials in a safe place, they can't be generated again.\n");
+				fwrite(STDOUT,"\e[0mProject successfully created.\n");
 			}else throw new \Exception(
 				"Unable to create an admin user. "
 				."Socket $socket not found after $maxAttempts attempts and ".($maxAttempts*$attemptsDelay/1000)." ms"
@@ -490,8 +490,9 @@ try{
 		$prompt = !isset($args["-no-prompt"]);
 		if(!isset($data[$project]))
 			throw new InvalidArgumentException("$project is not a registered project !");
+		else $pName = dirname($data[$project]);
 		if($prompt){
-			fwrite(STDOUT,"Do you really want to remove $project ? (y/n)\n");
+			fwrite(STDOUT,"Do you really want to remove $project ? (y/n) : ");
 			if(!filter_var(preg_replace(["/^y$/","/^n$/"],["yes","no"],fgets(STDIN)), FILTER_VALIDATE_BOOLEAN)){
 				fwrite(STDOUT,"$project will not be removed.\n");
 				exit(0);
@@ -554,6 +555,20 @@ try{
 		$exec("wfw self service restart -all");
 		fwrite(STDOUT,"Daemons restarted.\n");
 		fwrite(STDOUT,"$project have been successfully removed.\n");
+		fwrite(STDOUT,"\e[96m[INFO] $project folder still remains on disk ($pName) for safety concerns.\n"
+				."If your intent was to totaly remove this project, please do it manually following this steps :\n"
+				."\t- remove all logs (defaults : /var/log/wfw/kvs/containers & /var/log/wfw/msserver/instances)\n"
+				."\t- remove project files (default : /srv/wfw/$project)\n"
+				."\t- remove all kvs data (defaults : /srv/wfw/global/kvstore/data/kvs_db/${project}_db)\n"
+				."\t- remove all msserver data (defaults : /srv/wfw/global/modelSupervisor/data/$project)\n"
+				."\t- delete mysql db (default : ${project}_EventStore)\n"
+				."\t- delete mysql user (default : ${project}_website)\n"
+				."\t- disable site confs in apache2 (depends on your config)\n"
+		);
+		fwrite(STDOUT,"\e[33m[WARN] If you create a project with the same name without cleaning up,"
+			." all dbs, datas and files will be overrwritten. Some files and folder of the old project may "
+			."remains if not replaced by new ones in the new project.\n"
+		);
 	} else if($argvReader->exists('import')){
 		$args = $argvReader->get("import");
 		if(count($args)<2) throw new InvalidArgumentException(
@@ -574,8 +589,8 @@ try{
 
 		$pPath = dirname($data[$pName]);
 		if($prompt){
-			fwrite(STDOUT,"Do you really want to import $path into $pName project's path $pPath ? (y/n)\n");
-			if(!filter_var(str_replace(["/^y$/","/^n$/"],["yes","no"],fgets(STDIN)), FILTER_VALIDATE_BOOLEAN)){
+			fwrite(STDOUT,"Do you really want to import $path into $pName project's path $pPath ? (y/n) : ");
+			if(!filter_var(preg_replace(["/^y$/","/^n$/"],["yes","no"],fgets(STDIN)), FILTER_VALIDATE_BOOLEAN)){
 				fwrite(STDOUT,"$path will not be imported.\n");
 				exit(0);
 			}
@@ -631,6 +646,9 @@ try{
 		$exec("wfw self service restart -all");
 		fwrite(STDOUT,"Daemons restarted.\n");
 		fwrite(STDOUT,"$path successfully imported into $pPath.\n");
+		fwrite(STDOUT,"\e[33m[WARN] If some files have been removed in this project,"
+			." they havn't been removed by the import command. You must do it manually.\n"
+		);
 	} else if($argvReader->exists('locate')){
 		$args = $argvReader->get('locate');
 		if(count($args) === 0) fwrite(STDOUT,ROOT.PHP_EOL);

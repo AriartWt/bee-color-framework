@@ -187,7 +187,10 @@ final class WriterWorker extends Worker {
 			);
 			$this->cleanZombies();
 		}
-
+		$this->_environment->getLogger()->log(
+			"[WRITER] [WORKER] The worker will shutdown...",
+			ILogger::LOG
+		);
 		$this->shutdown();
 	}
 
@@ -344,6 +347,8 @@ final class WriterWorker extends Worker {
 		IWriterAdminRequest $clientRequest,
 		MSServerDataParserResult $request
 	):bool{
+		//todo : there is a problem with this flow. Sometimes, parents die before
+		//the writer ends.
 		if($clientRequest instanceof ShutdownWriterRequest){
 			if($this->_workerParams->getModelManager()->needASave()){
 				$this->_workerParams->getModelManager()->reset(
@@ -874,8 +879,8 @@ final class WriterWorker extends Worker {
 	 */
 	public function sendResponse(IMSServerComponentResponse $response):void{
 		if($this->getWorkerMode() === self::WORKER_MODE){
-			$socket = $this->createClientSocket($this->getResponseSocketName());
 			try{
+				$socket = $this->createClientSocket($this->getResponseSocketName());
 				$this->write(
 					$this->_dataParser->lineariseData($response),
 					$socket
@@ -885,7 +890,7 @@ final class WriterWorker extends Worker {
 					.$response->getQueryId().")",
 					ILogger::LOG
 				);
-			}catch(\Exception $e){
+			}catch(\Exception | \Error $e){
 				$socketError = socket_last_error();
 				$this->_environment->getLogger()->log(
 					"[WRITER] [WORKER] Unable to send response to the MSServer : ".print_r([
@@ -894,7 +899,7 @@ final class WriterWorker extends Worker {
 							"code" => $socketError,
 							"str" => socket_strerror($socketError)
 						],
-						"Exception" => $e
+						"Exception" => (string) $e
 					],true),
 					ILogger::ERR
 				);

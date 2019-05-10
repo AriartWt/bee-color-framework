@@ -364,7 +364,7 @@ final class MSServer {
 					if($hits === 0){
 						throw new NoHandlerForRequest("No request handler trigered this request !");
 					}else $this->_logger->log(
-						"Request successfully sent to one or more components (queue id : "
+						"[MSServer] Request successfully sent to one or more components (queue id : "
 						.$query->getInternalRequest()->getQueryId().")",
 						ILogger::LOG
 					);
