@@ -347,8 +347,6 @@ final class WriterWorker extends Worker {
 		IWriterAdminRequest $clientRequest,
 		MSServerDataParserResult $request
 	):bool{
-		//todo : there is a problem with this flow. Sometimes, parents die before
-		//the writer ends.
 		if($clientRequest instanceof ShutdownWriterRequest){
 			if($this->_workerParams->getModelManager()->needASave()){
 				$this->_workerParams->getModelManager()->reset(
