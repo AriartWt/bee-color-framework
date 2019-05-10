@@ -44,8 +44,12 @@ final class KVSConfs {
 	 * @param null|string $siteConfs   (optionnel) données de configuration du site
 	 * @param string      $basePath    (optionnel defaut : DAEMONS) chemin absolu permettant la résolution du chemin relatif des fichiers.
 	 *                                 Si le chemin commence par {ROOT}, {ROOT} est remplacé par la valeur de la constante ROOT.
+	 * @param bool        $noLogger    (optionnel) Désactive les loggers
+	 * @throws \InvalidArgumentException
+	 * @throws \wfw\engine\lib\errors\InvalidTypeSupplied
+	 * @throws \wfw\engine\lib\errors\PermissionDenied
 	 */
-	public function __construct(string $engineConfs,?string $siteConfs=null,string $basePath = DAEMONS) {
+	public function __construct(string $engineConfs,?string $siteConfs=null,string $basePath = DAEMONS,bool $noLogger=false) {
 		$this->_basePath = $this->resolvePath($basePath);
 
 		$confIO = new JSONConfIOAdapter();
@@ -73,30 +77,32 @@ final class KVSConfs {
 		$workingDir = $this->getWorkingDir();
 		if(!is_dir($workingDir)) mkdir($workingDir,0700,true);
 
-		$this->_logger = (new FileLogger(new DefaultLogFormater(),...[
-			$this->getLogPath(null,"log"),
-			$this->getLogPath(null,"err"),
-			$this->getLogPath(null,"warn"),
-			$this->getLogPath(null,"debug")
-		]))->autoConfFileByLevel(
-			FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
-			FileLogger::DEBUG,
-			$this->isCopyLogModeEnabled(null)
-		)->autoConfByLevel($this->_conf->getInt("logs/level") ?? ILogger::ERR);
-
-		foreach($this->getContainers(false) as $containerName=>$data){
-			$this->_instanceLoggers[$containerName] = (new FileLogger(new DefaultLogFormater(),...[
-				$this->getLogPath($containerName,"log"),
-				$this->getLogPath($containerName,"err"),
-				$this->getLogPath($containerName,"warn"),
-				$this->getLogPath($containerName,"debug")
+		if(!$noLogger){
+			$this->_logger = (new FileLogger(new DefaultLogFormater(),...[
+				$this->getLogPath(null,"log"),
+				$this->getLogPath(null,"err"),
+				$this->getLogPath(null,"warn"),
+				$this->getLogPath(null,"debug")
 			]))->autoConfFileByLevel(
 				FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
 				FileLogger::DEBUG,
-				$this->isCopyLogModeEnabled($containerName)
-			)->autoConfByLevel($this->_conf->getInt("containers/$containerName/logs/level")
-					?? $this->_conf->getInt("logs/level") ?? ILogger::ERR
-			);
+				$this->isCopyLogModeEnabled(null)
+			)->autoConfByLevel($this->_conf->getInt("logs/level") ?? ILogger::ERR);
+
+			foreach($this->getContainers(false) as $containerName=>$data){
+				$this->_instanceLoggers[$containerName] = (new FileLogger(new DefaultLogFormater(),...[
+					$this->getLogPath($containerName,"log"),
+					$this->getLogPath($containerName,"err"),
+					$this->getLogPath($containerName,"warn"),
+					$this->getLogPath($containerName,"debug")
+				]))->autoConfFileByLevel(
+					FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
+					FileLogger::DEBUG,
+					$this->isCopyLogModeEnabled($containerName)
+				)->autoConfByLevel($this->_conf->getInt("containers/$containerName/logs/level")
+				                   ?? $this->_conf->getInt("logs/level") ?? ILogger::ERR
+				);
+			}
 		}
 	}
 

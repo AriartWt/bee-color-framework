@@ -210,6 +210,13 @@ final class SCTLServer implements ISCTLServer {
 				]);
 				socket_close($socket);
 			}else{
+				$ds = array_flip($daemons);
+				if(isset($ds["msserver"]) && isset($ds["kvs"])){
+					if($cmd==="restart") unset($ds["msserver"]);
+					if($cmd==="stop") unset($ds["msserver"]);
+					if($cmd==="start") unset($ds["kvs"]);
+				}
+				$daemons = array_keys($ds);
 				$outputs = [];
 				$errors=[];
 				foreach($daemons as $d){

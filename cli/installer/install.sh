@@ -79,6 +79,13 @@ systemctl reload apache2
 echo ""
 echo "Creating $CONFPATH..."
 mkdir -p "$CONFPATH"
+if [[ $(wfw list) ]]
+then
+	echo "Previously installed project found. Resotring symlinking to $CONFPATH..."
+	wfw restore
+else
+	echo "No previous project found."
+fi
 for i in "${CONFSDIR[@]}"
 do
 	LINKNAME="${i/#$ROOTPATH/}"

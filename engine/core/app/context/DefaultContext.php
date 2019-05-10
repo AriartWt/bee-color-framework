@@ -4,6 +4,7 @@ namespace wfw\engine\core\app\context;
 use Dice\Dice;
 use PHPMailer\PHPMailer\PHPMailer;
 use SessionHandlerInterface;
+use wfw\daemons\modelSupervisor\client\errors\MSClientFailure;
 use wfw\daemons\modelSupervisor\client\IMSInstanceAddrResolver;
 use wfw\daemons\modelSupervisor\client\MSInstanceAddrResolver;
 use wfw\engine\core\action\ActionHandlerFactory;
@@ -150,7 +151,7 @@ class DefaultContext implements IWebAppContext {
 	 * @param null|string $baseurl            Base url
 	 * @param null|string $projectName        Nom du projet. Sert de namespace pour les clés du cache.
 	 * @throws \InvalidArgumentException
-	 * @throws \wfw\daemons\modelSupervisor\client\errors\MSClientFailure
+	 * @throws MSClientFailure
 	 */
 	public function __construct(
 		string $defaultLayoutClass,
@@ -181,6 +182,7 @@ class DefaultContext implements IWebAppContext {
 		]);
 		$msinstanceAddr = $this->getMSServerAddr(
 			$msserverAddr = $this->_conf->getString("server/msserver/addr")
+			?? "/srv/wfw/global/"
 		);
 
 		$this->_dice->addRules([
@@ -376,20 +378,23 @@ class DefaultContext implements IWebAppContext {
 
 	/**
 	 * @param string $msserverAddr Resolver socket
-	 * @return string MSServer socket instance
-	 * @throws \wfw\daemons\modelSupervisor\client\errors\MSClientFailure
+	 * @return string|null MSServer socket instance
 	 */
-	protected function getMSServerAddr(string $msserverAddr):string{
+	protected function getMSServerAddr(string $msserverAddr):?string{
 		$cache = $this->getCacheSystem();
 		if($cache->contains("server/msserver/addr") && is_string($res = $cache->get("server/msserver/addr")))
 			return $res;
 		else{
 			if(strpos($msserverAddr,"/")!==0) $msserverAddr = ROOT."/$msserverAddr";
-			$msinstanceAddr = (new MSInstanceAddrResolver($msserverAddr))->find(
-				$this->_conf->getString('server/msserver/db')
-			);
-			$cache->set("server/msserver/addr",$msinstanceAddr);
-			return $msinstanceAddr;
+			try{
+				$msinstanceAddr = (new MSInstanceAddrResolver($msserverAddr))->find(
+					$this->_conf->getString('server/msserver/db')
+				);
+				$cache->set("server/msserver/addr",$msinstanceAddr);
+				return $msinstanceAddr;
+			}catch(\Exception | \Error $e){
+				return null;
+			}
 		}
 	}
 	

@@ -42,14 +42,20 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 	 * @param string      $engineConfs Données de configuration générales
 	 * @param null|string $siteConfs   (optionnel) données de configuration du site
 	 * @param string      $basePath    (optionnel defaut : DAEMONS) chemin absolu permettant la résolution du chemin relatif des fichiers.
+	 * @param bool        $noLogger    (optionnel) Disable loggers
+	 * @throws \InvalidArgumentException
+	 * @throws \wfw\engine\lib\errors\InvalidTypeSupplied
+	 * @throws \wfw\engine\lib\errors\PermissionDenied
 	 */
 	public function __construct(
 		string $engineConfs,
 		?string $siteConfs=null,
-		string $basePath = DAEMONS
+		string $basePath = DAEMONS,
+		bool $noLogger = false
 	){
 		$this->_kvsAddr = (new KVSConfs($engineConfs,$siteConfs))->getSocketPath();
 		$this->_basePath = $basePath;
+		$this->_instancesConfs = [];
 		$confIO = new JSONConfIOAdapter();
 		//On récupère les configurations générales
 		$conf = new FileBasedConf($engineConfs,$confIO);
@@ -74,7 +80,7 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 		$workingDir = $this->getWorkingDir();
 		if(!is_dir($workingDir)) mkdir($workingDir,0700,true);
 
-		$this->_logger = (new FileLogger(new DefaultLogFormater(),...[
+		if(!$noLogger) $this->_logger = (new FileLogger(new DefaultLogFormater(),...[
 			$this->getLogPath(null,"log"),
 			$this->getLogPath(null,"err"),
 			$this->getLogPath(null,"warn"),
@@ -86,13 +92,13 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 		)->autoConfByLevel($this->_conf->getInt("logs/level") ?? ILogger::ERR);
 
 		//On détermine les configurations de chaque instance à créer
-		$this->_instancesConfs = [];
 		$defInstance = $this->_conf->getObject(self::DEFAULT_INSTANCE);
 		foreach($this->_conf->getArray("instances") as $instanceName=>$instanceConf){
 			$tmp = new StdClassOperator(new stdClass());
 			$tmp->mergeStdClass($defInstance);
 			$tmp->mergeStdClass($instanceConf);
 			$this->_instancesConfs[$instanceName] = $tmp;
+			if(!$noLogger)
 			$this->_instanceLoggers[$instanceName] = (new FileLogger(new DefaultLogFormater(),...[
 				$this->getLogPath($instanceName,"log"),
 				$this->getLogPath($instanceName,"err"),
