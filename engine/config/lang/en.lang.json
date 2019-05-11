@@ -8,6 +8,20 @@
 					"MUST_BE_LOGGED" : "Access denied : you must be connected !",
 					"404_NOT_FOUND" : "Page '[$]' not found !"
 				}
+			},
+			"package" : {
+				"news" : {
+					"NOT_FOUND" : "Article not found !",
+					"OFFLINE" : "This article is offline !",
+					"REMOVED" : "This article have been removed !",
+					"service_unavailable" : {
+						"LIST" : "Unable to fetch articles : service temporarily unavailable. Please try again later.",
+						"ARTICLE" : "Unable to fetch article : service temporarily unavailable. Please try again later."
+					}
+				},
+				"users" : {
+					"SERVICE_UNAVAILABLE" : "Connection service unavailable, please try again later."
+				}
 			}
 		}
 	},

@@ -8,6 +8,20 @@
 					"MUST_BE_LOGGED" : "Accès refusé : vous devez être connecté pour effectuer cette action !",
 					"404_NOT_FOUND" : "La page '[$]' n'existe pas !"
 				}
+			},
+			"package" : {
+				"news" : {
+					"NOT_FOUND" : "Cet article n'existe pas !",
+					"OFFLINE" : "Cet article n'est plus en ligne !",
+					"REMOVED" : "Cet article a été supprimé !",
+					"service_unavailable" : {
+						"LIST" : "Impossible de récupérer les articles : service momentanément indisponible. Merci de réessayer ultérieurement.",
+						"ARTICLE" : "Impossible de récupérer l'article : service momentanément indisponible. Merci de réessayer ultérieurement."
+					}
+				},
+				"users" : {
+					"SERVICE_UNAVAILABLE" : "Service de connexion indisponbiel, merci de réessayer ultérieurement."
+				}
 			}
 		}
 	},

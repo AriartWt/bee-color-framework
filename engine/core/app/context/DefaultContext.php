@@ -165,6 +165,7 @@ class DefaultContext implements IWebAppContext {
 		?string $projectName = ROOT
 	){
 		$genericFactory = new DiceBasedFactory($this->_dice = $dice = new Dice());
+		$this->getErrorHandler()->handle();
 		$this->_dice->addRules([
 			ICacheSystem::class => [
 				'instanceOf' => APCUBasedCache::class,

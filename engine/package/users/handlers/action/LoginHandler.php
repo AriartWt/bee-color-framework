@@ -82,7 +82,12 @@ final class LoginHandler implements IActionHandler {
 		if($action->getRequest()->getMethod() === IRequest::POST) {
 			$data = $action->getRequest()->getData()->get(IRequestData::POST, true);
 			if($this->_form->validates($data) && empty($data['mail'])) {
-				$user = $this->_userModel->getEnabledByLogin($data["login"]);
+				try{
+					$user = $this->_userModel->getEnabledByLogin($data["login"]);
+				}catch(\Exception | \Error $e){
+					$this->_notifier->addMessage(new Message("Service de connexion indisponible!",MessageTypes::ERROR));
+					return new StaticResponse($action);
+				}
 				if(!is_null($user) && $user->getPassword()->equals($data["password"])){
 					//Si l'utilisateur avait fait une demande de récupération de mot de passe
 					//sans aller jusqu'au bout, on l'annule.

@@ -25,7 +25,6 @@ final class WebApp {
 	 */
 	public function __construct(IWebAppContext $context){
 		$this->_context = $context;
-		$this->_context->getErrorHandler()->handle();
 		$this->run();
 	}
 
