@@ -168,7 +168,7 @@ class DefaultContext implements IWebAppContext {
 		$this->_dice->addRules([
 			ICacheSystem::class => [
 				'instanceOf' => APCUBasedCache::class,
-				'shared' =>true ,
+				'shared' => true ,
 				'constructParams'=>[$projectName]
 			]
 		]);
@@ -190,23 +190,31 @@ class DefaultContext implements IWebAppContext {
 				'instanceOf' => LanguageLoader::class,
 				'shared' => true,
 				'constructParams' => [ $conf->getString("app/ui/lang/replacement_pattern") ]
+			],
+			IRouter::class => [
+				'instanceOf' => Router::class,
+				'shared' => true,
+				'constructParams' => [
+					array_merge(
+						$connections,
+						$conf->getArray("server/router/connections") ?? []
+					),
+					array_unique(
+						array_merge(
+							array_keys($langs),
+							$conf->getArray("server/language/availables") ?? []
+						)
+					),
+					null,
+					$baseurl
+				]
 			]
 		]);
+		$cache = $this->getCacheSystem();
+		if(!$cache->contains(self::CACHE_KEYS[self::ROUTER])){
+			$this->_router = $router = $this->_dice->create(IRouter::class);
+		}else $this->_router = $router = $cache->get(self::CACHE_KEYS[self::ROUTER]);
 
-		$this->_router = $router = new Router(
-			array_merge(
-				$connections,
-				$conf->getArray("server/router/connections") ?? []
-			),
-			array_unique(
-				array_merge(
-					array_keys($langs),
-					$conf->getArray("server/language/availables") ?? []
-				)
-			),
-			null,
-			$baseurl
-		);
 		$this->_translator = $translator =  $this->initTranslator($langs,null);
 		$instance = $this;
 
@@ -214,7 +222,7 @@ class DefaultContext implements IWebAppContext {
 			'*' => [
 				'substitutions' => [
 					IConf::class => [ Dice::INSTANCE => function() use ($conf){ return $conf; } ],
-					IRouter::class => [ Dice::INSTANCE => function() use($router){return $router;}],
+					/*IRouter::class => [ Dice::INSTANCE => function() use($router){return $router;}],*/
 					IMailProvider::class => [
 						Dice::INSTANCE => function() use($instance,$conf){
 							return $this->initMailProvider($conf);
@@ -451,7 +459,7 @@ class DefaultContext implements IWebAppContext {
 	 * @param array $confFiles Fichiers de configurations à charger
 	 * @return IConf Configurations
 	 */
-	private function initConfs(array $confFiles):IConf{
+	protected function initConfs(array $confFiles):IConf{
 		$conf = $this->getCacheSystem()->get(self::CACHE_KEYS[self::CONF]);
 		if(is_null($conf)){
 			if(count($confFiles)===0) throw new \InvalidArgumentException(
@@ -476,7 +484,7 @@ class DefaultContext implements IWebAppContext {
 	 * @param null|string $default Langue par défaut
 	 * @return ITranslator
 	 */
-	private function initTranslator(array $langs,?string $default=null):ITranslator{
+	protected function initTranslator(array $langs,?string $default=null):ITranslator{
 		$translator = $this->getCacheSystem()->get(self::CACHE_KEYS[self::TRANSLATOR]);
 		if(is_null($translator)){
 			/** @var ILanguageLoader $loader */
@@ -492,7 +500,7 @@ class DefaultContext implements IWebAppContext {
 	/**
 	 * @return array
 	 */
-	private function getDomainEventListeners():array{
+	protected function getDomainEventListeners():array{
 		$listeners = $this->getCacheSystem()->get(self::CACHE_KEYS[self::DOMAIN_EVENT_LISTENERS]);
 		if(is_null($listeners)){
 			if(file_exists(SITE.'/config/load/domain_events.listeners.php'))
@@ -617,9 +625,19 @@ class DefaultContext implements IWebAppContext {
 	/**
 	 * @return IActionHook Hook.
 	 */
-	public function getActionHook(): IActionHook {
+	public final function getActionHook(): IActionHook {
 		/** @var IActionHook $actionHook */
 		$actionHook = $this->_dice->create(IActionHook::class);
 		return $actionHook;
+	}
+
+	/**
+	 * Called by the app just before closing
+	 */
+	public function close() {
+		$cache = $this->getCacheSystem();
+		$cache->set(self::CACHE_KEYS[self::CONF],$this->getConf());
+		$cache->set(self::CACHE_KEYS[self::TRANSLATOR],$this->getTranslator());
+		$cache->set(self::CACHE_KEYS[self::ROUTER],$this->getRouter());
 	}
 }

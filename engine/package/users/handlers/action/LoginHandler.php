@@ -34,7 +34,7 @@ final class LoginHandler implements IActionHandler {
 	private $_notifier;
 	/** @var ISession $_session */
 	private $_session;
-	/** @var \wfw\engine\package\users\lib\HTML\LoginForm $_form */
+	/** @var LoginForm $_form */
 	private $_form;
 	/** @var ICommandBus $_bus */
 	private $_bus;
@@ -42,11 +42,11 @@ final class LoginHandler implements IActionHandler {
 	/**
 	 * LoginHandler constructor.
 	 *
-	 * @param INotifier $notifier
-	 * @param ISession $session
-	 * @param IRouter $router
+	 * @param INotifier        $notifier
+	 * @param ISession         $session
+	 * @param IRouter          $router
 	 * @param IUserModelAccess $userModel
-	 * @param ICommandBus $bus
+	 * @param ICommandBus      $bus
 	 */
 	public function __construct(
 		INotifier $notifier,

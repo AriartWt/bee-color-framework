@@ -40,4 +40,10 @@ interface IView {
 	 * @return array Liste d'informations sur la vue
 	 */
 	public function infos():array;
+
+	/**
+	 * Permet de savoir si la mise en cache complète de la vue est autorisée.
+	 * @return bool Si true, autorise la mise en cache totale de la page.
+	 */
+	public function allowCache():bool;
 }

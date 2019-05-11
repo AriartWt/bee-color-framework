@@ -88,10 +88,18 @@ final class APCUBasedCache implements ICacheSystem{
 	}
 
 	/**
+	 * [WARNING] For now, passing an array of PCRE regular expression will never return any result.
+	 * As a workaround, an array of length 1 will be chaned in a simple string before being passed
+	 * to APCUIterator::__construct()
+	 * @see https://bugs.php.net/bug.php?id=78002
 	 * @param string[] $keys Clé des valeurs à chercher
 	 * @return \Traversable
 	 */
 	public function getAll(array $keys): \Traversable {
+		foreach($keys as $k=>$key){
+			$keys[$k]="/".str_replace("/",'\/',"^$this->_namespace::$key")."/";
+		}
+		if(count($keys) === 1) $keys = array_pop($keys);
 		return new \APCUIterator($keys);
 	}
 
@@ -99,9 +107,7 @@ final class APCUBasedCache implements ICacheSystem{
 	 * @param string[] $keys Clés des valeurs à supprimer du cache
 	 */
 	public function deleteAll(array $keys) {
-		foreach($this->getAll($keys) as $k=>$v){
-			$this->delete($k);
-		}
+		apcu_delete($this->getAll($keys));
 	}
 }
 

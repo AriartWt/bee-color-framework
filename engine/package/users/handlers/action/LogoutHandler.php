@@ -1,7 +1,6 @@
 <?php
 namespace wfw\engine\package\users\handlers\action;
 
-
 use wfw\engine\core\action\IAction;
 use wfw\engine\core\action\IActionHandler;
 use wfw\engine\core\notifier\INotifier;
@@ -22,8 +21,8 @@ final class LogoutHandler implements IActionHandler {
 	/**
 	 * LogoutHandler constructor.
 	 *
-	 * @param ISession  $session Session
-	 * @param INotifier $notifier
+	 * @param ISession     $session Session
+	 * @param INotifier    $notifier
 	 */
 	public function __construct(ISession $session,INotifier $notifier) {
 		$this->_session = $session;
