@@ -20,6 +20,31 @@
 					}
 				},
 				"users" : {
+					"WRONG_PASSWORD" : "Wrong password !",
+					"UNKNOWN_USER" : "Unknown user !",
+					"USER_NOT_FOUND" : "User [$] not found.",
+					"MAIL_CONFIRMED" : "Your mail have been successfully confirmed.",
+					"RESET_PASSWORD_CONFIRMED" : "Your password have been successfully reseted.",
+					"INVALID_USER_STATE" : "Invalid user state.",
+					"BAD_CONFIRM_CODE" : "Invalid confirmation code.",
+					"LOGOUT" : "You've been successfully logged out",
+					"REGISTRATION_MAIL_SENT" : "You're successfully registered. A confirmation mail have been sent to your mailboxe.",
+					"REGISTRATION_SUCCESS" : "Your account have been successfully confirmed, you can now sign in.",
+					"USER_CONFIRMED_EVENT_NOT_RECIEVED" : "An error occurred while trying to confirm your registration, please contact the administrator (UserConfirmedEvent not recieved).",
+					"USER_PASSWORD_RESETED_EVENT_NOT_RECIEVED" : "An error occurred while trying to reset your password, please contact the administrator (UserPasswordResetedEvent not recieved).",
+					"CONFIRM_MAIL_EVENT_NOT_RECIEVED" : "An error occurred while trying to confirm your mail address, please contact the administrator (UserMailConfirmedEvent not recieved).",
+					"CANCEL_MAIL_CHANGE_EVENT_NOT_RECIEVED" : "An error occurred while trying to cancel your mail address modification, please contact the administrator (CanceledUserMailChangeEvent not recieved).",
+					"CANCEL_PASSWORD_RETRIEVING_EVENT_NOT_RECIEVED" : "An error occurred while trying to cancel password reset process, please contact the administrator (UserPasswordRetrievingCanceledEvent not recieved).",
+					"CANCEL_REGISTRATION_EVENT_NOT_RECIEVED" : "An error occurred while trying cancel this user registration, please contact the administrator (UserRegistrationProcedureCanceledEvent not recieved).",
+					"USER_TYPE_CHANGED_EVENT_NOT_RECIEVED" : "An error occurred while trying to change this user role, please contact the administrator (UserTypeChangedEvent not recieved).",
+					"USER_REGISTERED_EVENT_NOT_RECIEVED" : "An error occurred while trying to register a new user, please contact the administrator (UserRegisteredEvent not recieved).",
+					"USER_CANT_DISABLE_HIS_OWN_ACCOUNT" : "A user can't disable his own account !",
+					"USER_CANT_DELETE_HIS_OWN_ACCOUNT" : "A user can't delete his own account !",
+					"ASKED_FOR_MAIL_CHANGE_EVENT_NOT_RECIEVED" : "An error occurred while trying to change your mail address, please contact the administrator (AskedForMailChangeEvent not recieved)",
+					"ASKED_FOR_PASSWORD_RETRIEVING_EVENT_NOT_RECIEVED" : "An error occurred while trying to start the password retieving procedure, please contact the administrator (AskedForPasswordRetrievingEvent not recieved)",
+					"USER_PASSWORD_CHANGED_EVENT_NOT_RECIEVED" : "An error occurred while trying to change your password, please contact the administrator (UserPasswordChangedEvent not recieved)",
+					"CONNECTION_FAILED" : "This informations don't allow you to sign in.",
+					"CONNECTION_ACCEPTED" : "You've been successfully logged.",
 					"SERVICE_UNAVAILABLE" : "Connection service unavailable, please try again later."
 				}
 			}

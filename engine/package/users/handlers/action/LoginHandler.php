@@ -4,6 +4,7 @@ namespace wfw\engine\package\users\handlers\action;
 use wfw\engine\core\action\IAction;
 use wfw\engine\core\action\IActionHandler;
 use wfw\engine\core\command\ICommandBus;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\notifier\INotifier;
 use wfw\engine\core\notifier\Message;
 use wfw\engine\core\notifier\MessageTypes;
@@ -38,6 +39,8 @@ final class LoginHandler implements IActionHandler {
 	private $_form;
 	/** @var ICommandBus $_bus */
 	private $_bus;
+	/** @var ITranslator $_translator */
+	private $_translator;
 
 	/**
 	 * LoginHandler constructor.
@@ -47,14 +50,17 @@ final class LoginHandler implements IActionHandler {
 	 * @param IRouter          $router
 	 * @param IUserModelAccess $userModel
 	 * @param ICommandBus      $bus
+	 * @param ITranslator      $translator
 	 */
 	public function __construct(
 		INotifier $notifier,
 		ISession $session,
 		IRouter $router,
 		IUserModelAccess $userModel,
-		ICommandBus $bus
+		ICommandBus $bus,
+		ITranslator $translator
 	){
+		$this->_translator = $translator;
 		$this->_notifier = $notifier;
 		$this->_session = $session;
 		$this->_errorIcon = $router->webroot('Image/Icons/delete.png');
@@ -79,13 +85,16 @@ final class LoginHandler implements IActionHandler {
 	 * @return IResponse Réponse
 	 */
 	public function handle(IAction $action): IResponse {
+		$key = "server/engine/package/users";
 		if($action->getRequest()->getMethod() === IRequest::POST) {
 			$data = $action->getRequest()->getData()->get(IRequestData::POST, true);
 			if($this->_form->validates($data) && empty($data['mail'])) {
 				try{
 					$user = $this->_userModel->getEnabledByLogin($data["login"]);
 				}catch(\Exception | \Error $e){
-					$this->_notifier->addMessage(new Message("Service de connexion indisponible!",MessageTypes::ERROR));
+					$this->_notifier->addMessage(new Message($this->_translator->get(
+						"$key/SERVICE_UNAVAILABLE"
+					),MessageTypes::ERROR));
 					return new StaticResponse($action);
 				}
 				if(!is_null($user) && $user->getPassword()->equals($data["password"])){
@@ -96,7 +105,7 @@ final class LoginHandler implements IActionHandler {
 							$user->getId(),$user->getId()
 						));
 					$this->_notifier->addMessage(new Message(
-						"Vous êtes maintenant connecté."
+						$this->_translator->get("$key/CONNECTION_ACCEPTED")
 					));
 					$this->_session->set('login_form',$this->createForm());
 					/** @var IAction $action */
@@ -106,15 +115,18 @@ final class LoginHandler implements IActionHandler {
 					return new Redirection(substr($action->getRequest()->getURL(),1));
 				}else{
 					if(is_null($user)) $this->_notifier->addMessage(new Message(
-						"Ce nom d'utilisateur est inconnu !",MessageTypes::ERROR
+						$this->_translator->get("$key/UNKNOWN_USER"),
+						MessageTypes::ERROR
 					));
 					else $this->_notifier->addMessage(new Message(
-						"Mot de passe incorrect !",MessageTypes::ERROR
+						$this->_translator->get("$key/WRONG_PASSWORD"),
+						MessageTypes::ERROR
 					));
 				}
 			}else{
 				$this->_notifier->addMessage(new Message(
-					"Mot de passe ou identifiant incorrect !",MessageTypes::ERROR
+					$this->_translator->get("$key/CONNECTION_FAILED"),
+					MessageTypes::ERROR
 				));
 			}
 		}else if($this->_session->isLogged()) return new Redirection("web/home");

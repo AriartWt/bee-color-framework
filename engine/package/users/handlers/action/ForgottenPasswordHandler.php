@@ -6,6 +6,7 @@ use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\response\IResponse;
 use wfw\engine\core\session\ISession;
 use wfw\engine\package\general\handlers\action\errors\DataError;
@@ -25,20 +26,23 @@ final class ForgottenPasswordHandler extends DefaultUserActionHandler implements
 
 	/**
 	 * ForgottenPasswordHandler constructor.
-	 * @param ICommandBus $bus
+	 *
+	 * @param ICommandBus          $bus
 	 * @param RetrievePasswordRule $rule
-	 * @param ISession $session
+	 * @param ISession             $session
 	 * @param IDomainEventObserver $observer
-	 * @param IUserModelAccess $access
+	 * @param IUserModelAccess     $access
+	 * @param ITranslator          $translator
 	 */
 	public function __construct(
 		ICommandBus $bus,
 		RetrievePasswordRule $rule,
 		ISession $session,
 		IDomainEventObserver $observer,
-		IUserModelAccess $access
+		IUserModelAccess $access,
+		ITranslator $translator
 	){
-		parent::__construct($bus, $rule, $session);
+		parent::__construct($bus, $rule, $session,$translator);
 		$observer->addEventListener(AskedForPasswordRetrievingEvent::class,$this);
 		$this->_access = $access;
 	}
@@ -56,9 +60,9 @@ final class ForgottenPasswordHandler extends DefaultUserActionHandler implements
 	 * @throws \Exception
 	 */
 	protected function successResponse(): IResponse {
-		if(is_null($this->_event)) throw new \Exception(
-			"AskedForPasswordRetrievingEvent not recieved !"
-		);
+		if(is_null($this->_event)) throw new \Exception($this->_translator->get(
+			"server/engine/package/users/ASKED_FOR_PASSWORD_RETRIEVING_EVENT_NOT_RECIEVED"
+		));
 		return parent::successResponse();
 	}
 
@@ -69,8 +73,9 @@ final class ForgottenPasswordHandler extends DefaultUserActionHandler implements
 	protected function createCommand(array $data): ICommand {
 		$user = $this->_access->getByLogin($data["login"]);
 		if(is_null($user)) throw new DataError(
-			"L'utilisateur ".$data["login"]." n'a pas été trouvé !"
-		);
+			$this->_translator->getAndReplace(
+				"server/engine/package/users/NOT_FOUND",$data["login"]
+			));
 		return new RetrievePassword(
 			$user->getId(),
 			$user->getId()

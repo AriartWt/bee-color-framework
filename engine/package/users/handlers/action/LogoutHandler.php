@@ -3,6 +3,7 @@ namespace wfw\engine\package\users\handlers\action;
 
 use wfw\engine\core\action\IAction;
 use wfw\engine\core\action\IActionHandler;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\notifier\INotifier;
 use wfw\engine\core\notifier\Message;
 use wfw\engine\core\response\IResponse;
@@ -17,16 +18,20 @@ final class LogoutHandler implements IActionHandler {
 	private $_session;
 	/** @var INotifier $_notifier */
 	private $_notifier;
+	/** @var ITranslator $_translator */
+	private $_translator;
 
 	/**
 	 * LogoutHandler constructor.
 	 *
-	 * @param ISession     $session Session
-	 * @param INotifier    $notifier
+	 * @param ISession    $session Session
+	 * @param INotifier   $notifier
+	 * @param ITranslator $translator
 	 */
-	public function __construct(ISession $session,INotifier $notifier) {
+	public function __construct(ISession $session,INotifier $notifier, ITranslator $translator) {
 		$this->_session = $session;
 		$this->_notifier = $notifier;
+		$this->_translator = $translator;
 	}
 
 	/**
@@ -36,7 +41,9 @@ final class LogoutHandler implements IActionHandler {
 	public function handle(IAction $action): IResponse {
 		if($this->_session->isLogged()){
 			$this->_session->destroy();
-			$this->_notifier->addMessage(new Message("Vous avez bien été déconnecté !"));
+			$this->_notifier->addMessage(new Message($this->_translator->get(
+				"server/engine/package/users/LOGOUT"
+			)));
 		}
 		return new Redirection("/");
 	}

@@ -7,6 +7,7 @@ use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\notifier\INotifier;
 use wfw\engine\core\notifier\Message;
 use wfw\engine\core\request\IRequestData;
@@ -19,7 +20,6 @@ use wfw\engine\package\users\command\ConfirmUserMailChange;
 use wfw\engine\package\users\data\model\IUserModelAccess;
 use wfw\engine\package\users\domain\events\UserMailConfirmedEvent;
 use wfw\engine\package\users\domain\Login;
-use wfw\engine\package\users\domain\states\EnabledUser;
 use wfw\engine\package\users\domain\states\UserWaitingForEmailConfirmation;
 use wfw\engine\package\users\lib\confirmationCode\UserConfirmationCode;
 use wfw\engine\package\users\security\data\ConfirmRule;
@@ -38,26 +38,32 @@ final class ChangeMailConfirmationHandler implements IActionHandler,IDomainEvent
 	private $_notifier;
 	/** @var IUserModelAccess $_access */
 	private $_access;
+	/** @var ITranslator $_translator */
+	private $_translator;
 
 	/**
 	 * ChangeMailConfirmationHandler constructor.
-	 * @param ICommandBus $bus
+	 *
+	 * @param ICommandBus          $bus
 	 * @param IDomainEventObserver $observer
-	 * @param INotifier $notifier
-	 * @param IUserModelAccess $access
-	 * @param ConfirmRule $rule
+	 * @param INotifier            $notifier
+	 * @param IUserModelAccess     $access
+	 * @param ITranslator          $translator
+	 * @param ConfirmRule          $rule
 	 */
 	public function __construct(
 		ICommandBus $bus,
 		IDomainEventObserver $observer,
 		INotifier $notifier,
 		IUserModelAccess $access,
+		ITranslator $translator,
 		ConfirmRule $rule
 	){
 		$this->_bus = $bus;
 		$this->_rule = $rule;
 		$this->_access = $access;
 		$this->_notifier = $notifier;
+		$this->_translator = $translator;
 		$observer->addEventListener(UserMailConfirmedEvent::class,$this);
 	}
 
@@ -66,12 +72,15 @@ final class ChangeMailConfirmationHandler implements IActionHandler,IDomainEvent
 	 * @return IResponse Réponse
 	 */
 	public function handle(IAction $action): IResponse {
+		$key = "server/engine/package/users";
 		$data = $action->getRequest()->getData()->get(IRequestData::GET,true);
 		$report = $this->_rule->applyTo($data);
 		if($report->satisfied()){
 			$user = $this->_access->getById($data["id"]);
 			if(is_null($user))
-				return new ErrorResponse(404,"User ".$data["id"]." not found");
+				return new ErrorResponse(404,$this->_translator->getAndReplace(
+					"$key/USER_NOT_FOUND",$data["id"])
+				);
 
 			$state = $user->getState();
 			$accordLogin = (string)$user->getLogin() === (string)$user->getEmail();
@@ -94,12 +103,12 @@ final class ChangeMailConfirmationHandler implements IActionHandler,IDomainEvent
 
 			if(is_null($this->_event)) return new ErrorResponse(
 				500,
-				"UserMailConfirmedEvent not recieved"
+				$this->_translator->get("$key/CONFIRM_MAIL_EVENT_NOT_RECIEVED")
 			);
 
 			if($action->getRequest()->isAjax()) return new Response();
 			else $this->_notifier->addMessage(new Message(
-				"Votre mail a été confirmé avec succès !"
+				$this->_translator->get("$key/MAIL_CONFIRMED")
 			));
 		}else return new Redirection("/",403);
 		return new Redirection("/");

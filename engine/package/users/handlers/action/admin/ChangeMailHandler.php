@@ -62,7 +62,7 @@ final class ChangeMailHandler extends DefaultUserActionHandler implements IDomai
 	 */
 	protected function successResponse(): IResponse {
 		if(is_null($this->_event)) throw new \InvalidArgumentException(
-			"UserMailConfirmedEvent not recieved !"
+			$this->_translator->get("server/engine/package/users/CONFIRM_MAIL_EVENT_NOT_RECIEVED")
 		);
 		return parent::successResponse();
 	}

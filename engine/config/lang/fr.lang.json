@@ -20,7 +20,32 @@
 					}
 				},
 				"users" : {
-					"SERVICE_UNAVAILABLE" : "Service de connexion indisponbiel, merci de réessayer ultérieurement."
+					"WRONG_PASSWORD" : "Mot de passe incorrect !",
+					"UNKNOWN_USER" : "Cet utilisateur n'existe pas !",
+					"USER_NOT_FOUND" : "L'utilisateur [$] n'existe pas.",
+					"MAIL_CONFIRMED" : "Votre adresse mail a bien été confirmée.",
+					"RESET_PASSWORSD_CONFIRMED" : "Votre mot de passe a bien été réinitialisé.",
+					"INVALID_USER_STATE" : "L'état de cet utilisateur est invalide.",
+					"BAD_CONFIRM_CODE" : "Votre code de confirmation n'est pas valide.",
+					"LOGOUT" : "Vous avez bien été déconnecté.",
+					"REGISTRATION_MAIL_SENT" : "Votre demande d'inscription a bien été prise en compte. Un email de confirmation vous a été envoyé par e-mail.",
+					"REGISTRATION_SUCCESS" : "Votre compte a bien été validé, vous pouvez maintenant vous connecter.",
+					"USER_CONFIRMED_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la confirmation de votre inscription, merci de contacter l'administrateur  (UserConfirmedEvent not recieved)",
+					"USER_PASSWORD_RESETED_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la réinitialisation de votre mot de passe, merci de contacter l'administrateur  (UserPasswordResetedEvent not recieved)",
+					"CONFIRM_MAIL_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la confirmation de votre adresse mail, merci de contacter l'administrateur (UserMailConfirmedEvent not recieved).",
+					"CANCEL_MAIL_CHANGE_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la tentative d'annulation de changement de votre adresse mail, merci de contacter l'administrateur (CanceledUserMailChangeEvent not recieved).",
+					"CANCEL_PASSWORD_RETRIEVING_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la tentative d'annulation de réinitialisation du mot de passe, merci de contacter l'administrateur (UserPasswordRetrievingCanceledEvent not recieved).",
+					"CANCEL_REGISTRATION_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la tentative d'annulation d'inscription de cet utilisateur, merci de contacter l'administrateur (UserRegistrationProcedureCanceledEvent not recieved).",
+					"USER_TYPE_CHANGED_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors du changement de rôle de cet utilisateur, merci de contacter l'administrateur (UserTypeChangedEvent not recieved).",
+					"USER_REGISTERED_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de l'enreigstrement de cet utilisateur, merci de contacter l'administrateur (UserRegisteredEvent not recieved).",
+					"USER_CANT_DISABLE_HIS_OWN_ACCOUNT" : "Un utilisateur ne peut pas désactiver son propre compte !",
+					"USER_CANT_DELETE_HIS_OWN_ACCOUNT" : "Un utilisateur ne peut pas supprimer son propre compte !",
+					"ASKED_FOR_MAIL_CHANGE_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la modification de votre adresse mail, merci de contacter l'administrateur (AskedForMailChangeEvent not recieved)",
+					"ASKED_FOR_PASSWORD_RETRIEVING_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors du lancement de la procédure de récupération du mot de passe, merci de contacter l'administrateur (AskedForPasswordRetrievingEvent not recieved)",
+					"USER_PASSWORD_CHANGED_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la tentative de modification de votre mot de passe, merci de contacter l'administrateur (UserPasswordChangedEvent not recieved)",
+					"CONNECTION_FAILED" : "Vos informations ne vous permettent pas de vous identifier.",
+					"CONNECTION_ACCEPTED" : "Vous êtes maintenant connecté.",
+					"SERVICE_UNAVAILABLE" : "Service de connexion indisponible, merci de réessayer ultérieurement."
 				}
 			}
 		}
