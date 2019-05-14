@@ -18,6 +18,7 @@ final class ListHandler implements IActionHandler{
 	private $_access;
 	/** @var IJSONEncoder $_encoder */
 	private $_encoder;
+	/** @var ITranslator $_translator */
 	private $_translator;
 
 	/**

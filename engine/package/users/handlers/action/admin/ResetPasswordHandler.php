@@ -14,7 +14,7 @@ use wfw\engine\package\users\data\model\IUserModelAccess;
 use wfw\engine\package\users\domain\events\UserPasswordResetedEvent;
 use wfw\engine\package\users\domain\Password;
 use wfw\engine\package\users\handlers\action\DefaultUserActionHandler;
-use wfw\engine\package\users\security\data\PasswordResetRule;
+use wfw\engine\package\users\security\data\ResetPasswordRule;
 
 /**
  * Permet de changer le mot de passe d'un autre utilisateur
@@ -29,7 +29,7 @@ final class ResetPasswordHandler extends DefaultUserActionHandler implements IDo
 	 * ResetPassword constructor.
 	 *
 	 * @param ICommandBus          $bus
-	 * @param PasswordResetRule    $rule
+	 * @param ResetPasswordRule    $rule
 	 * @param ISession             $session
 	 * @param IDomainEventObserver $observer
 	 * @param IUserModelAccess     $access
@@ -37,7 +37,7 @@ final class ResetPasswordHandler extends DefaultUserActionHandler implements IDo
 	 */
 	public function __construct(
 		ICommandBus $bus,
-		PasswordResetRule $rule,
+		ResetPasswordRule $rule,
 		ISession $session,
 		IDomainEventObserver $observer,
 		IUserModelAccess $access,

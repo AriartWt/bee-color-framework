@@ -20,6 +20,48 @@
 					}
 				},
 				"users" : {
+					"mail" : {
+						"subject" : {
+							"CONFIRM_MAIL_CHANGE" : "Confirmation de votre nouvelle adresse mail",
+							"CONFIRM_REGISTRATION" : "Confirmation de votre inscription",
+							"RESET_PASSWORD" : "Réinitialisation de votre mot de passe"
+						},
+						"INTRO" : "Cher utilisateur [$],\n",
+						"explain" : {
+							"CONFIRM_MAIL_CHANGE" : "Vous recevez ce message automatique parce que vous venez de changer votre adresse mail. Afin que ce changement puisse prendre effet, merci de confirmer votre nouvelle adresse en suivant ce lien : [$]\n",
+							"CONFIRM_REGISTRATION" : "Vous recevez ce message automatique parce que vous venez de vous inscrire sur notre site internet. Afin d'activer votre compte, merci de suivre ce lien : [$]\n",
+							"RESET_PASSWORD" : "Vous recevez ce message automatique parce que vous souhaitez réinitialiser votre mot de passe. Afin de pouvoir en définir un nouveau, merci de suivre ce lien : [$]\n"
+						},
+						"WARN" : "\nCeci est un mail automatique, merci de ne pas y répondre.\n\n",
+						"END" : "Merci pour votre confiance,\nEn vous souhaitant une excellente journée,\nCordialement"
+					},
+					"forms" : {
+						"LOGIN" : "Identifiant",
+						"PASSWORD" : "Mot de passe",
+						"PASSWORD_CONFIRM" : "Confirmation du mot de passe",
+						"MAIL" : "Mail",
+						"PHONE" : "Mobile",
+						"AGREEMENT" : "J'accepte les <a href=\"[$]\" target=\"_blank\">les conditions générales d'utilisation</a>",
+						"VALID_MAIL" : "Adresse mail valide",
+						"MAIL_CONFIRM" : "Confirmation de l'adresse mail",
+						"LOGIN_FORM_ERROR" : "Le login ou le mot de passe est incorrect.",
+						"INVALID" : "Ce champ est incorrect !",
+						"REQUIRED" : "Ce champ est requis !",
+						"INVALID_LOGIN" : "Un identifiant doit contenir de 4 à 128 caractères !",
+						"INVALID_PASSWORD" : "Votre mot de passe doit être composé de chiffres, lettres majuscules et minuscules et au moins un caractère spécial pour une taille maximale de 128 caractères.",
+						"NOT_SAME_PASSWORD" : "Les mots de passe ne sont pas identiques.",
+						"LOGIN_UNAVAILABLE" : "Ce login n'est pas disponible !",
+						"INVALID_MAIL" : "Cette adresse mail n'est pas valide !",
+						"NOT_SAME_MAIL" : "Les adresses mail ne sont pas indentiques !",
+						"OLD_PASSWORD" : "Ancien mot de passe",
+						"NEW_PASSWORD" : "Nouveau mot de passe",
+						"GENERAL_ERROR" : "Certaines informations sont erronées !",
+						"MINTIME_ERROR" : "Ce formulaire a été détéctée comme spam éventuel car il a été soumis trop rapidement.",
+						"SPAM_ERROR" : "Ce formulaire a été détécté comme une tentative de spam.",
+						"INVALID_ID" : "Ceci n'est pas un identifiant valide !",
+						"INVALID_USER_TYPE" : "Seuls les types d'utilisateurs suivants sont valides : [$]",
+						"INVALID_ID_LIST" : "L'un des identifiants est invalide !"
+					},
 					"WRONG_PASSWORD" : "Mot de passe incorrect !",
 					"UNKNOWN_USER" : "Cet utilisateur n'existe pas !",
 					"USER_NOT_FOUND" : "L'utilisateur [$] n'existe pas.",
@@ -43,6 +85,7 @@
 					"ASKED_FOR_MAIL_CHANGE_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la modification de votre adresse mail, merci de contacter l'administrateur (AskedForMailChangeEvent not recieved)",
 					"ASKED_FOR_PASSWORD_RETRIEVING_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors du lancement de la procédure de récupération du mot de passe, merci de contacter l'administrateur (AskedForPasswordRetrievingEvent not recieved)",
 					"USER_PASSWORD_CHANGED_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la tentative de modification de votre mot de passe, merci de contacter l'administrateur (UserPasswordChangedEvent not recieved)",
+					"USER_RESETED_PASSWORD_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la tentative de réinitialisation de votre mot de passe, merci de contacter l'administrateur (UserPasswordResetedEvent not recieved)",
 					"CONNECTION_FAILED" : "Vos informations ne vous permettent pas de vous identifier.",
 					"CONNECTION_ACCEPTED" : "Vous êtes maintenant connecté.",
 					"SERVICE_UNAVAILABLE" : "Service de connexion indisponible, merci de réessayer ultérieurement."

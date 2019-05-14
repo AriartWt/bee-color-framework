@@ -1,31 +1,37 @@
 <?php
 namespace wfw\engine\package\users\security\data;
 
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\security\data\AndRule;
 use wfw\engine\core\security\data\IRule;
 use wfw\engine\core\security\data\IRuleReport;
 use wfw\engine\core\security\data\rules\AreEquals;
-use wfw\engine\core\security\data\rules\IsUUID;
 use wfw\engine\core\security\data\rules\RequiredFields;
 
 /**
  * Verifie les données nécessaires à la création d'un nouveau mot de passe.
  */
-final class PasswordResetRule implements IRule{
+final class ResetPasswordRule implements IRule{
 	/** @var AndRule $_rule */
 	private $_rule;
 
 	/**
 	 * PasswordResetRule constructor.
+	 *
+	 * @param ITranslator $translator
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct() {
+	public function __construct(ITranslator $translator) {
+		$key="server/engine/package/users/forms";
 		$this->_rule = new AndRule(
-			"Certaines informations sont erronées",
-			new RequiredFields("Ce champ est requis","password","password_confirm","id"),
-			new IsPassword("Ceci n'est pas un mot de passe valide","password"),
-			new AreEquals("Les mots de passe doivent être égaux !","password","password_confirm"),
-			new IsUUID("Ceci n'est pas un identifiant valide !","id")
+			$translator->get("$key/GENERAL_ERROR"),
+			new RequiredFields(
+				$translator->get("$key/REQUIRED"),"password","password_confirm"
+			),
+			new IsPassword($translator->get("$key/INVALID_PASSWORD"),"password"),
+			new AreEquals($translator->get(
+				"$key/NOT_SAME_PASSWORD"),"password","password_confirm"
+			)
 		);
 	}
 

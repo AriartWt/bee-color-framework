@@ -1,6 +1,7 @@
 <?php
 namespace wfw\engine\package\users\security\data;
 
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\security\data\ForEachFieldRule;
 use wfw\engine\core\security\data\rules\IsUUID;
 
@@ -10,13 +11,17 @@ use wfw\engine\core\security\data\rules\IsUUID;
 final class UserIdList extends ForEachFieldRule{
 	/** @var int $_length */
 	private $_length;
+
 	/**
 	 * UserIdList constructor.
 	 *
-	 * @param int $maxLength Nombre maximum d'utilisateurs traités en une seule fois
+	 * @param ITranslator $translator
+	 * @param int         $maxLength Nombre maximum d'utilisateurs traités en une seule fois
+	 * @throws \InvalidArgumentException
 	 */
-	public function __construct(int $maxLength = 10000) {
-		parent::__construct("L'un des identifiants n'est pas valide !", "ids");
+	public function __construct(ITranslator $translator,int $maxLength = 10000) {
+		$key = "server/engine/package/users/forms";
+		parent::__construct($translator->get("$key/INVALID_ID_LIST"), "ids");
 		if($maxLength <= 0) throw new \InvalidArgumentException("maxLength must be > 0");
 		$this->_length = $maxLength;
 	}

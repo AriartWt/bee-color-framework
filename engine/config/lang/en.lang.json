@@ -20,6 +20,48 @@
 					}
 				},
 				"users" : {
+					"mail" : {
+						"subject" : {
+							"CONFIRM_MAIL_CHANGE" : "New email confirmation",
+							"CONFIRM_REGISTRATION" : "Registration confirmation",
+							"RESET_PASSWORD" : "Reset your password"
+						},
+						"INTRO" : "Dear user [$],\n",
+						"explain" : {
+							"CONFIRM_MAIL_CHANGE" : "You receive this automatic email because you changed your email address. In order to this change to take effect, please confirm your new mail address following this link : [$]\n",
+							"CONFIRM_REGISTRATION" : "You receive this automatic email because you registered on our website. In order to enable your account, please confirm your registration following this link : [$]\n",
+							"RESET_PASSWORD" : "You receive this automatic email because you wanted to reset your password. In order to define a new one, please follow this link : [$]\n"
+						},
+						"WARN" : "\nThis message have been automaticaly sent, please do not reply.\n\n",
+						"END" : "Thank you for your confidence,\nHave a nice day !"
+					},
+					"forms" : {
+						"LOGIN" : "Login",
+						"PASSWORD" : "Password",
+						"PASSWORD_CONFIRM" : "Password confirmation",
+						"MAIL" : "Email",
+						"PHONE" : "Mobile",
+						"AGREEMENT" : "I accept the <a href=\"[$]\" target=\"_blank\">terms of use</a>",
+						"VALID_MAIL" : "Valid email address",
+						"MAIL_CONFIRM" : "Email confirmation",
+						"LOGIN_FORM_ERROR" : "Wrong login or password !",
+						"INVALID" : "This field is invalid !",
+						"REQUIRED" : "This field is required !",
+						"INVALID_LOGIN" : "A login length should be between 4 and 128 characters !",
+						"INVALID_PASSWORD" : "Your password must contain digits, uppercase and lowercase letters, and at least one special char for a maximale length of 128 characters.",
+						"NOT_SAME_PASSWORD" : "Passwords must be the same !",
+						"LOGIN_UNAVAILABLE" : "This login name is unavailable !",
+						"INVALID_MAIL" : "This mail adress is invalid !",
+						"NOT_SAME_MAIL" : "Email addresses must be the same !",
+						"OLD_PASSWORD" : "Last password",
+						"NEW_PASSWORD" : "New password",
+						"GENERAL_ERROR" : "Some fields are invalid !",
+						"MINTTIME_ERROR" : "This form have been classified as potential spam subimssion, because have been sent too fast.",
+						"SPAM_ERROR" : "This form have been classified as spam.",
+						"INVALID_ID" : "This is not a valid id !",
+						"INVALID_USER_TYPE" : "Only the following user types are valid : [$]",
+						"INVALID_ID_LIST" : "One of the id in the list is invalid !"
+					},
 					"WRONG_PASSWORD" : "Wrong password !",
 					"UNKNOWN_USER" : "Unknown user !",
 					"USER_NOT_FOUND" : "User [$] not found.",
@@ -43,6 +85,7 @@
 					"ASKED_FOR_MAIL_CHANGE_EVENT_NOT_RECIEVED" : "An error occurred while trying to change your mail address, please contact the administrator (AskedForMailChangeEvent not recieved)",
 					"ASKED_FOR_PASSWORD_RETRIEVING_EVENT_NOT_RECIEVED" : "An error occurred while trying to start the password retieving procedure, please contact the administrator (AskedForPasswordRetrievingEvent not recieved)",
 					"USER_PASSWORD_CHANGED_EVENT_NOT_RECIEVED" : "An error occurred while trying to change your password, please contact the administrator (UserPasswordChangedEvent not recieved)",
+					"USER_RESETED_PASSWORD_EVENT_NOT_RECIEVED" : "An error occurred while trying to reset your password, please contact the administrator (UserPasswordResetedEvent not recieved)",
 					"CONNECTION_FAILED" : "This informations don't allow you to sign in.",
 					"CONNECTION_ACCEPTED" : "You've been successfully logged.",
 					"SERVICE_UNAVAILABLE" : "Connection service unavailable, please try again later."

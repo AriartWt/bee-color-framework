@@ -1,6 +1,7 @@
 <?php
 namespace wfw\engine\package\users\security\data;
 
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\security\data\AndRule;
 use wfw\engine\core\security\data\IRule;
 use wfw\engine\core\security\data\IRuleReport;
@@ -16,14 +17,17 @@ final class ChangePasswordRule implements IRule{
 
 	/**
 	 * ChangePasswordRule constructor.
+	 *
+	 * @param ITranslator $translator
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct() {
+	public function __construct(ITranslator $translator) {
+		$key = "server/engine/package/users/forms";
 		$this->_rule = new AndRule(
-			"L'une de ces informations est erronée",
-			new RequiredFields("Ce champ est requis","password","password_confirm","old"),
-			new AreEquals("Les mots de passes doivent être identiques","password","password_confirm"),
-			new IsPassword("Ce n'est pas un mot de passe valide","password","password_confirm","old")
+			$translator->get("$key/GENERAL_ERROR"),
+			new RequiredFields($translator->get("$key/REQUIRED"),"password","password_confirm","old"),
+			new AreEquals($translator->get("$key/NOT_SAME_PASSWORD"),"password","password_confirm"),
+			new IsPassword($translator->get("$key/INVALID_PASSWORD"),"password","password_confirm","old")
 		);
 	}
 

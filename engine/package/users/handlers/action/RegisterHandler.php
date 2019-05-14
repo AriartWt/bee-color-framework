@@ -103,6 +103,7 @@ final class RegisterHandler implements IActionHandler, IDomainEventListener{
 	 */
 	private function createForm():IHTMLForm{
 		return new RegisterUserForm(
+			$this->_translator,
 			$this->_rule,
 			$this->_errorIcon,
 			$this->_conf->getString("server/modules/users/cgu_link") ?? "cgu"

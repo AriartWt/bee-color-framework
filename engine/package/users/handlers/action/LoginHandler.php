@@ -15,6 +15,8 @@ use wfw\engine\core\response\responses\Redirection;
 use wfw\engine\core\response\responses\StaticResponse;
 use wfw\engine\core\router\IRouter;
 use wfw\engine\core\session\ISession;
+use wfw\engine\lib\HTML\helpers\forms\errors\HoneypotFilled;
+use wfw\engine\lib\HTML\helpers\forms\errors\TooShortSubmissionTime;
 use wfw\engine\lib\PHP\types\UUID;
 use wfw\engine\package\users\command\CancelPasswordRetrieving;
 use wfw\engine\package\users\data\model\IUserModelAccess;
@@ -78,7 +80,9 @@ final class LoginHandler implements IActionHandler {
 	/**
 	 * @return LoginForm
 	 */
-	private function createForm():LoginForm{ return new LoginForm($this->_errorIcon); }
+	private function createForm():LoginForm{
+		return new LoginForm($this->_translator, $this->_errorIcon);
+	}
 
 	/**
 	 * @param IAction $action Action
@@ -88,7 +92,21 @@ final class LoginHandler implements IActionHandler {
 		$key = "server/engine/package/users";
 		if($action->getRequest()->getMethod() === IRequest::POST) {
 			$data = $action->getRequest()->getData()->get(IRequestData::POST, true);
-			if($this->_form->validates($data) && empty($data['mail'])) {
+			$res = false; $except = false;
+			try{
+				$res = $this->_form->validates($data);
+			}catch (HoneypotFilled $e){
+				$except = true;
+				$this->_notifier->addMessage(new Message(
+					$this->_translator->get("$key/forms/SPAM_ERROR"),MessageTypes::ERROR
+				));
+			}catch (TooShortSubmissionTime $e){
+				$except = true;
+				$this->_notifier->addMessage(new Message(
+					$this->_translator->get("$key/forms/MINTIME_ERROR"), MessageTypes::ERROR
+				));
+			}
+			if($res) {
 				try{
 					$user = $this->_userModel->getEnabledByLogin($data["login"]);
 				}catch(\Exception | \Error $e){
@@ -124,7 +142,7 @@ final class LoginHandler implements IActionHandler {
 					));
 				}
 			}else{
-				$this->_notifier->addMessage(new Message(
+				if(!$except) $this->_notifier->addMessage(new Message(
 					$this->_translator->get("$key/CONNECTION_FAILED"),
 					MessageTypes::ERROR
 				));

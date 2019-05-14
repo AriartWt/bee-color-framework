@@ -25,7 +25,7 @@ use wfw\engine\package\users\domain\events\UserPasswordResetedEvent;
 use wfw\engine\package\users\domain\states\UserWaitingForPasswordReset;
 use wfw\engine\package\users\lib\confirmationCode\UserConfirmationCode;
 use wfw\engine\package\users\lib\HTML\ResetPasswordForm;
-use wfw\engine\package\users\security\data\ConfirmRule;
+use wfw\engine\package\users\security\data\ResetPasswordRule;
 
 /**
  * Permet de remettre à 0 un mot de passe.
@@ -43,8 +43,8 @@ final class ResetPasswordHandler implements IActionHandler,IDomainEventListener{
 	private $_notifier;
 	/** @var IUserModelAccess $_access */
 	private $_access;
-	/** @var ConfirmRule $_confirmRule */
-	private $_confirmRule;
+	/** @var ResetPasswordRule $_resetPasswordRule */
+	private $_resetPasswordRule;
 	/** @var IRouter $_router */
 	private $_router;
 	/** @var ICommandBus $_bus */
@@ -62,7 +62,7 @@ final class ResetPasswordHandler implements IActionHandler,IDomainEventListener{
 	 * @param INotifier            $notifier
 	 * @param ICommandBus          $bus
 	 * @param ITranslator          $translator
-	 * @param ConfirmRule          $rule
+	 * @param ResetPasswordRule    $rule
 	 */
 	public function __construct(
 		IRouter $router,
@@ -72,13 +72,13 @@ final class ResetPasswordHandler implements IActionHandler,IDomainEventListener{
 		INotifier $notifier,
 		ICommandBus $bus,
 		ITranslator $translator,
-		ConfirmRule $rule
+		ResetPasswordRule $rule
 	){
 		$this->_bus = $bus;
 		$this->_router = $router;
 		$this->_access = $access;
 		$this->_session = $session;
-		$this->_confirmRule = $rule;
+		$this->_resetPasswordRule = $rule;
 		$this->_notifier = $notifier;
 		$this->_translator = $translator;
 		$this->_errorIcon = $router->webroot("Image/Icons/delete.png");
@@ -95,7 +95,11 @@ final class ResetPasswordHandler implements IActionHandler,IDomainEventListener{
 	 * @return ResetPasswordForm
 	 */
 	private function createForm():ResetPasswordForm{
-		return new ResetPasswordForm($this->_confirmRule,$this->_errorIcon);
+		return new ResetPasswordForm(
+			$this->_translator,
+			$this->_resetPasswordRule,
+			$this->_errorIcon
+		);
 	}
 
 	/**
@@ -106,7 +110,7 @@ final class ResetPasswordHandler implements IActionHandler,IDomainEventListener{
 		$key = "server/engine/package/users";
 		if($action->getRequest()->getMethod() === IRequest::POST){
 			$data = $action->getRequest()->getData()->get(IRequestData::GET,true);
-			$result = $this->_confirmRule->applyTo($data);
+			$result = $this->_resetPasswordRule->applyTo($data);
 			if($result->satisfied()){
 				$user = $this->_access->getById($data["id"]);
 				if(is_null($user))
@@ -132,7 +136,7 @@ final class ResetPasswordHandler implements IActionHandler,IDomainEventListener{
 						$data["code"]
 					));
 					if(is_null($this->_event)) return new ErrorResponse(500,
-						"UserPasswordResetedEvent not recieved !"
+						$this->_translator->get("$key/RESET_PASSWORD_CONFIRMED")
 					);
 					if($action->getRequest()->isAjax()) return new Response();
 					else $this->_notifier->addMessage(new Message($this->_translator->get(

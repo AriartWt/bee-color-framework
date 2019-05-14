@@ -6,6 +6,7 @@ use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\response\IResponse;
 use wfw\engine\core\session\ISession;
 use wfw\engine\package\general\command\MultiCommand;
@@ -30,20 +31,23 @@ final class ChangeMailHandler extends DefaultUserActionHandler implements IDomai
 
 	/**
 	 * ChangeMailHandler constructor.
-	 * @param ICommandBus $bus
-	 * @param UserMailRule $rule
-	 * @param ISession $session
+	 *
+	 * @param ICommandBus          $bus
+	 * @param UserMailRule         $rule
+	 * @param ISession             $session
 	 * @param IDomainEventObserver $observer
-	 * @param IUserModelAccess $access
+	 * @param IUserModelAccess     $access
+	 * @param ITranslator          $translator
 	 */
 	public function __construct(
 		ICommandBus $bus,
 		UserMailRule $rule,
 		ISession $session,
 		IDomainEventObserver $observer,
-		IUserModelAccess $access
+		IUserModelAccess $access,
+		ITranslator $translator
 	){
-		parent::__construct($bus, $rule, $session);
+		parent::__construct($bus, $rule, $session,$translator);
 		$this->_access = $access;
 		$observer->addEventListener(UserMailConfirmedEvent::class,$this);
 	}
