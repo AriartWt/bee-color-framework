@@ -2,13 +2,12 @@
 namespace wfw\engine\package\uploader\security\data;
 
 use wfw\engine\core\conf\IConf;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\security\data\AndRule;
 use wfw\engine\core\security\data\IRule;
 use wfw\engine\core\security\data\IRuleReport;
 use wfw\engine\core\security\data\rules\IsFile;
-use wfw\engine\core\security\data\rules\IsString;
 use wfw\engine\core\security\data\rules\MatchRegexp;
-use wfw\engine\core\security\data\rules\MaxStringLength;
 use wfw\engine\core\security\data\rules\RequiredFields;
 use wfw\engine\lib\PHP\types\Byte;
 
@@ -22,21 +21,23 @@ final class UploadFileRule implements IRule {
 	/**
 	 * UploadFileRule constructor.
 	 *
-	 * @param IConf $conf
-	 * @param int   $maxFileNameLength Taille maximale d'un nom de fichier
+	 * @param IConf       $conf
+	 * @param ITranslator $translator
+	 * @param int         $maxFileNameLength Taille maximale d'un nom de fichier
 	 */
-	public function __construct(IConf $conf,int $maxFileNameLength = 512) {
+	public function __construct(IConf $conf,ITranslator $translator,int $maxFileNameLength = 512) {
+		$key = "server/engine/package/uploader/forms";
 		$maxFileSize = (new Byte($conf->getString("server/uploader/max_size") ?? -1))->toInt();
 		$this->_rule = new AndRule(
-			"Les données sont invalides",
-			new RequiredFields("Ces champs sont requis : ","file","name"),
+			$translator->get("$key/GENERAL_ERROR"),
+			new RequiredFields($translator->get("$key/REQUIRED"),"file","name"),
 			new MatchRegexp(
 				"/^.{1,$maxFileNameLength}$/",
-				"Ce nom de fichier n'est pas valide.\nUn nom de fichier doit contenir moins de $maxFileNameLength caractères et aucun /",
+			$translator->getAndReplace("$key/INVALID_FILE_NAME",$maxFileNameLength),
 				"name"
 			),
 			new IsFile(
-				"Ce fichier est invalide ou trop volumineux !",
+				$translator->get("$key/INVALID_FILE"),
 				$maxFileSize,
 				$conf->getArray("server/uploader/accepted_mimes") ?? ["/^image\/.*$/","/^video\/.*"],
 				"file"

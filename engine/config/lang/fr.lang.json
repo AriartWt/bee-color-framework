@@ -10,6 +10,33 @@
 				}
 			},
 			"package" : {
+				"lang" : {
+					"forms" : {
+						"GENERAL_ERROR" : "Les données sont invalides !",
+						"REQUIRED" : "Ce champ est requis !",
+						"INVALID_STRING" : "Ceci n'est pas une chaîne de caractères valide !",
+						"TOO_LARGE_KEY" : "Cette clé ne peut pas éxceder les [$] caractères !"
+					},
+					"EMPTY_PATH" : "La clé de traduction doit avoir une taille supérieure à 0 !"
+				},
+				"general" : {
+					"forms" : {
+						"GENERAL_ERROR" : "Les données sont invalides !",
+						"REQUIRED" : "Ce champ est requis !",
+						"INVALID_ZIP_CODE" : "Ce code postal est invalide !",
+						"INVALID_COUNTRY_NAME" : "Ce nom de pays n'est pas valide !"
+					}
+				},
+				"miel" : {
+					"forms" : {
+						"GENERAL_ERROR" : "Certains champs sont invalides !",
+						"REQUIRED" : "Ce champ est requis !",
+						"TOO_LARGE_KEY" : "La clé ne peut pas excéder [$] caractères de long !",
+						"TOO_LARGE_STRING" : "Ce champ ne peut excéder les [$] caractères de long !",
+						"NOT_EMPTY" : "Ce champ ne peut pas être vide !"
+					},
+					"ERROR" : "Données invalides !"
+				},
 				"news" : {
 					"NOT_FOUND" : "Cet article n'existe pas !",
 					"OFFLINE" : "Cet article n'est plus en ligne !",
@@ -89,6 +116,18 @@
 					"CONNECTION_FAILED" : "Vos informations ne vous permettent pas de vous identifier.",
 					"CONNECTION_ACCEPTED" : "Vous êtes maintenant connecté.",
 					"SERVICE_UNAVAILABLE" : "Service de connexion indisponible, merci de réessayer ultérieurement."
+				},
+				"uploader" : {
+					"forms" : {
+						"REQUIRED" : "Ce champ est requis !",
+						"GENERAL_ERROR" : "Les données sont invalides !",
+						"INVALID_STRING" : "Ceci n'est pas une chaîne de caractères valide !",
+						"MAX_ARRAY_LENGTH_REACHED" : "Ce tableau ne peut pas contenir plus de [$] éléments",
+						"INVALID_FILE" : "Ce fichier est invalide ou trop volumineux !",
+						"INVALID_FILE_NAME" : "Ce nom de fichier n'est pas valide.\nUn nom de fichier doit contenir moins de [$] caractères et aucun /"
+					},
+					"STORAGE_QUOTA_EXCEED" : "Vous n'avez plus assez d'espace disque disponible !",
+					"RENAME_LIST_ERROR" : "La liste d'éléments à renommer ne correspond pas à la liste des nouveaux noms !"
 				}
 			}
 		}

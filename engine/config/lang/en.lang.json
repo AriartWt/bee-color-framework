@@ -10,6 +10,33 @@
 				}
 			},
 			"package" : {
+				"lang" : {
+					"forms" : {
+						"GENERAl_ERROR" : "Invalid data !",
+						"REQUIRED" : "This field is required !",
+						"INVALID_STRING" : "This is not a valid string !",
+						"TOO_LARGE_KEY" : "This ky length can't exceed [$] chars !"
+					},
+					"EMPTY_PATH" : "The translator key must have a length > 0!"
+				},
+				"general" : {
+					"forms" : {
+						"GENERAL_ERROR" : "Invalid data !",
+						"REQUIRED" : "This field is required !",
+						"INVALID_ZIP_CODE" : "This is not a valid zip code !",
+						"INVALID_COUNTRY_NAME" : "This country name is invalid !"
+					}
+				},
+				"miel" : {
+					"forms" : {
+						"GENERAL_ERROR" : "Some fields are invalid !",
+						"REQUIRED" : "This field is required !",
+						"TOO_LARGE_KEY" : "The key length can't exceed [$] chars !",
+						"TOO_LARGE_STRING" : "This field length can't exceed [$] chars !",
+						"NOT_EMPTY" : "This field can't be empty !"
+					},
+					"ERROR" : "Invalid data !"
+				},
 				"news" : {
 					"NOT_FOUND" : "Article not found !",
 					"OFFLINE" : "This article is offline !",
@@ -89,6 +116,18 @@
 					"CONNECTION_FAILED" : "This informations don't allow you to sign in.",
 					"CONNECTION_ACCEPTED" : "You've been successfully logged.",
 					"SERVICE_UNAVAILABLE" : "Connection service unavailable, please try again later."
+				},
+				"uploader" : {
+					"forms" : {
+						"REQUIRED" : "This field is required !",
+						"GENERAL_ERROR" : "Invalid data !",
+						"INVALID_STRING" : "This is not a valid string !",
+						"MAX_ARRAY_LENGTH_REACHED" : "This array can't contain more than [$] elements",
+						"INVALID_FILE" : "This file is invalid or too large !",
+						"INVALID_FILE_NAME" : "Invalid file name.\nA valid file name must contain less thant [$] characters and no /"
+					},
+					"STORAGE_QUOTA_EXCEED" : "Insufficient storage quota exceed !",
+					"RENAME_LIST_ERROR" : "Elems to rename list doesn't match new name list !"
 				}
 			}
 		}

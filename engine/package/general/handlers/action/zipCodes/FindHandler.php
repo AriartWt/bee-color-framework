@@ -3,6 +3,7 @@ namespace wfw\engine\package\general\handlers\action\zipCodes;
 
 use wfw\engine\core\action\IAction;
 use wfw\engine\core\action\IActionHandler;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\request\IRequestData;
 use wfw\engine\core\response\IResponse;
 use wfw\engine\core\response\responses\ErrorResponse;
@@ -18,14 +19,22 @@ final class FindHandler implements IActionHandler {
 	private $_access;
 	/** @var FindZipCode $_rule */
 	private $_rule;
+	/** @var ITranslator $_translator */
+	private $_translator;
 
 	/**
 	 * Find constructor.
 	 *
+	 * @param ITranslator         $translator
 	 * @param IZipCodeModelAccess $access Accés au model de gestion des code postaux
-	 * @param FindZipCode         $rule Régle de validation des données
+	 * @param FindZipCode         $rule   Régle de validation des données
 	 */
-	public function __construct(IZipCodeModelAccess $access,FindZipCode $rule) {
+	public function __construct(
+		ITranslator $translator,
+		IZipCodeModelAccess $access,
+		FindZipCode $rule
+	) {
+		$this->_translator = $translator;
 		$this->_access = $access;
 		$this->_rule = $rule;
 	}
@@ -35,7 +44,12 @@ final class FindHandler implements IActionHandler {
 	 * @return IResponse Réponse
 	 */
 	public function handle(IAction $action): IResponse {
-		if(!$action->getRequest()->isAjax()) return new ErrorResponse("404","Not found");
+		if(!$action->getRequest()->isAjax()) return new ErrorResponse("404",
+			$this->_translator->getAndReplace(
+					"server/engine/core/app/404_NOT_FOUND",
+					$action->getRequest()->getURI()
+			)
+		);
 		$data = $action->getRequest()->getData()->get(IRequestData::POST,true);
 		$res = $this->_rule->applyTo($data);
 		if($res->satisfied()){

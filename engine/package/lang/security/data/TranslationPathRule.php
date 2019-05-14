@@ -1,6 +1,7 @@
 <?php
 namespace wfw\engine\package\lang\security\data;
 
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\security\data\AndRule;
 use wfw\engine\core\security\data\IRule;
 use wfw\engine\core\security\data\IRuleReport;
@@ -20,16 +21,19 @@ final class TranslationPathRule implements IRule{
 	/**
 	 * TranslationPathRule constructor.
 	 *
+	 * @param ITranslator $translator
+	 * @param int         $maxKeyLength
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct() {
+	public function __construct(ITranslator $translator, int $maxKeyLength=512) {
+		$key = "server/engine/package/lang/forms";
 		$this->_rule = new AndRule(
-			"Ce champ n'est pas valide !",
-			new RequiredFields("Ce champ est requis !","lang_path"),
-			new IsString("Ceci n'est pas une chaîne de caractères valide !","lang_path"),
+			$translator->get("$key/GENERAL_ERROR"),
+			new RequiredFields($translator->get("$key/REQUIRED"),"lang_path"),
+			new IsString($translator->get("$key/INVALID_STRING"),"lang_path"),
 			new MaxStringLength(
-				"Ce champ ne peut excéder les 512 caractères de long !",
-				512,
+				$translator->getAndReplace("$key/TOO_LARGE_KEY",$maxKeyLength),
+				$maxKeyLength,
 				"lang_path"
 			)
 		);
