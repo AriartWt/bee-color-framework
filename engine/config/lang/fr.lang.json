@@ -10,6 +10,12 @@
 				}
 			},
 			"package" : {
+				"contact" : {
+					"forms" : {
+						"INVALID_ID_IN_LIST" : "L'un des identifiants n'est pas valide !",
+						"INVALID_ID" : "Cet identifiant est invalide !"
+					}
+				},
 				"lang" : {
 					"forms" : {
 						"GENERAL_ERROR" : "Les données sont invalides !",
@@ -38,6 +44,24 @@
 					"ERROR" : "Données invalides !"
 				},
 				"news" : {
+					"forms" : {
+						"GENERAL_ERROR" : "Les données sont invalides !",
+						"REQUIRED" : "L'identifiant de l'article est requis !",
+						"INVALID_ID_IN_LIST" : "L'un des identifiants n'est pas valide !",
+						"INVALID_ID" : "Cet identifiant est invalide !",
+						"INVALID_STRING" : "Ceci n'est pas une chaîne de caractères valide !",
+						"NOT_EMPTY" : "Ce champ ne peut pas être vide !",
+						"MAX_TITLE_LENGTH" : "Le titre d'un article ne peut pas éxcéder les [$] caractères !",
+						"MAX_CONTENT_LENGTH" : "Le contenu d'un article ne peut pas éxcéder les [$] caractères !",
+						"MAX_VISUAL_LENGTH" : "Le chemin vers le visuel d'un article ne peut pas éxcéder les [$] caractères !",
+						"EMPTY_OR_BOOLEAN" : "Ce champ doit être vide ou booléen.",
+						"INVALID_FIELD" : "Ce champ n'est pas valide !",
+						"MUST_BE_EMPTY" : "Ce champ doit être vide !",
+						"INVALID_TITLE" : "Ce titre n'est pas valide !",
+						"INVALID_CONTENT" : "Ce contenu n'est pas valide !",
+						"INVALID_VISUAL" : "Le chemin vers ce visuel n'est pas valide !"
+					},
+					"ERROR_WRITTEN_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la création de l'article. Merci de contacter l'administrateur (WrittentEvent not recieved)",
 					"NOT_FOUND" : "Cet article n'existe pas !",
 					"OFFLINE" : "Cet article n'est plus en ligne !",
 					"REMOVED" : "Cet article a été supprimé !",

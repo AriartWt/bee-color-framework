@@ -10,6 +10,12 @@
 				}
 			},
 			"package" : {
+				"contact" : {
+					"forms" : {
+						"INVALID_ID_IN_LIST" : "One of the given ID is invalid !",
+						"INVALID_ID" : "This ID is invalid !"
+					}
+				},
 				"lang" : {
 					"forms" : {
 						"GENERAl_ERROR" : "Invalid data !",
@@ -38,6 +44,24 @@
 					"ERROR" : "Invalid data !"
 				},
 				"news" : {
+					"forms" : {
+						"GENERAL_ERROR" : "Invalid data !",
+						"REQUIRED" : "The article ID is required !",
+						"INVALID_ID_IN_LIST" : "One of the given IDS is invalid !",
+						"INVALID_ID" : "Invalid ID !",
+						"INVALID_STRING" : "This isn't a valid string !",
+						"NOT_EMPTY" : "This field can't be empty !",
+						"MAX_TITLE_LENGTH" : "The title length can't exceed [$] chars !",
+						"MAX_CONTENT_LENGTH" : "The content length can't exceed [$] chars !",
+						"MAX_VISUAL_LENGTH" : "The path to the visual can't exceed [$] chars !",
+						"EMPTY_OR_BOOLEAN" : "This field must be empty or boolean.",
+						"INVALID_FIELD" : "This field isn't valid !",
+						"MUST_BE_EMPTY" : "This field must be empty !",
+						"INVALID_TITLE" : "Invalid title !",
+						"INVALID_CONTENT" : "Invalid content !",
+						"INVALID_VISUAL" : "Invalid visual path !"
+					},
+					"ERROR_WRITTEN_EVENT_NOT_RECIEVED" : "An error occured while truing to create the article, please contact the administrator (WrittentEvent not recieved)",
 					"NOT_FOUND" : "Article not found !",
 					"OFFLINE" : "This article is offline !",
 					"REMOVED" : "This article have been removed !",

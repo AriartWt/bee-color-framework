@@ -1,6 +1,7 @@
 <?php
 namespace wfw\engine\package\news\security\data;
 
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\security\data\AndRule;
 use wfw\engine\core\security\data\IRule;
 use wfw\engine\core\security\data\IRuleReport;
@@ -16,11 +17,14 @@ final class ArticleIdRule implements IRule {
 
 	/**
 	 * ArticleIdRule constructor.
+	 *
+	 * @param ITranslator $translator
 	 */
-	public function __construct() {
-		$this->_rule = new AndRule("L'identifiant de l'article est obligatoire",
-			new RequiredFields("L'identifiant de l'article doit être précisé.","article_id"),
-			new IsUUID("Cet identifiant n'est pas valide","article_id")
+	public function __construct(ITranslator $translator) {
+		$key = "server/engine/package/news/forms";
+		$this->_rule = new AndRule($translator->get("$key/GENERAL_ERROR"),
+			new RequiredFields($translator->get("$key/REQUIRED"),"article_id"),
+			new IsUUID($translator->get("$key/INVALID_ID"),"article_id")
 		);
 	}
 
