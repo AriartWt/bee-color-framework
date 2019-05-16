@@ -20,7 +20,7 @@ final class ListHandler extends UploadHandler {
 			if(!is_dir($folder))
 				return new ErrorResponse(
 					500,
-					"No upload folder defined, or specified folder didn't exists!"
+					"No upload folder defined, or specified folder didn't exists !"
 				);
 			$iterator = new \RecursiveIteratorIterator(
 				new \RecursiveDirectoryIterator(
@@ -60,7 +60,9 @@ final class ListHandler extends UploadHandler {
 			}
 			return new Response($arr);
 		}else{
-			return new ErrorResponse(404,"Page not found");
+			return new ErrorResponse(404,$this->_translator->getAndReplace(
+				"server/engine/core/app/404_NOT_FOUND",$action->getRequest()->getURI()
+			));
 		}
 	}
 }

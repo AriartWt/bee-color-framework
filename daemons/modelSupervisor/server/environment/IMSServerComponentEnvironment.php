@@ -2,6 +2,7 @@
 namespace wfw\daemons\modelSupervisor\server\environment;
 
 use wfw\engine\core\conf\IConf;
+use wfw\engine\lib\logger\ILogger;
 
 /**
  *  Environnement de travail d'un composant du MSServer
@@ -16,6 +17,11 @@ interface IMSServerComponentEnvironment extends IConf {
 	 * @return string Chemin d'accés au dossier de travail du component.
 	 */
 	public function getWorkingDir():string;
+
+	/**
+	 * @return ILogger Logger
+	 */
+	public function getLogger():ILogger;
 
 	/**
 	 *  Teste l'accés d'un utilisater sur l'écriture, la lecture ou l'adminsitration du container.

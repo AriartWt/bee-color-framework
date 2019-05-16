@@ -2,6 +2,7 @@
 namespace wfw\daemons\sctl\conf;
 use wfw\engine\core\conf\FileBasedConf;
 use wfw\engine\core\conf\io\adapters\JSONConfIOAdapter;
+use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\PHP\types\PHPString;
 
 /**
@@ -28,7 +29,7 @@ final class SCTLConf {
 	 * @param null|string $user       Utilisateur propriétaire du fichier auth.pwd
 	 * @param null|string $dir        Repertoir de travail recevant le fichier auth.pwd, sctl.pid,
 	 *                                sem_file.semaphore
-	 * @param string      ...$daemons    Liste de daemons à gérer
+	 * @param string      ...$daemons Liste de daemons à gérer
 	 * @throws \InvalidArgumentException
 	 */
 	public function __construct(
@@ -85,5 +86,48 @@ final class SCTLConf {
 	 */
 	public function getDaemons():array{
 		return $this->_daemons;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getLogLevel():int{
+		return $this->_conf->getInt("logs/level") ?? ILogger::ERR;
+	}
+
+	/**
+	 * @param string $key
+	 * @return string
+	 */
+	public function getLogFile(string $key):string{
+		$dest = $this->_conf->getString("logs/files") ?? "sctl-$key.log";
+		$baseLog = $this->_conf->get("logs/default_path");
+		if(strpos($dest,"/")!==0){
+			if($baseLog){
+				if(!is_dir($baseLog)) mkdir($baseLog,0700,true);
+				return "$baseLog/$dest";
+			}else{
+				if(!is_dir($this->getWorkingDir()))
+					mkdir($this->getWorkingDir(),0700,true);
+				return $this->getWorkingDir()."/$dest";
+			}
+		}
+		return $dest;
+	}
+
+	/**
+	 * @return null|string
+	 */
+	public function getAdminMailAddr():?string{
+		return $this->_conf->getString("admin_mail");
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isCopyLogModeEnabled():bool{
+		$res = $this->_conf->getBoolean("logs/copy");
+		if(is_null($res)) return true;
+		else return $res;
 	}
 }

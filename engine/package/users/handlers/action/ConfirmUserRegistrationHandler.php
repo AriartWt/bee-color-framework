@@ -7,6 +7,7 @@ use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\notifier\INotifier;
 use wfw\engine\core\notifier\Message;
 use wfw\engine\core\request\IRequestData;
@@ -38,15 +39,19 @@ final class ConfirmUserRegistrationHandler implements IActionHandler,IDomainEven
 	private $_rule;
 	/** @var ISession $_session */
 	private $_session;
+	/** @var ITranslator $_translator */
+	private $_translator;
 
 	/**
 	 * ConfirmUserRegistrationHandler constructor.
-	 * @param ICommandBus $bus
-	 * @param INotifier $notifier
-	 * @param IUserModelAccess $access
+	 *
+	 * @param ICommandBus          $bus
+	 * @param INotifier            $notifier
+	 * @param IUserModelAccess     $access
 	 * @param IDomainEventObserver $observer
-	 * @param ISession $session
-	 * @param ConfirmRule $rule
+	 * @param ISession             $session
+	 * @param ITranslator          $translator
+	 * @param ConfirmRule          $rule
 	 */
 	public function __construct(
 		ICommandBus $bus,
@@ -54,8 +59,10 @@ final class ConfirmUserRegistrationHandler implements IActionHandler,IDomainEven
 		IUserModelAccess $access,
 		IDomainEventObserver $observer,
 		ISession $session,
+		ITranslator $translator,
 		ConfirmRule $rule
 	){
+		$this->_translator = $translator;
 		$this->_bus = $bus;
 		$this->_notifier = $notifier;
 		$this->_access = $access;
@@ -69,31 +76,38 @@ final class ConfirmUserRegistrationHandler implements IActionHandler,IDomainEven
 	 * @return ErrorResponse
 	 */
 	public function handle(IAction $action): IResponse {
+		$key = "server/engine/package/users";
 		$data = $action->getRequest()->getData()->get(IRequestData::GET);
 		$report = $this->_rule->applyTo($data);
 		if($report->satisfied()){
 			$user = $this->_access->getById($data["id"]);
 			if(is_null($user))
-				return new ErrorResponse(201,"Unknown user ".$data["id"]);
+				return new ErrorResponse(201,$this->_translator->getAndReplace(
+					"$key/NOT_FOUND",$data["id"]
+				));
 			if(!($user->getState() instanceof UserWaitingForRegisteringConfirmation))
-				return new ErrorResponse(403,"Bad user state");
+				return new ErrorResponse(403,$this->_translator->get(
+					"$key/INVALID_USER_STATE"
+				));
 			/** @var UserWaitingForRegisteringConfirmation $state */
 			$state = $user->getState();
 			if(!$state->isValide(new UserConfirmationCode($data["code"])))
-				return new ErrorResponse(403,"Bad code given");
+				return new ErrorResponse(403,$this->_translator->get(
+					"$key/BAD_CONFIRM_CODE"
+				));
 
 			$this->_bus->execute(new ConfirmUserRegistration(
 				$data["id"],
 				new UserConfirmationCode($data["code"]),
 				$data["id"]
 			));
-			if(is_null($this->_event)) return new ErrorResponse(500,
-				"UserRegisteredEvent not recieved !"
-			);
-			if($action->getRequest()->isAjax()) return new Response();
-			else $this->_notifier->addMessage(new Message(
-				"Votre compte a bien été validé, vous pouvez maintenant vous connecter !"
+			if(is_null($this->_event)) return new ErrorResponse(500,$this->_translator->get(
+				"$key/USER_CONFIRMED_EVENT_NOT_RECIEVED"
 			));
+			if($action->getRequest()->isAjax()) return new Response();
+			else $this->_notifier->addMessage(new Message($this->_translator->get(
+				"$key/REGISTRATION_SUCCESS"
+			)));
 		}else return new Redirection("/",403);
 		return new Redirection("/");
 	}

@@ -5,6 +5,7 @@ Description=Gestionnaire de services du framework bee-color wfw
 Type=simple
 User=root
 KillSignal=SIGALRM
+KillMode=process
 ExecStart=/usr/bin/php -q @ROOT/daemons/sctl/SCTLServerLauncher.php --debug
 Restart=always
 

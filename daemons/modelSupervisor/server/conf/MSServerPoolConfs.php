@@ -6,6 +6,9 @@ use wfw\daemons\kvstore\server\conf\KVSConfs;
 use wfw\daemons\modelSupervisor\server\IMSServerPoolConf;
 use wfw\engine\core\conf\FileBasedConf;
 use wfw\engine\core\conf\io\adapters\JSONConfIOAdapter;
+use wfw\engine\lib\logger\DefaultLogFormater;
+use wfw\engine\lib\logger\FileLogger;
+use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\PHP\objects\StdClassOperator;
 use wfw\engine\lib\PHP\types\PHPString;
 
@@ -17,7 +20,7 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 	private const WORKING_DIR = "working_dir";
 	private const SOCKET_PATH = "socket_path";
 	private const REQUEST_TTL = "request_ttl";
-	private const ERROR_LOGS = "error_logs";
+	private const LOGS = "logs/files";
 	private const KVS_ADDR = "kvs/addr";
 
 	/** @var FileBasedConf $_conf */
@@ -28,6 +31,10 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 	private $_kvsAddr;
 	/** @var StdClassOperator[] $_instancesConfs */
 	private $_instancesConfs = [];
+	/** @var ILogger $_logger */
+	private $_logger;
+	/** @var ILogger[] $_instanceLoggers */
+	private $_instanceLoggers=[];
 
 	/**
 	 * KVSConfs constructor.
@@ -35,14 +42,20 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 	 * @param string      $engineConfs Données de configuration générales
 	 * @param null|string $siteConfs   (optionnel) données de configuration du site
 	 * @param string      $basePath    (optionnel defaut : DAEMONS) chemin absolu permettant la résolution du chemin relatif des fichiers.
+	 * @param bool        $noLogger    (optionnel) Disable loggers
+	 * @throws \InvalidArgumentException
+	 * @throws \wfw\engine\lib\errors\InvalidTypeSupplied
+	 * @throws \wfw\engine\lib\errors\PermissionDenied
 	 */
 	public function __construct(
 		string $engineConfs,
 		?string $siteConfs=null,
-		string $basePath = DAEMONS
+		string $basePath = DAEMONS,
+		bool $noLogger = false
 	){
-		$this->_kvsAddr = (new KVSConfs($engineConfs,$siteConfs))->getSocketPath();
+		$this->_kvsAddr = (new KVSConfs($engineConfs,$siteConfs,DAEMONS,true))->getSocketPath();
 		$this->_basePath = $basePath;
+		$this->_instancesConfs = [];
 		$confIO = new JSONConfIOAdapter();
 		//On récupère les configurations générales
 		$conf = new FileBasedConf($engineConfs,$confIO);
@@ -64,15 +77,40 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 		}
 
 		$this->_conf = new FileBasedConf($confPath,$confIO);
+		$workingDir = $this->getWorkingDir();
+		if(!is_dir($workingDir)) mkdir($workingDir,0700,true);
+
+		if(!$noLogger) $this->_logger = (new FileLogger(new DefaultLogFormater(),...[
+			$this->getLogPath(null,"log"),
+			$this->getLogPath(null,"err"),
+			$this->getLogPath(null,"warn"),
+			$this->getLogPath(null,"debug")
+		]))->autoConfFileByLevel(
+			FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
+			FileLogger::DEBUG,
+			$this->isCopyLogModeEnabled()
+		)->autoConfByLevel($this->_conf->getInt("logs/level") ?? ILogger::ERR);
 
 		//On détermine les configurations de chaque instance à créer
-		$this->_instancesConfs = [];
 		$defInstance = $this->_conf->getObject(self::DEFAULT_INSTANCE);
 		foreach($this->_conf->getArray("instances") as $instanceName=>$instanceConf){
 			$tmp = new StdClassOperator(new stdClass());
 			$tmp->mergeStdClass($defInstance);
 			$tmp->mergeStdClass($instanceConf);
 			$this->_instancesConfs[$instanceName] = $tmp;
+			if(!$noLogger)
+			$this->_instanceLoggers[$instanceName] = (new FileLogger(new DefaultLogFormater(),...[
+				$this->getLogPath($instanceName,"log"),
+				$this->getLogPath($instanceName,"err"),
+				$this->getLogPath($instanceName,"warn"),
+				$this->getLogPath($instanceName,"debug")
+			]))->autoConfFileByLevel(
+				FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
+				FileLogger::DEBUG,
+				$this->isCopyLogModeEnabled($instanceName)
+			)->autoConfByLevel($this->_conf->getInt("instances/$instanceName/logs/level")
+				?? $this->_conf->getInt("logs/level") ?? ILogger::ERR
+			);
 		}
 	}
 
@@ -260,14 +298,21 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 
 	/**
 	 * @param null|string $instance Instance concernée
+	 * @param string      $level
 	 * @return string
 	 */
-	public function getErrorLogsPath(?string $instance=null):string{
-		$errorPath = new PHPString(
-			$this->resolvePath($this->_conf->getString(self::ERROR_LOGS)??"error_logs.txt")
-		);
-		if(!$errorPath->startBy("/")){
-			return $this->getWorkingDir($instance).DS.$errorPath;
+	public function getLogPath(?string $instance,string $level="err"):string{
+		if($instance) $path = $this->_conf->getString("instances/$instance/".self::LOGS."/$level");
+		else $path = $this->_conf->getString(self::LOGS."/$level");
+		$errorPath = $path ?? "msserver".(($instance)?"-$instance":"")."-$level.log";
+
+		if(strpos($errorPath,"/")!==0){
+			if($instance) $basePath = $this->_conf->getString("instances/$instance/logs/default_path")
+										?? $this->_conf->getString("logs/default_path")."/instances";
+			else $basePath = $this->_conf->getString("logs/default_path");
+			if(!$basePath) $basePath = $this->getWorkingDir($instance);
+			if(!is_dir($basePath)) mkdir($basePath,0700,true);
+			return "$basePath/$errorPath";
 		}else{
 			return $errorPath;
 		}
@@ -371,5 +416,34 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 	 */
 	public function getInstances():array{
 		return array_keys($this->_instancesConfs);
+	}
+
+	/**
+	 * @param null|string $instance
+	 * @return ILogger
+	 */
+	public function getLogger(?string $instance=null): ILogger {
+		if($instance && !isset($this->_instancesConfs[$instance]))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return (is_null($instance) ? $this->_logger : $this->_instanceLoggers[$instance]);
+	}
+
+	/**
+	 * @param null|string $instance
+	 * @return bool
+	 */
+	public function isCopyLogModeEnabled(?string $instance=null):bool{
+		$res = $this->_conf->getBoolean(($instance ? "instances/$instance/" : "") ."logs/copy");
+		if(is_null($res)) return true;
+		else return $res;
+	}
+
+	/**
+	 * @param null|string $instance
+	 * @return null|string
+	 */
+	public function getAdminMailAddr(?string $instance=null):?string{
+		if($instance) return $this->_conf->getString("instances/$instance/admin_mail") ?? $this->getAdminMailAddr();
+		else return $this->_conf->getString("admin_mail");
 	}
 }

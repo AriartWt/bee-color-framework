@@ -1,0 +1,28 @@
+{
+	//adresse mail sur laquelle sera envoyée un message d'erreur en cas de crash de l'un des daemons
+	//supervisés par sctl.
+	"admin_mail" : null,
+	//utilisateur unix et groupe propriétaire du fichier aut.pwd_owner
+	"auth.pwd_owner" : "www-data",
+	//dossier de travail par défaut
+	"working_dir" : "sctl/data",
+	//liste des daemons à gérer.
+	"daemons" : [
+		"kvs",
+		"msserver"
+	],
+	//gére les logs
+	"logs" : {
+		//combinaison de puissances de 2 correspondant à tous les niveuw de log à activer.
+		//par défaut, 2 active le log des erreur. 1 les logs normaux, 4 les logs warning,
+		//8 les logs debug (combinaison de 1,2,4).
+		//3 active 1 et 2; 7 active 1,2,4; 15 active tous les logs.
+		"level" : 2,
+		//active la copie des logs dans les fichiers. Si debug + un autre niveau activé, alors les
+		//logs apparaissent deux fois. L'une dans leur fichier de destination, l'autre dans debug.
+		//Si false, les logs sont redirigés sans copie vers debug.
+		"copy" : true,
+		//Chemin du dossier contenant les logs du daemons.
+		"default_path" : "/var/log/wfw/msserver"
+	}
+}

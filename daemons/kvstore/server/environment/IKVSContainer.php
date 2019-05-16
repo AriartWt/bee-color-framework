@@ -1,5 +1,6 @@
 <?php
 namespace wfw\daemons\kvstore\server\environment;
+use wfw\engine\lib\logger\ILogger;
 
 /**
  *  Container du KVS
@@ -27,4 +28,9 @@ interface IKVSContainer {
 	 * @return string Chemin d'accés au repertoir parent du container.
 	 */
 	public function getSavePath():string;
+
+	/**
+	 * @return ILogger
+	 */
+	public function getLogger():ILogger;
 }

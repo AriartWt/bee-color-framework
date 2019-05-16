@@ -8,6 +8,151 @@
 					"MUST_BE_LOGGED" : "Access denied : you must be connected !",
 					"404_NOT_FOUND" : "Page '[$]' not found !"
 				}
+			},
+			"package" : {
+				"contact" : {
+					"forms" : {
+						"INVALID_ID_IN_LIST" : "One of the given ID is invalid !",
+						"INVALID_ID" : "This ID is invalid !"
+					}
+				},
+				"lang" : {
+					"forms" : {
+						"GENERAl_ERROR" : "Invalid data !",
+						"REQUIRED" : "This field is required !",
+						"INVALID_STRING" : "This is not a valid string !",
+						"TOO_LARGE_KEY" : "This ky length can't exceed [$] chars !"
+					},
+					"EMPTY_PATH" : "The translator key must have a length > 0!"
+				},
+				"general" : {
+					"forms" : {
+						"GENERAL_ERROR" : "Invalid data !",
+						"REQUIRED" : "This field is required !",
+						"INVALID_ZIP_CODE" : "This is not a valid zip code !",
+						"INVALID_COUNTRY_NAME" : "This country name is invalid !"
+					}
+				},
+				"miel" : {
+					"forms" : {
+						"GENERAL_ERROR" : "Some fields are invalid !",
+						"REQUIRED" : "This field is required !",
+						"TOO_LARGE_KEY" : "The key length can't exceed [$] chars !",
+						"TOO_LARGE_STRING" : "This field length can't exceed [$] chars !",
+						"NOT_EMPTY" : "This field can't be empty !"
+					},
+					"ERROR" : "Invalid data !"
+				},
+				"news" : {
+					"forms" : {
+						"GENERAL_ERROR" : "Invalid data !",
+						"REQUIRED" : "The article ID is required !",
+						"INVALID_ID_IN_LIST" : "One of the given IDS is invalid !",
+						"INVALID_ID" : "Invalid ID !",
+						"INVALID_STRING" : "This isn't a valid string !",
+						"NOT_EMPTY" : "This field can't be empty !",
+						"MAX_TITLE_LENGTH" : "The title length can't exceed [$] chars !",
+						"MAX_CONTENT_LENGTH" : "The content length can't exceed [$] chars !",
+						"MAX_VISUAL_LENGTH" : "The path to the visual can't exceed [$] chars !",
+						"EMPTY_OR_BOOLEAN" : "This field must be empty or boolean.",
+						"INVALID_FIELD" : "This field isn't valid !",
+						"MUST_BE_EMPTY" : "This field must be empty !",
+						"INVALID_TITLE" : "Invalid title !",
+						"INVALID_CONTENT" : "Invalid content !",
+						"INVALID_VISUAL" : "Invalid visual path !"
+					},
+					"ERROR_WRITTEN_EVENT_NOT_RECIEVED" : "An error occured while truing to create the article, please contact the administrator (WrittentEvent not recieved)",
+					"NOT_FOUND" : "Article not found !",
+					"OFFLINE" : "This article is offline !",
+					"REMOVED" : "This article have been removed !",
+					"service_unavailable" : {
+						"LIST" : "Unable to fetch articles : service temporarily unavailable. Please try again later.",
+						"ARTICLE" : "Unable to fetch article : service temporarily unavailable. Please try again later."
+					}
+				},
+				"users" : {
+					"mail" : {
+						"subject" : {
+							"CONFIRM_MAIL_CHANGE" : "New email confirmation",
+							"CONFIRM_REGISTRATION" : "Registration confirmation",
+							"RESET_PASSWORD" : "Reset your password"
+						},
+						"INTRO" : "Dear user [$],\n",
+						"explain" : {
+							"CONFIRM_MAIL_CHANGE" : "You receive this automatic email because you changed your email address. In order to this change to take effect, please confirm your new mail address following this link : [$]\n",
+							"CONFIRM_REGISTRATION" : "You receive this automatic email because you registered on our website. In order to enable your account, please confirm your registration following this link : [$]\n",
+							"RESET_PASSWORD" : "You receive this automatic email because you wanted to reset your password. In order to define a new one, please follow this link : [$]\n"
+						},
+						"WARN" : "\nThis message have been automaticaly sent, please do not reply.\n\n",
+						"END" : "Thank you for your confidence,\nHave a nice day !"
+					},
+					"forms" : {
+						"LOGIN" : "Login",
+						"PASSWORD" : "Password",
+						"PASSWORD_CONFIRM" : "Password confirmation",
+						"MAIL" : "Email",
+						"PHONE" : "Mobile",
+						"AGREEMENT" : "I accept the <a href=\"[$]\" target=\"_blank\">terms of use</a>",
+						"VALID_MAIL" : "Valid email address",
+						"MAIL_CONFIRM" : "Email confirmation",
+						"LOGIN_FORM_ERROR" : "Wrong login or password !",
+						"INVALID" : "This field is invalid !",
+						"REQUIRED" : "This field is required !",
+						"INVALID_LOGIN" : "A login length should be between 4 and 128 characters !",
+						"INVALID_PASSWORD" : "Your password must contain digits, uppercase and lowercase letters, and at least one special char for a maximale length of 128 characters.",
+						"NOT_SAME_PASSWORD" : "Passwords must be the same !",
+						"LOGIN_UNAVAILABLE" : "This login name is unavailable !",
+						"INVALID_MAIL" : "This mail adress is invalid !",
+						"NOT_SAME_MAIL" : "Email addresses must be the same !",
+						"OLD_PASSWORD" : "Last password",
+						"NEW_PASSWORD" : "New password",
+						"GENERAL_ERROR" : "Some fields are invalid !",
+						"MINTTIME_ERROR" : "This form have been classified as potential spam subimssion, because have been sent too fast.",
+						"SPAM_ERROR" : "This form have been classified as spam.",
+						"INVALID_ID" : "This is not a valid id !",
+						"INVALID_USER_TYPE" : "Only the following user types are valid : [$]",
+						"INVALID_ID_LIST" : "One of the id in the list is invalid !"
+					},
+					"WRONG_PASSWORD" : "Wrong password !",
+					"UNKNOWN_USER" : "Unknown user !",
+					"USER_NOT_FOUND" : "User [$] not found.",
+					"MAIL_CONFIRMED" : "Your mail have been successfully confirmed.",
+					"RESET_PASSWORD_CONFIRMED" : "Your password have been successfully reseted.",
+					"INVALID_USER_STATE" : "Invalid user state.",
+					"BAD_CONFIRM_CODE" : "Invalid confirmation code.",
+					"LOGOUT" : "You've been successfully logged out",
+					"REGISTRATION_MAIL_SENT" : "You're successfully registered. A confirmation mail have been sent to your mailboxe.",
+					"REGISTRATION_SUCCESS" : "Your account have been successfully confirmed, you can now sign in.",
+					"USER_CONFIRMED_EVENT_NOT_RECIEVED" : "An error occurred while trying to confirm your registration, please contact the administrator (UserConfirmedEvent not recieved).",
+					"USER_PASSWORD_RESETED_EVENT_NOT_RECIEVED" : "An error occurred while trying to reset your password, please contact the administrator (UserPasswordResetedEvent not recieved).",
+					"CONFIRM_MAIL_EVENT_NOT_RECIEVED" : "An error occurred while trying to confirm your mail address, please contact the administrator (UserMailConfirmedEvent not recieved).",
+					"CANCEL_MAIL_CHANGE_EVENT_NOT_RECIEVED" : "An error occurred while trying to cancel your mail address modification, please contact the administrator (CanceledUserMailChangeEvent not recieved).",
+					"CANCEL_PASSWORD_RETRIEVING_EVENT_NOT_RECIEVED" : "An error occurred while trying to cancel password reset process, please contact the administrator (UserPasswordRetrievingCanceledEvent not recieved).",
+					"CANCEL_REGISTRATION_EVENT_NOT_RECIEVED" : "An error occurred while trying cancel this user registration, please contact the administrator (UserRegistrationProcedureCanceledEvent not recieved).",
+					"USER_TYPE_CHANGED_EVENT_NOT_RECIEVED" : "An error occurred while trying to change this user role, please contact the administrator (UserTypeChangedEvent not recieved).",
+					"USER_REGISTERED_EVENT_NOT_RECIEVED" : "An error occurred while trying to register a new user, please contact the administrator (UserRegisteredEvent not recieved).",
+					"USER_CANT_DISABLE_HIS_OWN_ACCOUNT" : "A user can't disable his own account !",
+					"USER_CANT_DELETE_HIS_OWN_ACCOUNT" : "A user can't delete his own account !",
+					"ASKED_FOR_MAIL_CHANGE_EVENT_NOT_RECIEVED" : "An error occurred while trying to change your mail address, please contact the administrator (AskedForMailChangeEvent not recieved)",
+					"ASKED_FOR_PASSWORD_RETRIEVING_EVENT_NOT_RECIEVED" : "An error occurred while trying to start the password retieving procedure, please contact the administrator (AskedForPasswordRetrievingEvent not recieved)",
+					"USER_PASSWORD_CHANGED_EVENT_NOT_RECIEVED" : "An error occurred while trying to change your password, please contact the administrator (UserPasswordChangedEvent not recieved)",
+					"USER_RESETED_PASSWORD_EVENT_NOT_RECIEVED" : "An error occurred while trying to reset your password, please contact the administrator (UserPasswordResetedEvent not recieved)",
+					"CONNECTION_FAILED" : "This informations don't allow you to sign in.",
+					"CONNECTION_ACCEPTED" : "You've been successfully logged.",
+					"SERVICE_UNAVAILABLE" : "Connection service unavailable, please try again later."
+				},
+				"uploader" : {
+					"forms" : {
+						"REQUIRED" : "This field is required !",
+						"GENERAL_ERROR" : "Invalid data !",
+						"INVALID_STRING" : "This is not a valid string !",
+						"MAX_ARRAY_LENGTH_REACHED" : "This array can't contain more than [$] elements",
+						"INVALID_FILE" : "This file is invalid or too large !",
+						"INVALID_FILE_NAME" : "Invalid file name.\nA valid file name must contain less thant [$] characters and no /"
+					},
+					"STORAGE_QUOTA_EXCEED" : "Insufficient storage quota exceed !",
+					"RENAME_LIST_ERROR" : "Elems to rename list doesn't match new name list !"
+				}
 			}
 		}
 	},

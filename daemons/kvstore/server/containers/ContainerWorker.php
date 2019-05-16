@@ -36,6 +36,7 @@ use wfw\daemons\kvstore\socket\data\KVSDataParser;
 use wfw\daemons\kvstore\socket\data\KVSDataParserResult;
 use wfw\daemons\multiProcWorker\Worker;
 use wfw\engine\lib\data\string\serializer\ISerializer;
+use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
 use wfw\engine\lib\PHP\errors\IllegalInvocation;
 use wfw\engine\lib\PHP\types\Type;
@@ -58,6 +59,8 @@ final class ContainerWorker extends Worker {
 	private $_serializer;
 	/** @var KVSDataParser $_dataParser */
 	private $_dataParser;
+	/** @var ILogger $_logger */
+	private $_logger;
 
 	/**
 	 *  Timeout des socket sur RCV et SND
@@ -86,16 +89,19 @@ final class ContainerWorker extends Worker {
 		$this->_serializer = $serializer;
 		$this->_dataParser = $dataParser;
 		$this->_socketAddr = $socket_addr;
-
 		if(!is_null($clientParams)){
 			$this->_clientParams = $clientParams;
 		}
 		if(!is_null($workerParams)){
 			$this->_workerParams = $workerParams;
-			$this->_pidFilePath = $this->_workerParams->getContainer()->getSavePath()."/pid";
+			$this->_logger = $workerParams->getContainer()->getLogger();
+			$this->_pidFilePath = $this->_workerParams->getContainer()->getSavePath()."/"
+				.$this->_clientParams->getContainer()->getName().".pid";
 			$errorLogFile = $this->_workerParams->getContainer()->getSavePath()."/error_logs.txt";
 		}else{
-			$this->_pidFilePath = $this->_clientParams->getContainer()->getSavePath()."/pid";
+			$this->_logger = $clientParams->getContainer()->getLogger();
+			$this->_pidFilePath = $this->_clientParams->getContainer()->getSavePath()."/"
+				.$this->_clientParams->getContainer()->getName().".pid";
 			$errorLogFile = $this->_clientParams->getContainer()->getSavePath()."/error_logs.txt";
 		}
 
@@ -118,6 +124,7 @@ final class ContainerWorker extends Worker {
 		if($res) throw new IllegalInvocation(
 			"A worker is already running for the container ".$this->_workerParams->getContainer()->getName()
 		);
+		cli_set_process_title("WFW KVS ".$this->_workerParams->getContainer()->getName()." instance");
 		//On écrit le PID dans un fichier.
 		file_put_contents($this->getPidFilePath(),getmypid());
 
@@ -139,15 +146,30 @@ final class ContainerWorker extends Worker {
 		);
 
 		$continue = true;
+		$this->_logger->log(
+			"[CONTAINER] [WORKER] Worker started.",
+			ILogger::LOG
+		);
 		while($continue){
 			$accepted = socket_accept($this->_socket);
 			$this->configureSocket($accepted);
+			$this->_logger->log(
+				"[CONTAINER] [WORKER] New incomming connection accepted.",
+				ILogger::LOG
+			);
 			$continue = $this->process($accepted,$dataManager);
+			$this->_logger->log(
+				"[CONTAINER] [WORKER] Query successfully processed.",
+				ILogger::LOG
+			);
 		}
 		try{
 			$this->shutdown();
 		}catch(\Exception $e) {
-			$this->errorLog(print_r($e, true));
+			$this->_logger->log(
+				"[CONTAINER] [WORKER] Shutdown error : $e.",
+				ILogger::ERR
+			);
 		}
 	}
 
@@ -180,7 +202,6 @@ final class ContainerWorker extends Worker {
 	 * @param IKVSContainerDataManager $dataManager Gestionnaire de données
 	 *
 	 * @return bool False pour interrompre le worker
-	 * @throws IllegalInvocation
 	 */
 	public function process($socket,IKVSContainerDataManager $dataManager):bool{
 		$unserializeError = true;
@@ -207,21 +228,43 @@ final class ContainerWorker extends Worker {
 					.IKVSInternalRequest::class." but ".(new Type($request))->get()." given !)"
 				);
 			}
-		}catch(\Exception $e){
+		}catch(\Exception | \Error $e){
+			$tags = "[CONTAINER] [WORKER] [REQUEST ERROR]";
 			//Toute requête avec erreur de serialisation est ignorée
 			if(!$unserializeError){
 				//Toute requête qui n'est pas un objet de type IKVSInterfnalRequest est ignoré.
 				if($request->instanceOf(IKVSInternalRequest::class)){
 					//Toute requête dont la clé serveur est fausse est ignorée
 					if($this->_workerParams->matchServerKey($request->getServerKey())){
-						//Sinon on transmet l'erreur au KVSServeur.
-						$this->sendResponse(new ContainerResponse(
-							$request->getQueryId(),
-							new RequestError($e))
-						);
-					}
-				}
-			}
+						//Sinon on transmet l'erreur au KVSServeur
+						try{
+							$this->sendResponse(new ContainerResponse(
+								$request->getQueryId(),
+								new RequestError($e))
+							);
+							$this->_logger->log(
+								"$tags Report successfully sent to client.",
+								ILogger::LOG
+							);
+						}catch(\Exception | \Error $e){
+							$this->_logger->log(
+								"$tags Unable to send error to client : $e",
+								ILogger::ERR
+							);
+						}
+					}else $this->_logger->log(
+						"$tags Client request ignored : wrong server key given.",
+						ILogger::WARN
+					);
+				}else $this->_logger->log(
+					"$tags Client's request ignored : recieved object is a ".$request->getClass()
+					." instead of ".IKVSInternalRequest::class,
+					ILogger::WARN
+				);
+			}else $this->_logger->log(
+				"$tags Client's request ignored : recieved data can't be unserialized.",
+				ILogger::WARN
+			);
 		}
 		return true;
 	}
@@ -242,6 +285,11 @@ final class ContainerWorker extends Worker {
 		IKVSContainerRequest $clientRequest,
 		KVSDataParserResult $request
 	):bool {
+		$this->_logger->log(
+			"[CONTAINER] [WORKER] Processing ".get_class($clientRequest)." (query id : "
+			.$request->getQueryId().")...",
+			ILogger::LOG
+		);
 		if($clientRequest instanceof IKVSAdminContainerRequest){
 			if($clientRequest instanceof ShutdownContainerWorkerRequest){
 				return false;
@@ -388,7 +436,10 @@ final class ContainerWorker extends Worker {
 
 			flock($this->_acquiredLockFile,LOCK_UN);
 			fclose($this->_acquiredLockFile);
-
+			$this->_logger->log(
+				"[CONTAINER] [WORKER] Gracefull shutdown.",
+				ILogger::LOG
+			);
 			exit(0);
 		}else $this->sendQuery(new KVSInternalRequest(
 			$serverKey,
@@ -411,8 +462,11 @@ final class ContainerWorker extends Worker {
 				$socket = $this->createClientSocket($this->getWorkerSocketAddr());
 				$this->write($this->_dataParser->lineariseData($request),$socket);
 				socket_close($socket);
-			}catch(\Exception $e){
-				throw new InactiveKVSContainerWorker("Unable to query ".$this->_clientParams->getContainer()->getName()." container's worker : ".$e->getMessage());
+			}catch(\Exception | \Error $e){
+				throw new InactiveKVSContainerWorker(
+					"Unable to query ".$this->_clientParams->getContainer()->getName()
+					." container's worker (socket addr : ".$this->getWorkerSocketAddr()."): $e"
+				);
 			}
 		}else{
 			throw new IllegalInvocation("Cannot use sendQuery in WORKER_MODE");

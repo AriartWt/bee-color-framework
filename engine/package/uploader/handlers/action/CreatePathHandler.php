@@ -3,6 +3,7 @@ namespace wfw\engine\package\uploader\handlers\action;
 
 use wfw\engine\core\action\IAction;
 use wfw\engine\core\conf\IConf;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\request\IRequest;
 use wfw\engine\core\request\IRequestData;
 use wfw\engine\core\response\IResponse;
@@ -21,10 +22,11 @@ final class CreatePathHandler extends UploadHandler {
 	 * DeleteHandler constructor.
 	 *
 	 * @param IConf         $conf
+	 * @param ITranslator   $translator
 	 * @param PathsListRule $rule
 	 */
-	public function __construct(IConf $conf, PathsListRule $rule) {
-		parent::__construct($conf, null);
+	public function __construct(IConf $conf, ITranslator $translator, PathsListRule $rule) {
+		parent::__construct($conf, $translator, null);
 		$this->_rule = $rule;
 	}
 
@@ -52,7 +54,9 @@ final class CreatePathHandler extends UploadHandler {
 				}
 			}else return new ErrorResponse(201,$res->message(),$res->errors());
 		}else{
-			return new ErrorResponse(404,"Page not found");
+			return new ErrorResponse(404,$this->_translator->getAndReplace(
+				"server/engine/core/app/404_NOT_FOUND",$action->getRequest()->getURI()
+			));
 		}
 	}
 }

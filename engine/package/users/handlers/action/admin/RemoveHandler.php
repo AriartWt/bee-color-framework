@@ -6,6 +6,7 @@ use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\response\IResponse;
 use wfw\engine\core\response\responses\Response;
 use wfw\engine\core\session\ISession;
@@ -24,22 +25,26 @@ final class RemoveHandler extends DefaultUserActionHandler implements IDomainEve
 	private $_encoder;
 	/** @var array $_ids */
 	private $_ids;
+
 	/**
 	 * RemoveHandler constructor.
-	 * @param ICommandBus $bus
-	 * @param UserIdList $rule
-	 * @param ISession $session
+	 *
+	 * @param ICommandBus          $bus
+	 * @param UserIdList           $rule
+	 * @param ISession             $session
 	 * @param IDomainEventObserver $observer
-	 * @param IJSONEncoder $encoder
+	 * @param IJSONEncoder         $encoder
+	 * @param ITranslator          $translator
 	 */
 	public function __construct(
 		ICommandBus $bus,
 		UserIdList $rule,
 		ISession $session,
 		IDomainEventObserver $observer,
-		IJSONEncoder $encoder
+		IJSONEncoder $encoder,
+		ITranslator $translator
 	){
-		parent::__construct($bus, $rule, $session);
+		parent::__construct($bus, $rule, $session, $translator);
 		$this->_encoder = $encoder;
 		$this->_ids = [];
 		$observer->addEventListener(UserRemovedEvent::class,$this);
@@ -54,7 +59,7 @@ final class RemoveHandler extends DefaultUserActionHandler implements IDomainEve
 			//on empêche un utilisateur de se supprimer lui même.
 			if((string)$id === (string) $this->_session->get("user")->getId())
 				throw new IllegalSelfOperation(
-					"Un utilisateur ne peut pas supprimer son propre compte !"
+					$this->_translator->get("server/engine/package/users/USER_CANT_DELETE_HIS_OWN_ACCOUNT")
 				);
 		}
 		return new RemoveUsers($this->_session->get("user")->getId(),...$data["ids"]);

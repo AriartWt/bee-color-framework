@@ -1,0 +1,9 @@
+Alias /wfw @ROOT/cli/webroot
+<Directory @ROOT>
+	AllowOverride none
+</Directory>
+<Directory @ROOT/cli/webroot>
+	Require host localhost
+	Require ip 127.0.0.1
+	AllowOverride none
+</Directory>

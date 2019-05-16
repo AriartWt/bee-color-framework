@@ -32,6 +32,7 @@ use wfw\engine\lib\data\string\compressor\GZCompressor;
 use wfw\engine\lib\data\string\serializer\LightSerializer;
 use wfw\engine\lib\data\string\serializer\PHPSerializer;
 use wfw\engine\lib\data\string\serializer\ISerializer;
+use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\PHP\errors\IllegalInvocation;
 use wfw\engine\lib\PHP\types\UUID;
 
@@ -45,8 +46,8 @@ final class MSServer {
 	private $_serverKey;
 	/** @var string $_socketAddr */
 	private $_socketAddr;
-	/** @var string $_errorLogsFile */
-	private $_errorLogsFile;
+	/** @var string $_logger */
+	private $_logger;
 	/** @var resource $_acquiredLockFile */
 	private $_acquiredLockFile;
 	/** @var resource $_socket */
@@ -83,16 +84,15 @@ final class MSServer {
 	 *
 	 * ATTENTION : Le serializer utilisé doit être le même que celui du KVSContainer !
 	 *
-	 * @param string $socketPath Chemin vers la socket à créer.
-	 * @param MSServerSocketProtocol $protocol               Protocol de communication du serveur.
-	 * @param IMSServerEnvironment $MSServerEnvironement     Environnement de travail du serveur.
-	 * @param IMSServerRequestHandlerManager $requestHandler Gestionnaire de requêtes du serveur.
-	 * @param null|ISerializer $serializer (optionnel defaut : LightSerializer(GZCompressor)) Objet utilisé pour la serialisation et le désérialisaton
-	 * @param int    $requestTtl           (optionnel defaut : 60) Temps avant expiration des requêtes.
-	 * @param bool   $sendErrorsToClient   (optionnel defaut : true) Force le serveur à envoyer son erreur au client.
-	 * @param bool   $shutdownOnError      (optionnel defaut : false) Force le serveur à s'éteindre si une erreur survient.
-	 * @param string $errorLogs            (optionnel deffaut : __DIR__."/logs/error_logs.txt") Chemin vers le fichier de logs d'erreur.
-	 *
+	 * @param string                         $socketPath           Chemin vers la socket à créer.
+	 * @param MSServerSocketProtocol         $protocol             Protocol de communication du serveur.
+	 * @param IMSServerEnvironment           $MSServerEnvironement Environnement de travail du serveur.
+	 * @param IMSServerRequestHandlerManager $requestHandler       Gestionnaire de requêtes du serveur.
+	 * @param ILogger                        $logger
+	 * @param null|ISerializer               $serializer           (optionnel defaut : LightSerializer(GZCompressor)) Objet utilisé pour la serialisation et le désérialisaton
+	 * @param int                            $requestTtl           (optionnel defaut : 60) Temps avant expiration des requêtes.
+	 * @param bool                           $sendErrorsToClient   (optionnel defaut : true) Force le serveur à envoyer son erreur au client.
+	 * @param bool                           $shutdownOnError      (optionnel defaut : false) Force le serveur à s'éteindre si une erreur survient.
 	 * @throws IllegalInvocation
 	 */
 	public function __construct(
@@ -100,12 +100,13 @@ final class MSServer {
 		MSServerSocketProtocol $protocol,
 		IMSServerEnvironment $MSServerEnvironement,
 		IMSServerRequestHandlerManager $requestHandler,
+		ILogger $logger,
 		?ISerializer $serializer=null,
 		int $requestTtl = 60,
 		bool $sendErrorsToClient = true,
-		bool $shutdownOnError = false,
-		string $errorLogs = __DIR__."/logs/error_logs.txt"
+		bool $shutdownOnError = false
 	) {
+		$this->_logger = $logger;
 		$this->_serializer = $serializer ?? new LightSerializer(
 			new GZCompressor(),
 			new PHPSerializer()
@@ -114,10 +115,8 @@ final class MSServer {
 
 		//On commence par vérifier l'existence du fichier sempahore permettant d'obtenir le lock
 		//Un seul MSServer est autorisé par repertoir de travail.
-		$this->_lockFile = $MSServerEnvironement->getWorkingDir().DS."server.lock";
-		if(!file_exists($this->_lockFile)){
-			touch($this->_lockFile);
-		}
+		$this->_lockFile = $MSServerEnvironement->getWorkingDir()."/server.lock";
+		if(!file_exists($this->_lockFile)) touch($this->_lockFile);
 
 		//On vérifie qu'on peut acquérir le lock.
 		$fp = fopen($this->_lockFile,"r+");
@@ -140,23 +139,36 @@ final class MSServer {
 			$this->_serverKey = new UUID(UUID::V4);
 			$this->_environment = $MSServerEnvironement;
 			$this->_shutdownOnError = $shutdownOnError;
-			$this->_errorLogsFile = $errorLogs;
 			$this->_socketAddr = $socketPath;
 			$this->_requestTtl = $requestTtl;
 			$this->_protocol = $protocol;
 			$this->_components = [];
 			$this->_queries = [];
-
+			$this->_logger->log("[MSServer] Launching components...",ILogger::LOG);
 			//On initialise et on démarre chaque composant.
 			foreach($this->_environment->getComponents() as $k=>$component){
-				$component->init(
-					$this->_socketAddr,
-					$this->_serverKey,
-					$requestHandler,
-					$this->_serializer,
-					$this->_dataParser
-				);
-				$component->start();
+				try{
+					$component->init(
+						$this->_socketAddr,
+						$this->_serverKey,
+						$requestHandler,
+						$this->_serializer,
+						$this->_dataParser,
+						$logger,
+						[
+							'streams_to_close' => [ $this->_acquiredLockFile ]
+						]
+					);
+					$component->start();
+					$this->_logger->log(
+						"[MSServer] ".$component->getName()." started.",ILogger::LOG
+					);
+				}catch(\Exception | \Error $e){
+					$this->_logger->log(
+						"[MSServer] Error while trying to start component : $e",
+						ILogger::WARN
+					);
+				}
 			}
 		}
 	}
@@ -165,6 +177,10 @@ final class MSServer {
 	 *  Démarre le serveur
 	 */
 	public function start():void{
+		$this->_logger->log(
+			"[MSServer] Server started (pid : ".getmypid().").",
+			ILogger::LOG
+		);
 		while(true){
 			$socket = socket_accept($this->_socket);
 			$this->configureSocket($socket);
@@ -177,6 +193,7 @@ final class MSServer {
 	 * @param resource $socket Socket connectée
 	 */
 	public function process($socket){
+		$this->_logger->log("[MSServer] New incoming connection.",ILogger::LOG);
 		try{
 			$data = $this->read($socket);
 			if(strlen($data)===0){
@@ -188,6 +205,10 @@ final class MSServer {
 			$this->cleanOutdatedQueries();
 
 			if($parsed->instanceOf(IMSServerRequest::class)){
+				$this->_logger->log(
+					"[MSServer] Request recieved : ".$parsed->getClass(),
+					ILogger::LOG
+				);
 				$response = $this->processRequest(
 					$socket,
 					$parsed,
@@ -196,6 +217,10 @@ final class MSServer {
 				if(!is_null($response)){
 					$this->write($socket,$response);
 					socket_close($socket);
+					$this->_logger->log(
+						"[MSServer] Response sent to client : ".get_class($response),
+						ILogger::LOG
+					);
 				}
 			}else{
 				throw new \InvalidArgumentException("MSServer request have to be instanceof ".IMSServerRequest::class. " but ".$parsed->getClass()." given.");
@@ -204,14 +229,6 @@ final class MSServer {
 			$errorCode = socket_last_error($socket);
 			socket_clear_error($socket);
 
-			$this->errorLog(print_r([
-				"socket_last_error" => [
-					"code" => $errorCode,
-					"message" =>socket_strerror($errorCode)
-				],
-				"error" => (string)$e
-			],true));
-
 			if($errorCode === 0){
 				if(!($e instanceof MSServerDataParsingFailure)){
 					//l'erreur ne provient pas de la déserialisation
@@ -219,21 +236,23 @@ final class MSServer {
 						$this->tryWrite($socket,new RequestError($e));
 					}
 					socket_close($socket);
+					$this->_logger->log("[MSServer] Request error sent to client : $e",ILogger::WARN);
 					if($this->_shutdownOnError){
 						$this->shutdown($e);
 					}
 				}else{
+					$this->_logger->log("[MSServer] Invalid request recieved : $e",ILogger::WARN);
 					$this->tryWrite($socket,new InvalidRequestError($e));
 					socket_close($socket);
 				}
 			}else{
-				$this->errorLog(print_r([
+				$this->_logger->log("[MSServer] Request error : ".print_r([
 					"socket_last_error" => [
 						"code" => $errorCode,
 						"message" =>socket_strerror($errorCode)
 					],
 					"error" => (string)$e
-				],true));
+				],true), ILogger::ERR);
 			}
 		}
 	}
@@ -281,12 +300,25 @@ final class MSServer {
 		}else if($parsed->instanceOf(IMSServerComponentResponse::class)){
 			//On sait qu'on peut clore la connexion immédiatement.
 			socket_close($socket);
+			$this->_logger->log(
+				"[MSServer] Component response recieved. Trying to send it to the matching client...",
+				ILogger::LOG
+			);
 			if(isset($this->_queries[$parsed->getQueryId()])){
 				$query = $this->_queries[$parsed->getQueryId()];
 				$query->getIO()->write($parsed->getData());
 				$query->getIO()->closeConnection();
 				unset($this->_queries[$parsed->getQueryId()]);
-			}
+				$this->_logger->log(
+					"[MSServer] Component response successfully sent to client (query id : "
+					.$parsed->getQueryId().").",
+					ILogger::LOG
+				);
+			}else $this->_logger->log(
+				"[MSServer] Client response abort : no client waiting for this response anymore (query id : "
+				.$parsed->getQueryId().").",
+				ILogger::WARN
+			);
 			return null;
 		}else if(!is_null($sessId) && $this->_environment->existsUserSession($sessId)){
 			$session = $this->_environment->getUserSession($sessId);
@@ -311,6 +343,10 @@ final class MSServer {
 						"Access denied : you have not enough permissions to perform this action."
 					));
 				}else{
+					$this->_logger->log(
+						"[MSServer] Trying to find one or more components listening for this request...",
+						ILogger::LOG
+					);
 					$query = new MSServerQuery(
 						new MSServerSocketIO($this->_protocol,$socket),
 						new MSServerInternalRequest(
@@ -326,8 +362,12 @@ final class MSServer {
 					$hits = $this->_requestHandlerManager->dispatch($query);
 
 					if($hits === 0){
-						throw new NoHandlerForRequest("No request handler trigerred this request !");
-					}
+						throw new NoHandlerForRequest("No request handler trigered this request !");
+					}else $this->_logger->log(
+						"[MSServer] Request successfully sent to one or more components (queue id : "
+						.$query->getInternalRequest()->getQueryId().")",
+						ILogger::LOG
+					);
 					return null;
 				}
 			}
@@ -351,7 +391,16 @@ final class MSServer {
 				try{
 					$query->getIO()->write($this->_dataParser->lineariseData(new RequestTimeout()));
 					$query->getIO()->closeConnection();
-				}catch(\Exception $e){}
+					$this->_logger->log("[MSServer] Request timeout sent to client (query id : "
+						.$query->getInternalRequest()->getQueryId().")",
+						ILogger::WARN
+					);
+				}catch(\Exception | \Error $e){
+					$this->_logger->log("[MSServer] Unable to send request timeout to client (query id : "
+						.$query->getInternalRequest()->getQueryId().") : $e",
+						ILogger::WARN
+					);
+				}
 				unset($this->_queries[$id]);
 				$cleaned++;
 			}
@@ -383,14 +432,13 @@ final class MSServer {
 			return 0;
 		}catch(\Exception $e){
 			$errorCode = socket_last_error();
-			$this->errorLog(print_r([
-				"date" => date('l j F Y, H:i:s'),
+			$this->_logger->log("[MSServer] Unable to write in socket : ".print_r([
 				"socket_last_error" => [
 					"code" => $errorCode,
 					"message" =>socket_strerror($errorCode)
 				],
 				"error" => (string)$e
-			],true));
+			],true), ILogger::ERR);
 			socket_clear_error();
 			return $errorCode;
 		}
@@ -413,25 +461,24 @@ final class MSServer {
 		$this->shutdownComponent();
 		$this->closeConnections();
 
-		flock($this->_acquiredLockFile,LOCK_UN);
-		fclose($this->_acquiredLockFile);
+		if(is_resource($this->_acquiredLockFile)){
+			flock($this->_acquiredLockFile,LOCK_UN);
+			fclose($this->_acquiredLockFile);
+		}
 		unlink($this->_lockFile);
 		if(file_exists($this->_environment->getWorkingDir()."/msserver.pid"))
 			unlink($this->_environment->getWorkingDir()."/msserver.pid");
 
 		if(is_null($e) || $e instanceof ExternalShutdown){
+			$this->_logger->log("[MSServer] Gracefull shutdown.",ILogger::LOG);
 			exit(0);
 		}else{
-			$this->errorLog((string)$e);
+			$this->_logger->log(
+				"[MSServer] A fatal error occured, forcing the server to stop : $e",
+				ILogger::ERR
+			);
 			exit(1);
 		}
-	}
-
-	/**
-	 * @param string $log Log to write
-	 */
-	private function errorLog(string $log){
-		error_log($log.PHP_EOL,3,$this->_errorLogsFile);
 	}
 
 	/**
@@ -449,7 +496,15 @@ final class MSServer {
 	 */
 	private function shutdownComponent():void{
 		foreach($this->_environment->getComponents() as $component){
+			$this->_logger->log(
+				"[MSServer] Trying to stop component : ".$component->getName()."...",
+				ILogger::LOG
+			);
 			$component->shutdown();
+			$this->_logger->log(
+				"[MSServer] Component ".$component->getName()." stopped.",
+				ILogger::LOG
+			);
 		}
 	}
 

@@ -6,6 +6,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use wfw\engine\core\action\IActionHandler;
 use wfw\engine\core\conf\IConf;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\lib\PHP\types\PHPString;
 
 /**
@@ -18,15 +19,19 @@ abstract class UploadHandler implements IActionHandler {
 	private $_path;
 	/** @var string $_folder */
 	private $_folder;
+	/** @var ITranslator $_translator */
+	protected $_translator;
 
 	/**
 	 * UploadHandler constructor.
 	 *
 	 * @param IConf       $conf
+	 * @param ITranslator $translator
 	 * @param null|string $uploadsConfKey
 	 */
-	public function __construct(IConf $conf,?string $uploadsConfKey=null) {
+	public function __construct(IConf $conf, ITranslator $translator,?string $uploadsConfKey=null) {
 		$this->_conf = $conf;
+		$this->_translator = $translator;
 		$this->_path = ROOT."/".$conf->getString($uploadsConfKey ?? "server/uploader/dir");
 		$this->_folder = str_replace(SITE."/webroot/",'',$this->_path);
 	}

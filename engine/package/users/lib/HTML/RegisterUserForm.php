@@ -1,6 +1,7 @@
 <?php
 namespace wfw\engine\package\users\lib\HTML;
 
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\lib\HTML\helpers\forms\Form;
 use wfw\engine\lib\HTML\helpers\forms\inputs\Checkbox;
 use wfw\engine\lib\HTML\helpers\forms\inputs\Text;
@@ -15,37 +16,45 @@ use wfw\engine\package\users\security\data\SelfRegisterRule;
 class RegisterUserForm extends Form{
 	/**
 	 * RegisterUserForm constructor.
+	 *
+	 * @param ITranslator      $translator
 	 * @param SelfRegisterRule $rule
-	 * @param string $errorIcon Lien vers l'icone d'erreur
-	 * @param string $cgusLink Lien vers les conditions générales d'utilisation à accepter
+	 * @param string           $errorIcon Lien vers l'icone d'erreur
+	 * @param string           $cgusLink  Lien vers les conditions générales d'utilisation à accepter
 	 */
-	public function __construct(SelfRegisterRule $rule,string $errorIcon,string $cgusLink){
+	public function __construct(
+		ITranslator $translator,
+		SelfRegisterRule $rule,
+		string $errorIcon,
+		string $cgusLink
+	){
 		parent::__construct($rule,$errorIcon,new MultiValidationPolicy(
-			new Honeypot("mobile"),
+			new Honeypot("phone"),
 			new MinTimeValidity(4)
 		));
+		$key = "server/engine/package/users/forms";
 		$this->addInputs(
 			new Text("login",null,[
-				"placeholder" => "Login"
+				"placeholder" => $translator->get("$key/LOGIN")
 			]),
 			new Text("password",null,[
-				"placeholder" => "Mot de passe"
+				"placeholder" => $translator->get("$key/PASSWORD")
 			]),
 			new Text("password_confirm",null,[
-				"placeholder" => "Confirmation du mot de passe"
+				"placeholder" => $translator->get("$key/PASSWORD_CONFIRM")
 			]),
 			new Text("email",null,[
-				"placeholder" => "Adresse email valide"
+				"placeholder" => $translator->get("$key/VALID_MAIL")
 			]),
 			new Text("email_confirm",null,[
-				"placeholder" => "Confirmation du mail"
+				"placeholder" => $translator->get("$key/MAIL_CONFIRM")
 			]),
-			new Checkbox("agreement","J'accepte les <a href='$cgusLink' target='_blank'>conditions générales d'utilisation</a>"),
-			new Text("tel",null,[
-				"placeholder" => "Téléphone"
-			]),
-			new Text("mobile",null,[
-				"placeholder" => "Mobile"
+			new Checkbox(
+				"agreement",
+				$translator->getAndReplace("$key/AGREEMENT",$cgusLink)
+			),
+			new Text("phone",null,[
+				"placeholder" => $translator->get("$key/MOBILE")
 			])
 		);
 	}

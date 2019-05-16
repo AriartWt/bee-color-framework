@@ -2,7 +2,7 @@
 
 namespace wfw\engine\package\news\handlers\response;
 
-use wfw\engine\core\action\IAction;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\response\IResponse;
 use wfw\engine\core\response\IResponseHandler;
 use wfw\engine\core\security\data\rules\IsUUID;
@@ -19,16 +19,12 @@ use wfw\engine\package\news\lib\helper\ArticleAdapter;
  * @package wfw\engine\package\news\handlers\response
  */
 abstract class DisplayArticle implements IResponseHandler {
+	/** @var ITranslator $_translator */
+	private $_translator;
 	/** @var IViewFactory $_factory */
 	private $_factory;
 	/** @var IArticleModelAccess $_access */
 	private $_access;
-	/** @var string $_notFoundMessage */
-	private $_notFoundMessage;
-	/** @var string $_offlineMessage */
-	private $_offlineMessage;
-	/** @var string $_deletedMessage */
-	private $_deletedMessage;
 	/** @var string $_id */
 	private $_id;
 
@@ -37,27 +33,21 @@ abstract class DisplayArticle implements IResponseHandler {
 	 *
 	 * @param IViewFactory        $factory
 	 * @param IArticleModelAccess $access
+	 * @param ITranslator         $translator
 	 * @param string              $id
 	 * @param bool                $onlineOnly
-	 * @param string              $notFoundMessage
-	 * @param string              $offlineMessage
-	 * @param string              $deletedMessage
 	 */
 	public function __construct(
 		IViewFactory $factory,
 		IArticleModelAccess $access,
+		ITranslator $translator,
 		string $id,
-		bool $onlineOnly = true,
-		string $notFoundMessage = "Article not found !",
-		string $offlineMessage = "This article is offline !",
-		string $deletedMessage = "This article have been deleted !"
+		bool $onlineOnly = true
 	) {
 		$this->_id = $id;
 		$this->_access = $access;
 		$this->_factory = $factory;
-		$this->_notFoundMessage = $notFoundMessage;
-		$this->_offlineMessage = $offlineMessage;
-		$this->_deletedMessage = $deletedMessage;
+		$this->_translator = $translator;
 	}
 
 	/**
@@ -65,18 +55,33 @@ abstract class DisplayArticle implements IResponseHandler {
 	 * @return IView Vue à retourner au client
 	 */
 	public function handleResponse(IResponse $response): IView {
+		$key = "server/engine/package/news";
 		$id = explode("_",$this->_id);
 		$id = $id[count($id)-1];
 		if((new IsUUID("","uuid"))->applyTo(["uuid"=>$id])->satisfied()){
-			$article = $this->_access->getById($id);
+			try{
+				$article = $this->_access->getById($id);
+			}catch(\Error | \Exception $e){
+				return new Error($this->_translator->getAndTranslate(
+					"$key/service_unavailable/ARTICLE"
+				),503);
+			}
 			if(!is_null($article)){
-				if($article->isArchived()) return new Error($this->_deletedMessage,404);
+				if($article->isArchived()) return new Error($this->_translator->getAndTranslate(
+					"$key/REMOVED"
+				),404);
 				if($article->isOnline()) return $this->_factory->create(
 					Article::class,
 					[new ArticleAdapter($article)]
 				);
-				else return new Error($this->_offlineMessage,404);
-			}else return new Error($this->_notFoundMessage,404);
-		}else return new Error($this->_notFoundMessage,404);
+				else return new Error($this->_translator->getAndTranslate(
+					"$key/OFFLINE"
+				),404);
+			}else return new Error($this->_translator->getAndTranslate(
+				"$key/NOT_FOUND"
+			),404);
+		}else return new Error($this->_translator->getAndTranslate(
+			"$key/NOT_FOUND"
+		),404);
 	}
 }

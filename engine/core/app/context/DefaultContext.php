@@ -12,7 +12,7 @@ use wfw\engine\core\action\IAction;
 use wfw\engine\core\action\IActionHook;
 use wfw\engine\core\action\IActionHookFactory;
 use wfw\engine\core\action\MultiHook;
-use wfw\engine\core\action\NoHook;
+use wfw\engine\core\action\NotFoundHook;
 use wfw\engine\core\app\factory\DiceBasedFactory;
 use wfw\engine\core\app\factory\IGenericAppFactory;
 use wfw\engine\core\command\CommandHandlerFactory;
@@ -72,6 +72,8 @@ use wfw\engine\core\security\data\sanitizer\HTMLPurifierBasedSanitizer;
 use wfw\engine\core\security\data\sanitizer\IHTMLSanitizer;
 use wfw\engine\core\security\IAccessControlCenter;
 use wfw\engine\core\security\IAccessRuleFactory;
+use wfw\engine\core\security\rules\RequireAuthentification;
+use wfw\engine\core\security\rules\ValidToken;
 use wfw\engine\core\session\handlers\PHPSessionHandler;
 use wfw\engine\core\session\ISession;
 use wfw\engine\core\session\Session;
@@ -100,12 +102,17 @@ use wfw\engine\package\contact\data\model\ContactModelAccess;
 use wfw\engine\package\contact\data\model\IContactModelAccess;
 use wfw\engine\package\contact\domain\repository\ContactRepository;
 use wfw\engine\package\contact\domain\repository\IContactRepository;
+use wfw\engine\package\contact\security\ContactAccessControlPolicies;
 use wfw\engine\package\general\handlers\response\AjaxHandler;
 use wfw\engine\package\general\handlers\response\ErrorHandler;
+use wfw\engine\package\general\security\GeneralAccessControlPolicies;
+use wfw\engine\package\miel\security\MielAccessControlPolicies;
 use wfw\engine\package\news\data\model\ArticleModelAccess;
 use wfw\engine\package\news\data\model\IArticleModelAccess;
 use wfw\engine\package\news\domain\repository\ArticleRepository;
 use wfw\engine\package\news\domain\repository\IArticleRepository;
+use wfw\engine\package\news\security\NewsAccessControlPolicies;
+use wfw\engine\package\uploader\security\UploaderAccessControlPolicies;
 use wfw\engine\package\users\data\model\IUserModelAccess;
 use wfw\engine\package\users\data\model\UserModelAccess;
 use wfw\engine\package\users\domain\repository\IUserRepository;
@@ -118,6 +125,7 @@ use wfw\engine\package\users\lib\mail\IUserResetPasswordMail;
 use wfw\engine\package\users\lib\mail\UserMailChangedMail;
 use wfw\engine\package\users\lib\mail\UserRegisteredMail;
 use wfw\engine\package\users\lib\mail\UserResetPasswordMail;
+use wfw\engine\package\users\security\UsersAccessControlPolicies;
 
 /**
  * Contexte de production
@@ -150,7 +158,6 @@ class DefaultContext implements IWebAppContext {
 	 * @param null|string $baseurl            Base url
 	 * @param null|string $projectName        Nom du projet. Sert de namespace pour les clés du cache.
 	 * @throws \InvalidArgumentException
-	 * @throws \wfw\daemons\modelSupervisor\client\errors\MSClientFailure
 	 */
 	public function __construct(
 		string $defaultLayoutClass,
@@ -167,10 +174,33 @@ class DefaultContext implements IWebAppContext {
 		?string $projectName = ROOT
 	){
 		$genericFactory = new DiceBasedFactory($this->_dice = $dice = new Dice());
+		$this->getErrorHandler()->handle();
+
+		if(count($accessRules) === 0) $accessRules = [
+			RequireAuthentification::class => [
+				array_merge(
+					ContactAccessControlPolicies::REQUIRE_AUTH,
+					MielAccessControlPolicies::REQUIRE_AUTH,
+					NewsAccessControlPolicies::REQUIRE_AUTH,
+					UploaderAccessControlPolicies::REQUIRE_AUTH,
+					UsersAccessControlPolicies::REQUIRE_AUTH
+				),
+				true
+			],
+			ValidToken::class => []
+		];
+		if(count($hooks) === 0) $hooks = [
+			NotFoundHook::class => [
+				array_merge(
+					UsersAccessControlPolicies::RESTRICT_MODE,
+					GeneralAccessControlPolicies::DISABLE_ZIP_CODES
+				)
+			]
+		];
 		$this->_dice->addRules([
 			ICacheSystem::class => [
 				'instanceOf' => APCUBasedCache::class,
-				'shared' =>true ,
+				'shared' => true ,
 				'constructParams'=>[$projectName]
 			]
 		]);
@@ -180,34 +210,43 @@ class DefaultContext implements IWebAppContext {
 			SITE."/config/conf.json"
 		]);
 
-		$msserverAddr = $conf->getString("server/msserver/addr");
-		if(strpos($msserverAddr,"/")!==0) $msserverAddr = ROOT."/$msserverAddr";
-		$msinstanceAddr = (new MSInstanceAddrResolver($msserverAddr))->find(
-			$conf->getString('server/msserver/db')
-		);
+		//Trying to dynamicaly resolve the msserver socket addr. If MSServerPool is unavailable,
+		//we maked the assumption that the sockets are in their default locations.
+		$msinstanceAddr = $this->getMSServerAddr(
+			$msserverAddr = $this->_conf->getString("server/msserver/addr")
+				?? "/srv/wfw/global/daemons/modelSupervisor/data/ModelSupervisor.socket"
+		) ?? "/srv/wfw/global/daemons/modelSupervisor/data/".basename(ROOT)."/".basename(ROOT).".socket";
 
 		$this->_dice->addRules([
 			ILanguageLoader::class => [
 				'instanceOf' => LanguageLoader::class,
 				'shared' => true,
 				'constructParams' => [ $conf->getString("app/ui/lang/replacement_pattern") ]
+			],
+			IRouter::class => [
+				'instanceOf' => Router::class,
+				'shared' => true,
+				'constructParams' => [
+					array_merge(
+						$connections,
+						$conf->getArray("server/router/connections") ?? []
+					),
+					array_unique(
+						array_merge(
+							array_keys($langs),
+							$conf->getArray("server/language/availables") ?? []
+						)
+					),
+					null,
+					$baseurl
+				]
 			]
 		]);
+		$cache = $this->getCacheSystem();
+		if(!$cache->contains(self::CACHE_KEYS[self::ROUTER])){
+			$this->_router = $router = $this->_dice->create(IRouter::class);
+		}else $this->_router = $router = $cache->get(self::CACHE_KEYS[self::ROUTER]);
 
-		$this->_router = $router = new Router(
-			array_merge(
-				$connections,
-				$conf->getArray("server/router/connections") ?? []
-			),
-			array_unique(
-				array_merge(
-					array_keys($langs),
-					$conf->getArray("server/language/availables") ?? []
-				)
-			),
-			null,
-			$baseurl
-		);
 		$this->_translator = $translator =  $this->initTranslator($langs,null);
 		$instance = $this;
 
@@ -215,7 +254,7 @@ class DefaultContext implements IWebAppContext {
 			'*' => [
 				'substitutions' => [
 					IConf::class => [ Dice::INSTANCE => function() use ($conf){ return $conf; } ],
-					IRouter::class => [ Dice::INSTANCE => function() use($router){return $router;}],
+					/*IRouter::class => [ Dice::INSTANCE => function() use($router){return $router;}],*/
 					IMailProvider::class => [
 						Dice::INSTANCE => function() use($instance,$conf){
 							return $this->initMailProvider($conf);
@@ -307,63 +346,63 @@ class DefaultContext implements IWebAppContext {
 				'instanceOf' => DomainEventListenerFactory::class,
 				'shared' => true
 			],
-            ISession::class => [
-                'instanceOf' => Session::class,
-                'constructParams' => [ "user", $conf->getString("server/tmp/dir") ],
-                'shared' => true
-            ],
-            SessionHandlerInterface::class => [ 'instanceOf' => PHPSessionHandler::class ],
-            IRequestData::class => [
-                'instanceOf' => RequestData::class,
-                'shared' => true,
-                'constructParams' => [
-                    $globals["_GET"] ?? $_GET,
-                    $globals["_POST"] ?? $_POST,
-                    $globals["_FILES"] ?? $_FILES
-                ]
-            ],
-            IRequest::class => [
-                'instanceOf' => Request::class,
-                'shared' => true,
-                'constructParams' => [
-                    $globals["_SERVER"] ?? $_SERVER
-                ]
-            ],
-            IActionRouter::class => [ 'instanceOf' => ActionRouter::class, 'shared' => true],
-            IRenderer::class => [ 'instanceOf' => Renderer::class, 'shared' => true ],
-            IResponseRouter::class => ['instanceOf' => ResponseRouter::class, 'shared' => true ],
-            ILayoutResolver::class => [
-                'instanceOf' => LayoutResolver::class,
-                'constructParams' => [ $defaultLayoutClass ],
-                'shared' => true
-            ],
-            ErrorHandler::class => [ 'constructParams' => [ $errorViewPath ] ],
-            AjaxHandler::class => [ 'constructParams' => [ $ajaxViewPath ] ],
-            IAccessControlCenter::class => [
-                'instanceOf' => AccessControlCenter::class,
-                'constructParams' => [ $accessRules ],
-                'shared' => true
-            ],
-            INotifier::class => [ 'instanceOf' => FlashNotifier::class, 'shared' => true ],
-            IPrinter::class => [ 'instanceOf' => SimpleHTMLPrinter::class, 'shared' => true ],
-            ICSSManager::class => [ 'instanceOf' => CSSManager::class, 'shared' => true ],
-            IJsScriptManager::class => [ 'instanceOf' => JsScriptManager::class, 'shared' => true ],
-            IUserModelAccess::class => [ 'instanceOf' => UserModelAccess::class, 'shared' => true ],
-            IArticleRepository::class => [ 'instanceOf' => ArticleRepository::class, 'shared' => true],
-            IAggregateRootRepository::class => ['instanceOf' => AggregateRootRepository::class, 'shared'=>true],
-            LightSerializer::class => ['substitutions' => [ ISerializer::class => PHPSerializer::class ]],
-            ISerializer::class => ['instanceOf'=>LightSerializer::class, 'shared'=>true],
-            IStringCompressor::class => ['instanceOf'=>GZCompressor::class, 'shared'=>true],
-            IJSONEncoder::class => ["instanceOf"=>JSONEncoder::class, 'shared'=>true],
-            IArticleModelAccess::class => ['instanceOf'=>ArticleModelAccess::class, 'shared'=>true],
-            IHTMLSanitizer::class => ['instanceOf'=>HTMLPurifierBasedSanitizer::class, 'shared'=>true],
-            IUserConfirmationCodeGenerator::class => [ 'instanceOf'=>UUIDBasedUserConfirmationCodeGenerator::class,'shared'=>true],
-            IUserRegisteredMail::class => [ 'instanceOf'=>UserRegisteredMail::class],
-            IUserMailChangedMail::class => [ 'instanceOf'=>UserMailChangedMail::class],
-            IUserResetPasswordMail::class => [ 'instanceOf'=>UserResetPasswordMail::class],
-            IUserRepository::class => [ 'instanceOf'=>UserRepository::class,'shared'=>true],
-            IContactRepository::class => ['instanceOf'=>ContactRepository::class,'shared'=>true],
-            IContactModelAccess::class => ['instanceOf'=>ContactModelAccess::class,'shared'=>true]
+			ISession::class => [
+				'instanceOf' => Session::class,
+				'constructParams' => [ "user", $conf->getString("server/tmp/dir") ],
+				'shared' => true
+			],
+			SessionHandlerInterface::class => [ 'instanceOf' => PHPSessionHandler::class ],
+			IRequestData::class => [
+				'instanceOf' => RequestData::class,
+				'shared' => true,
+				'constructParams' => [
+					$globals["_GET"] ?? $_GET,
+					$globals["_POST"] ?? $_POST,
+					$globals["_FILES"] ?? $_FILES
+				]
+			],
+			IRequest::class => [
+				'instanceOf' => Request::class,
+				'shared' => true,
+				'constructParams' => [
+					$globals["_SERVER"] ?? $_SERVER
+				]
+			],
+			IActionRouter::class => [ 'instanceOf' => ActionRouter::class, 'shared' => true],
+			IRenderer::class => [ 'instanceOf' => Renderer::class, 'shared' => true ],
+			IResponseRouter::class => ['instanceOf' => ResponseRouter::class, 'shared' => true ],
+			ILayoutResolver::class => [
+				'instanceOf' => LayoutResolver::class,
+				'constructParams' => [ $defaultLayoutClass ],
+				'shared' => true
+			],
+			ErrorHandler::class => [ 'constructParams' => [ $errorViewPath ] ],
+			AjaxHandler::class => [ 'constructParams' => [ $ajaxViewPath ] ],
+			IAccessControlCenter::class => [
+				'instanceOf' => AccessControlCenter::class,
+				'constructParams' => [ $accessRules ],
+				'shared' => true
+			],
+			INotifier::class => [ 'instanceOf' => FlashNotifier::class, 'shared' => true ],
+			IPrinter::class => [ 'instanceOf' => SimpleHTMLPrinter::class, 'shared' => true ],
+			ICSSManager::class => [ 'instanceOf' => CSSManager::class, 'shared' => true ],
+			IJsScriptManager::class => [ 'instanceOf' => JsScriptManager::class, 'shared' => true ],
+			IUserModelAccess::class => [ 'instanceOf' => UserModelAccess::class, 'shared' => true ],
+			IArticleRepository::class => [ 'instanceOf' => ArticleRepository::class, 'shared' => true],
+			IAggregateRootRepository::class => ['instanceOf' => AggregateRootRepository::class, 'shared'=>true],
+			LightSerializer::class => ['substitutions' => [ ISerializer::class => PHPSerializer::class ]],
+			ISerializer::class => ['instanceOf'=>LightSerializer::class, 'shared'=>true],
+			IStringCompressor::class => ['instanceOf'=>GZCompressor::class, 'shared'=>true],
+			IJSONEncoder::class => ["instanceOf"=>JSONEncoder::class, 'shared'=>true],
+			IArticleModelAccess::class => ['instanceOf'=>ArticleModelAccess::class, 'shared'=>true],
+			IHTMLSanitizer::class => ['instanceOf'=>HTMLPurifierBasedSanitizer::class, 'shared'=>true],
+			IUserConfirmationCodeGenerator::class => [ 'instanceOf'=>UUIDBasedUserConfirmationCodeGenerator::class,'shared'=>true],
+			IUserRegisteredMail::class => [ 'instanceOf'=>UserRegisteredMail::class],
+			IUserMailChangedMail::class => [ 'instanceOf'=>UserMailChangedMail::class],
+			IUserResetPasswordMail::class => [ 'instanceOf'=>UserResetPasswordMail::class],
+			IUserRepository::class => [ 'instanceOf'=>UserRepository::class,'shared'=>true],
+			IContactRepository::class => ['instanceOf'=>ContactRepository::class,'shared'=>true],
+			IContactModelAccess::class => ['instanceOf'=>ContactModelAccess::class,'shared'=>true]
 		]);
 		$this->_action = $action = $this->getRouter()->parse($this->getRequest());
 		$this->_dice->addRules([
@@ -375,6 +414,28 @@ class DefaultContext implements IWebAppContext {
 		]);
 		$this->_translator->changeCurrentLanguage($action->getLang());
 		$this->_dice->addRules($diceRules);
+	}
+
+	/**
+	 * @param string $msserverAddr Resolver socket
+	 * @return string|null MSServer socket instance
+	 */
+	protected function getMSServerAddr(string $msserverAddr):?string{
+		$cache = $this->getCacheSystem();
+		if($cache->contains("server/msserver/addr") && is_string($res = $cache->get("server/msserver/addr")))
+			return $res;
+		else{
+			if(strpos($msserverAddr,"/")!==0) $msserverAddr = ROOT."/$msserverAddr";
+			try{
+				$msinstanceAddr = (new MSInstanceAddrResolver($msserverAddr))->find(
+					$this->_conf->getString('server/msserver/db')
+				);
+				$cache->set("server/msserver/addr",$msinstanceAddr);
+				return $msinstanceAddr;
+			}catch(\Exception | \Error $e){
+				return null;
+			}
+		}
 	}
 	
 	/**
@@ -430,7 +491,7 @@ class DefaultContext implements IWebAppContext {
 	 * @param array $confFiles Fichiers de configurations à charger
 	 * @return IConf Configurations
 	 */
-	private function initConfs(array $confFiles):IConf{
+	protected function initConfs(array $confFiles):IConf{
 		$conf = $this->getCacheSystem()->get(self::CACHE_KEYS[self::CONF]);
 		if(is_null($conf)){
 			if(count($confFiles)===0) throw new \InvalidArgumentException(
@@ -455,7 +516,7 @@ class DefaultContext implements IWebAppContext {
 	 * @param null|string $default Langue par défaut
 	 * @return ITranslator
 	 */
-	private function initTranslator(array $langs,?string $default=null):ITranslator{
+	protected function initTranslator(array $langs,?string $default=null):ITranslator{
 		$translator = $this->getCacheSystem()->get(self::CACHE_KEYS[self::TRANSLATOR]);
 		if(is_null($translator)){
 			/** @var ILanguageLoader $loader */
@@ -471,7 +532,7 @@ class DefaultContext implements IWebAppContext {
 	/**
 	 * @return array
 	 */
-	private function getDomainEventListeners():array{
+	protected function getDomainEventListeners():array{
 		$listeners = $this->getCacheSystem()->get(self::CACHE_KEYS[self::DOMAIN_EVENT_LISTENERS]);
 		if(is_null($listeners)){
 			if(file_exists(SITE.'/config/load/domain_events.listeners.php'))
@@ -596,9 +657,19 @@ class DefaultContext implements IWebAppContext {
 	/**
 	 * @return IActionHook Hook.
 	 */
-	public function getActionHook(): IActionHook {
+	public final function getActionHook(): IActionHook {
 		/** @var IActionHook $actionHook */
 		$actionHook = $this->_dice->create(IActionHook::class);
 		return $actionHook;
+	}
+
+	/**
+	 * Called by the app just before closing
+	 */
+	public function close() {
+		$cache = $this->getCacheSystem();
+		$cache->set(self::CACHE_KEYS[self::CONF],$this->getConf());
+		$cache->set(self::CACHE_KEYS[self::TRANSLATOR],$this->getTranslator());
+		$cache->set(self::CACHE_KEYS[self::ROUTER],$this->getRouter());
 	}
 }

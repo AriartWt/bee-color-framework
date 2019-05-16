@@ -9,6 +9,7 @@ use wfw\daemons\modelSupervisor\server\errors\UserNotFound;
 use wfw\daemons\modelSupervisor\server\requests\admin\IMSServerAdminRequest;
 use wfw\daemons\modelSupervisor\server\requests\admin\ShutdownMSServerRequest;
 use wfw\engine\core\data\model\loaders\IModelLoader;
+use wfw\engine\lib\logger\ILogger;
 
 /**
  *  Environnement du MSServer
@@ -45,7 +46,9 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 	 * @param stdClass     $groups       Liste des groupes d'utilisateur du serveur
 	 * @param stdClass     $admins       Liste des droits d'administration du serveur
 	 * @param stdClass     $components   Liste des composants
+	 * @param ILogger      $logger
 	 * @param int          $sessionTtl   (optionnel defaut : 900) temps en secondes avant expiration d'une session inactive.
+	 * @throws \InvalidArgumentException
 	 */
 	public function __construct(
 		string $workingDir,
@@ -55,6 +58,7 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 		stdClass $groups,
 		stdClass $admins,
 		stdClass $components,
+		ILogger $logger,
 		int $sessionTtl = 900
 	){
 		if(!file_exists($workingDir)){
@@ -139,7 +143,8 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 					($componentInfos->permissions ?? new stdClass())->users ?? new stdClass(),
 					($componentInfos->permissions ?? new stdClass())->groups ?? new stdClass(),
 					$this->_groupDefs,
-					$componentInfos
+					$componentInfos,
+					$logger
 				),
 				new $initializers[$componentName]()
 			);

@@ -1,6 +1,7 @@
 <?php
 namespace wfw\engine\package\users\lib\HTML;
 
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\lib\HTML\helpers\forms\Form;
 use wfw\engine\lib\HTML\helpers\forms\inputs\Password;
 use wfw\engine\lib\HTML\helpers\forms\inputs\Text;
@@ -16,22 +17,24 @@ final class LoginForm extends Form {
 	/**
 	 * LoginForm constructor.
 	 *
-	 * @param string $errorIcon
+	 * @param ITranslator $translator
+	 * @param string      $errorIcon
 	 */
-	public function __construct(string $errorIcon) {
-		parent::__construct(new LoginRule(),$errorIcon,new MultiValidationPolicy(
+	public function __construct(ITranslator $translator,string $errorIcon) {
+		parent::__construct(new LoginRule($translator),$errorIcon,new MultiValidationPolicy(
 			new Honeypot("mail"),
 			new MinTimeValidity(2)
 		));
+		$key = "server/engine/package/users/forms";
 		$this->addInputs(
 			new Text("login",null,[
-				'placeholder' => "Identifiant","class"=>"login-input"
+				'placeholder' => $translator->get("$key/LOGIN"),"class"=>"login-input"
 			]),
 			new Password("password",null,[
-				'placeholder' => "Mot de passe","class"=>"password-input"
+				'placeholder' => $translator->get("$key/PASSWORD"),"class"=>"password-input"
 			]),
 			new Text("mail",null,[
-				'placeholder' => "Mail", "class"=>"mail-input"
+				'placeholder' => $translator->get("$key/MAIL"), "class"=>"mail-input"
 			])
 		);
 	}

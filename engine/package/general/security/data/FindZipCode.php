@@ -1,6 +1,7 @@
 <?php
 namespace wfw\engine\package\general\security\data;
 
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\security\data\AndRule;
 use wfw\engine\core\security\data\IRule;
 use wfw\engine\core\security\data\IRuleReport;
@@ -18,15 +19,18 @@ class FindZipCode implements IRule{
 
 	/**
 	 * FindZipCode constructor.
-	 * @param string $regexp Expression régulière pour valider les codes postaux
+	 *
+	 * @param ITranslator $translator
+	 * @param string      $regexp Expression régulière pour valider les codes postaux
 	 */
-	public function __construct(string $regexp = "/^[0-9]{5}$/") {
+	public function __construct(ITranslator $translator,string $regexp = "/^[0-9]{5}$/") {
+		$key = "server/engine/package/general/forms";
 		$this->_rule = new AndRule(
-			"Les données fournies sont incorrectes",
-			new RequiredFields("Ce champ est requis !","zipCode"),
+			$translator->get("$key/GENERAL_ERROR"),
+			new RequiredFields($translator->get("$key/REQUIRED"),"zipCode"),
 			new MatchRegexp(
 				$regexp,
-				"Ceci n'est pas un code postal valide !",
+				$translator->get("$key/INVALID_ZIP_CODE"),
 				"zipCode"
 			),
 			new OrRule(
@@ -34,7 +38,7 @@ class FindZipCode implements IRule{
 				new IsEmpty("country"),
 				new MatchRegexp(
 					"/^[a-zA-Z]{2,120}$/",
-					"Ceci n'est pas un nom de pays valide !",
+					$translator->get("$key/INVALID_COUNTRY_NAME"),
 					"country"
 				)
 			)

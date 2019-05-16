@@ -1,6 +1,7 @@
 <?php
 namespace wfw\engine\package\users\security\data;
 
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\security\data\AndRule;
 use wfw\engine\core\security\data\IRule;
 use wfw\engine\core\security\data\IRuleReport;
@@ -16,12 +17,15 @@ final class ChangeMailRule implements IRule{
 
 	/**
 	 * ChangeMailRule constructor.
+	 *
+	 * @param ITranslator $translator
 	 */
-	public function __construct() {
+	public function __construct(ITranslator $translator) {
+		$key = "server/engine/package/users/forms";
 		$this->_rule = new AndRule(
-			"L'une de ces information est incorrecte !",
-			new RequiredFields("Ce champ est requis","email"),
-			new IsEmail("Ceci n'est pas un email valide", "email")
+			$translator->get("$key/GENERAL_ERROR"),
+			new RequiredFields($translator->get("$key/REQUIRED"),"email"),
+			new IsEmail($translator->get("$key/INVALID_MAIL"), "email")
 		);
 	}
 

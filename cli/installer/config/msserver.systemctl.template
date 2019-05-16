@@ -2,12 +2,12 @@
 Description=Gestionnaire de models de données du framework bee-color wfw
 After=wfw-kvs.service mysql.service
 Requires=wfw-kvs.service mysql.service
-PartOf=mysql.service
 
 [Service]
 Type=simple
 User=www-data
 KillSignal=SIGALRM
+KillMode=process
 ExecStart=/usr/bin/php -q @ROOT/daemons/modelSupervisor/MSServerLauncher.php --debug
 Restart=always
 

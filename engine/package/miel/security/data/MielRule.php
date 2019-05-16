@@ -1,6 +1,7 @@
 <?php
 namespace wfw\engine\package\miel\security\data;
 
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\security\data\AndRule;
 use wfw\engine\core\security\data\IRule;
 use wfw\engine\core\security\data\IRuleReport;
@@ -18,26 +19,33 @@ final class MielRule implements IRule {
 	/**
 	 * MielRule constructor.
 	 *
-	 * @param string $maxDataLength
+	 * @param ITranslator $translator
+	 * @param int         $maxDataLength
+	 * @param int         $maxKeyLength
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct(string $maxDataLength="66000") {
+	public function __construct(
+		ITranslator $translator,
+		int $maxDataLength=500000,
+		int $maxKeyLength=512
+	) {
+		$key = "server/engine/package/miel/forms";
 		$this->_mainRule = new AndRule(
-			"Tous les champos sont requis !",
+			$translator->get("$key/GENERAL_ERROR"),
 			new RequiredFields(
-				"Ce champ doit être précisé","miel_key","miel_data"
+				$translator->get("$key/REQUIRED"),"miel_key","miel_data"
 			),
 			new MaxStringLength(
-				"Ce champ ne peut pas excéder les 512 caractères de long !",
-				512,
+				$translator->getAndReplace("$key/TOO_LARGE_KEY",$maxKeyLength),
+				$maxKeyLength,
 				"miel_key"
 			),
 			new MaxStringLength(
-				"Ce champ ne peut pas excéder les $maxDataLength caractères de long!",
+				$translator->getAndReplace("$key/TOO_LARGE_STRING",$maxDataLength),
 				$maxDataLength,
 				"miel_data"
 			),
-			new NotEmpty("Ce champ ne peut pas être vide","miel_key")
+			new NotEmpty($translator->get("$key/NOT_EMPTY"),"miel_key")
 		);
 	}
 

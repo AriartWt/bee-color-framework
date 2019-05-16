@@ -1,11 +1,11 @@
 <?php
 namespace wfw\engine\package\uploader\security\data;
 
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\security\data\AndRule;
 use wfw\engine\core\security\data\IRule;
 use wfw\engine\core\security\data\IRuleReport;
 use wfw\engine\core\security\data\rules\IsArrayOf;
-use wfw\engine\core\security\data\rules\IsString;
 use wfw\engine\core\security\data\rules\MaxArrayLength;
 use wfw\engine\core\security\data\rules\RequiredFields;
 
@@ -19,18 +19,25 @@ final class RenamePathRule implements IRule {
 	/**
 	 * RenamePathRule constructor.
 	 *
-	 * @param int $maxPathLength Taille maximale d'un chemin
-	 * @param int $maxPath Nombre de chemins traités simultanément
+	 * @param ITranslator $translator
+	 * @param int         $maxPathLength Taille maximale d'un chemin
+	 * @param int         $maxPath       Nombre de chemins traités simultanément
+	 * @throws \InvalidArgumentException
 	 */
-	public function __construct(int $maxPathLength = 2048, int $maxPath = 10000) {
+	public function __construct(
+		ITranslator $translator,
+		int $maxPathLength = 2048,
+		int $maxPath = 10000
+	) {
+		$key = "server/engine/package/uploader/forms";
 		$this->_rule = new AndRule(
-			"Les données sont invalides !",
-			new RequiredFields("Ces champs sont requis : ","oldPaths","newPaths"),
-			new IsArrayOf("Ce ne sont pas des chaînes valides !",function($d)use($maxPathLength){
+			$translator->get("$key/GENERAL_ERROR"),
+			new RequiredFields($translator->get("$key/REQUIRED"),"oldPaths","newPaths"),
+			new IsArrayOf($translator->get("$key/INVALID_STRING"),function($d)use($maxPathLength){
 				return is_string($d) && strlen($d)<$maxPathLength;
 			},"oldPaths","newPaths"),
 			new MaxArrayLength(
-				"Ce tableau ne peut pas contenir plus de $maxPath élements",
+				$translator->getAndReplace("$key/MAX_ARRAY_LENGTH_REACHED",$maxPath),
 				$maxPath,
 				"oldPaths","newPaths"
 			)
