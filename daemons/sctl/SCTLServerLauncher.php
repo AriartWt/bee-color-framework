@@ -53,7 +53,7 @@ try{
 				$conf->getLogFile("debug")
 		))->autoConfFileByLevel(
 			FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
-			FileLogger::DEBUG,true
+			FileLogger::DEBUG,$conf->isCopyLogModeEnabled()
 		)->autoConfByLevel($conf->getLogLevel())
 	);
 

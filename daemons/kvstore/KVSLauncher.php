@@ -17,11 +17,14 @@ use wfw\engine\lib\cli\signalHandler\PCNTLSignalsHelper;
 use wfw\engine\lib\data\string\compressor\GZCompressor;
 use wfw\engine\lib\data\string\serializer\LightSerializer;
 use wfw\engine\lib\data\string\serializer\PHPSerializer;
+use wfw\engine\lib\logger\ILogger;
 
 $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 	new ArgvOpt('-pid','Affiche le pid',0,null,true),
 	new ArgvOpt('--debug','Affiche le détail des erreurs',0,null,true)
 ])),$argv);
+
+$conf = null;
 
 try{
 	if($argvReader->exists('-pid'))
@@ -29,7 +32,7 @@ try{
 
 	//On récupère les configurations du server
 	$conf = new KVSConfs(ENGINE.DS."config".DS."conf.json", SITE.DS."config".DS."conf.json");
-
+	cli_set_process_title("WFW KVS server");
 	//On prépare le serveur
 	$KVSServer = new KVSServer(
 		$conf->getSocketPath(),
@@ -43,14 +46,14 @@ try{
 			$conf->getDbPath(),
 			$conf->getSessionTtl()
 		),
+		$conf->getLogger(),
 		new LightSerializer(
 			new GZCompressor(),
 			new PHPSerializer()
 		),
 		$conf->getRequestTtl(),
 		$conf->haveToSendErrorToClient(),
-		$conf->haveToShutdownOnError(),
-		$conf->getErrorLogsPath()
+		$conf->haveToShutdownOnError()
 	);
 
 	//On prépare les handlers de signaux
@@ -71,32 +74,29 @@ try{
 	//On démarre le serveur
 	$KVSServer->start();
 }catch(\InvalidArgumentException $e){
-	fwrite(STDOUT,"\e[33mWFW_kvs WRONG_USAGE\e[0m : {$e->getMessage()}".PHP_EOL);
-	error_log(
-		"\e[33mWFW_kvs WRONG_USAGE\e[0m : {$e->getMessage()}".PHP_EOL,
-		3,
-		$conf->getErrorLogsPath()
+	if(!$argvReader->exists('--debug')){
+		fwrite(STDOUT,"\e[33mWFW_kvs WRONG_USAGE\e[0m : {$e->getMessage()}".PHP_EOL);
+	}else{
+		fwrite(STDOUT,"\e[33mWFW_kvs WRONG_USAGE\e[0m : $e".PHP_EOL);
+	}
+	$conf->getLogger()->log(
+		"\e[33mWFW_kvs WRONG_USAGE\e[0m : $e",
+		ILogger::WARN
 	);
 	exit(1);
 }catch(\Exception $e){
 	if($argvReader->exists('--debug')){
 		fwrite(STDOUT,"\e[31mWFW_kvs ERROR\e[0m : ".PHP_EOL."$e".PHP_EOL);
-		error_log(
-			"\e[31mWFW_kvs ERROR\e[0m : ".PHP_EOL."$e".PHP_EOL,
-			3,
-			$conf->getErrorLogsPath()
-		);
 	}
 	else{
 		fwrite(
 			STDOUT,
 			"\e[31mWFW_kvs ERROR\e[0m (try --debug for more) : {$e->getMessage()}".PHP_EOL
 		);
-		error_log(
-			"\e[31mWFW_kvs ERROR\e[0m (try --debug for more) : {$e->getMessage()}".PHP_EOL,
-			3,
-			$conf->getErrorLogsPath()
-		);
 	}
+	$conf->getLogger()->log(
+		"\e[31mWFW_kvs ERROR\e[0m : $e",
+		ILogger::ERR
+	);
 	exit(2);
 }

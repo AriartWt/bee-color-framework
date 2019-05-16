@@ -6,6 +6,7 @@ use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\response\IResponse;
 use wfw\engine\core\response\responses\Response;
 use wfw\engine\core\session\ISession;
@@ -37,12 +38,14 @@ final class RegisterHandler extends DefaultUserActionHandler implements IDomainE
 
 	/**
 	 * RegisterHandler constructor.
-	 * @param ICommandBus $bus
-	 * @param RegisterUserRule $rule
-	 * @param ISession $session
-	 * @param IJSONEncoder $encoder
+	 *
+	 * @param ICommandBus          $bus
+	 * @param RegisterUserRule     $rule
+	 * @param ISession             $session
+	 * @param IJSONEncoder         $encoder
 	 * @param IDomainEventObserver $observer
-	 * @param IUserModelAccess $access
+	 * @param IUserModelAccess     $access
+	 * @param ITranslator          $translator
 	 */
 	public function __construct(
 		ICommandBus $bus,
@@ -50,9 +53,10 @@ final class RegisterHandler extends DefaultUserActionHandler implements IDomainE
 		ISession $session,
 		IJSONEncoder $encoder,
 		IDomainEventObserver $observer,
-		IUserModelAccess $access
+		IUserModelAccess $access,
+		ITranslator $translator
 	){
-		parent::__construct($bus, $rule, $session);
+		parent::__construct($bus, $rule, $session, $translator);
 		$this->_encoder = $encoder;
 		$this->_access = $access;
 		$observer->addEventListener(UserRegisteredEvent::class,$this);
@@ -89,7 +93,7 @@ final class RegisterHandler extends DefaultUserActionHandler implements IDomainE
 	 */
 	protected function successResponse(): IResponse {
 		if(is_null($this->_userRegisteredEvent)) throw new \Exception(
-			"UserRegisteredEvent not recieved !"
+			$this->_translator->get("server/engine/package/users/USER_REGISTERED_EVENT_NOT_RECIEVED")
 		);
 		return new Response($this->_encoder->jsonEncode(
 			$this->_access->getById($this->_userRegisteredEvent->getAggregateId())

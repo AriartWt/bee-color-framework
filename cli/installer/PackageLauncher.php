@@ -44,6 +44,7 @@ try{
 					$exec("ln -s \"../../../$l/package/$p/webroot/$dir\" \"$p\"");
 				}
 			}else fwrite(STDOUT,"\e[33mWFW_installer UNKNOWN_PACKAGE\e[0m : $package\n");
+			fwrite(STDOUT,"$package installed.\n");
 		}
 	}else if($argvReader->exists('-uninstall')){
 		$args = $argvReader->get('-uninstall');

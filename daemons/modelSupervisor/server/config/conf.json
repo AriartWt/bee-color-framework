@@ -1,8 +1,15 @@
 {
     "working_dir": "modelSupervisor\/data",
     "socket_path": "ModelSupervisor.socket",
+    "logs" : {
+        "level" : 2,
+        "copy" : true,
+        "default_path" : "/var/log/wfw/msserver"
+    },
+    "admin_mail" : null,
     "default_instance": {
         "initializers_path": "{ROOT}\/daemons\/modelSupervisor\/server\/config\/initializers.components.php",
+        "admin_mail" : null,
         "components": {
             "writer": {
                 "max_attempts": 10,
@@ -27,7 +34,11 @@
         "session_ttl": 900,
         "shutdown_on_error": false,
         "send_error_to_client": true,
-        "error_logs": "error_logs.txt"
+        "logs" : {
+            "level" : 2,
+            "copy" : true,
+            "default_path" : "/var/log/wfw/msserver/instances"
+        }
     },
     "instances": {
 

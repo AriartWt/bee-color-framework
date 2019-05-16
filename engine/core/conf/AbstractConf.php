@@ -9,6 +9,8 @@ use wfw\engine\lib\PHP\objects\StdClassOperator;
  *  Configuration de base
  */
 abstract class AbstractConf implements IConf {
+	/** @var array $_cachedResults */
+	protected $_cachedResults=[];
 	/**
 	 *  Permet de sauvegarder automatiquement les configurations lors d'une modification
 	 * @var bool $_autoSave
@@ -95,7 +97,9 @@ abstract class AbstractConf implements IConf {
 	 * @return mixed
 	 */
 	public function get(string $path){
+		if(isset($this->_cachedResults[$path])) return $this->_cachedResults[$path];
 		if(strlen($path) === 0) return $this->getRawConf();
+		$oPath = $path;
 		$path=explode("/",$path);
 		$current = $this->getRawConf();
 		foreach($path as $v){
@@ -105,6 +109,7 @@ abstract class AbstractConf implements IConf {
 				$current=null;
 			}
 		}
+		$this->_cachedResults[$oPath]=$current;
 		return $current;
 	}
 

@@ -1,6 +1,7 @@
 {
   //configurations lues côté serveur
   "server": {
+    "domain" : "https://example.com",
     //informations sur le frameork
     "framework": {
       "name": "wfw",

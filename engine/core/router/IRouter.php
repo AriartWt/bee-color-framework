@@ -42,4 +42,10 @@ interface IRouter {
 	 * @param array  $params (optionnal) connection params (depends oo the implementation)
 	 */
 	public function addConnection(string $redir, string $url,array $params=[]):void;
+
+	/*
+	 * Rétabli les paramètres du routeurs qui doivent changer à chaque requêtes (permet d'utiliser
+	 * un système de cache pour la résolution des urls)
+	 */
+	public function reset():void;
 }

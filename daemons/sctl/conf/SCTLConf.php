@@ -92,7 +92,7 @@ final class SCTLConf {
 	 * @return int
 	 */
 	public function getLogLevel():int{
-		return $this->_conf->getInt("logs/level");
+		return $this->_conf->getInt("logs/level") ?? ILogger::ERR;
 	}
 
 	/**
@@ -101,7 +101,33 @@ final class SCTLConf {
 	 */
 	public function getLogFile(string $key):string{
 		$dest = $this->_conf->getString("logs/files") ?? "sctl-$key.log";
-		if(strpos($dest,"/")!==0) $dest = $this->getWorkingDir()."/$dest";
+		$baseLog = $this->_conf->get("logs/default_path");
+		if(strpos($dest,"/")!==0){
+			if($baseLog){
+				if(!is_dir($baseLog)) mkdir($baseLog,0700,true);
+				return "$baseLog/$dest";
+			}else{
+				if(!is_dir($this->getWorkingDir()))
+					mkdir($this->getWorkingDir(),0700,true);
+				return $this->getWorkingDir()."/$dest";
+			}
+		}
 		return $dest;
+	}
+
+	/**
+	 * @return null|string
+	 */
+	public function getAdminMailAddr():?string{
+		return $this->_conf->getString("admin_mail");
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isCopyLogModeEnabled():bool{
+		$res = $this->_conf->getBoolean("logs/copy");
+		if(is_null($res)) return true;
+		else return $res;
 	}
 }

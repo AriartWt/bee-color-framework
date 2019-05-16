@@ -19,6 +19,8 @@ final class Router implements IRouter {
 	private $_lang;
 	/** @var string $_baseUrl */
 	private $_baseUrl;
+	/** @var string[][] $_cachedURLS */
+	private $_cachedURLS;
 
 	/**
 	 * RequestRouter constructor.
@@ -39,6 +41,7 @@ final class Router implements IRouter {
 		$this->_langs = [];
 		$this->_routes = [];
 		$this->_langRoutes = [];
+		$this->_cachedURLS = [];
 		if(count(array_intersect(array_keys($connections),$langs)) > 0){
 			foreach ($connections as $l => $conn){
 				foreach($conn as $redir => $url){
@@ -119,43 +122,53 @@ final class Router implements IRouter {
 	 * @return IAction Action résultante
 	 */
 	public function parse(IRequest $request): IAction {
-		$url = trim($request->getURL(),'/');
-		if(empty($url)){
-			$url = '/';
-		}
-		$match = false;
-		$tab = explode('/',$url);
-		$lang = null;
-		if(in_array($tab[0],$this->_langs)){
-			$lang = array_shift($tab);
-			$this->_lang = $lang;
-		}
-		$url = implode('/',$tab);
+		$cachekey = $request->getURI().json_encode($request->getAcceptedLanguages($this->_langs));
+		if(isset($this->_cachedURLS[$cachekey])){
+			$url = $this->_cachedURLS[$cachekey]["url"];
+			$lang = $this->_cachedURLS[$cachekey]["lang"];
+		}else{
+			$url = trim($request->getURL(),'/');
+			if(empty($url)){
+				$url = '/';
+			}
+			$match = false;
+			$tab = explode('/',$url);
+			$lang = null;
+			if(in_array($tab[0],$this->_langs)){
+				$lang = array_shift($tab);
+				$this->_lang = $lang;
+			}
+			$url = implode('/',$tab);
 
-		if($this->_lang && isset($this->_langRoutes[$this->_lang]))
-			//will search in the most probable urls first
-			$routes = array_merge(
-				[$this->_lang => $this->_langRoutes[$this->_lang]],
-				array_diff_key($this->_langRoutes,[$this->_lang])
-			);
-		else if(!empty($this->_langRoutes)) $routes = $this->_langRoutes;
-		else $routes = [$this->_routes];
+			if($this->_lang && isset($this->_langRoutes[$this->_lang]))
+				//will search in the most probable urls first
+				$routes = array_merge(
+					[$this->_lang => $this->_langRoutes[$this->_lang]],
+					array_diff_key($this->_langRoutes,[$this->_lang])
+				);
+			else if(!empty($this->_langRoutes)) $routes = $this->_langRoutes;
+			else $routes = [$this->_routes];
 
-		foreach($routes as $r){
-			foreach($r as $v){
-				if(preg_match($v['redirreg'],$url,$match)){
-					$url = $v['origin'];
-					/**
-					 * @var  $k string
-					 * @var  $v array
-					 * @var  $match array
-					 */
-					foreach($match as $k=>$m){
-						$url = str_replace(':'.$k.':',$m,$url);
+			foreach($routes as $r){
+				foreach($r as $v){
+					if(preg_match($v['redirreg'],$url,$match)){
+						$url = $v['origin'];
+						/**
+						 * @var  $k string
+						 * @var  $v array
+						 * @var  $match array
+						 */
+						foreach($match as $k=>$m){
+							$url = str_replace(':'.$k.':',$m,$url);
+						}
+						break 2;
 					}
-					break 2;
 				}
 			}
+			$this->_cachedURLS[$cachekey] = [
+				"url" => $url,
+				"lang" => $lang
+			];
 		}
 
 		return new Action(
@@ -220,5 +233,9 @@ final class Router implements IRouter {
 			if(!isset($this->_langRoutes[$opts['lang']])) $this->_langRoutes[$opts['lang']] = [];
 			$this->_langRoutes[$opts['lang']][] = $r;
 		}else $this->_routes[] = $r;
+	}
+
+	public function reset(): void {
+		$this->_lang = null;
 	}
 }

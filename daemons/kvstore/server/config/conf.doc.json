@@ -10,6 +10,8 @@
     "socket_path" : "KVSServer.socket",
     //Chemin d'accés à la base de données KVS (repertoire valide)
     "db_path" : "kvs_db",
+    //adresse sur laquelle sera envoyé un message en cas de crash de l'un des containers
+    "admin_mail" : "webmaster@example.com",
     //liste des containers :
     //(Chaque container est géré par un worker différent, et son execution est isolée des autres containers)
     //Ajouter un container ici le créera automatiquement.
@@ -66,6 +68,9 @@
             //Chaque clé peut-être stockée indépendament des autres clés à l'intérieur d'un même container.
             //Les options disponibles sont : ON_DISK_ONLY / IN_MEMORY_ONLY / IN_MEMORY_PERSISTED_ON_DISK
             "default_storage" : "IN_MEMORY_PERSISTED_ON_DISK",
+            //Mail sur lequel sera envoyé un message d'erreur en cas de crash du container.
+            //Si non précisé, le mail utilisé sera celui de la configuration globale du KVS
+            "admin_mail" : "webmaster@example.com",
             //(optionnel) Chemin absolu vers un repertoir accessible.
             //Si non spécifié, le dossier par défaut sera celui de kvs/db_path
             "path" : "/path/to/a/valid/directory"
@@ -129,6 +134,18 @@
     "shutdown_on_error" : false,
     //Envoi de l'erreur au client
     "send_error_to_client" : true,
-    //Destination des logs d'erreur
-    "error_logs" : "error_logs.txt"
+    //gére les logs
+    "logs" : {
+        //combinaison de puissances de 2 correspondant à tous les niveuw de log à activer.
+        //par défaut, 2 active le log des erreur. 1 les logs normaux, 4 les logs warning,
+        //8 les logs debug (combinaison de 1,2,4).
+        //3 active 1 et 2; 7 active 1,2,4; 15 active tous les logs.
+        "level" : 2,
+        //active la copie des logs dans les fichiers. Si debug + un autre niveau activé, alors les
+        //logs apparaissent deux fois. L'une dans leur fichier de destination, l'autre dans debug.
+        //Si false, les logs sont redirigés sans copie vers debug.
+        "copy" : true,
+        //Chemin du dossier contenant les logs du daemons.
+        "default_path" : "/var/log/wfw/kvs"
+    }
 }

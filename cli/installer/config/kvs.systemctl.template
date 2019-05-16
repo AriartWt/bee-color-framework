@@ -5,6 +5,7 @@ Description=Systeme de stockage clé/valeur du framework bee-color wfw
 Type=simple
 User=www-data
 KillSignal=SIGALRM
+KillMode=process
 ExecStart=/usr/bin/php -q @ROOT/daemons/kvstore/KVSLauncher.php --debug
 Restart=always
 

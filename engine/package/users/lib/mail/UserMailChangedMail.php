@@ -2,6 +2,8 @@
 namespace wfw\engine\package\users\lib\mail;
 
 use wfw\engine\core\conf\IConf;
+use wfw\engine\core\lang\ITranslator;
+use wfw\engine\lib\network\mail\EmailSubject;
 use wfw\engine\lib\network\mail\IMailBody;
 use wfw\engine\lib\network\mail\MailBody;
 use wfw\engine\lib\PHP\types\UUID;
@@ -16,10 +18,12 @@ use wfw\engine\package\users\lib\confirmationCode\UserConfirmationCode;
 final class UserMailChangedMail extends AbstractUserMail{
 	/**
 	 * UserMailChangedMail constructor.
-	 * @param UUID $userId
+	 *
+	 * @param UUID                 $userId
 	 * @param UserConfirmationCode $code
-	 * @param IConf $conf
-	 * @param IUserModelAccess $access
+	 * @param IConf                $conf
+	 * @param ITranslator          $translator
+	 * @param IUserModelAccess     $access
 	 * @throws UserNotFound
 	 * @throws \InvalidArgumentException
 	 */
@@ -27,6 +31,7 @@ final class UserMailChangedMail extends AbstractUserMail{
 		UUID $userId,
 		UserConfirmationCode $code,
 		IConf $conf,
+		ITranslator $translator,
 		IUserModelAccess $access
 	) {
 		parent::__construct(
@@ -34,6 +39,10 @@ final class UserMailChangedMail extends AbstractUserMail{
 			$code,
 			$conf,
 			$access,
+			$translator,
+			new EmailSubject($translator->get(
+				"server/engine/package/users/mail/subject/CONFIRM_MAIL_CHANGE"
+			)),
 			"changeMailConfirmation"
 		);
 	}
@@ -44,8 +53,14 @@ final class UserMailChangedMail extends AbstractUserMail{
 	 * @return IMailBody
 	 */
 	protected function createBody(User $user, UserConfirmationCode $code): IMailBody {
+		$addr = $this->getDomain()."/users/changeMailConfirmation?id=".$user->getId()."&code=$code";
+		$key="server/engine/package/users/mail";
 		return new MailBody(
-			"https://bee-color.fr/users/changeMailConfirmation?id=".$user->getId()."&code=$code",
+			$this->_translator->getAndReplace("$key/INTRO",$user->getLogin())
+			.$this->_translator->getAndReplace("$key/explain/CONFIRM_MAIL_CHANGE",$addr)
+			.$this->_translator->get("$key/WARN")
+			.$this->_translator->get("$key/END")
+			.($this->_translator->get("$key/SIGNATURE") ?? ""),
 			null,
 			false
 		);

@@ -3,6 +3,7 @@ namespace wfw\daemons\modelSupervisor\server;
 
 
 use stdClass;
+use wfw\engine\lib\logger\ILogger;
 
 /**
  * Configuration d'un pool de MSServer
@@ -75,12 +76,6 @@ interface IMSServerPoolConf {
 	public function haveToShutdownOnError(string $instance):bool;
 
 	/**
-	 * @param null|string $instance Instance concernée
-	 * @return string
-	 */
-	public function getErrorLogsPath(?string $instance=null):string;
-
-	/**
 	 * @param string $instance Instance concernée
 	 * @return string
 	 */
@@ -128,4 +123,9 @@ interface IMSServerPoolConf {
 	 * @return string[] Noms des instances à créer
 	 */
 	public function getInstances():array;
+
+	/**
+	 * @return ILogger
+	 */
+	public function getLogger():ILogger;
 }

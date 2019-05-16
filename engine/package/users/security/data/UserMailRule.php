@@ -2,6 +2,7 @@
 namespace wfw\engine\package\users\security\data;
 
 
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\security\data\AndRule;
 use wfw\engine\core\security\data\IRule;
 use wfw\engine\core\security\data\IRuleReport;
@@ -19,13 +20,16 @@ final class UserMailRule implements IRule{
 
 	/**
 	 * UserMailRule constructor.
+	 *
+	 * @param ITranslator $translator
 	 */
-	public function __construct(){
+	public function __construct(ITranslator $translator){
+		$key = "server/engine/package/users/forms";
 		$this->_rule = new AndRule(
-			"L'un des champs n'est pas valide",
-			new RequiredFields("Ce champ est requis","email","id"),
-			new IsEmail("Ceci n'est pas un email valide !","email"),
-			new IsUUID("Ceci n'est pas un identifiant valide !","id")
+			$translator->get("$key/GENERAL_ERROR"),
+			new RequiredFields($translator->get("$key/REQUIRED"),"email","id"),
+			new IsEmail($translator->get("$key/INVALID_MAIL"),"email"),
+			new IsUUID($translator->get("$key/INVALID_ID"),"id")
 		);
 	}
 

@@ -35,6 +35,7 @@ use wfw\daemons\modelSupervisor\socket\protocol\MSServerSocketProtocol;
 use wfw\daemons\multiProcWorker\Worker;
 use wfw\engine\lib\cli\signalHandler\PCNTLSignalsHelper;
 use wfw\engine\lib\data\string\serializer\ISerializer;
+use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\network\socket\data\IDataParser;
 use wfw\engine\lib\PHP\errors\IllegalInvocation;
 use wfw\engine\lib\PHP\types\PHPString;
@@ -164,17 +165,32 @@ final class WriterWorker extends Worker {
 		}
 		socket_bind($this->_socket,$socketPath);
 		socket_listen($this->_socket);
-
+		cli_set_process_title(cli_get_process_title()." Writer");
 		$this->startPeriodicSaves();
 
 		$continue = true;
+		$this->_environment->getLogger()->log(
+			"[WRITER] [WORKER] Worker started.",
+			ILogger::LOG
+		);
 		while($continue){
 			$accepted = socket_accept($this->_socket);
 			$this->configureSocket($accepted);
+			$this->_environment->getLogger()->log(
+				"[WRITER] [WORKER] New incoming connection accepted.",
+				ILogger::LOG
+			);
 			$continue = $this->process($accepted);
+			$this->_environment->getLogger()->log(
+				"[WRITER] [WORKER] Query successfully processed.",
+				ILogger::LOG
+			);
 			$this->cleanZombies();
 		}
-
+		$this->_environment->getLogger()->log(
+			"[WRITER] [WORKER] The worker will shutdown...",
+			ILogger::LOG
+		);
 		$this->shutdown();
 	}
 
@@ -243,13 +259,13 @@ final class WriterWorker extends Worker {
 					throw new WriterComponentFailure("Wrong server key given.");
 				}
 			}else{
-				echo "Failure\n";
 				throw new WriterComponentFailure(
 					"Unreadbale request ! (requests must be instanceof "
 					.IMSServerInternalRequest::class." but ".(new Type($request))->get()." given !)"
 				);
 			}
 		}catch(\Exception $e){
+			$tags = "[WRITER] [WORKER] [REQUEST ERROR]";
 			//Toute requête avec erreur de serialisation est ignorée
 			if(!$unserializeError){
 				//Toute requête qui n'est pas un objet de type IMSServerInternalRequest est ignoré.
@@ -262,12 +278,29 @@ final class WriterWorker extends Worker {
 								$request->getQueryId(),
 								new RequestError($e)
 							));
-						}catch(\Exception $e){
-							$this->errorLog($e);
+							$this->_environment->getLogger()->log(
+								"$tags Report successfully sent to client",
+								ILogger::LOG
+							);
+						}catch(\Exception | \Error $e){
+							$this->_environment->getLogger()->log(
+								"$tags Unable to send error to client : $e",
+								ILogger::ERR
+							);
 						}
-					}
-				}
-			}
+					}else $this->_environment->getLogger()->log(
+						"$tags Client request ignored : wrong server key given.",
+						ILogger::WARN
+					);
+				}else $this->_environment->getLogger()->log(
+					"$tags Client request ignored : recieved object is a ".$request->getClass()
+					." instead of ".IMSServerInternalRequest::class,ILogger::WARN
+
+				);
+			}else $this->_environment->getLogger()->log(
+				"$tags Client's request ignored : recieved data can't be unserialized.",
+				ILogger::WARN
+			);
 		}
 		return true;
 	}
@@ -284,6 +317,11 @@ final class WriterWorker extends Worker {
 	 * @throws WriterComponentFailure
 	 */
 	private function handle(IWriterRequest $clientRequest, MSServerDataParserResult $request):bool{
+		$this->_environment->getLogger()->log(
+			"[WRITER] [WORKER] Processing ".get_class($clientRequest)." (query id : "
+			.$request->getQueryId().")...",
+			ILogger::LOG
+		);
 		if($clientRequest instanceof IWriterAdminRequest){
 			return $this->handleAdminRequest($clientRequest,$request);
 		}else if($clientRequest instanceof IWriterReadRequest){
@@ -514,11 +552,17 @@ final class WriterWorker extends Worker {
 		$status=null;
 		while($pid>0){
 			$pid = pcntl_waitpid(-1,$status,WNOHANG);
+			$nb = 0;
 			foreach($this->_saveRequests as $k=>$request){
 				if($pid === $request["pid"]){
 					unset($this->_saveRequests[$k]);
+					$nb++;
 				}
 			}
+			if($nb > 0) $this->_environment->getLogger()->log(
+				"[WRITER] [WORKER] Zombie processes with waitting $nb save requests detected (pid : $pid). All requests have been cleaned up.",
+				ILogger::WARN
+			);
 		}
 	}
 
@@ -532,11 +576,29 @@ final class WriterWorker extends Worker {
 			//on fork pour envoyer des requêtes de sauvegarde à intervals réguliers
 			//sur le worker.
 			$pid = pcntl_fork();
+			$tags = "[WRITER] [WORKER] [PERIODIC SAVER]";
 			if ($pid === -1){
-				$this->errorLog("An error as occured : can't fork.");
+				$this->_environment->getLogger()->log(
+					"[WRITER] [WORKER] Unable to fork to create the Periodic Saver. Maybe insufficient system ressources or max process limit reached.",
+					ILogger::ERR
+				);
 			}else if ($pid === 0){
 				fclose($this->_acquiredLockFile);
+				cli_set_process_title(cli_get_process_title()." Periodic Saver");
+				file_put_contents(
+					$this->_environment->getWorkingDir()."/"
+					.$this->_environment->getName()."-PeriodicSaver.pid",
+					getmypid()
+				);
+				$this->_environment->getLogger()->log(
+					"$tags Started (pid : ".getmypid().").",
+					ILogger::LOG
+				);
 				while(self::isRunning($this->_environment)){
+					$this->_environment->getLogger()->log(
+						"$tags Wake up. Sending save query to parent worker...",
+						ILogger::LOG
+					);
 					try{
 						$socket = $this->createClientSocket($this->getWorkerSocketAddr());
 						$this->write(
@@ -553,12 +615,21 @@ final class WriterWorker extends Worker {
 							$socket
 						);
 						socket_close($socket);
-					}catch(\Exception $e){
+						$this->_environment->getLogger()->log(
+							"$tags Save query successfully sent",
+							ILogger::LOG
+						);
+					}catch(\Exception | \Error $e){
+						$this->_environment->getLogger()->log(
+							"$tags An error occured while attempting to send the query to the parent worker : $e",
+							ILogger::ERR
+						);
 						$this->errorLog((string)$e);
 					}
-					//On attend à la fin pour minimiser les problèmes de connection.
+					//On attend à la fin pour minimiser les problèmes de connexion.
 					usleep($this->_saveFrequency);
 				}
+				$this->_environment->getLogger()->log("$tags Gracefull shutdown : parent worker have been closed.");
 				//une fois que le worker est éteint, on quitte.
 				exit(0);
 			}else{
@@ -582,7 +653,13 @@ final class WriterWorker extends Worker {
 	 */
 	private function forkAndSave(TriggerSaveRequest $clientRequest):void{
 		$savePid = pcntl_fork();
+		$tags = "[WRITER] [WORKER] [CLIENT SAVING PROCESS]";
 		if($savePid === 0 ){
+			cli_set_process_title(cli_get_process_title()." saving process");
+			$this->_environment->getLogger()->log(
+				"$tags Started (pid : ".getmypid().").Changes to models will be persisted...",
+				ILogger::LOG
+			);
 			$models = $this->triggerSave();
 			try{
 				$socket = $this->createClientSocket($this->getWorkerSocketAddr());
@@ -602,9 +679,11 @@ final class WriterWorker extends Worker {
 				);
 				socket_close($socket);
 			}catch(\Exception $e){
-				$this->errorLog(
-					"Cannot send SaveDone : ".$this->getWorkerSocketAddr()
-					.PHP_EOL.(string)$e.PHP_EOL.print_r($models,true));
+				$this->_environment->getLogger()->log(
+					"$tags Cannot send the SaveDone notification on socket ".$this->getWorkerSocketAddr()
+					." : $e",
+					ILogger::ERR
+				);
 			}
 			exit(0);
 		}else if($savePid === -1){
@@ -638,6 +717,10 @@ final class WriterWorker extends Worker {
 				//Ne fait rien si une sauvegarde est déjà en cours.
 				$ok = flock($fp,LOCK_EX|LOCK_NB);
 			}
+			$this->_environment->getLogger()->log(
+				"[WRITER] [WORKER] Models successfully persisted.",
+				ILogger::LOG
+			);
 			if($ok){
 				$res = $this->_workerParams->getModelManager()->save();
 				flock($fp,LOCK_UN);
@@ -685,6 +768,10 @@ final class WriterWorker extends Worker {
 			flock($this->_acquiredLockFile,LOCK_UN);
 			fclose($this->_acquiredLockFile);
 			unlink($this->_lockFile);
+			$this->_environment->getLogger()->log(
+				"[WRITER] [WORKER] Gracefull shutdown.",
+				ILogger::LOG
+			);
 
 			exit(0);
 		}else{
@@ -722,11 +809,14 @@ final class WriterWorker extends Worker {
 			//on envoie l'erreur au client et on passe à la requête suivante.
 			$error = new InternalRequestTimeout(
 				$this->_lastAttemptError
-				?? new MSServerComponentFailure("Unable to contact worker. Unkown error.")
+				?? new MSServerComponentFailure("Unable to contact writer worker.")
+			);
+			$this->_environment->getLogger()->log(
+				"[WRITER] [CLIENT] Unable to connect to worker ($tries attempts). Last error : $this->_lastAttemptError",
+				ILogger::ERR
 			);
 			$this->_lastAttemptError = null;
-
-			//On envoie tente de renvoyer la réponse sur la socket du serveur.
+			//On tente de renvoyer la réponse sur la socket du MSServeur.
 			try{
 				$socket = $this->createClientSocket($this->getResponseSocketName());
 				$this->write(
@@ -740,12 +830,13 @@ final class WriterWorker extends Worker {
 				);
 				socket_close($socket);
 			}catch(\Exception $e){
-				$this->errorLog(print_r([
+				$this->_environment->getLogger()->log(
+					"[WRITER] [CLIENT] Unable to send error report to MSServer : ".print_r([
 					$e->getMessage(),
 					$e->getFile(),
 					$e->getLine(),
 					$e->getTraceAsString()
-				],true));
+				],true),ILogger::ERR);
 			}
 		}
 	}
@@ -768,7 +859,7 @@ final class WriterWorker extends Worker {
 				);
 				socket_close($socket);
 				return true;
-			}catch(\Exception $e){
+			}catch(\Exception | \Error $e){
 				$this->_lastAttemptError = $e;
 				return false;
 			}
@@ -778,7 +869,7 @@ final class WriterWorker extends Worker {
 	}
 
 	/**
-	 *  Envoie une réponse vers le KVSServeur
+	 *  Envoie une réponse vers le MSServer
 	 *
 	 * @param IMSServerComponentResponse $response Réponse à transmettre
 	 *
@@ -786,21 +877,30 @@ final class WriterWorker extends Worker {
 	 */
 	public function sendResponse(IMSServerComponentResponse $response):void{
 		if($this->getWorkerMode() === self::WORKER_MODE){
-			$socket = $this->createClientSocket($this->getResponseSocketName());
 			try{
+				$socket = $this->createClientSocket($this->getResponseSocketName());
 				$this->write(
 					$this->_dataParser->lineariseData($response),
 					$socket
 				);
-			}catch(\Exception $e){
+				$this->_environment->getLogger()->log(
+					"[WRITER] [WORKER] Response successfully sent to the MSServer (query id : "
+					.$response->getQueryId().")",
+					ILogger::LOG
+				);
+			}catch(\Exception | \Error $e){
 				$socketError = socket_last_error();
-				$this->errorLog(print_r([
-					"socket" => [
-						"code" => $socketError,
-						"str" => socket_strerror($socketError)
-					],
-					"Exception" => $e
-				],true));
+				$this->_environment->getLogger()->log(
+					"[WRITER] [WORKER] Unable to send response to the MSServer : ".print_r([
+						"query_id"=>$response->getQueryId(),
+						"socket" => [
+							"code" => $socketError,
+							"str" => socket_strerror($socketError)
+						],
+						"Exception" => (string) $e
+					],true),
+					ILogger::ERR
+				);
 			}
 		}else{
 			throw new IllegalInvocation("Cannot use sendResponse in CLIENT_MODE");

@@ -1,6 +1,7 @@
 <?php
 namespace wfw\engine\package\users\security\data;
 
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\security\data\AndRule;
 use wfw\engine\core\security\data\IRule;
 use wfw\engine\core\security\data\IRuleReport;
@@ -16,12 +17,15 @@ final class ConfirmRule implements IRule {
 
 	/**
 	 * ConfirmRule constructor.
+	 *
+	 * @param ITranslator $translator
 	 */
-	public function __construct() {
+	public function __construct(ITranslator $translator) {
+		$key = "server/engine/package/users/forms";
 		$this->_rule = new AndRule(
-			"L'une de ces informations est invalide",
-			new RequiredFields("Ce champ est obligatoire","id","code"),
-			new IsUUID("Ceci n'est pas un identifiant valide","id","code")
+			$translator->get("$key/GENERAL_ERROR"),
+			new RequiredFields($translator->get("$key/REQUIRED"),"id","code"),
+			new IsUUID($translator->get("$key/INVALID_ID"),"id","code")
 		);
 	}
 

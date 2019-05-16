@@ -8,6 +8,7 @@
 			"password" : "password"
 		}
 	},
+	"admin_mail" : null,
 	"mysqldump_path" : "mysqldump",
 	"tmp" : "/tmp"
 }
