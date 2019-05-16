@@ -1,6 +1,7 @@
 <?php
 namespace wfw\engine\package\users\security\data;
 
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\security\data\AndRule;
 use wfw\engine\core\security\data\IRule;
 use wfw\engine\core\security\data\IRuleReport;
@@ -18,17 +19,20 @@ final class LoginRule implements IRule {
 
 	/**
 	 * LoginRule constructor.
+	 *
+	 * @param ITranslator $translator
 	 */
-	public function __construct() {
+	public function __construct(ITranslator $translator) {
+		$key = "server/engine/package/users/forms";
 		$this->_mainRule = new AndRule(
-			"Le login ou le mot de passe est incorrect",
-			new RequiredFields("Ce champ est requis !","login","password"),
-			new IsString("Ce champ est incorrect","login","password"),
-			new IsLogin("Ceci n'est pas un login valide !","login"),
+			$translator->get("$key/LOGIN_FORM_ERROR"),
+			new RequiredFields($translator->get("$key/REQUIRED"),"login","password"),
+			new IsString($translator->get("$key/LOGIN_FORM_ERROR"),"login","password"),
+			new IsLogin($translator->get("$key/INVALID"),"login"),
 			new OrRule(
 				null,
-				new IsPassword("Ceci n'est pas un mot de passe valide !","password"),
-				new IsUUID("Ceci n'est pas un mot de passe valide !","password")
+				new IsPassword($translator->get("$key/INVALID_PASSWORD"),"password"),
+				new IsUUID($translator->get("$key/INVALID_PASSWORD"),"password")
 			)
 		);
 	}

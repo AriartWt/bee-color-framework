@@ -8,6 +8,151 @@
 					"MUST_BE_LOGGED" : "Accès refusé : vous devez être connecté pour effectuer cette action !",
 					"404_NOT_FOUND" : "La page '[$]' n'existe pas !"
 				}
+			},
+			"package" : {
+				"contact" : {
+					"forms" : {
+						"INVALID_ID_IN_LIST" : "L'un des identifiants n'est pas valide !",
+						"INVALID_ID" : "Cet identifiant est invalide !"
+					}
+				},
+				"lang" : {
+					"forms" : {
+						"GENERAL_ERROR" : "Les données sont invalides !",
+						"REQUIRED" : "Ce champ est requis !",
+						"INVALID_STRING" : "Ceci n'est pas une chaîne de caractères valide !",
+						"TOO_LARGE_KEY" : "Cette clé ne peut pas éxceder les [$] caractères !"
+					},
+					"EMPTY_PATH" : "La clé de traduction doit avoir une taille supérieure à 0 !"
+				},
+				"general" : {
+					"forms" : {
+						"GENERAL_ERROR" : "Les données sont invalides !",
+						"REQUIRED" : "Ce champ est requis !",
+						"INVALID_ZIP_CODE" : "Ce code postal est invalide !",
+						"INVALID_COUNTRY_NAME" : "Ce nom de pays n'est pas valide !"
+					}
+				},
+				"miel" : {
+					"forms" : {
+						"GENERAL_ERROR" : "Certains champs sont invalides !",
+						"REQUIRED" : "Ce champ est requis !",
+						"TOO_LARGE_KEY" : "La clé ne peut pas excéder [$] caractères de long !",
+						"TOO_LARGE_STRING" : "Ce champ ne peut excéder les [$] caractères de long !",
+						"NOT_EMPTY" : "Ce champ ne peut pas être vide !"
+					},
+					"ERROR" : "Données invalides !"
+				},
+				"news" : {
+					"forms" : {
+						"GENERAL_ERROR" : "Les données sont invalides !",
+						"REQUIRED" : "L'identifiant de l'article est requis !",
+						"INVALID_ID_IN_LIST" : "L'un des identifiants n'est pas valide !",
+						"INVALID_ID" : "Cet identifiant est invalide !",
+						"INVALID_STRING" : "Ceci n'est pas une chaîne de caractères valide !",
+						"NOT_EMPTY" : "Ce champ ne peut pas être vide !",
+						"MAX_TITLE_LENGTH" : "Le titre d'un article ne peut pas éxcéder les [$] caractères !",
+						"MAX_CONTENT_LENGTH" : "Le contenu d'un article ne peut pas éxcéder les [$] caractères !",
+						"MAX_VISUAL_LENGTH" : "Le chemin vers le visuel d'un article ne peut pas éxcéder les [$] caractères !",
+						"EMPTY_OR_BOOLEAN" : "Ce champ doit être vide ou booléen.",
+						"INVALID_FIELD" : "Ce champ n'est pas valide !",
+						"MUST_BE_EMPTY" : "Ce champ doit être vide !",
+						"INVALID_TITLE" : "Ce titre n'est pas valide !",
+						"INVALID_CONTENT" : "Ce contenu n'est pas valide !",
+						"INVALID_VISUAL" : "Le chemin vers ce visuel n'est pas valide !"
+					},
+					"ERROR_WRITTEN_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la création de l'article. Merci de contacter l'administrateur (WrittentEvent not recieved)",
+					"NOT_FOUND" : "Cet article n'existe pas !",
+					"OFFLINE" : "Cet article n'est plus en ligne !",
+					"REMOVED" : "Cet article a été supprimé !",
+					"service_unavailable" : {
+						"LIST" : "Impossible de récupérer les articles : service momentanément indisponible. Merci de réessayer ultérieurement.",
+						"ARTICLE" : "Impossible de récupérer l'article : service momentanément indisponible. Merci de réessayer ultérieurement."
+					}
+				},
+				"users" : {
+					"mail" : {
+						"subject" : {
+							"CONFIRM_MAIL_CHANGE" : "Confirmation de votre nouvelle adresse mail",
+							"CONFIRM_REGISTRATION" : "Confirmation de votre inscription",
+							"RESET_PASSWORD" : "Réinitialisation de votre mot de passe"
+						},
+						"INTRO" : "Cher utilisateur [$],\n",
+						"explain" : {
+							"CONFIRM_MAIL_CHANGE" : "Vous recevez ce message automatique parce que vous venez de changer votre adresse mail. Afin que ce changement puisse prendre effet, merci de confirmer votre nouvelle adresse en suivant ce lien : [$]\n",
+							"CONFIRM_REGISTRATION" : "Vous recevez ce message automatique parce que vous venez de vous inscrire sur notre site internet. Afin d'activer votre compte, merci de suivre ce lien : [$]\n",
+							"RESET_PASSWORD" : "Vous recevez ce message automatique parce que vous souhaitez réinitialiser votre mot de passe. Afin de pouvoir en définir un nouveau, merci de suivre ce lien : [$]\n"
+						},
+						"WARN" : "\nCeci est un mail automatique, merci de ne pas y répondre.\n\n",
+						"END" : "Merci pour votre confiance,\nEn vous souhaitant une excellente journée,\nCordialement"
+					},
+					"forms" : {
+						"LOGIN" : "Identifiant",
+						"PASSWORD" : "Mot de passe",
+						"PASSWORD_CONFIRM" : "Confirmation du mot de passe",
+						"MAIL" : "Mail",
+						"PHONE" : "Mobile",
+						"AGREEMENT" : "J'accepte les <a href=\"[$]\" target=\"_blank\">les conditions générales d'utilisation</a>",
+						"VALID_MAIL" : "Adresse mail valide",
+						"MAIL_CONFIRM" : "Confirmation de l'adresse mail",
+						"LOGIN_FORM_ERROR" : "Le login ou le mot de passe est incorrect.",
+						"INVALID" : "Ce champ est incorrect !",
+						"REQUIRED" : "Ce champ est requis !",
+						"INVALID_LOGIN" : "Un identifiant doit contenir de 4 à 128 caractères !",
+						"INVALID_PASSWORD" : "Votre mot de passe doit être composé de chiffres, lettres majuscules et minuscules et au moins un caractère spécial pour une taille maximale de 128 caractères.",
+						"NOT_SAME_PASSWORD" : "Les mots de passe ne sont pas identiques.",
+						"LOGIN_UNAVAILABLE" : "Ce login n'est pas disponible !",
+						"INVALID_MAIL" : "Cette adresse mail n'est pas valide !",
+						"NOT_SAME_MAIL" : "Les adresses mail ne sont pas indentiques !",
+						"OLD_PASSWORD" : "Ancien mot de passe",
+						"NEW_PASSWORD" : "Nouveau mot de passe",
+						"GENERAL_ERROR" : "Certaines informations sont erronées !",
+						"MINTIME_ERROR" : "Ce formulaire a été détéctée comme spam éventuel car il a été soumis trop rapidement.",
+						"SPAM_ERROR" : "Ce formulaire a été détécté comme une tentative de spam.",
+						"INVALID_ID" : "Ceci n'est pas un identifiant valide !",
+						"INVALID_USER_TYPE" : "Seuls les types d'utilisateurs suivants sont valides : [$]",
+						"INVALID_ID_LIST" : "L'un des identifiants est invalide !"
+					},
+					"WRONG_PASSWORD" : "Mot de passe incorrect !",
+					"UNKNOWN_USER" : "Cet utilisateur n'existe pas !",
+					"USER_NOT_FOUND" : "L'utilisateur [$] n'existe pas.",
+					"MAIL_CONFIRMED" : "Votre adresse mail a bien été confirmée.",
+					"RESET_PASSWORSD_CONFIRMED" : "Votre mot de passe a bien été réinitialisé.",
+					"INVALID_USER_STATE" : "L'état de cet utilisateur est invalide.",
+					"BAD_CONFIRM_CODE" : "Votre code de confirmation n'est pas valide.",
+					"LOGOUT" : "Vous avez bien été déconnecté.",
+					"REGISTRATION_MAIL_SENT" : "Votre demande d'inscription a bien été prise en compte. Un email de confirmation vous a été envoyé par e-mail.",
+					"REGISTRATION_SUCCESS" : "Votre compte a bien été validé, vous pouvez maintenant vous connecter.",
+					"USER_CONFIRMED_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la confirmation de votre inscription, merci de contacter l'administrateur  (UserConfirmedEvent not recieved)",
+					"USER_PASSWORD_RESETED_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la réinitialisation de votre mot de passe, merci de contacter l'administrateur  (UserPasswordResetedEvent not recieved)",
+					"CONFIRM_MAIL_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la confirmation de votre adresse mail, merci de contacter l'administrateur (UserMailConfirmedEvent not recieved).",
+					"CANCEL_MAIL_CHANGE_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la tentative d'annulation de changement de votre adresse mail, merci de contacter l'administrateur (CanceledUserMailChangeEvent not recieved).",
+					"CANCEL_PASSWORD_RETRIEVING_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la tentative d'annulation de réinitialisation du mot de passe, merci de contacter l'administrateur (UserPasswordRetrievingCanceledEvent not recieved).",
+					"CANCEL_REGISTRATION_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la tentative d'annulation d'inscription de cet utilisateur, merci de contacter l'administrateur (UserRegistrationProcedureCanceledEvent not recieved).",
+					"USER_TYPE_CHANGED_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors du changement de rôle de cet utilisateur, merci de contacter l'administrateur (UserTypeChangedEvent not recieved).",
+					"USER_REGISTERED_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de l'enreigstrement de cet utilisateur, merci de contacter l'administrateur (UserRegisteredEvent not recieved).",
+					"USER_CANT_DISABLE_HIS_OWN_ACCOUNT" : "Un utilisateur ne peut pas désactiver son propre compte !",
+					"USER_CANT_DELETE_HIS_OWN_ACCOUNT" : "Un utilisateur ne peut pas supprimer son propre compte !",
+					"ASKED_FOR_MAIL_CHANGE_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la modification de votre adresse mail, merci de contacter l'administrateur (AskedForMailChangeEvent not recieved)",
+					"ASKED_FOR_PASSWORD_RETRIEVING_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors du lancement de la procédure de récupération du mot de passe, merci de contacter l'administrateur (AskedForPasswordRetrievingEvent not recieved)",
+					"USER_PASSWORD_CHANGED_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la tentative de modification de votre mot de passe, merci de contacter l'administrateur (UserPasswordChangedEvent not recieved)",
+					"USER_RESETED_PASSWORD_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la tentative de réinitialisation de votre mot de passe, merci de contacter l'administrateur (UserPasswordResetedEvent not recieved)",
+					"CONNECTION_FAILED" : "Vos informations ne vous permettent pas de vous identifier.",
+					"CONNECTION_ACCEPTED" : "Vous êtes maintenant connecté.",
+					"SERVICE_UNAVAILABLE" : "Service de connexion indisponible, merci de réessayer ultérieurement."
+				},
+				"uploader" : {
+					"forms" : {
+						"REQUIRED" : "Ce champ est requis !",
+						"GENERAL_ERROR" : "Les données sont invalides !",
+						"INVALID_STRING" : "Ceci n'est pas une chaîne de caractères valide !",
+						"MAX_ARRAY_LENGTH_REACHED" : "Ce tableau ne peut pas contenir plus de [$] éléments",
+						"INVALID_FILE" : "Ce fichier est invalide ou trop volumineux !",
+						"INVALID_FILE_NAME" : "Ce nom de fichier n'est pas valide.\nUn nom de fichier doit contenir moins de [$] caractères et aucun /"
+					},
+					"STORAGE_QUOTA_EXCEED" : "Vous n'avez plus assez d'espace disque disponible !",
+					"RENAME_LIST_ERROR" : "La liste d'éléments à renommer ne correspond pas à la liste des nouveaux noms !"
+				}
 			}
 		}
 	},

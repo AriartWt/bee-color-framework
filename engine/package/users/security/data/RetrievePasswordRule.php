@@ -1,6 +1,7 @@
 <?php
 namespace wfw\engine\package\users\security\data;
 
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\security\data\AndRule;
 use wfw\engine\core\security\data\IRule;
 use wfw\engine\core\security\data\IRuleReport;
@@ -15,12 +16,15 @@ final class RetrievePasswordRule implements IRule{
 
 	/**
 	 * RetrievePasswordRule constructor.
+	 *
+	 * @param ITranslator $translator
 	 */
-	public function __construct() {
+	public function __construct(ITranslator $translator) {
+		$key = "server/engine/package/users/forms";
 		$this->_rule = new AndRule(
-			"Une de ces informations est incorrecte !",
-			new RequiredFields("Ce champ est requis","login"),
-			new IsLogin("Ceci n'est pas un login valide","login")
+			$translator->get("$key/GENERAL_ERROR"),
+			new RequiredFields($translator->get("$key/REQUIRED"),"login"),
+			new IsLogin($translator->get("$key/INVALID_LOGIN"),"login")
 		);
 	}
 

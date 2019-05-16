@@ -48,11 +48,11 @@ final class TranslationsRepositoryHandler implements IActionHandler {
 			$trads = $this->_translator->getAll($this->_langPath.$path);
 			if($action->getRequest()->isAjax() && $trads instanceof \stdClass){
 				return new Response($trads);
-			}else{
-				return new ErrorResponse(404,"Translations not found for $path");
-			}
-		}else{
-			return new ErrorResponse(201,"Bad path given : $path !");
-		}
+			}else return new ErrorResponse(404,$this->_translator->getAndReplace(
+				"server/engine/core/app/404_NOT_FOUND",$action->getRequest()->getURI()
+			));
+		}else return new ErrorResponse(201,$this->_translator->get(
+			"server/engine/package/lang/forms/EMPTY_PATH"
+		));
 	}
 }

@@ -1,6 +1,7 @@
 <?php
 namespace wfw\engine\package\news\handlers\action;
 
+use wfw\engine\core\cache\ICacheSystem;
 use wfw\engine\core\command\ICommand;
 use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\data\DBAccess\NOSQLDB\msServer\IMSServerAccess;
@@ -12,6 +13,7 @@ use wfw\engine\core\response\responses\Response;
 use wfw\engine\core\security\data\sanitizer\IHTMLSanitizer;
 use wfw\engine\core\session\ISession;
 use wfw\engine\lib\data\string\json\IJSONEncoder;
+use wfw\engine\package\news\cache\NewsCacheKeys;
 use wfw\engine\package\news\command\EditArticle;
 use wfw\engine\package\news\data\model\ArticleModel;
 use wfw\engine\package\news\domain\Content;
@@ -38,6 +40,8 @@ final class EditHandler extends DefaultArticleActionHandler implements IDomainEv
 	private $_visualEvent;
 	/** @var IMSServerAccess $_msaccess */
 	private $_msaccess;
+	/** @var ICacheSystem $_cache */
+	private $_cache;
 
 	/**
 	 * EditArticleHandler constructor.
@@ -49,6 +53,7 @@ final class EditHandler extends DefaultArticleActionHandler implements IDomainEv
 	 * @param IDomainEventObserver $observer
 	 * @param IJSONEncoder         $encoder
 	 * @param IMSServerAccess      $msaccess
+	 * @param ICacheSystem         $cacheSystem
 	 */
 	public function __construct(
 		ICommandBus $bus,
@@ -57,11 +62,13 @@ final class EditHandler extends DefaultArticleActionHandler implements IDomainEv
 		IHTMLSanitizer $sanitizer,
 		IDomainEventObserver $observer,
 		IJSONEncoder $encoder,
-		IMSServerAccess $msaccess
+		IMSServerAccess $msaccess,
+		ICacheSystem $cacheSystem
 	) {
 		parent::__construct($bus,$rule,$session);
 		$this->_sanitizer = $sanitizer;
 		$this->_encoder = $encoder;
+		$this->_cache = $cacheSystem;
 		$observer->addEventListener(TitleEditedEvent::class,$this);
 		$observer->addEventListener(ContentEditedEvent::class,$this);
 		$observer->addEventListener(VisualLinkEditedEvent::class, $this);
@@ -94,6 +101,7 @@ final class EditHandler extends DefaultArticleActionHandler implements IDomainEv
 	 * @return IResponse
 	 */
 	protected function successResponse(): IResponse {
+		$this->_cache->deleteAll([NewsCacheKeys::ROOT]);
 		$id = null;
 		if($this->_titleEvent) $id = $this->_titleEvent->getAggregateId();
 		else if($this->_contentEvent) $id = $this->_contentEvent->getAggregateId();

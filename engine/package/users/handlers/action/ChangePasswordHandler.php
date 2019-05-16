@@ -6,6 +6,7 @@ use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\response\IResponse;
 use wfw\engine\core\session\ISession;
 use wfw\engine\package\users\command\ChangePassword;
@@ -22,18 +23,21 @@ final class ChangePasswordHandler extends DefaultUserActionHandler implements ID
 
 	/**
 	 * ChangePasswordHandler constructor.
-	 * @param ICommandBus $bus
-	 * @param ChangePasswordRule $rule
-	 * @param ISession $session
+	 *
+	 * @param ICommandBus          $bus
+	 * @param ChangePasswordRule   $rule
+	 * @param ISession             $session
 	 * @param IDomainEventObserver $observer
+	 * @param ITranslator          $translator
 	 */
 	public function __construct(
 		ICommandBus $bus,
 		ChangePasswordRule $rule,
 		ISession $session,
-		IDomainEventObserver $observer
+		IDomainEventObserver $observer,
+		ITranslator $translator
 	){
-		parent::__construct($bus, $rule, $session);
+		parent::__construct($bus, $rule, $session,$translator);
 		$observer->addEventListener(UserPasswordChangedEvent::class,$this);
 	}
 
@@ -50,9 +54,9 @@ final class ChangePasswordHandler extends DefaultUserActionHandler implements ID
 	 * @throws \Exception
 	 */
 	protected function successResponse(): IResponse {
-		if(is_null($this->_event)) throw new \Exception(
-			"UserPasswordChangedEvent not recieved !"
-		);
+		if(is_null($this->_event)) throw new \Exception($this->_translator->get(
+			"server/engine/package/users/USER_PASSWORD_CHANGED_EVENT_NOT_RECIEVED"
+		));
 		return parent::successResponse();
 	}
 

@@ -19,10 +19,12 @@ wfw.define("packages/news",function($params){
 	let $displayWindow = ($row)=>{
 		if($activeWindow) return undefined;
 		let $d = $row ? $articles.getRowData($row) : null; let $icon; let $title;
+		if(typeof $params.lteditor !== "object") $params.lteditor = {};
+
 		let $editor = new wfw.ui.lteditor("edit",{
 			link : new wfw.ui.lteditor.plugins.advancedLink(),
 			media : new wfw.ui.lteditor.plugins.medias()
-		});
+		},$params.lteditor);
 		$editor.addButton("foreColor",new wfw.ui.lteditor.plugins.limitedForeColor(
 			Array.isArray($params.allowedColors) ? $params.allowedColors : ["#FF9900","#FF0000"],
 			$params.defaultColor ? $params.defaultColor : "#000"),'olist');

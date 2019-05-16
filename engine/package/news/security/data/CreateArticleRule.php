@@ -1,6 +1,7 @@
 <?php
 namespace wfw\engine\package\news\security\data;
 
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\security\data\AndRule;
 use wfw\engine\core\security\data\IRule;
 use wfw\engine\core\security\data\IRuleReport;
@@ -22,37 +23,41 @@ final class CreateArticleRule implements IRule {
 	/**
 	 * CreateArticleRule constructor.
 	 *
-	 * @param int $maxTitleLength   Taille maximale du titre
-	 * @param int $maxVisualLength  Taille maximale de l'url vers le visuel
-	 * @param int $maxContentLength Taille maximale du contenu (balises comprises)
+	 * @param ITranslator $translator
+	 * @param int         $maxTitleLength   Taille maximale du titre
+	 * @param int         $maxVisualLength  Taille maximale de l'url vers le visuel
+	 * @param int         $maxContentLength Taille maximale du contenu (balises comprises)
+	 * @throws \InvalidArgumentException
 	 */
 	public function __construct(
+		ITranslator $translator,
 		int $maxTitleLength = 512,
 		int $maxVisualLength = 2048,
 		int $maxContentLength = 2000000
 	){
+		$key = "server/engine/package/news/forms";
 		$this->_rule = new AndRule(
-			"Tous les champs sont requis",
-			new RequiredFields("Ces champs sont requis","title","content","visual"),
-			new IsString("Ce champ doit être une chaine valide","title","content","visual"),
-			new NotEmpty("Ce champ ne peut pas être vide","title","content","visual"),
+			$translator->get("$key/GENERAL_ERROR"),
+			new RequiredFields($translator->get("$key/REQUIRED"),"title","content","visual"),
+			new IsString($translator->get("$key/INVALID_STRING"),"title","content","visual"),
+			new NotEmpty($translator->get("$key/NOT_EMPTY"),"title","content","visual"),
 			new MaxStringLength(
-				"Le titre d'un article ne peut pas dépasser les $maxTitleLength caractères",
+				$translator->getAndReplace("$key/MAX_TITLE_LENGTH",$maxTitleLength),
 				$maxTitleLength,
 				"title"
 			),
 			new MaxStringLength(
-				"Le chemin vers le visuel d'un atricle ne peut pas dépasser les $maxVisualLength caractères",
+				$translator->getAndReplace("$key/MAX_VISUAL_LENGTH",$maxVisualLength),
 				$maxVisualLength,
 				"visual"
 			),
 			new MaxStringLength(
-				"Le contenu d'un article ne peut pas dépasser les $maxContentLength caractères",
+				$translator->getAndReplace("$key/MAX_CONTENT_LENGTH",$maxContentLength),
 				$maxContentLength,
 				"content"
 			),
 			new OrRule(
-				"Ce champ doit être vide ou booléen",
+				$translator->get("$key/EMPTY_OR_BOOLEAN"),
 				new IsEmpty("online"),
 				new IsBool("online")
 			)

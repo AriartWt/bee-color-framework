@@ -6,6 +6,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use wfw\engine\core\action\IActionHandler;
 use wfw\engine\core\conf\IConf;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\lib\PHP\types\PHPString;
 
 /**
@@ -18,15 +19,19 @@ abstract class UploadHandler implements IActionHandler {
 	private $_path;
 	/** @var string $_folder */
 	private $_folder;
+	/** @var ITranslator $_translator */
+	protected $_translator;
 
 	/**
 	 * UploadHandler constructor.
 	 *
 	 * @param IConf       $conf
+	 * @param ITranslator $translator
 	 * @param null|string $uploadsConfKey
 	 */
-	public function __construct(IConf $conf,?string $uploadsConfKey=null) {
+	public function __construct(IConf $conf, ITranslator $translator,?string $uploadsConfKey=null) {
 		$this->_conf = $conf;
+		$this->_translator = $translator;
 		$this->_path = ROOT."/".$conf->getString($uploadsConfKey ?? "server/uploader/dir");
 		$this->_folder = str_replace(SITE."/webroot/",'',$this->_path);
 	}
@@ -59,6 +64,20 @@ abstract class UploadHandler implements IActionHandler {
 		throw new \InvalidArgumentException(
 			"$path leads to $res, which is not a subdir of $this->_path"
 		);
+	}
+
+	/**
+	 * Purifie le dernier élément d'un chemin en retirant tous les caractères susceptibles de poser
+	 * problème dans un nom de fichier ou de dossier
+	 *
+	 * @param string $path Chemin à purifier
+	 * @return string
+	 */
+	protected function sanitize(string $path):string{
+		$tmp = explode("/",strip_tags($path));
+		$tmp[count($tmp)-1] = (new PHPString(array_pop($tmp)))
+			->removeAccents()->stripNonAlphanum("_",".-");
+		return implode("/",$tmp);
 	}
 
 	/**

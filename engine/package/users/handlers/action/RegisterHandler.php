@@ -8,6 +8,7 @@ use wfw\engine\core\conf\IConf;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\notifier\INotifier;
 use wfw\engine\core\notifier\Message;
 use wfw\engine\core\request\IRequest;
@@ -53,17 +54,21 @@ final class RegisterHandler implements IActionHandler, IDomainEventListener{
 	private $_notifier;
 	/** @var IUserConfirmationCodeGenerator $_generator */
 	private $_generator;
+	/** @var ITranslator $_translator */
+	private $_translator;
 
 	/**
 	 * RegisterHandler constructor.
-	 * @param IConf $conf
-	 * @param ICommandBus $bus
-	 * @param ISession $session
-	 * @param IRouter $router
-	 * @param INotifier $notifier
+	 *
+	 * @param IConf                          $conf
+	 * @param ICommandBus                    $bus
+	 * @param ISession                       $session
+	 * @param IRouter                        $router
+	 * @param INotifier                      $notifier
 	 * @param IUserConfirmationCodeGenerator $generator
-	 * @param IDomainEventObserver $observer
-	 * @param SelfRegisterRule $rule
+	 * @param IDomainEventObserver           $observer
+	 * @param ITranslator                    $translator
+	 * @param SelfRegisterRule               $rule
 	 */
 	public function __construct(
 		IConf $conf,
@@ -73,8 +78,10 @@ final class RegisterHandler implements IActionHandler, IDomainEventListener{
 		INotifier $notifier,
 		IUserConfirmationCodeGenerator $generator,
 		IDomainEventObserver $observer,
+		ITranslator $translator,
 		SelfRegisterRule $rule
 	){
+		$this->_translator = $translator;
 		$this->_bus = $bus;
 		$this->_rule = $rule;
 		$this->_conf = $conf;
@@ -96,6 +103,7 @@ final class RegisterHandler implements IActionHandler, IDomainEventListener{
 	 */
 	private function createForm():IHTMLForm{
 		return new RegisterUserForm(
+			$this->_translator,
 			$this->_rule,
 			$this->_errorIcon,
 			$this->_conf->getString("server/modules/users/cgu_link") ?? "cgu"
@@ -110,7 +118,7 @@ final class RegisterHandler implements IActionHandler, IDomainEventListener{
 		if($action->getRequest()->getMethod() === IRequest::POST){
 			$data = $action->getRequest()->getData()->get(IRequestData::POST,true);
 			if($this->_form->validates($data)){
-				$type = $this->_conf->getString("server/modules/users/regitser_type");
+				$type = $this->_conf->getString("server/modules/users/register_type");
 				switch($type){
 					case "client" :
 						$type = new Client(); break;
@@ -132,8 +140,7 @@ final class RegisterHandler implements IActionHandler, IDomainEventListener{
 				));
 				if($action->getRequest()->isAjax()) return new Response();
 				else $this->_notifier->addMessage(new Message(
-					"Votre demande d'inscription a bien été prise en compte."
-					." Un email de confirmation vous a été envoyé par e-mail."
+					$this->_translator->get("server/engine/package/users/REGISTRATION_MAIL_SENT")
 				));
 			}
 		}else $this->_session->set("register_user_form",$this->createForm());

@@ -105,7 +105,7 @@ class UserModel extends InMemoryEventBasedModel {
 					$e->getModifier()
 				);
 				return new EventReceptionReport([$user]);
-			}
+			}return new EventReceptionReport();
 		}else{
 			if($e instanceof UserRemovedEvent){
 				$user->setState($e->getUserState());

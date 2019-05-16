@@ -3,28 +3,23 @@ namespace wfw\daemons\modelSupervisor\server\environment;
 
 use stdClass;
 use wfw\engine\core\conf\AbstractConf;
+use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\PHP\errors\IllegalInvocation;
 
 /**
  *  Environnement d'un composant MSServer
  */
 final class MSServerComponentEnvironment extends AbstractConf implements IMSServerComponentEnvironment {
-	/**
-	 * @var string $_workingDir
-	 */
+	/**  @var string $_workingDir */
 	private $_workingDir;
-	/**
-	 * @var string $_name
-	 */
+	/** @var string $_name */
 	private $_name;
-	/**
-	 * @var array $_users
-	 */
+	/** @var array $_users */
 	private $_users;
-	/**
-	 * @var array $_groups
-	 */
+	/** @var array $_groups */
 	private $_groups;
+	/** @var ILogger $_logger */
+	private $_logger;
 
 	/**
 	 * MSServerComponentEnvironment constructor.
@@ -35,6 +30,8 @@ final class MSServerComponentEnvironment extends AbstractConf implements IMSServ
 	 * @param stdClass $groups     Liste des droits de groupes pour ce composant
 	 * @param array    $groupDefs  Définition des groupes (stdClass type "groupeName"=>string[] (user names)
 	 * @param stdClass $confs      Configurations du composant
+	 * @param ILogger  $logger     Logger
+	 * @throws \InvalidArgumentException
 	 */
 	public function __construct(
 		string $name,
@@ -42,9 +39,11 @@ final class MSServerComponentEnvironment extends AbstractConf implements IMSServ
 		stdClass $users,
 		stdClass $groups,
 		array $groupDefs,
-		stdClass $confs)
+		stdClass $confs,
+		ILogger $logger)
 	{
 		parent::__construct($confs);
+		$this->_logger = $logger;
 		if(!file_exists($workingDir)){
 			if(file_exists(dirname($workingDir))){
 				mkdir($workingDir,0777,true);
@@ -145,5 +144,12 @@ final class MSServerComponentEnvironment extends AbstractConf implements IMSServ
 			}
 		}
 		return $permission;
+	}
+
+	/**
+	 * @return ILogger Logger
+	 */
+	public function getLogger(): ILogger {
+		return $this->_logger;
 	}
 }

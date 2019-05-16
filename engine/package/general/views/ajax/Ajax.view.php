@@ -1,3 +1,1 @@
-<?php
-
-echo $this->_data;
+<?= $this->_data;

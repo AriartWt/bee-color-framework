@@ -30,7 +30,7 @@ final class Date implements IHTMLInput {
 		string $name,
 		?IHTMLLabel $label,
 		array $attributes=[],
-		string $default
+		?string $default=null
 	) {
 		$this->_name = $name;
 		$this->_label = $label;

@@ -24,11 +24,15 @@ interface IWebAppContext {
 	public const CONF="CONF";
 	public const TRANSLATOR = "TRANSLATOR";
 	public const DOMAIN_EVENT_LISTENERS = "DOMAIN_EVENT_LISTENERS";
+	public const ROUTER="ROUTER";
+	public const VIEWS="VIEWS";
 
 	public const CACHE_KEYS = [
 		self::CONF => "WFW/WebApp/Confs",
+		self::ROUTER => "WFW/WebApp/Router",
 		self::TRANSLATOR => "WFW/WebApp/Translator",
-		self::DOMAIN_EVENT_LISTENERS => "WFW/WebApp/DomainEventListeners"
+		self::DOMAIN_EVENT_LISTENERS => "WFW/WebApp/DomainEventListeners",
+		self::VIEWS => "WFW/WebApp/Views"
 	];
 
 	/**
@@ -106,4 +110,9 @@ interface IWebAppContext {
 	 * @return IActionHook Hook.
 	 */
 	public function getActionHook():IActionHook;
+
+	/**
+	 * Called by the app just before closing
+	 */
+	public function close();
 }

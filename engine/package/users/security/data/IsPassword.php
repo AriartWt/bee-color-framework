@@ -15,15 +15,10 @@ final class IsPassword extends ForEachFieldRule {
 	protected function applyOn($data): bool {
 		try{
 			new Password($data ?? '');
-			$res =  preg_match(
+			return preg_match(
 				"#^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9])([a-zA-Z0-9]|[^a-zA-Z0-9]){4,128}$#",
 				$data
 			);
-			if(!$res) $this->changeMessage(
-				"Votre mot de passe doit être composé de chiffres, lettres majuscules et minuscules "
-				."et au moins un caractère spécial pour une taille maximale de 128 caractères."
-			);
-			return $res;
 		}catch(\InvalidArgumentException $e){
 			return false;
 		}

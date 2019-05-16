@@ -6,6 +6,7 @@ use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\response\IResponse;
 use wfw\engine\core\response\responses\Response;
 use wfw\engine\core\session\ISession;
@@ -23,22 +24,26 @@ final class EnableHandler extends DefaultUserActionHandler implements IDomainEve
 	private $_ids;
 	/** @var IJSONEncoder $_encoder */
 	private $_encoder;
+
 	/**
 	 * EnableHandler constructor.
-	 * @param ICommandBus $bus
-	 * @param UserIdList $rule
-	 * @param ISession $session
-	 * @param IJSONEncoder $encoder
+	 *
+	 * @param ICommandBus          $bus
+	 * @param UserIdList           $rule
+	 * @param ISession             $session
+	 * @param IJSONEncoder         $encoder
 	 * @param IDomainEventObserver $observer
+	 * @param ITranslator          $translator
 	 */
 	public function __construct(
 		ICommandBus $bus,
 		UserIdList $rule,
 		ISession $session,
 		IJSONEncoder $encoder,
-		IDomainEventObserver $observer
+		IDomainEventObserver $observer,
+		ITranslator $translator
 	){
-		parent::__construct($bus, $rule, $session);
+		parent::__construct($bus, $rule, $session, $translator);
 		$this->_encoder = $encoder;
 		$this->_ids = [];
 		$observer->addEventListener(UserEnabledEvent::class,$this);

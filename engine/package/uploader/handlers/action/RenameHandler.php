@@ -3,6 +3,7 @@ namespace wfw\engine\package\uploader\handlers\action;
 
 use wfw\engine\core\action\IAction;
 use wfw\engine\core\conf\IConf;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\request\IRequest;
 use wfw\engine\core\request\IRequestData;
 use wfw\engine\core\response\IResponse;
@@ -21,10 +22,11 @@ final class RenameHandler extends UploadHandler {
 	 * RenameHandler constructor.
 	 *
 	 * @param IConf          $conf Configurations du site
+	 * @param ITranslator    $translator
 	 * @param RenamePathRule $rule Régle de validation
 	 */
-	public function __construct(IConf $conf,RenamePathRule $rule) {
-		parent::__construct($conf, null);
+	public function __construct(IConf $conf, ITranslator $translator, RenamePathRule $rule) {
+		parent::__construct($conf, $translator,null);
 		$this->_rule = $rule;
 	}
 
@@ -40,19 +42,25 @@ final class RenameHandler extends UploadHandler {
 				try{
 					$oldPaths = $data["oldPaths"];
 					$newPaths = $data["newPaths"];
+					$newNames = [];
 					if(count($oldPaths)===count($newPaths) && count($oldPaths) > 0){
 						for($i=0;$i<count($oldPaths);$i++){
+							$newNames[$oldPaths[$i]] = $nName = $this->sanitize($newPaths[$i]);
 							rename(
 								$this->realPath(strip_tags($oldPaths[$i])),
-								$this->realPath(strip_tags($newPaths[$i]))
+								$this->realPath($nName)
 							);
 						}
-						return new Response();
-					}else return new ErrorResponse("201","Elems to rename list doesn't match new name list !");
+						return new Response($newNames);
+					}else return new ErrorResponse("201",$this->_translator->get(
+						"server/engine/package/uploader/RENAME_LIST_ERROR"
+					));
 				}catch(\InvalidArgumentException $e){
 					return new ErrorResponse(201,$e->getMessage());
 				}
 			}else return new ErrorResponse(201,$res->message(),$res->errors());
-		}else return new ErrorResponse(404,"Page not found");
+		}else return new ErrorResponse(404,$this->_translator->getAndReplace(
+			"server/engine/core/app/404_NOT_FOUND",$action->getRequest()->getURI()
+		));
 	}
 }

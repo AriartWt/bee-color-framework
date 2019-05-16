@@ -6,6 +6,7 @@ use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\response\IResponse;
 use wfw\engine\core\response\responses\Response;
 use wfw\engine\core\session\ISession;
@@ -27,20 +28,23 @@ final class DisableHandler extends DefaultUserActionHandler implements IDomainEv
 
 	/**
 	 * DisableUsers constructor.
-	 * @param ICommandBus $bus
-	 * @param UserIdList $rule
-	 * @param ISession $session
-	 * @param IJSONEncoder $encoder
+	 *
+	 * @param ICommandBus          $bus
+	 * @param UserIdList           $rule
+	 * @param ISession             $session
+	 * @param IJSONEncoder         $encoder
 	 * @param IDomainEventObserver $observer
+	 * @param ITranslator          $translator
 	 */
 	public function __construct(
 		ICommandBus $bus,
 		UserIdList $rule,
 		ISession $session,
 		IJSONEncoder $encoder,
-		IDomainEventObserver $observer
+		IDomainEventObserver $observer,
+		ITranslator $translator
 	){
-		parent::__construct($bus, $rule, $session);
+		parent::__construct($bus, $rule, $session,$translator);
 		$this->_ids = [];
 		$this->_encoder = $encoder;
 		$observer->addEventListener(UserDisabledEvent::class, $this);
@@ -54,9 +58,9 @@ final class DisableHandler extends DefaultUserActionHandler implements IDomainEv
 		foreach($data["ids"] as $k=>$id){
 			//on empêche un utilisateur de se désactiver lui même.
 			if((string)$id === (string) $this->_session->get("user")->getId())
-				throw new IllegalSelfOperation(
-					"Un utilisateur ne peut pas désactiver son propre compte !"
-				);
+				throw new IllegalSelfOperation($this->_translator->get(
+					"server/engine/package/users/USER_CANT_DISABLE_HIS_OWN_ACCOUNT"
+				));
 		}
 		return new DisableUsers($this->_session->get("user")->getId(),...$data["ids"]);
 	}

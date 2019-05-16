@@ -2,7 +2,9 @@
 namespace wfw\engine\package\users\lib\mail;
 
 use wfw\engine\core\conf\IConf;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\lib\network\mail\EmailSubject;
+use wfw\engine\lib\network\mail\IEmailSubject;
 use wfw\engine\lib\network\mail\IMailBody;
 use wfw\engine\lib\network\mail\Mail;
 use wfw\engine\lib\network\mail\NamedEmail;
@@ -18,13 +20,21 @@ use wfw\engine\package\users\lib\confirmationCode\UserConfirmationCode;
  * @package wfw\engine\package\users\lib\mail
  */
 abstract class AbstractUserMail extends Mail{
+	/** @var IConf $_conf */
+	protected $_conf;
+	/** @var ITranslator $_translator */
+	protected $_translator;
+
 	/**
 	 * UserMailChangedMail constructor.
-	 * @param UUID $userId
+	 *
+	 * @param UUID                 $userId
 	 * @param UserConfirmationCode $code
-	 * @param IConf $conf
-	 * @param IUserModelAccess $access
-	 * @param string $configkeyName
+	 * @param IConf                $conf
+	 * @param IUserModelAccess     $access
+	 * @param ITranslator          $translator
+	 * @param IEmailSubject        $subject
+	 * @param string               $configkeyName
 	 * @throws UserNotFound
 	 * @throws \InvalidArgumentException
 	 */
@@ -33,8 +43,12 @@ abstract class AbstractUserMail extends Mail{
 		UserConfirmationCode $code,
 		IConf $conf,
 		IUserModelAccess $access,
+		ITranslator $translator,
+		IEmailSubject $subject,
 		string $configkeyName
 	){
+		$this->_conf = $conf;
+		$this->_translator = $translator;
 		$user = $access->getById($userId);
 		if(is_null($user)) throw new UserNotFound($userId);
 		parent::__construct(
@@ -53,9 +67,16 @@ abstract class AbstractUserMail extends Mail{
 			[],
 			[],
 			[],
-			new EmailSubject("Confirmation de votre nouvelle adresse email"),
+			$subject,
 			$this->createBody($user,$code)
 		);
+	}
+
+	/**
+	 * @return string
+	 */
+	protected function getDomain():string{
+		return $this->_conf->getString("server/domain") ?? "http://localhost";
 	}
 
 	/**

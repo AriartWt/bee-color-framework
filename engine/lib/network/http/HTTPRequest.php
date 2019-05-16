@@ -16,10 +16,10 @@ class HTTPRequest implements IHTTPRequest {
 	 * HTTPRequest constructor.
 	 *
 	 * @param string      $url     Adresse de la requête
-	 * @param mixed       $data    Données de la requête au format attendu par la fonction http_build_query()
+	 * @param array       $data    (optionnel) Données de la requête au format attendu par la fonction http_build_query()
 	 * @param array|null  $options (optionnel) Options attendues par la fonction stream_context_create()
 	 */
-	public function __construct(string $url,$data,?array $options=null) {
+	public function __construct(string $url,array $data=[],?array $options=null) {
 		$this->_url = $url;
 		$this->_data = $data;
 		$this->_options = $options;
@@ -33,7 +33,7 @@ class HTTPRequest implements IHTTPRequest {
 		$options=array(
 			"http"=>array(
 				'header' => 'Content-type: application/x-www-form-urlencoded',
-				'method' => $this->_options["method"]??"POST",
+				'method' => $this->_options["method"] ?? "POST",
 				'content'=> http_build_query($this->_data)
 			)
 		);

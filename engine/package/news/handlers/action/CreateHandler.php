@@ -1,17 +1,20 @@
 <?php
 namespace wfw\engine\package\news\handlers\action;
 
+use wfw\engine\core\cache\ICacheSystem;
 use wfw\engine\core\command\ICommand;
 use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\data\DBAccess\NOSQLDB\msServer\IMSServerAccess;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\response\IResponse;
 use wfw\engine\core\response\responses\Response;
 use wfw\engine\core\security\data\sanitizer\IHTMLSanitizer;
 use wfw\engine\core\session\ISession;
 use wfw\engine\lib\data\string\json\IJSONEncoder;
+use wfw\engine\package\news\cache\NewsCacheKeys;
 use wfw\engine\package\news\command\CreateArticle;
 use wfw\engine\package\news\data\model\ArticleModel;
 use wfw\engine\package\news\domain\Content;
@@ -32,6 +35,9 @@ final class CreateHandler extends DefaultArticleActionHandler implements IDomain
 	private $_encoder;
 	/** @var IMSServerAccess $_msclient */
 	private $_msclient;
+	/** @var ICacheSystem $_cache */
+	private $_cache;
+	private $_translator;
 
 	/**
 	 * CreateArticleHandler constructor.
@@ -43,6 +49,8 @@ final class CreateHandler extends DefaultArticleActionHandler implements IDomain
 	 * @param IDomainEventObserver $observer
 	 * @param IJSONEncoder         $encoder
 	 * @param IMSServerAccess      $access
+	 * @param ICacheSystem         $cache
+	 * @param ITranslator          $translator
 	 */
 	public function __construct(
 		ICommandBus $commandBus,
@@ -51,12 +59,16 @@ final class CreateHandler extends DefaultArticleActionHandler implements IDomain
 		IHTMLSanitizer $sanitizer,
 		IDomainEventObserver $observer,
 		IJSONEncoder $encoder,
-		IMSServerAccess $access
+		IMSServerAccess $access,
+		ICacheSystem $cache,
+		ITranslator $translator
 	) {
 		parent::__construct($commandBus,$rule,$session);
+		$this->_translator = $translator;
 		$this->_sanitizer = $sanitizer;
 		$this->_encoder = $encoder;
 		$this->_msclient = $access;
+		$this->_cache = $cache;
 		$observer->addEventListener(ArticleWrittenEvent::class,$this);
 	}
 
@@ -78,9 +90,15 @@ final class CreateHandler extends DefaultArticleActionHandler implements IDomain
 	 * @return IResponse
 	 */
 	protected function successResponse(): IResponse {
-		if(is_null($this->_creationEvent)) throw new \Exception("Written event not recieved !");
+		$this->_cache->deleteAll([NewsCacheKeys::ROOT]);
+		if(is_null($this->_creationEvent)) throw new \Exception($this->_translator->get(
+			"server/engine/package/news/forms/ERROR_WRITTEN_EVENT_NOT_RECIEVED"
+		));
 		return new Response($this->_encoder->jsonEncode(
-			$this->_msclient->query(ArticleModel::class,"id='{$this->_creationEvent->getAggregateId()}'")[0]
+			$this->_msclient->query(
+				ArticleModel::class,
+				"id='{$this->_creationEvent->getAggregateId()}'"
+			)[0]
 		));
 	}
 

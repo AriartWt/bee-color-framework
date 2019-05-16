@@ -1,8 +1,14 @@
 {
+	"admin_mail" : null,
 	"auth.pwd_owner" : "www-data",
 	"working_dir" : "sctl/data",
 	"daemons" : [
 		"kvs",
 		"msserver"
-	]
+	],
+	"logs" : {
+		"level" : 2,
+		"copy" : true,
+		"default_path" : "/var/log/wfw/sctl"
+	}
 }

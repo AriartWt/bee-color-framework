@@ -4,6 +4,7 @@ namespace wfw\engine\package\users\handlers\action;
 use wfw\engine\core\action\IAction;
 use wfw\engine\core\action\IActionHandler;
 use wfw\engine\core\command\ICommandBus;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\notifier\INotifier;
 use wfw\engine\core\notifier\Message;
 use wfw\engine\core\notifier\MessageTypes;
@@ -14,6 +15,8 @@ use wfw\engine\core\response\responses\Redirection;
 use wfw\engine\core\response\responses\StaticResponse;
 use wfw\engine\core\router\IRouter;
 use wfw\engine\core\session\ISession;
+use wfw\engine\lib\HTML\helpers\forms\errors\HoneypotFilled;
+use wfw\engine\lib\HTML\helpers\forms\errors\TooShortSubmissionTime;
 use wfw\engine\lib\PHP\types\UUID;
 use wfw\engine\package\users\command\CancelPasswordRetrieving;
 use wfw\engine\package\users\data\model\IUserModelAccess;
@@ -34,27 +37,32 @@ final class LoginHandler implements IActionHandler {
 	private $_notifier;
 	/** @var ISession $_session */
 	private $_session;
-	/** @var \wfw\engine\package\users\lib\HTML\LoginForm $_form */
+	/** @var LoginForm $_form */
 	private $_form;
 	/** @var ICommandBus $_bus */
 	private $_bus;
+	/** @var ITranslator $_translator */
+	private $_translator;
 
 	/**
 	 * LoginHandler constructor.
 	 *
-	 * @param INotifier $notifier
-	 * @param ISession $session
-	 * @param IRouter $router
+	 * @param INotifier        $notifier
+	 * @param ISession         $session
+	 * @param IRouter          $router
 	 * @param IUserModelAccess $userModel
-	 * @param ICommandBus $bus
+	 * @param ICommandBus      $bus
+	 * @param ITranslator      $translator
 	 */
 	public function __construct(
 		INotifier $notifier,
 		ISession $session,
 		IRouter $router,
 		IUserModelAccess $userModel,
-		ICommandBus $bus
+		ICommandBus $bus,
+		ITranslator $translator
 	){
+		$this->_translator = $translator;
 		$this->_notifier = $notifier;
 		$this->_session = $session;
 		$this->_errorIcon = $router->webroot('Image/Icons/delete.png');
@@ -72,17 +80,41 @@ final class LoginHandler implements IActionHandler {
 	/**
 	 * @return LoginForm
 	 */
-	private function createForm():LoginForm{ return new LoginForm($this->_errorIcon); }
+	private function createForm():LoginForm{
+		return new LoginForm($this->_translator, $this->_errorIcon);
+	}
 
 	/**
 	 * @param IAction $action Action
 	 * @return IResponse Réponse
 	 */
 	public function handle(IAction $action): IResponse {
+		$key = "server/engine/package/users";
 		if($action->getRequest()->getMethod() === IRequest::POST) {
 			$data = $action->getRequest()->getData()->get(IRequestData::POST, true);
-			if($this->_form->validates($data) && empty($data['mail'])) {
-				$user = $this->_userModel->getEnabledByLogin($data["login"]);
+			$res = false; $except = false;
+			try{
+				$res = $this->_form->validates($data);
+			}catch (HoneypotFilled $e){
+				$except = true;
+				$this->_notifier->addMessage(new Message(
+					$this->_translator->get("$key/forms/SPAM_ERROR"),MessageTypes::ERROR
+				));
+			}catch (TooShortSubmissionTime $e){
+				$except = true;
+				$this->_notifier->addMessage(new Message(
+					$this->_translator->get("$key/forms/MINTIME_ERROR"), MessageTypes::ERROR
+				));
+			}
+			if($res) {
+				try{
+					$user = $this->_userModel->getEnabledByLogin($data["login"]);
+				}catch(\Exception | \Error $e){
+					$this->_notifier->addMessage(new Message($this->_translator->get(
+						"$key/SERVICE_UNAVAILABLE"
+					),MessageTypes::ERROR));
+					return new StaticResponse($action);
+				}
 				if(!is_null($user) && $user->getPassword()->equals($data["password"])){
 					//Si l'utilisateur avait fait une demande de récupération de mot de passe
 					//sans aller jusqu'au bout, on l'annule.
@@ -91,7 +123,7 @@ final class LoginHandler implements IActionHandler {
 							$user->getId(),$user->getId()
 						));
 					$this->_notifier->addMessage(new Message(
-						"Vous êtes maintenant connecté."
+						$this->_translator->get("$key/CONNECTION_ACCEPTED")
 					));
 					$this->_session->set('login_form',$this->createForm());
 					/** @var IAction $action */
@@ -101,15 +133,18 @@ final class LoginHandler implements IActionHandler {
 					return new Redirection(substr($action->getRequest()->getURL(),1));
 				}else{
 					if(is_null($user)) $this->_notifier->addMessage(new Message(
-						"Ce nom d'utilisateur est inconnu !",MessageTypes::ERROR
+						$this->_translator->get("$key/UNKNOWN_USER"),
+						MessageTypes::ERROR
 					));
 					else $this->_notifier->addMessage(new Message(
-						"Mot de passe incorrect !",MessageTypes::ERROR
+						$this->_translator->get("$key/WRONG_PASSWORD"),
+						MessageTypes::ERROR
 					));
 				}
 			}else{
-				$this->_notifier->addMessage(new Message(
-					"Mot de passe ou identifiant incorrect !",MessageTypes::ERROR
+				if(!$except) $this->_notifier->addMessage(new Message(
+					$this->_translator->get("$key/CONNECTION_FAILED"),
+					MessageTypes::ERROR
 				));
 			}
 		}else if($this->_session->isLogged()) return new Redirection("web/home");

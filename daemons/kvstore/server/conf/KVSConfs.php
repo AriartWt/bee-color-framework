@@ -4,6 +4,9 @@ namespace wfw\daemons\kvstore\server\conf;
 use stdClass;
 use wfw\engine\core\conf\FileBasedConf;
 use wfw\engine\core\conf\io\adapters\JSONConfIOAdapter;
+use wfw\engine\lib\logger\DefaultLogFormater;
+use wfw\engine\lib\logger\FileLogger;
+use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\PHP\types\PHPString;
 
 /**
@@ -23,11 +26,16 @@ final class KVSConfs {
 	private const SEND_ERROR_TO_CLIENT = "send_error_to_client";
 	private const SHUTDOWN_ON_ERROR = "shutdown_on_error";
 	private const ERROR_LOGS = "error_logs";
+	private const LOGS = "logs/files";
 
 	/** @var FileBasedConf $_conf */
 	private $_conf;
 	/** @var string $_basePath */
 	private $_basePath;
+	/** @var ILogger $_logger */
+	private $_logger;
+	/** @var ILogger[] $_instanceLoggers */
+	private $_instanceLoggers=[];
 
 	/**
 	 * KVSConfs constructor.
@@ -36,8 +44,12 @@ final class KVSConfs {
 	 * @param null|string $siteConfs   (optionnel) données de configuration du site
 	 * @param string      $basePath    (optionnel defaut : DAEMONS) chemin absolu permettant la résolution du chemin relatif des fichiers.
 	 *                                 Si le chemin commence par {ROOT}, {ROOT} est remplacé par la valeur de la constante ROOT.
+	 * @param bool        $noLogger    (optionnel) Désactive les loggers
+	 * @throws \InvalidArgumentException
+	 * @throws \wfw\engine\lib\errors\InvalidTypeSupplied
+	 * @throws \wfw\engine\lib\errors\PermissionDenied
 	 */
-	public function __construct(string $engineConfs,?string $siteConfs=null,string $basePath = DAEMONS) {
+	public function __construct(string $engineConfs,?string $siteConfs=null,string $basePath = DAEMONS,bool $noLogger=false) {
 		$this->_basePath = $this->resolvePath($basePath);
 
 		$confIO = new JSONConfIOAdapter();
@@ -61,6 +73,37 @@ final class KVSConfs {
 		}
 
 		$this->_conf = new FileBasedConf($confPath,$confIO);
+
+		$workingDir = $this->getWorkingDir();
+		if(!is_dir($workingDir)) mkdir($workingDir,0700,true);
+
+		if(!$noLogger){
+			$this->_logger = (new FileLogger(new DefaultLogFormater(),...[
+				$this->getLogPath(null,"log"),
+				$this->getLogPath(null,"err"),
+				$this->getLogPath(null,"warn"),
+				$this->getLogPath(null,"debug")
+			]))->autoConfFileByLevel(
+				FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
+				FileLogger::DEBUG,
+				$this->isCopyLogModeEnabled(null)
+			)->autoConfByLevel($this->_conf->getInt("logs/level") ?? ILogger::ERR);
+
+			foreach($this->getContainers(false) as $containerName=>$data){
+				$this->_instanceLoggers[$containerName] = (new FileLogger(new DefaultLogFormater(),...[
+					$this->getLogPath($containerName,"log"),
+					$this->getLogPath($containerName,"err"),
+					$this->getLogPath($containerName,"warn"),
+					$this->getLogPath($containerName,"debug")
+				]))->autoConfFileByLevel(
+					FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
+					FileLogger::DEBUG,
+					$this->isCopyLogModeEnabled($containerName)
+				)->autoConfByLevel($this->_conf->getInt("containers/$containerName/logs/level")
+				                   ?? $this->_conf->getInt("logs/level") ?? ILogger::ERR
+				);
+			}
+		}
 	}
 
 	/**
@@ -74,12 +117,15 @@ final class KVSConfs {
 	 * Obtient le dossier de travail par défaut. Si aucun dossier de travail n'est défini,
 	 * le dossier DAEMONS."/kvstore/default_working_dir" est utilisé.
 	 *
+	 * @param null|string $container
 	 * @return string
 	 */
-	public function getWorkingDir():string{
+	public function getWorkingDir(?string $container=null):string{
+		if(!$container) $container = '';
+		else $container = "/$container";
 		return $this->resolvePath(
 			$this->_conf->getString(self::WORKING_DIR)
-			?? $this->_basePath.DS."kvstore".DS."data",false);
+			?? $this->_basePath."/kvstore/data$container",false);
 	}
 
 	/**
@@ -162,11 +208,19 @@ final class KVSConfs {
 	}
 
 	/**
+	 * @param bool $withLoggers
 	 * @return stdClass
+	 * @throws \InvalidArgumentException
 	 * @throws \wfw\engine\lib\errors\InvalidTypeSupplied
 	 */
-	public function getContainers():stdClass{
-		return $this->_conf->getObject(self::CONTAINERS);
+	public function getContainers(bool $withLoggers = true):stdClass{
+		$res = $this->_conf->getObject(self::CONTAINERS);
+		if($withLoggers){
+			foreach($res as $name=>$container){
+				$container->logger = $this->getLogger($name);
+			}
+		}
+		return $res;
 	}
 
 	/**
@@ -209,5 +263,55 @@ final class KVSConfs {
 		}else{
 			return $errorPath;
 		}
+	}
+
+	/**
+	 * @param null|string $container
+	 * @return bool|null
+	 */
+	public function isCopyLogModeEnabled(?string $container=null):?bool{
+		$res = $this->_conf->getBoolean(($container ? "instances/$container/" : "") ."logs/copy");
+		if(is_null($res)) return true;
+		else return $res;
+	}
+
+	/**
+	 * @param null|string $container
+	 * @param string      $level
+	 * @return null|string
+	 */
+	private function getLogPath(?string $container,string $level="err"):?string{
+		if($container) $path = $this->_conf->getString("containers/$container/".self::LOGS."/$level");
+		else $path = $this->_conf->getString(self::LOGS."/$level");
+		$errorPath = $path ?? "kvs".(($container)?"-$container":"")."-$level.log";
+
+		if(strpos($errorPath,"/")!==0){
+			if($container) $basePath = $this->_conf->getString("containers/$container/logs/default_path")
+										?? $this->_conf->getString("logs/default_path")."/containers";
+			else $basePath = $this->_conf->getString("logs/default_path");
+			if(!$basePath) $basePath = $this->getWorkingDir($container);
+			if(!is_dir($basePath)) mkdir($basePath,0700,true);
+			return "$basePath/$errorPath";
+		}else{
+			return $errorPath;
+		}
+	}
+
+	/**
+	 * @param null|string $container
+	 * @return ILogger
+	 */
+	public function getLogger(?string $container=null):ILogger{
+		if($container && !isset($this->_instanceLoggers[$container]))
+			throw new \InvalidArgumentException("No Logger defined for $container !");
+		return (is_null($container) ? $this->_logger : $this->_instanceLoggers[$container]);
+	}
+	/**
+	 * @param null|string $container
+	 * @return null|string
+	 */
+	public function getAdminMailAddr(?string $container=null):?string{
+		if($container) return $this->_conf->getString("containers/$container/admin_mail") ?? $this->getAdminMailAddr();
+		else return $this->_conf->getString("admin_mail");
 	}
 }

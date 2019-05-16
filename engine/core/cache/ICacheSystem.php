@@ -11,6 +11,18 @@ interface ICacheSystem {
 	 * @return mixed          Valeur attribuée à la clé
 	 */
 	public function get(string $key);
+
+	/**
+	 * @param string[] $keys Clé des valeurs à chercher
+	 * @return \Traversable
+	 */
+	public function getAll(array $keys):\Traversable;
+
+	/**
+	 * @param string[] $keys Clés des valeurs à supprimer du cache
+	 */
+	public function deleteAll(array $keys);
+
 	/**
 	 *  Cache une variable
 	 * @param string      $key     Clé de stockage
@@ -33,6 +45,7 @@ interface ICacheSystem {
 	 * @return bool           True si l'opération a réussi, false sinon
 	 */
 	public function delete(string $key):bool;
+
 	/**
 	 *   Vide le cache
 	 * @return bool    True si l'opération a réussi, false sinon

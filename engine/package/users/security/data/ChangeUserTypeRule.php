@@ -1,6 +1,7 @@
 <?php
 namespace wfw\engine\package\users\security\data;
 
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\security\data\AndRule;
 use wfw\engine\core\security\data\IRule;
 use wfw\engine\core\security\data\IRuleReport;
@@ -16,13 +17,22 @@ final class ChangeUserTypeRule implements IRule{
 
 	/**
 	 * ChangeUserTypeRule constructor.
+	 *
+	 * @param ITranslator $translator
+	 * @param array       $validRoles
 	 */
-	public function __construct() {
+	public function __construct(ITranslator $translator, array $validRoles=IsUserType::DEFAULT_TYPES) {
+		$key = "server/engine/package/users/forms";
 		$this->_rule = new AndRule(
-			"L'un des champ est incorrect",
-			new RequiredFields("Ce champe est requis !","id","type"),
-			new IsUUID("Ceci n'est pas un identifiant valide !","id"),
-			new IsUserType("Seuls client, basic et admin sont des types d'utilisateurs valides !","type")
+			$translator->get("$key/GENERAL_ERROR"),
+			new RequiredFields($translator->get("$key/REQUIRED"),"id","type"),
+			new IsUUID($translator->get("$key/INVALID_ID"),"id"),
+			new IsUserType(
+				$translator->getAndReplace(
+					"$key/INVALID_USER_TYPE",implode(", ",$validRoles)
+				),
+				$validRoles,"type"
+			)
 		);
 	}
 

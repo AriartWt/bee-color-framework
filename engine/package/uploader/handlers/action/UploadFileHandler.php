@@ -3,6 +3,7 @@ namespace wfw\engine\package\uploader\handlers\action;
 
 use wfw\engine\core\action\IAction;
 use wfw\engine\core\conf\IConf;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\request\IRequest;
 use wfw\engine\core\request\IRequestData;
 use wfw\engine\core\response\IResponse;
@@ -22,10 +23,11 @@ final class UploadFileHandler extends UploadHandler {
 	 * UploadFileHandler constructor.
 	 *
 	 * @param IConf          $conf
+	 * @param ITranslator    $translator
 	 * @param UploadFileRule $rule
 	 */
-	public function __construct(IConf $conf,UploadFileRule $rule) {
-		parent::__construct($conf, null);
+	public function __construct(IConf $conf, ITranslator $translator, UploadFileRule $rule) {
+		parent::__construct($conf, $translator,null);
 		$this->_rule = $rule;
 	}
 
@@ -48,21 +50,24 @@ final class UploadFileHandler extends UploadHandler {
 					$maxFileSize = $quotas - $dirSize; // si pas de limite fichier, la taille max est l'espace disponible
 					if($maxFileSize < $filesize) return new ErrorResponse(
 						"201",
-						"Vous n'avez plus assez d'espace disque disponible !"
+						""
 					);
 				}
 				try{
-					$name = $this->realPath(strip_tags($data["name"]));
+					$fname = $this->sanitize($data["name"]);
+					$name = $this->realPath($fname);
 					if(!is_dir(dirname($name)))
 						throw new \InvalidArgumentException("Unknown folder $name");
 					move_uploaded_file($data["file"]["tmp_name"],$name);
-					return new Response($this->getUploadFolderName().strip_tags($data["name"]));
+					return new Response($this->getUploadFolderName().$fname);
 				}catch (\InvalidArgumentException $e){
 					return new ErrorResponse(201,$e->getMessage());
 				}
 			}else return new ErrorResponse(201,$res->message(),$res->errors());
 		}else{
-			return new ErrorResponse(404,"Page not found");
+			return new ErrorResponse(404,$this->_translator->getAndReplace(
+				"server/engine/core/app/404_NOT_FOUND",$action->getRequest()->getURI()
+			));
 		}
 	}
 }

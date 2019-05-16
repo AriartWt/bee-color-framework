@@ -17,14 +17,18 @@ abstract class View implements IView {
 	private $_html='';
 	/** @var string $_viewPath */
 	private $_viewPath;
+	/** @var bool $_allowCache */
+	private $_allowCache;
 
 	/**
 	 * View constructor.
 	 *
 	 * @param null|string $viewPath (optionnel) Chemin vers la vue.
+	 * @param bool        $allowCache (optionnel) Si true, la mise en cache de la vue sera autorisée.
 	 */
-	public function __construct(?string $viewPath=null) {
+	public function __construct(?string $viewPath=null, bool $allowCache = false) {
 		$this->_viewPath = $viewPath;
+		$this->_allowCache = false;
 	}
 
 	/**
@@ -99,6 +103,13 @@ abstract class View implements IView {
 	}
 
 	/**
+	 * Permet d'activer le cache complet de la vue.
+	 */
+	protected function enableCache():void{
+		$this->_allowCache = true;
+	}
+
+	/**
 	 * Permet d'effectuer des actions sur le buffer pour le modifier après le rendu.
 	 *
 	 * @param callable $action Le callable sous la forme :
@@ -130,5 +141,13 @@ abstract class View implements IView {
 	 */
 	public function infos():array{
 		return [];
+	}
+
+	/**
+	 * Permet de savoir si la mise en cache complète de la vue est autorisée.
+	 * @return bool Si true, autorise la mise en cache totale de la page.
+	 */
+	public function allowCache(): bool {
+		return $this->_allowCache;
 	}
 }

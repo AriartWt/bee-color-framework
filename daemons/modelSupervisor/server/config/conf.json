@@ -1,8 +1,15 @@
 {
     "working_dir": "modelSupervisor\/data",
     "socket_path": "ModelSupervisor.socket",
+    "logs" : {
+        "level" : 2,
+        "copy" : true,
+        "default_path" : "/var/log/wfw/msserver"
+    },
+    "admin_mail" : null,
     "default_instance": {
         "initializers_path": "{ROOT}\/daemons\/modelSupervisor\/server\/config\/initializers.components.php",
+        "admin_mail" : null,
         "components": {
             "writer": {
                 "max_attempts": 10,
@@ -27,45 +34,13 @@
         "session_ttl": 900,
         "shutdown_on_error": false,
         "send_error_to_client": true,
-        "error_logs": "error_logs.txt"
+        "logs" : {
+            "level" : 2,
+            "copy" : true,
+            "default_path" : "/var/log/wfw/msserver/instances"
+        }
     },
     "instances": {
-        "test": {
-            "models_to_load_path": "{ROOT}\/engine\/config\/default.models.php",
-            "kvs": {
-                "login": "tester",
-                "password": "test",
-                "container": "test_db"
-            },
-            "components": {
-                "writer": {
-                    "kvs": {
-                        "login": "tester",
-                        "password": "test",
-                        "container": "test_db"
-                    },
-                    "mysql": {
-                        "host": "localhost",
-                        "database": "event_store_test",
-                        "login": "tester",
-                        "password": "test"
-                    },
-                    "permissions": {
-                        "users": {
-                            "tester": {
-                                "write": true,
-                                "read": true,
-                                "admin": true
-                            }
-                        }
-                    }
-                }
-            },
-            "users": {
-                "tester": {
-                    "password": "test"
-                }
-            }
-        }
+
     }
 }

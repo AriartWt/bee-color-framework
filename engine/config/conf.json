@@ -2,7 +2,7 @@
 	"server": {
 		"framework": {
 			"name": "wfw",
-			"version": "STABLE-1.2"
+			"version": "STABLE-1.2.1"
 		},
 		"daemons": {
 			"kvs": "kvstore\/server\/config\/conf.json",
@@ -31,7 +31,7 @@
 			"max_size" : "300Mo",
 			"accepted_mimes" : ["/^image\\/.*$/","/^video\\/mp4$/","/^audio\\/mp3$/","/^audio\\/mpeg$/"]
 		},
-	  	"module" : {
+	  	"modules" : {
 		  	"users" : {
 			  	"cgu_link" : "cgu",
 			  	"register_type" : "client"

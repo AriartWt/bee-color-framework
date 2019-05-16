@@ -17,6 +17,9 @@ wfw.define("ui/lteditor",function($name,$actions,$params){
 	let $fnOnChange = []; let $escaped = false; let $body; let $res = this; let $lastSel;
 	const defParagraphSeparator = $params['defaultParagraphSeparator'] || 'div';
 	let $css = $params.css || wfw.url("Css/api/ui/lteditor.css");
+	if(!$params.titles || !Array.isArray($params.titles)) $params.titles = [
+		{dtag:"h1",rtag:"h1",lang:"1"},{dtag:"h2",rtag:"h2",lang:"2"},{dtag:"h3",rtag:"h3",lang:"3"}
+	];
 	if(!$params.disableAutoCss && !$requestedCss[$css]){
 		$requestedCss[$css]=true;
 		document.head.appendChild(wfw.dom.create('link',{rel:"stylesheet",href:$css}));
@@ -211,10 +214,10 @@ wfw.define("ui/lteditor",function($name,$actions,$params){
 			icon : wfw.dom.appendTo(wfw.dom.create("div",{className:"heading",title:$lstr("INSERT_TITLE")}),
 				wfw.dom.create("span",{innerHTML:"T"}),
 				wfw.dom.appendTo(wfw.dom.create("div"),
-					wfw.dom.create("h1",{innerHTML:$lstr("TITLE_N",'1'),on:{click:()=>$exec(formatBlock,'<h1>')}}),
-					wfw.dom.create("h2",{innerHTML:$lstr("TITLE_N",'2'),on:{click:()=>$exec(formatBlock,'<h2>')}}),
-					wfw.dom.create("h3",{innerHTML:$lstr("TITLE_N",'3'),on:{click:()=>$exec(formatBlock,'<h3>')}})
-				)
+					...$params.titles.map($t=>wfw.dom.create($t.dtag, {
+						innerHTML:$lstr("TITLE_N",$t.lang),
+						on:{click:()=>$exec(formatBlock,$t.rtag)}
+				})))
 			)
 		},
 		clean : {
@@ -224,8 +227,8 @@ wfw.define("ui/lteditor",function($name,$actions,$params){
 		},
 		link : {
 			action : ()=>{const $url = window.prompt(); if($url)$exec('createLink',$url)},
-			state : ($e,$btn,$editor)=>{
-				let $content = $editor.editor.querySelector(".lteditor-content");
+			state : ($e,$btn,$ed)=>{
+				let $content = $editor.querySelector(".lteditor-content");
 				let $anchorNode = document.getSelection().anchorNode;
 				if($anchorNode){
 					let $parent = $anchorNode.parentElement;
