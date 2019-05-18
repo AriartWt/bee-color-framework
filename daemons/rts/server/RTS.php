@@ -346,14 +346,6 @@ final class RTS{
 	}
 
 	/**
-	 * Ecrit un log dans le fichier d'erreurs
-	 * @param string $log Log to write
-	 */
-	private function errorLog(string $log){
-		error_log($log.PHP_EOL,3,$this->_errorLogPath);
-	}
-
-	/**
 	 * @param resource $socket Configure la socket
 	 */
 	private function configureSocket($socket){
@@ -377,7 +369,7 @@ final class RTS{
 		}
 
 		if(!is_null($e)){
-			$this->errorLog($e);
+			$this->_environment->getLogger()
 			exit(1);
 		}else exit(0);
 	}

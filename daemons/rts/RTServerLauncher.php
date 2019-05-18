@@ -56,7 +56,7 @@ try{
 			$level = $confs->getDebugLevel($name);
 			if($level > 0){
 				$logger->autoConfByLevel($level);
-				$logger->auoConfFileByLevel($level, FileLogger::DEBUG);
+				$logger->autoConfFileByLevel($level, FileLogger::DEBUG);
 			}else{
 				$logger->autoConfByLevel($confs->getLogsLevel($name));
 			}
