@@ -44,6 +44,11 @@ $argvReader=$argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 			.'(update [-self(global) | -all(tous) | -projet,projet2,...(projets spécifiés)] [sources path]',
 			2,null,true
 	),
+	new ArgvOpt(
+			'maintenance',"Permet de mettre en maintenance un ou plusieurs projets."
+			.'(state [-all(tous) | -projet,projet2,...(projets spécifiés)] [(optionnal) enable|disable (default:enable)]',
+			null, null,true
+	),
 	new ArgvOpt('remove','Supprime un projet du gestionnaire',null,null,true),
 	new ArgvOpt('locate',"Localiste le projet. Si pas d'argument, retourne le chemin vers le projet global",null,null,true),
 	new ArgvOpt('restore',"Réstore tous les symlinks de configurations des projets vers /etc/wfw",null,null,true),
@@ -59,7 +64,7 @@ try{
 	$data = $db->read(true);
 	$validName = function(string $name):bool{
 		return preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/',$name)
-			&& !in_array($name,["all","self","update","locate","remove","create","import","list","restore"]);
+			&& !in_array($name,["all","self","update","locate","remove","create","import","maintenance","list","restore"]);
 	};
 	$exec = function(string $cmd):void{
 		$outputs = []; $res = null;
@@ -101,7 +106,37 @@ try{
 			$exec("ln -s \"$p/site/config\" \"/etc/wfw/$project\"");
 			fwrite(STDOUT,"Project $project config link /etc/wfw/$project created.\n");
 		}
-	} else if($argvReader->exists('update')){
+	} else if($argvReader->exists('maintenance')){
+		$args = $argvReader->get('maintenance');
+		$projects = $args[0];
+		$enable = ($args[1] ?? "enable") === "enable";
+		$state = "maintenance";
+		$projects = strpos($projects,"-") === 0 ? substr($projects,1):$projects;
+		$projects = explode(",",$projects);
+		$pMap = []; $valids = array_merge(["all"],array_keys($data));
+		foreach($projects as $v){
+			if(!in_array($v,$valids)) throw new InvalidArgumentException(
+				"Unknown project to change state : $v"
+			);
+			$pMap[$v]=isset($data[$v])?substr($data[$v],0,-4):null;
+		}
+		$projects = array_flip($projects);
+		if(isset($projects["all"])){
+			$pMap = $data;
+			foreach($data as $k=>$v){
+				$pMap[$k] = substr($v,0,-4);
+			}
+		}
+		foreach($pMap as $name=>$path){
+			if(!$enable && is_file("$path/wfw.$state")) {
+				unlink("$path/wfw.$state");
+				fwrite(STDOUT,"$name : $path/wfw.$state removed\n");
+			}else if($enable && !is_file("$path/wfw.$state")){
+				touch("$path/wfw.$state");
+				fwrite(STDOUT,"$name : $path/wfw.$state created\n");
+			}else fwrite(STDOUT,"$name : Nothing to do.\n");
+		}
+	}else if($argvReader->exists('update')){
 		$args = $argvReader->get('update');
 		$projects = $args[0];
 		$path = $args[1];
@@ -230,6 +265,14 @@ try{
 			//create the symlink to site confs into /etc/wfw
 			$exec("ln -s \"$args[1]/$args[0]/config\" \"/etc/wfw/$args[0]\"");
 
+			$a2confPath = CLI."/wfw/a2.d/$args[0].conf";
+			if(file_exists($a2confPath)){
+				unlink($a2confPath);
+				fwrite(STDOUT,"Old file $a2confPath removed.\n");
+			}
+			fwrite(STDOUT,"Generating apache2 conf file $a2confPath...\n");
+			$exec("cat \"".CLI."/wfw/templates/a2-site.conf.template\" | sed -e \"s+@ROOTPATH+$path+g\" >> \"$a2confPath\"");
+
 			//write the project root path in DB
 			$data[$args[0]] = $path;
 			$db->write($data);
@@ -256,7 +299,7 @@ try{
 			if(!is_dir("$path/site/webroot/$v")) mkdir("$path/site/webroot/$v");
 		}
 		//create base folders and files
-		$dirs = ['engine','cli','wfw','.htaccess'];
+		$dirs = ['engine','cli','wfw'];
 		fwrite(STDOUT,"Cloning files and folders from ".ROOT." into $path...\n");
 		foreach($dirs as $dir){
 			$exec("cp -Rp ".ROOT."/$dir $path");
@@ -276,6 +319,13 @@ try{
 			}else $exec("cp -Rp ".ROOT."/daemons/$dir $path/daemons/$dir");
 		}
 		fwrite(STDOUT,"Files and folders from ".ROOT."/daemons cloned into $path...\n");
+		$a2confPath = CLI."/wfw/a2.d/$pName.conf";
+		if(file_exists($a2confPath)){
+			unlink($a2confPath);
+			fwrite(STDOUT,"Old file $a2confPath removed.\n");
+		}
+		fwrite(STDOUT,"Generating apache2 conf file $a2confPath...\n");
+		$exec("cat \"".CLI."/wfw/templates/a2-site.conf.template\" | sed -e \"s+@ROOTPATH+$path+g\" >> \"$a2confPath\"");
 
 		$exec("wfw add $pName $path");
 		// \o/ the project files are ready.
@@ -538,12 +588,18 @@ try{
 			$mss->save();
 		}
 		fwrite(STDOUT,"MSServer instances removed.\n");
-		//unlink is ROOT
-		if(is_link(ROOT."/$project")) unlink(ROOT."/$project");
-		fwrite(STDOUT,ROOT."/$project link removed.\n");
+		//unlink ROOT
+		if(is_link(ROOT."/$project")){
+			unlink(ROOT."/$project");
+			fwrite(STDOUT,ROOT."/$project link removed.\n");
+		}
 		//unlink conf link
 		if(is_link("/etc/wfw/$project")) unlink("/etc/wfw/$project");
 		fwrite(STDOUT,"/etc/wfw/$project link removed.\n");
+		if(is_file(CLI."/wfw/a2.d/$project.conf")){
+			unlink(CLI."/wfw/a2.d/$project.conf");
+			fwrite(STDOUT,CLI."/wfw/a2.d/$project.conf removed.\n");
+		}
 		fwrite(STDOUT,"Removing project path from wfw'db...\n");
 		//delete data from projects db
 		unset($data[$project]);
