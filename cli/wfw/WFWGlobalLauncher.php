@@ -687,6 +687,13 @@ try{
 		if(!is_link("/etc/wfw/$pName"))
 			$exec("ln -s \"$pPath/site/config\" \"/etc/wfw/$pName\"");
 
+		$a2confPath = CLI."/wfw/a2.d/$pName.conf";
+		if(!file_exists($a2confPath)){
+			fwrite(STDOUT,"Apache2 conf file $a2confPath not found for this project. Generating a new one...\n");
+			$exec("cat \"".CLI."/wfw/templates/a2-site.conf.template\" | sed -e \"s+@ROOTPATH+$pPath+g\" >> \"$a2confPath\"");
+			fwrite(STDOUT,"Apache2 conf file created.\n");
+		}
+
 		//then, set the unix owner for the new project and give-it to the given user (apache,ngnix..)
 		$exec("chmod -R $unixPerm $pPath");
 		$exec("chown -R $unixUser:$unixUser $pPath");
