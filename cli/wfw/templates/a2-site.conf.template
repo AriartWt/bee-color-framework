@@ -1,0 +1,37 @@
+DocumentRoot @ROOTPATH
+
+<Directory @ROOTPATH >
+	AllowOverride None
+	Options +FollowSymLinks -Indexes
+</Directory>
+
+<IfModule mod_deflate.c>
+	<IfModule mod_filter.c>
+		SetOutputFilter DEFLATE
+		DeflateCompressionLevel 9
+		AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/x-javascript application/x-httpd-php
+	</IfModule>
+</IfModule>
+
+<FilesMatch "\.(ico|jpe?g|png|gif|css|mp4|mp3|js)?|">
+	Header set Cache-Control "max-age=2592000, public"
+</FilesMatch>
+
+RewriteEngine On
+
+#Detect maintenance mode
+RewriteCond %{DOCUMENT_ROOT}/wfw\.maintenance -f
+RewriteCond %{SCRIPT_FILENAME} !maintenance.html
+RewriteCond %{REMOTE_ADDR} !=127.0.0.1
+RewriteRule ^.*$ /maintenance.html [R=503,L]
+
+ErrorDocument 503 /maintenance.html
+
+RewriteCond %{DOCUMENT_ROOT}/site/webroot%{REQUEST_URI} -f
+RewriteRule .* %{DOCUMENT_ROOT}/site/webroot%{REQUEST_URI} [L]
+
+RewriteCond %{DOCUMENT_ROOT}/engine/webroot%{REQUEST_URI} -f
+RewriteRule .* %{DOCUMENT_ROOT}/engine/webroot%{REQUEST_URI} [L]
+
+RewriteCond %{REQUEST_URI} !/maintenance.html
+RewriteRule (.*) %{DOCUMENT_ROOT}/engine/webroot/index.php/$1 [L]

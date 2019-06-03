@@ -134,7 +134,11 @@ final class WebApp {
 				."width:100%;bottom:0;\">Page générée en ".((microtime(1)-START_TIME)*1000)
 				."ms</div>";
 		}
-		$session->set('previous_action',$action);
+		if(in_array(http_response_code(),[
+			HTTPStatus::OK, HTTPStatus::ACCEPTED, HTTPStatus::CREATED, HTTPStatus::MOVED_PERMANENTLY,
+			HTTPStatus::PERMANENT_REDIRECT, HTTPStatus::TEMPORARY_REDIRECT
+		])) $session->set('previous_action',$action);
+
 		$this->_context->close();
 	}
 
