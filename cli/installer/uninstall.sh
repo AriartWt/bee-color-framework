@@ -9,6 +9,7 @@ echo "wfw will be uninstalled..."
 LOGPATH="/var/log/wfw"
 CONFPATH="/etc/wfw"
 LOGROTATE_PATH="/etc/logrotate.d/wfw"
+A2_SITES_CONFS="/etc/apache2/wfw-sites"
 A2CONF="/etc/apache2/conf-available/wfw-global.conf"
 
 declare -a services=("msserver" "kvs" "sctl")
@@ -63,6 +64,11 @@ if [ -d "$CONFPATH" ]
 then
 	echo "Removing $CONFPATH..."
 	rm -rf "$CONFPATH"
+fi
+
+if [ -L "$A2_SITES_CONFS" ]; then
+	echo "Removing $A2_SITES_CONFS..."
+	rm -rf "$A2_SITES_CONFS"
 fi
 
 echo "Done."
