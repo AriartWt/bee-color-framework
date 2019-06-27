@@ -12,6 +12,8 @@ ROOTPATH="$( cd "$(dirname "$ROOTPATH")" ; pwd -P )"
 
 A2CONF="$INSTALLPATH/config/wfw-global.conf"
 A2CONF_PATH="/etc/apache2/conf-available"
+A2_SITES_CONFS="$ROOTPATH/cli/wfw/a2.d"
+A2PATH="/etc/apache2"
 LOGPATH="/var/log/wfw"
 LOGPATH_OWNER="www-data:www-data"
 LOGROTATE_PATH="/etc/logrotate.d"
@@ -27,8 +29,7 @@ echo "Installer path : $INSTALLPATH"
 echo "Giving execution permission to all *Launcher.php..."
 find "$INSTALLPATH/../" -name "*Launcher.php" | xargs chmod +x
 
-if [ ! -d "/usr/lib/systemd/system" ]
-then
+if [ ! -d "/usr/lib/systemd/system" ]; then
 	mkdir -p "/usr/lib/systemd/system"
 	echo "/usr/lib/systemd/system created."
 fi
@@ -36,22 +37,20 @@ fi
 echo ""
 
 declare -a services=("sctl" "kvs" "msserver")
-for i in "${services[@]}"
-do
-    #Reset the file if exists
-    DAEMONCONF="$INSTALLPATH/config/$i.systemctl"
-    SERVICE_NAME="wfw-$i"
+for i in "${services[@]}"; do
+	#Reset the file if exists
+	DAEMONCONF="$INSTALLPATH/config/$i.systemctl"
+	SERVICE_NAME="wfw-$i"
 	SERVICE_PATH="/usr/lib/systemd/system/$SERVICE_NAME.service"
 
 	echo "Installing daemon $SERVICE_NAME..."
-    if [ -f "$DAEMONCONF" ]
-    then
-    	echo "Removing old $DAEMONCONF..."
-        truncate -s 0 "$DAEMONCONF"
-    fi
-    #Create the file with the good path to scripts
-    echo "Creating $DAEMONCONF..."
-    cat "$INSTALLPATH/config/$i.systemctl.template" | sed -e "s+@ROOT+$ROOTPATH+g" >> "$INSTALLPATH/config/$i.systemctl"
+	if [ -f "$DAEMONCONF" ]; then
+		echo "Removing old $DAEMONCONF..."
+		truncate -s 0 "$DAEMONCONF"
+	fi
+	#Create the file with the good path to scripts
+	echo "Creating $DAEMONCONF..."
+	cat "$INSTALLPATH/config/$i.systemctl.template" | sed -e "s+@ROOT+$ROOTPATH+g" >> "$INSTALLPATH/config/$i.systemctl"
 	#Add to systemctl and setup daemons
 	echo "Moving $DAEMONCONF to $SERVICE_PATH"
 	mv "$DAEMONCONF" "$SERVICE_PATH"
@@ -64,7 +63,7 @@ do
 done
 
 ln -s "$INSTALLPATH/../wfw/WFWGlobalLauncher.php" "/usr/bin/wfw"
-echo "Created symlink from $INSTALLPATH/../wfw/WFWGlobalLauncher.php to /usr/bin/wfw"
+echo "Created symlink $INSTALLPATH/../wfw/WFWGlobalLauncher.php -> /usr/bin/wfw"
 
 echo ""
 echo "Creating $A2CONF...";
@@ -79,20 +78,18 @@ systemctl reload apache2
 echo ""
 echo "Creating $CONFPATH..."
 mkdir -p "$CONFPATH"
-if [[ $(wfw list) ]]
-then
+if [[ $(wfw list) ]]; then
 	echo "Previously installed project found. Resotring symlinking to $CONFPATH..."
 	wfw restore
 else
 	echo "No previous project found."
 fi
-for i in "${CONFSDIR[@]}"
-do
+for i in "${CONFSDIR[@]}"; do
 	LINKNAME="${i/#$ROOTPATH/}"
 	LINKNAME="${LINKNAME::-7}"
 	mkdir -p "$CONFPATH$LINKNAME"
 	rm -rf "$CONFPATH$LINKNAME"
-	echo "Creating symlink from $i to $CONFPATH$LINKNAME..."
+	echo "Creating symlink $i -> $CONFPATH$LINKNAME..."
 	ln -s "$i" "$CONFPATH$LINKNAME"
 done
 
@@ -102,14 +99,24 @@ mkdir -p "$LOGPATH"
 echo "Setting $LOGPATH_OWNER as owner..."
 chown -R "$LOGPATH_OWNER" "$LOGPATH"
 
-if [ -d "$LOGROTATE_PATH" ]
-then
+if [ -d "$LOGROTATE_PATH" ]; then
 	echo ""
 	echo "Creating $LOGROTATE_CONF..."
 	cat "$INSTALLPATH/config/logrotate.template" | sed -e "s+@LOGDIR+$LOGPATH+g" >> "$LOGROTATE_CONF"
 	echo "Moving $LOGROTATE_CONF to $LOGROTATE_PATH..."
 	mv "$LOGROTATE_CONF" "$LOGROTATE_PATH"
 fi
+
+if [ ! -d "$A2_SITES_CONFS" ]; then
+	mkdir -p "$A2_SITES_CONFS"
+fi
+
+if [ -L "$A2PATH/wfw-sites" ] || [ -d "$A2PATH/wfw-sites" ]; then
+	rm -rf "$A2PATH/wfw-sites"
+fi
+echo ""
+ln -s "$A2_SITES_CONFS" "$A2PATH/wfw-sites"
+echo "Created symlink $A2_SITES_CONFS -> $A2PATH/wfw-sites"
 
 echo ""
 echo "Done."

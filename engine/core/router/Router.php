@@ -100,7 +100,10 @@ final class Router implements IRouter {
 		if(!is_null($tmpLang)) $preUrl.=$tmpLang."/";
 		else if(!is_null($this->_lang)) $preUrl.=$this->_lang."/";
 
-		return (strpos($preUrl,"/")!==0?'/':'').$preUrl.($url==='/'?'':$url);
+		return preg_replace(
+			"#//#","/",
+			(strpos($preUrl,"/")!==0?'/':'').$preUrl.($url==='/'?'':$url)
+		);
 	}
 
 	/**
@@ -111,8 +114,10 @@ final class Router implements IRouter {
 	 */
 	public function webroot(string $url = ''): string {
 		trim($url,'/');
-		return $this->_baseUrl.((strlen($url)>0)?"/$url":'');
-
+		return preg_replace(
+			"#//#","/",
+			$this->_baseUrl.((strlen($url)>0)?"/$url":'')
+		);
 	}
 
 	/**
