@@ -15,6 +15,7 @@ use wfw\daemons\rts\server\websocket\WebsocketEventObserver;
 use wfw\daemons\rts\server\websocket\WebsocketProtocol;
 use wfw\daemons\rts\server\worker\WorkerCommand;
 use wfw\engine\lib\cli\signalHandler\PCNTLSignalsHelper;
+use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\network\socket\errors\SocketFailure;
 use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
 use wfw\engine\lib\PHP\errors\IllegalInvocation;
@@ -39,8 +40,6 @@ final class RTS{
 	private $_requestTtl;
 	/** @var bool $_sendErrorToClient */
 	private $_sendErrorToClient;
-	/** @var string $_errorLogPath */
-	private $_errorLogPath;
 	/** @var int $_localPortPid */
 	private $_localPortPid;
 	/** @var int $_port */
@@ -80,7 +79,6 @@ final class RTS{
 	 *                                                 -1 : pas de limite, n : max_wsockets * (n+1)
 	 * @param int             $requestTtl        Durée maximum de chaque requête
 	 * @param bool            $sendErrorToClient Envoir les erreurs sur les clients socket locale
-	 * @param string          $errorLogPath      Chemin vers le fichier de logs d'erreurs.
 	 * @throws IllegalInvocation
 	 */
 	public function __construct(
@@ -92,8 +90,7 @@ final class RTS{
 		int $maxWorkers = 0,
 		int $allowedWSocketsOverflow = -1,
 		int $requestTtl = 900,
-		bool $sendErrorToClient = true,
-		string $errorLogPath = DAEMONS."/rts/data/rts.errors.txt"
+		bool $sendErrorToClient = true
 	){
 		$this->_secretKey = (string) new UUID(UUID::V4);
 		$this->_socketPath = $socketPath;
@@ -101,7 +98,6 @@ final class RTS{
 		$this->_environment = $environment;
 		$this->_requestTtl = $requestTtl;
 		$this->_sendErrorToClient = $sendErrorToClient;
-		$this->_errorLogPath = $errorLogPath;
 		$this->_port = $port;
 		$this->_maxWorkers = $maxWorkers;
 		$this->_maxWSockets = $maxWSocket;
@@ -146,6 +142,7 @@ final class RTS{
 		}else if($this->_localPortPid > 0){
 			socket_close($sockets[0]);
 			$this->_localPort = $sockets[1];
+			//TODO
 			$this->_networkPort = socket_create_listen($this->_port,SOMAXCONN);
 			$this->workerManagerLoop();
 		}else throw new \Exception("Unable to fork !");
@@ -200,6 +197,7 @@ final class RTS{
 				[$this->_localPort,$this->_networkPort],
 				array_values($this->_workers))
 			);
+			//bypass the 1024 socket management limit
 			foreach($chunks as $chunk){
 				$read = $chunk; $write = null; $except = null;
 				socket_select($read,$write,$except,0);
@@ -260,10 +258,10 @@ final class RTS{
 	 */
 	private function accept():void{
 		$accepterFound = false;
-		foreach($this->_workersInfos as $pid=>&$infos){
+		foreach($this->_workersInfos as $pid=>$infos){
 			if($infos["clients"]<$this->_maxWSockets){
 				$this->write($this->_workers[$pid],'{"cmd":"accept_new_client"}');
-				$infos["clients"]++;
+				$this->_workersInfos[$pid]["clients"]++;
 				$accepterFound = true;
 				break;
 			}
@@ -369,7 +367,7 @@ final class RTS{
 		}
 
 		if(!is_null($e)){
-			$this->_environment->getLogger()
+			$this->_environment->getLogger()->log($e,ILogger::ERR);
 			exit(1);
 		}else exit(0);
 	}

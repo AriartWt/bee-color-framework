@@ -7,26 +7,23 @@
 				"password" : "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"
 			}
 		},
+		"port" : 8000,
 		"modules_to_load_path" : "{ROOT}/site/config/load/rts.php",
 		"request_ttl" : 900,
 		"session_ttl" : 60,
 		"send_error_to_client" : true,
-		"log_file" : "rts.log",
-		"err_logs" : "err.log",
-		"warn_logs" : "warn.log",
-		"debug_logs" : "debug.log",
+		"logs" : {
+			"level" : 2,
+			"copy" : true,
+			"default_path" : "/var/log/wfw/rts"
+		},
 		"max_wsockets" : 2000,
 		"max_workers" : 50,
 		"allowed_wsockets_overflow" : -1,
-		"debug_level" : 7,
-		"log_level" : 2,
-		"max_write_buffer":49152,
-		"max_read_buffer":49152,
-		"max_request_handshake_size":1024,
-		"header_origin_required":false,
-		"header_protocol_required":false,
-		"will_support_extensions":false,
-		"max_socket_select" : 1000
+		"max_requests_by_minute" : null,
+		"max_connections_by_ip" : 20,
+		"max_socket_select" : 1000,
+		"max_clients" : null
 	},
 	"instances" : {
 		"bee-color" : {

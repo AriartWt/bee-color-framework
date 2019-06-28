@@ -290,51 +290,9 @@ final class RTSEnvironment implements IRTSEnvironment{
 	}
 
 	/**
-	 * @return bool True
+	 * @return IlLogger
 	 */
-	public function debugEnabled(): bool {
-		// TODO: Implement debugEnabled() method.
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getMaxRequestHandshakeSize(): int {
-		// TODO: Implement getMaxRequestHandshakeSize() method.
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isHeaderOriginRequired(): bool {
-		// TODO: Implement isHeaderOriginRequired() method.
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isHeaderProtocolRequired(): bool {
-		// TODO: Implement isHeaderProtocolRequired() method.
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function willSupportExtension(): bool {
-		// TODO: Implement willSupportExtension() method.
-	}
-
-	/**
-	 * @return int
-	 */
-	public function maxWriteBuffer(): int {
-		// TODO: Implement maxWriteBuffer() method.
-	}
-
-	/**
-	 * @return int
-	 */
-	public function maxReadBuffer(): int {
-		// TODO: Implement maxReadBuffer() method.
+	public function getLogger():IlLogger{
+		return $this->_logger;
 	}
 }

@@ -1,6 +1,7 @@
 <?php
 
 namespace wfw\daemons\rts\server\websocket;
+
 use wfw\engine\lib\PHP\types\UUID;
 
 /**

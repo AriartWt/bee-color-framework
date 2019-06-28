@@ -270,7 +270,7 @@ final class KVSConfs {
 	 * @return bool|null
 	 */
 	public function isCopyLogModeEnabled(?string $container=null):?bool{
-		$res = $this->_conf->getBoolean(($container ? "instances/$container/" : "") ."logs/copy");
+		$res = $this->_conf->getBoolean(($container ? "containers/$container/" : "") ."logs/copy");
 		if(is_null($res)) return true;
 		else return $res;
 	}

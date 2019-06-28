@@ -1,15 +1,13 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 08/08/18
- * Time: 13:38
- */
 
 namespace wfw\daemons\rts\server\conf;
+
 use stdClass;
 use wfw\engine\core\conf\FileBasedConf;
 use wfw\engine\core\conf\io\adapters\JSONConfIOAdapter;
+use wfw\engine\lib\logger\DefaultLogFormater;
+use wfw\engine\lib\logger\FileLogger;
+use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\PHP\objects\StdClassOperator;
 use wfw\engine\lib\PHP\types\PHPString;
 
@@ -23,17 +21,15 @@ final class RTSPoolConfs {
 	private const WORKING_DIR = "working_dir";
 	private const SOCKET_PATH = "socket_path";
 	private const REQUEST_TTL = "request_ttl";
-	private const DEF_LOGS = "log_file";
-	private const ERR_LOGS = "err_logs";
-	private const WARN_LOGS = "warn_logs";
-	private const DEBUG_LOGS = "debug_logs";
-	private const DEBUG_LEVEL = "debug_level";
-	private const LOG_LEVEL = "log_level";
+	private const LOGS = "logs/files";
 
 	/** @var FileBasedConf $_conf */
 	private $_conf;
 	/**  @var string $_basePath */
 	private $_basePath;
+	private $_logger;
+	/** @var ILogger[] $_instanceLoggers */
+	private $_instanceLoggers = [];
 	/** @var StdClassOperator[] $_instancesConfs */
 	private $_instancesConfs = [];
 
@@ -59,9 +55,9 @@ final class RTSPoolConfs {
 		}
 
 		//On cherche le chemin des configurations du daemon.
-		$confPath = $conf->getString("server/daemons/model_supervisor");
+		$confPath = $conf->getString("server/daemons/rts");
 		if(is_null($confPath)){
-			throw new \InvalidArgumentException("Config key server/daemons/model_supervisor not found");
+			throw new \InvalidArgumentException("Config key server/daemons/rts not found");
 		}
 
 		$confPath = new PHPString($confPath);
@@ -73,6 +69,18 @@ final class RTSPoolConfs {
 
 		$this->_conf = new FileBasedConf($confPath,$confIO);
 
+		$this->_logger = (new FileLogger(new DefaultLogFormater(),...[
+			$this->getLogPath(null,"log"),
+			$this->getLogPath(null,"err"),
+			$this->getLogPath(null,"warn"),
+			$this->getLogPath(null,"debug")
+		]))->autoConfFileByLevel(
+			FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
+			FileLogger::DEBUG,
+			$this->isCopyLogModeEnabled(null)
+		)->autoConfByLevel($this->_conf->getInt($this->_conf->getInt("logs/level") ?? ILogger::ERR
+		));
+
 		//On détermine les configurations de chaque instance à créer
 		$this->_instancesConfs = [];
 		$defInstance = $this->_conf->getObject(self::DEFAULT_INSTANCE);
@@ -81,6 +89,18 @@ final class RTSPoolConfs {
 			$tmp->mergeStdClass($defInstance);
 			$tmp->mergeStdClass($instanceConf);
 			$this->_instancesConfs[$instanceName] = $tmp;
+			$this->_instanceLoggers[$instanceName] = (new FileLogger(new DefaultLogFormater(),...[
+				$this->getLogPath($instanceName,"log"),
+				$this->getLogPath($instanceName,"err"),
+				$this->getLogPath($instanceName,"warn"),
+				$this->getLogPath($instanceName,"debug")
+			]))->autoConfFileByLevel(
+				FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
+				FileLogger::DEBUG,
+				$this->isCopyLogModeEnabled($instanceName)
+			)->autoConfByLevel($this->_conf->getInt("instances/$instanceName/logs/level")
+				?? $this->_conf->getInt("logs/level") ?? ILogger::ERR
+			);
 		}
 	}
 
@@ -128,6 +148,38 @@ final class RTSPoolConfs {
 	}
 
 	/**
+	 * @param null|string $instance
+	 * @param string      $level
+	 * @return null|string
+	 */
+	private function getLogPath(?string $instance, string $level="err"):?string{
+		if($instance) $path = $this->_conf->getString("instances/$instance/".self::LOGS."/$level");
+		else $path = $this->_conf->getString(self::LOGS."/$level");
+		$errorPath = $path ?? "kvs".(($instance)?"-$instance":"")."-$level.log";
+
+		if(strpos($errorPath,"/")!==0){
+			if($instance) $basePath = $this->_conf->getString("instances/$instance/logs/default_path")
+				?? $this->_conf->getString("logs/default_path")."/containers";
+			else $basePath = $this->_conf->getString("logs/default_path");
+			if(!$basePath) $basePath = $this->getWorkingDir($instance);
+			if(!is_dir($basePath)) mkdir($basePath,0700,true);
+			return "$basePath/$errorPath";
+		}else{
+			return $errorPath;
+		}
+	}
+
+	/**
+	 * @param null|string $container
+	 * @return bool|null
+	 */
+	public function isCopyLogModeEnabled(?string $container=null):?bool{
+		$res = $this->_conf->getBoolean(($container ? "instances/$container/" : "") ."logs/copy");
+		if(is_null($res)) return true;
+		else return $res;
+	}
+
+	/**
 	 * @param null|string $instance Chemin de la socket d'une DB particulière
 	 * @return string
 	 */
@@ -154,28 +206,6 @@ final class RTSPoolConfs {
 		if(!isset($this->_instancesConfs[$instance]))
 			throw new \InvalidArgumentException("Unknown instance $instance");
 		return $this->_instancesConfs[$instance]->find("users");
-	}
-
-	/**
-	 * @param string $instance Instance dont on souhaite connaitre le niveau de debug
-	 * @return int
-	 * @throws \InvalidArgumentException
-	 */
-	public function getDebugLevel(string $instance): int{
-		if(!isset($this->_instancesConfs[$instance]))
-			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find(self::DEBUG_LEVEL) ?? 0;
-	}
-
-	/**
-	 * @param string $instance Instance dont on souhaite connaitre le niveau de debug
-	 * @return int
-	 * @throws \InvalidArgumentException
-	 */
-	public function getLogsLevel(string $instance): int{
-		if(!isset($this->_instancesConfs[$instance]))
-			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find(self::LOG_LEVEL) ?? 0;
 	}
 
 	/**
@@ -302,75 +332,16 @@ final class RTSPoolConfs {
 	 * @param string $instance Instance concernée
 	 * @return bool
 	 */
-	public function haveToShutdownOnError(string $instance):bool{
-		if(!isset($this->_instancesConfs[$instance]))
+	public function haveToShutdownOnError(string $instance):bool {
+		if (!isset($this->_instancesConfs[$instance]))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		try{
+		try {
 			return $this->_instancesConfs[$instance]->find("shutdown_on_error");
-		}catch(\Exception $e){
+		} catch (\Exception $e) {
 			return false;
 		}
 	}
 
-	/**
-	 * @param null|string $instance Instance concernée
-	 * @return string
-	 */
-	public function getErrorLogsPath(?string $instance=null):string{
-		$errorPath = new PHPString(
-			$this->resolvePath($this->_conf->getString(self::ERR_LOGS)??"err.log")
-		);
-		if(!$errorPath->startBy("/")){
-			return $this->getWorkingDir($instance).DS.$errorPath;
-		}else{
-			return $errorPath;
-		}
-	}
-
-	/**
-	 * @param null|string $instance Instance concernée
-	 * @return string
-	 */
-	public function getWarningLogsPath(?string $instance=null):string{
-		$errorPath = new PHPString(
-			$this->resolvePath($this->_conf->getString(self::WARN_LOGS)??"warn.log")
-		);
-		if(!$errorPath->startBy("/")){
-			return $this->getWorkingDir($instance).DS.$errorPath;
-		}else{
-			return $errorPath;
-		}
-	}
-
-	/**
-	 * @param null|string $instance Instance concernée
-	 * @return string
-	 */
-	public function getDebugLogsPath(?string $instance=null):string{
-		$errorPath = new PHPString(
-			$this->resolvePath($this->_conf->getString(self::DEBUG_LOGS)??"debug.log")
-		);
-		if(!$errorPath->startBy("/")){
-			return $this->getWorkingDir($instance).DS.$errorPath;
-		}else{
-			return $errorPath;
-		}
-	}
-
-	/**
-	 * @param null|string $instance Instance concernée
-	 * @return string
-	 */
-	public function getLogsPath(?string $instance=null):string{
-		$errorPath = new PHPString(
-			$this->resolvePath($this->_conf->getString(self::DEF_LOGS)??"rts.log")
-		);
-		if(!$errorPath->startBy("/")){
-			return $this->getWorkingDir($instance).DS.$errorPath;
-		}else{
-			return $errorPath;
-		}
-	}
 
 	/**
 	 * @param string $instance Instance concernée
@@ -393,6 +364,14 @@ final class RTSPoolConfs {
 		}else{
 			return $modelsToLoad;
 		}
+	}
+
+	/**
+	 * @param null|string $instance
+	 * @return ILogger
+	 */
+	public function getLogger(?string $instance=null):ILogger{
+		return $this->_instanceLoggers[$instance] ?? $this->_logger;
 	}
 
 	/**

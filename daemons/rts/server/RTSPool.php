@@ -1,15 +1,9 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 08/08/18
- * Time: 17:01
- */
 
 namespace wfw\daemons\rts\server;
 
-
 use wfw\engine\lib\cli\signalHandler\PCNTLSignalsHelper;
+use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
 use wfw\engine\lib\PHP\errors\IllegalInvocation;
 
@@ -39,8 +33,8 @@ final class RTSPool {
 	private $_pids;
 	/** @var string[] $_instancesInfos */
 	private $_instancesInfos;
-	/** @var string $_errorLogs */
-	private $_errorLogs;
+	/** @var ILogger $_logger */
+	private $_logger;
 
 	/**
 	 * MSServerPool constructor.
@@ -50,7 +44,8 @@ final class RTSPool {
 	 * @param ISocketProtocol $protocol       Protocole de communication à utiliser
 	 * @param int[]           $pids           Liste des pids des MSServer à gérer
 	 * @param string[]        $instancesInfos Liste des instances sous la forme $name => $socketPath
-	 * @param string          $errorLogPath   Chemin d'accés au fichier de log d'erreurs
+	 * @param ILogger         $logger
+	 * @throws IllegalInvocation
 	 */
 	public function __construct(
 		string $socketPath,
@@ -58,10 +53,10 @@ final class RTSPool {
 		ISocketProtocol $protocol,
 		array $pids,
 		array $instancesInfos,
-		string $errorLogPath
+		ILogger $logger
 	){
 		$this->_instancesInfos = $instancesInfos;
-		$this->_errorLogs = $errorLogPath;
+		$this->_logger = $logger;
 		$this->_workingDir = $workingDir;
 		$this->_socketAddr = $socketPath;
 		$this->_protocol = $protocol;
@@ -126,14 +121,13 @@ final class RTSPool {
 		}catch(\Exception $e){
 			$errorCode = socket_last_error($socket);
 			socket_clear_error($socket);
-
-			$this->errorLog(print_r([
+			$this->_logger->log(print_r([
 				"socket_last_error" => [
 					"code" => $errorCode,
 					"message" =>socket_strerror($errorCode)
 				],
 				"error" => (string)$e
-			],true));
+			],true), ILogger::ERR);
 		}
 	}
 
@@ -183,13 +177,5 @@ final class RTSPool {
 		foreach($this->_pids as $pid){
 			posix_kill($pid,PCNTLSignalsHelper::SIGALRM);
 		}
-	}
-
-	/**
-	 * Ecrit un message dans le fichier d'erreurs
-	 * @param string $message Message à ecrire
-	 */
-	private function errorLog(string $message):void{
-		error_log("$message\n",3,$this->_errorLogs);
 	}
 }

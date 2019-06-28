@@ -3,6 +3,7 @@
 namespace wfw\daemons\rts\server;
 
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
+use wfw\daemons\rts\server\websocket\IWebsocketEvent;
 use wfw\daemons\rts\server\websocket\IWebsocketListener;
 use wfw\daemons\rts\server\websocket\IWebsocketProtocol;
 use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
@@ -84,5 +85,12 @@ final class RTSNetworkPort implements IWebsocketListener {
 			 * permettant de sauter l'étape
 			 * */
 		}
+	}
+
+	/**
+	 * @param IWebsocketEvent $event Evenement
+	 */
+	public function apply(IWebsocketEvent $event): void {
+		// TODO: Implement apply() method.
 	}
 }

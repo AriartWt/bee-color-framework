@@ -8,6 +8,8 @@
 
 namespace wfw\daemons\rts\server\environment;
 
+use wfw\engine\lib\logger\ILogger;
+
 /**
  * Environment d'un RTS
  */
@@ -103,37 +105,7 @@ interface IRTSEnvironment {
 	public function destroyOutdatedSessions(): void;
 
 	/**
-	 * @return bool True
+	 * @return ILogger
 	 */
-	public function debugEnabled():bool;
-
-	/**
-	 * @return int
-	 */
-	public function getMaxRequestHandshakeSize():int;
-
-	/**
-	 * @return bool
-	 */
-	public function isHeaderOriginRequired():bool;
-
-	/**
-	 * @return bool
-	 */
-	public function isHeaderProtocolRequired():bool;
-
-	/**
-	 * @return bool
-	 */
-	public function willSupportExtension():bool;
-
-	/**
-	 * @return int
-	 */
-	public function maxWriteBuffer():int;
-
-	/**
-	 * @return int
-	 */
-	public function maxReadBuffer():int;
+	public function getLogger():ILogger;
 }

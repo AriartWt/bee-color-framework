@@ -1,11 +1,6 @@
 #!/usr/bin/php -q
 <?php
-/**
- * Created by PhpStorm.
- * User: ariart
- * Date: 08/08/18
- * Time: 12:56
- */
+
 require_once dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR."init.environment.php";
 
 use wfw\daemons\multiProcWorker\socket\protocol\DefaultProtocol;
@@ -18,8 +13,6 @@ use wfw\engine\lib\cli\argv\ArgvOptMap;
 use wfw\engine\lib\cli\argv\ArgvParser;
 use wfw\engine\lib\cli\argv\ArgvReader;
 use wfw\engine\lib\cli\signalHandler\PCNTLSignalsHelper;
-use wfw\engine\lib\logger\DefaultLogFormater;
-use wfw\engine\lib\logger\FileLogger;
 
 $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
    new ArgvOpt('-pid','Affiche le pid',0,null,true),
@@ -29,7 +22,7 @@ $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 try{
 	if($argvReader->exists('-pid'))
 		fwrite(STDOUT,getmypid().PHP_EOL);
-
+	cli_set_process_title("WFW RTS server");
 	//On récupère les configurations.
 	$confs = new RTSPoolConfs(
 		ENGINE.DS."config".DS."conf.json",
@@ -46,20 +39,7 @@ try{
 			$pidFile = $servWorkingDir."/rts.pid";
 			if(file_exists($pidFile))
 				posix_kill(file_get_contents($pidFile),PCNTLSignalsHelper::SIGALRM);
-			$logger = new FileLogger(
-				new DefaultLogFormater(),
-				$confs->getLogsPath($name),
-				$confs->getErrorLogsPath($name),
-				$confs->getWarningLogsPath($name),
-				$confs->getDebugLogsPath($name)
-			);
-			$level = $confs->getDebugLevel($name);
-			if($level > 0){
-				$logger->autoConfByLevel($level);
-				$logger->autoConfFileByLevel($level, FileLogger::DEBUG);
-			}else{
-				$logger->autoConfByLevel($confs->getLogsLevel($name));
-			}
+
 			$server = new RTS(
 				$confs->getSocketPath($name),
 				$confs->getPort($name),
@@ -69,15 +49,14 @@ try{
 					$confs->getUsers($name),
 					$confs->getGroups($name),
 					$confs->getAdmins($name),
-					$logger,
+					$confs->getLogger($name),
 					$confs->getSessionTtl($name)
 				),
 				$confs->getRequestTtl($name),
 				$confs->getMaxWSockets($name),
 				$confs->getMaxWorkers($name),
 				$confs->getAllowedWSocketOverflow($name),
-				$confs->haveToSendErrorToClient($name),
-				$confs->getErrorLogsPath($name)
+				$confs->haveToSendErrorToClient($name)
 			);
 
 			$pcntlHelper = new PCNTLSignalsHelper(true);
@@ -119,7 +98,7 @@ try{
 					$confs->getInstances()
 				)
 			),
-			$confs->getErrorLogsPath()
+			$confs->getLogger()
 		);
 
 		$pcntlHelper = new PCNTLSignalsHelper(true);
@@ -138,52 +117,23 @@ try{
 	}
 }catch(\InvalidArgumentException $e){
 	fwrite(STDOUT,"\e[33mWFW_rts WRONG_USAGE\e[0m : {$e->getMessage()}".PHP_EOL);
-	error_log(
-		"\e[33mWFW_rts WRONG_USAGE\e[0m : {$e->getMessage()}".PHP_EOL,
-		3,
-		$confs->getErrorLogsPath()
-	);
 	exit(1);
 }catch(\Exception $e){
-	if($argvReader->exists('--debug')){
-		fwrite(STDOUT,"\e[31mWFW_rts ERROR\e[0m : ".PHP_EOL."$e".PHP_EOL);
-		error_log(
-			"\e[31mWFW_rts ERROR\e[0m : ".PHP_EOL."$e".PHP_EOL,
-			3,
-			$confs->getErrorLogsPath()
-		);
-	}
-	else{
-		fwrite(
-			STDOUT,
-			"\e[31mWFW_rts ERROR\e[0m (try --debug for more) : {$e->getMessage()}".PHP_EOL
-		);
-		error_log(
-			"\e[31mWFW_rts ERROR\e[0m (try --debug for more) : {$e->getMessage()}".PHP_EOL,
-			3,
-			$confs->getErrorLogsPath()
-		);
-	}
+	if($argvReader->exists('--debug')) fwrite(
+			STDOUT,"\e[31mWFW_rts ERROR\e[0m : ".PHP_EOL."$e".PHP_EOL
+	);
+	else fwrite(
+		STDOUT,
+		"\e[31mWFW_rts ERROR\e[0m (try --debug for more) : {$e->getMessage()}".PHP_EOL
+	);
 	exit(2);
 }catch(\Error $e){
-	if($argvReader->exists('--debug')){
-		fwrite(STDOUT,"\e[31mWFW_rts FATAL_ERROR\e[0m : ".PHP_EOL."$e".PHP_EOL);
-		error_log(
-			"\e[31mWFW_rts FATAL_ERROR\e[0m : ".PHP_EOL."$e".PHP_EOL,
-			3,
-			$confs->getErrorLogsPath()
-		);
-	}
-	else{
-		fwrite(
-			STDOUT,
-			"\e[31mWFW_rts FATAL_ERROR\e[0m (try --debug for more) : {$e->getMessage()}".PHP_EOL
-		);
-		error_log(
-			"\e[31mWFW_rts FATAL_ERROR\e[0m (try --debug for more) : {$e->getMessage()}".PHP_EOL,
-			3,
-			$confs->getErrorLogsPath()
-		);
-	}
+	if($argvReader->exists('--debug')) fwrite(
+			STDOUT,"\e[31mWFW_rts FATAL_ERROR\e[0m : ".PHP_EOL."$e".PHP_EOL
+	);
+	else fwrite(
+		STDOUT,
+		"\e[31mWFW_rts FATAL_ERROR\e[0m (try --debug for more) : {$e->getMessage()}".PHP_EOL
+	);
 	exit(3);
 }
