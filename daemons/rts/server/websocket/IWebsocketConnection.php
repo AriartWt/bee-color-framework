@@ -13,13 +13,20 @@ interface IWebsocketConnection {
 
 	/**
 	 * Send data to client
+	 *
+	 * @param string $payload Payload to send to client
+	 * @param string $type    Type of response
+	 * @param bool   $masked  Response mask
+	 * @return bool True if message sent, false otherwise
 	 */
-	public function send():void;
+	public function send(string $payload, string $type, bool $masked = false):bool;
 
 	/**
 	 * Close connection
+	 *
+	 * @param int $status
 	 */
-	public function close():void;
+	public function close(int $status = IWebsocketProtocol::STATUS_NORMAL_CLOSE):void;
 
 	/**
 	 * @return string Connection id

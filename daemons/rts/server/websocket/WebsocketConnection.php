@@ -24,15 +24,19 @@ final class WebsocketConnection implements IWebsocketConnection {
 	private $_handshaked;
 	/** @var bool $_closed */
 	private $_closed;
+	/** @var IWebsocketProtocol $_protocol */
+	private $_protocol;
 
 	/**
 	 * WebsocketConnection constructor.
 	 *
-	 * @param resource $socket The client socket
+	 * @param resource           $socket The client socket
+	 * @param IWebsocketProtocol $protocol
 	 */
-	public function __construct($socket) {
+	public function __construct($socket, IWebsocketProtocol $protocol) {
 		$this->_socket = $socket;
-		// set some client-information:
+		$this->_protocol = $protocol;
+
 		$socketName = stream_socket_get_name($socket, true);
 		$tmp = explode(':', $socketName);
 		$this->_ip = $tmp[0];
@@ -88,18 +92,82 @@ final class WebsocketConnection implements IWebsocketConnection {
 
 	/**
 	 * Send data to client
+	 *
+	 * @param string $payload
+	 * @param string $type
+	 * @param bool   $masked
+	 * @return bool True if message sent, false otherwise
+	 * @throws WebsocketConnectionClosed
 	 */
-	public function send(): void {
+	public function send(string $payload, string $type, bool $masked = false): bool {
 		$this->throwIfClosed("send data");
-		// TODO: Implement send() method.
+		$this->write($this->_protocol->encode($payload, $type, $masked));
+	}
+
+	/**
+	 * @param string $data data to write in client socket
+	 * @return bool|int
+	 */
+	public function write(string $data){
+		$stringLength = strlen($data);
+		if ($stringLength === 0) {
+			return 0;
+		}
+
+		for ($written = 0; $written < $stringLength; $written += $fwrite) {
+			$fwrite = @fwrite($this->_socket, substr($data, $written));
+			if ($fwrite === false) {
+				throw new WebsocketIOFailure('Could not write to stream.');
+			}//TODO : better error message
+			if ($fwrite === 0) {
+				throw new WebsocketIOFailure('Could not write to stream.');
+			}
+		}
+
+		return $written;
 	}
 
 	/**
 	 * Close the connection
+	 *
+	 * @param int $statusCode
+	 * @throws WebsocketConnectionClosed
 	 */
-	public function close(): void {
+	public function close(int $statusCode = IWebsocketProtocol::STATUS_NORMAL_CLOSE): void {
 		$this->throwIfClosed("close connection");
-		// TODO: Implement close() method.
+		$payload = str_split(sprintf('%016b', $statusCode), 8);
+		$payload[0] = chr(bindec($payload[0]));
+		$payload[1] = chr(bindec($payload[1]));
+		$payload = implode('', $payload);
+
+		switch ($statusCode) {
+			case IWebsocketProtocol::STATUS_NORMAL_CLOSE:
+				$payload .= 'normal closure';
+				break;
+			case IWebsocketProtocol::STATUS_GOING_AWAY:
+				$payload .= 'going away';
+				break;
+			case IWebsocketProtocol::STATUS_PROTOCOL_ERROR:
+				$payload .= 'protocol error';
+				break;
+			case IWebsocketProtocol::STATUS_UNKNOWN_DATA:
+				$payload .= 'unknown data (opcode)';
+				break;
+			case IWebsocketProtocol::STATUS_MESSAGE_TOO_LARGE:
+				$payload .= 'frame too large';
+				break;
+			case IWebsocketProtocol::STATUS_INCONSISTENT_DATA:
+				$payload .= 'utf8 expected';
+				break;
+			case IWebsocketProtocol::STATUS_MESSAGE_VIOLATES_SERVER_POLICY:
+				$payload .= 'message violates server policy';
+				break;
+			default :
+				$payload .= 'Unknown error';
+		}
+		$this->send($payload, 'close', false);
+		stream_socket_shutdown($this->_socket, STREAM_SHUT_RDWR);
+		$this->_closed = true;
 	}
 
 	/**
