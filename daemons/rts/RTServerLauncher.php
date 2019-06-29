@@ -42,6 +42,7 @@ try{
 
 			$server = new RTS(
 				$confs->getSocketPath($name),
+				$confs->getHost($name),
 				$confs->getPort($name),
 				new DefaultProtocol(),
 				new RTSEnvironment(
@@ -56,6 +57,7 @@ try{
 				$confs->getMaxWSockets($name),
 				$confs->getMaxWorkers($name),
 				$confs->getAllowedWSocketOverflow($name),
+				$confs->getSleepInterval($name),
 				$confs->haveToSendErrorToClient($name)
 			);
 

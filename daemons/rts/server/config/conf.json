@@ -11,6 +11,7 @@
 		"modules_to_load_path" : "{ROOT}/site/config/load/rts.php",
 		"request_ttl" : 900,
 		"session_ttl" : 60,
+		"sleep_interval" : "100",
 		"send_error_to_client" : true,
 		"logs" : {
 			"level" : 2,
@@ -28,6 +29,7 @@
 	"instances" : {
 		"bee-color" : {
 			"modules_to_load_path" : "{ROOT}/BeeColor/config/load/rts.php",
+			"host" : "bee-color.local.dev",
 			"port" : 2670,
 			"users" : {
 				"bee-color_website" : {

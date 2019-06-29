@@ -11,8 +11,6 @@ namespace wfw\daemons\rts\server;
 use PHPMailer\PHPMailer\Exception;
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
 use wfw\daemons\rts\server\errors\MaxWorkerLimitReached;
-use wfw\daemons\rts\server\websocket\WebsocketEventObserver;
-use wfw\daemons\rts\server\websocket\WebsocketProtocol;
 use wfw\daemons\rts\server\worker\WorkerCommand;
 use wfw\engine\lib\cli\signalHandler\PCNTLSignalsHelper;
 use wfw\engine\lib\logger\ILogger;
@@ -25,7 +23,7 @@ use wfw\engine\lib\PHP\types\UUID;
  * RealTimeServer
  */
 final class RTS{
-	private const MAX_SOCKET_SELECT = 1000;
+	public const MAX_SOCKET_SELECT = 1000;
 	/** @var resource $_localPort */
 	private $_localPort;
 	/** @var string $_secretKey */
@@ -44,6 +42,8 @@ final class RTS{
 	private $_localPortPid;
 	/** @var int $_port */
 	private $_port;
+	/** @var string $_host */
+	private $_host;
 	/** @var $_networkPort */
 	private $_networkPort;
 	/** @var bool|resource $_acquiredLockFile */
@@ -64,25 +64,32 @@ final class RTS{
 	private $_workersInfos;
 	/** @var array $_socketTimeout */
 	private $_socketTimeout = array("sec"=>10,"usec"=>0);
+	/** @var RTSNetworkPort $_worker */
+	private $_worker;
+	/** @var int $_sleepInterval */
+	private $_sleepInterval;
 
 	/**
 	 * RTS constructor.
 	 *
-	 * @param string          $socketPath        Chemin vers la socket locale du serveur
-	 * @param int             $port              Port network
-	 * @param ISocketProtocol $protocol          Protocol de communication sur la socket serveur
-	 * @param IRTSEnvironment $environment       Environement du serveur
-	 * @param int             $maxWSocket        Nombre maximum de requêtes par worker (0 pour no-limit)
-	 * @param int             $maxWorkers        Nombre maximum de workers (0 pour no-limit)
+	 * @param string          $socketPath              Chemin vers la socket locale du serveur
+	 * @param string          $host                    Websocket host
+	 * @param int             $port                    Port network
+	 * @param ISocketProtocol $protocol                Protocol de communication sur la socket serveur
+	 * @param IRTSEnvironment $environment             Environement du serveur
+	 * @param int             $maxWSocket              Nombre maximum de requêtes par worker (0 pour no-limit)
+	 * @param int             $maxWorkers              Nombre maximum de workers (0 pour no-limit)
 	 * @param int             $allowedWSocketsOverflow Nombre de fois que l'on peut augmenter le nombre
 	 *                                                 maximum de sockets par worker lorsque le nombre maximum de worker est atteint
 	 *                                                 -1 : pas de limite, n : max_wsockets * (n+1)
-	 * @param int             $requestTtl        Durée maximum de chaque requête
-	 * @param bool            $sendErrorToClient Envoir les erreurs sur les clients socket locale
+	 * @param int             $requestTtl              Durée maximum de chaque requête
+	 * @param int             $sleepInterval           Sleep interval between two loops (in ms)
+	 * @param bool            $sendErrorToClient       Envoir les erreurs sur les clients socket locale
 	 * @throws IllegalInvocation
 	 */
 	public function __construct(
 		string $socketPath,
+		string $host,
 		int $port,
 		ISocketProtocol $protocol,
 		IRTSEnvironment $environment,
@@ -90,24 +97,27 @@ final class RTS{
 		int $maxWorkers = 0,
 		int $allowedWSocketsOverflow = -1,
 		int $requestTtl = 900,
+		int $sleepInterval = 100,
 		bool $sendErrorToClient = true
 	){
-		$this->_secretKey = (string) new UUID(UUID::V4);
-		$this->_socketPath = $socketPath;
-		$this->_protocol = $protocol;
-		$this->_environment = $environment;
-		$this->_requestTtl = $requestTtl;
-		$this->_sendErrorToClient = $sendErrorToClient;
 		$this->_port = $port;
-		$this->_maxWorkers = $maxWorkers;
-		$this->_maxWSockets = $maxWSocket;
-		$this->_allowedOverflow = $allowedWSocketsOverflow;
+		$this->_host = $host;
 		$this->_workers = [];
 		$this->_workersInfos = [];
+		$this->_protocol = $protocol;
+		$this->_maxWorkers = $maxWorkers;
+		$this->_socketPath = $socketPath;
+		$this->_requestTtl = $requestTtl;
+		$this->_maxWSockets = $maxWSocket;
+		$this->_environment = $environment;
+		$this->_sleepInterval = $sleepInterval;
+		$this->_sendErrorToClient = $sendErrorToClient;
+		$this->_allowedOverflow = $allowedWSocketsOverflow;
+		$this->_secretKey = (string) new UUID(UUID::V4);
 
 		//On commence par vérifier l'existence du fichier lock
 		//Un seul RTS est autorisé par repertoir de travail.
-		$this->_lockFile = $environment->getWorkingDir().DS."server.lock";
+		$this->_lockFile = $environment->getWorkingDir()."/server.lock";
 		if(!file_exists($this->_lockFile)){
 			touch($this->_lockFile);
 		}
@@ -142,16 +152,16 @@ final class RTS{
 		}else if($this->_localPortPid > 0){
 			socket_close($sockets[0]);
 			$this->_localPort = $sockets[1];
-			//TODO
-			$this->_networkPort = socket_create_listen($this->_port,SOMAXCONN);
 			$this->workerManagerLoop();
 		}else throw new \Exception("Unable to fork !");
 	}
 
 	/**
 	 * Crée un nouveau worker
+	 *
 	 * @return int pid du worker créé
 	 * @throws MaxWorkerLimitReached
+	 * @throws \RuntimeException
 	 */
 	private function newWorker():int{
 		if(count($this->_workers) > $this->_maxWorkers) throw new MaxWorkerLimitReached(
@@ -191,6 +201,7 @@ final class RTS{
 	private function workerManagerLoop():void{
 		$this->newWorker();
 		while(true){
+			$start = microtime(true);
 			$master = [$this->_networkPort];
 			$local = [$this->_localPort];
 			$chunks = $this->splitIntoChunks(array_merge(
@@ -238,6 +249,8 @@ final class RTS{
 					}
 				}
 			}
+			$execTime = microtime(true) - $start;
+			if( $execTime < $this->_sleepInterval) usleep($execTime - $start);
 		}
 	}
 
@@ -294,10 +307,10 @@ final class RTS{
 	/**
 	 * La fonction socket_select est limitée à 1024 sockets. Donc on fait en sorte de spliter le
 	 * tableau en portions de self::MAX_SOCKET_SELECT
-	 * @param resource[] $sockets Liste des sockets dans un tableau linéaire
+	 * @param resource[] &$sockets Liste des sockets dans un tableau linéaire
 	 * @return resource[] Tableau de chuncks du tableau passé en paramètres.
 	 */
-	private function splitIntoChunks(array $sockets):array{
+	private function splitIntoChunks(array &$sockets):array{
 		$res = [];
 		$current = [];
 		$i = 1;
@@ -331,14 +344,20 @@ final class RTS{
 
 	/**
 	 * Loop du port network
+	 *
+	 * @throws \RuntimeException
 	 */
 	private function wsLoop():void{
-		(new RTSNetworkPort(
+		$this->_worker = new RTSNetworkPort(
+			$this->_host,
+			$this->_port,
 			$this->_mainProcessSocket,
-			$this->_networkPort,
 			$this->_environment,
-			$this->_protocol
-		))->start();
+			$this->_protocol,
+			$this->_networkPort
+		);
+		if(is_null($this->_networkPort)) $this->_networkPort = $this->_worker->getNetworkSocket();
+		$this->_worker->start();
 	}
 
 	/**

@@ -255,6 +255,28 @@ final class RTSPoolConfs {
 	}
 
 	/**
+	 * @param string $instance  Instance dont on souhaite connaitre le port
+	 * @return int
+	 * @throws \InvalidArgumentException
+	 */
+	public function getSleepInterval(string $instance): int{
+		if(!isset($this->_instancesConfs[$instance]))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return $this->_instancesConfs[$instance]->find("sleep_interval");
+	}
+
+	/**
+	 * @param string $instance  Instance dont on souhaite connaitre le port
+	 * @return string
+	 * @throws \InvalidArgumentException
+	 */
+	public function getHost(string $instance): string{
+		if(!isset($this->_instancesConfs[$instance]))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return $this->_instancesConfs[$instance]->find("host");
+	}
+
+	/**
 	 * @param string $instance Instance dont on souhaite connaitre les groupes
 	 * @return stdClass
 	 * @throws \InvalidArgumentException
