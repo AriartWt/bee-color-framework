@@ -21,14 +21,19 @@ abstract class WebsocketEvent implements IWebsocketEvent{
 	private $_creationDate;
 	/** @var bool $_propagationStopped */
 	private $_propagationStopped;
+	/** @var string $_socketId */
+	private $_socketId;
 
 	/**
 	 * WebsocketEvent constructor.
+	 *
+	 * @param string $socketId
 	 */
-	public function __construct() {
+	public function __construct(string $socketId) {
 		$this->_id = (string) new UUID(UUID::V6);
 		$this->_creationDate = microtime(true);
 		$this->_propagationStopped = false;
+		$this->_socketId = $socketId;
 	}
 
 	/**
@@ -57,5 +62,12 @@ abstract class WebsocketEvent implements IWebsocketEvent{
 	 */
 	public function isPropagationStopped(): bool {
 		return $this->_propagationStopped;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getSocketId(): string {
+		return $this->_socketId;
 	}
 }

@@ -19,7 +19,7 @@ interface IWebsocketConnection {
 	 * @param bool   $masked  Response mask
 	 * @return bool True if message sent, false otherwise
 	 */
-	public function send(string $payload, string $type, bool $masked = false):bool;
+	public function send(string $payload, string $type, bool $masked = false);
 
 	/**
 	 * Close connection

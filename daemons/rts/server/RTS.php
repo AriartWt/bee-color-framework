@@ -337,9 +337,7 @@ final class RTS{
 			$this->_mainProcessSocket,
 			$this->_networkPort,
 			$this->_environment,
-			$this->_protocol,
-			new WebsocketProtocol(new WebsocketEventObserver())
-			//TODO : using DICE TO create RTSNetworkPort.
+			$this->_protocol
 		))->start();
 	}
 
