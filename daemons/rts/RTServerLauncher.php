@@ -51,14 +51,21 @@ try{
 					$confs->getGroups($name),
 					$confs->getAdmins($name),
 					$confs->getLogger($name),
-					$confs->getSessionTtl($name)
+					$confs->getModulesToLoad($name),
+					$confs->getSessionTtl($name),
+					$confs->getMaxWriteBufferSize($name),
+					$confs->getMaxReadBufferSize($name),
+					$confs->getMaxRequestHandshakeSize($name),
+					$confs->getAllowedOrigins($name) ?? [$confs->getHost($name)],
+					$confs->getMaxConnectionsByIp($name),
+					$confs->getMaxRequestsBySecondByClient($name),
+					$confs->getMaxSocketSelect($name)
 				),
-				$confs->getRequestTtl($name),
 				$confs->getMaxWSockets($name),
 				$confs->getMaxWorkers($name),
 				$confs->getAllowedWSocketOverflow($name),
-				$confs->getSleepInterval($name),
-				$confs->haveToSendErrorToClient($name)
+				$confs->getRequestTtl($name),
+				$confs->getSleepInterval($name)
 			);
 
 			$pcntlHelper = new PCNTLSignalsHelper(true);

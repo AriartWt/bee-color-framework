@@ -3,7 +3,6 @@
 namespace wfw\daemons\rts\server\websocket;
 
 use wfw\daemons\rts\server\websocket\errors\WebsocketConnectionClosed;
-use wfw\daemons\rts\server\websocket\errors\WebsocketFailure;
 use wfw\daemons\rts\server\websocket\errors\WebsocketHandhaskeFailure;
 use wfw\daemons\rts\server\websocket\errors\WebsocketIOFailure;
 use wfw\daemons\rts\server\websocket\events\Accepted;
@@ -28,6 +27,8 @@ final class WebsocketConnection implements IWebsocketConnection {
 	private $_ip;
 	/** @var int $_port */
 	private $_port;
+	/** @var array[][] */
+	private $_queue;
 	/** @var bool $_handshaked */
 	private $_handshaked;
 	/** @var bool $_closed */
@@ -44,6 +45,10 @@ final class WebsocketConnection implements IWebsocketConnection {
 	private $_allowedOrigins;
 	/** @var array $_allowedApplications */
 	private $_allowedApplications;
+	/** @var ?int $_rejectOnHandshakeCode */
+	private $_rejectOnHandshakeCode;
+	/** @var null|string $_rejectOnHandshakeMessage */
+	private $_rejectOnHandshakeMessage;
 
 	/**
 	 * WebsocketConnection constructor.
@@ -53,15 +58,22 @@ final class WebsocketConnection implements IWebsocketConnection {
 	 * @param IWebsocketEventDispatcher $dispatcher
 	 * @param array                     $allowedOrigins
 	 * @param array                     $allowedApplications
+	 * @param int|null                  $rejectOnHandshakeCode
+	 * @param null|string               $rejectOnHandshakeMessage
 	 */
 	public function __construct(
 		$socket,
 		IWebsocketProtocol $protocol,
 		IWebsocketEventDispatcher $dispatcher,
 		array $allowedOrigins = [],
-		array $allowedApplications = []
+		array $allowedApplications = [],
+		?int $rejectOnHandshakeCode = null,
+		?string $rejectOnHandshakeMessage = "Server busy"
 	){
+		$this->_queue = [];
 		$this->_socket = $socket;
+		$this->_rejectOnHandshakeMessage = $rejectOnHandshakeMessage;
+		$this->_rejectOnHandshakeCode = $rejectOnHandshakeCode;
 		$this->_protocol = $protocol;
 		$this->_dispatcher = $dispatcher;
 		$this->_allowedOrigins = (function(string ...$origins){
@@ -137,7 +149,20 @@ final class WebsocketConnection implements IWebsocketConnection {
 	}
 
 	private function handshake():void{
-		$data = $this->read();
+		try{
+			$data = $this->read();
+		}catch(\Error | \Exception $e){
+			$this->_dispatcher->dispatch(new ErrorOcurred($this->_id,$e));
+			return;
+		}
+
+		if(!is_null($this->_rejectOnHandshakeCode)){
+			$this->sendHttpResponse(
+				$this->_rejectOnHandshakeCode,
+				"$this->_rejectOnHandshakeCode Connection rejected by server ($this->_rejectOnHandshakeMessage)"
+			);
+			return;
+		}
 		$lines = preg_split("/\r\n/", $data);
 
 		// check for valid http-header:
@@ -195,11 +220,13 @@ final class WebsocketConnection implements IWebsocketConnection {
 			$this->write($response);
 		} catch (\Error | \Exception $e) {
 			$this->_dispatcher->dispatch(new ErrorOcurred($this->_id,$e));
+			return;
 		}
-
+		$this->_handshaked = true;
 		$this->_dispatcher->dispatch(new Handshaked(
 			$this->_id, new WebsocketSender($this), $appKey
 		));
+		if(!empty($this->_queue)) foreach($this->_queue as $message) $this->send(...$message);
 	}
 
 	/**
@@ -236,13 +263,19 @@ final class WebsocketConnection implements IWebsocketConnection {
 				$this->_id,
 				new WebsocketHandhaskeFailure($httpStatusCode,$httpHeader)
 			));
-		} catch (WebsocketFailure $e) {
+		} catch (\Error | \Exception $e) {
 			$this->_dispatcher->dispatch(new ErrorOcurred($this->_id,$e));
 		}
 	}
 
 	private function handle():void{
-		$data = $this->read();
+		try{
+			$data = $this->read();
+		}catch(\Error | \Exception $e){
+			$this->_dispatcher->dispatch(new ErrorOcurred($this->_id,$e));
+			return;
+		}
+
 		if ($this->_waitingForData) {
 			$data = $this->_dataBuffer . $data;
 			$this->_dataBuffer = '';
@@ -326,12 +359,17 @@ final class WebsocketConnection implements IWebsocketConnection {
 	 * @param string $payload
 	 * @param string $type
 	 * @param bool   $masked
-	 * @throws WebsocketConnectionClosed
 	 */
-	public function send(string $payload, string $type, bool $masked = true): void {
+	public function send(string $payload, string $type = IWebsocketProtocol::TEXT, bool $masked = true): void {
 		$this->throwIfClosed("send data");
-		$this->write($this->_protocol->encode($payload, $type, $masked));
-		$this->_dispatcher->dispatch(new DataSent($this->_id,$payload));
+		if($this->_handshaked){
+			try{
+				$this->write($this->_protocol->encode($payload, $type, $masked));
+				$this->_dispatcher->dispatch(new DataSent($this->_id,$payload));
+			}catch(\Error | \Exception $e){
+				$this->_dispatcher->dispatch(new ErrorOcurred($this->_id,$e));
+			}
+		}else $this->_queue[] = [$payload, $type, $masked];
 	}
 
 	/**
@@ -419,5 +457,23 @@ final class WebsocketConnection implements IWebsocketConnection {
 	 */
 	public function getPort(): int {
 		return $this->_port;
+	}
+
+	/**
+	 * @return resource|null
+	 */
+	public function getSocket() {
+		return $this->_socket;
+	}
+
+	/**
+	 * @return bool True if connection is closed, false otherwise
+	 */
+	public function isClosed(): bool {
+		return $this->_closed;
+	}
+
+	public function __destruct() {
+		$this->close();
 	}
 }

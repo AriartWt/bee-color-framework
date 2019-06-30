@@ -16,6 +16,10 @@ class WorkerCommand {
 	public const ROOT = "root";
 	public const CLIENT = "client";
 
+	public const CMD_ACCEPT = "accept_new_client";
+	public const CMD_REJECT = "reject_new_client";
+	public const CMD_BROADCAST = "broadcast";
+
 	/** @var string $_transmiter */
 	private $_transmiter;
 	/** @var string $_source */

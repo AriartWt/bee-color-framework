@@ -208,6 +208,10 @@ final class RTS{
 				[$this->_localPort,$this->_networkPort],
 				array_values($this->_workers))
 			);
+			//TODO : get worker messages from client accepts (ip, for IP checking)
+			//TODO : worker broadcast for apps sync ? or apps in RTS and all
+			//TODO : workers sends back info to the main loop. So the main loops holds
+			//TODO : all apps ? Or distribute events accross workers
 			//bypass the 1024 socket management limit
 			foreach($chunks as $chunk){
 				$read = $chunk; $write = null; $except = null;
@@ -221,7 +225,7 @@ final class RTS{
 					$request = json_decode($this->read($this->_localPort));
 					if(!is_null($request)) $this->broadCastLocalMessage(new WorkerCommand(
 						WorkerCommand::LOCAL,
-						"broadcast",
+						WorkerCommand::CMD_BROADCAST,
 						$request["data"]??'',
 						$request["user"]??''
 					));
@@ -234,7 +238,7 @@ final class RTS{
 								if($wData === "connection_closed") $this->_workersInfos[$pid]["clients"]--;
 								else $this->write($w,new WorkerCommand(
 									WorkerCommand::CLIENT,
-									"broadcast",
+									WorkerCommand::CMD_BROADCAST,
 									$wData
 								));
 							}
@@ -266,14 +270,13 @@ final class RTS{
 
 	/**
 	 * Cherche un worker pouvant accepter une nouvelle connection.S'il ne trouve pas, ordonne à un worker
-	 * de refuser le nouveau client. (En fait, il l'accepte et lui envoie une erreur avant
-	 * de le rejeter)
+	 * de refuser le nouveau client.
 	 */
 	private function accept():void{
 		$accepterFound = false;
 		foreach($this->_workersInfos as $pid=>$infos){
 			if($infos["clients"]<$this->_maxWSockets){
-				$this->write($this->_workers[$pid],'{"cmd":"accept_new_client"}');
+				$this->write($this->_workers[$pid],'{"cmd":"'.WorkerCommand::CMD_ACCEPT.'"}');
 				$this->_workersInfos[$pid]["clients"]++;
 				$accepterFound = true;
 				break;
@@ -295,10 +298,12 @@ final class RTS{
 				//encore recevoir de nouveau client, on lui demande d'accepter la connexion
 				if($this->_allowedOverflow<0 || $less <= $this->_allowedOverflow*$this->_maxWSockets)
 					$this->write($this->_workers[$pid],new WorkerCommand(
-						WorkerCommand::ROOT,"accept_new_client"
+						WorkerCommand::ROOT,WorkerCommand::CMD_ACCEPT
 					));
 				else $this->write($this->_workers[$pid],new WorkerCommand(
-					WorkerCommand::ROOT,"reject_new_client"
+					WorkerCommand::ROOT,
+					WorkerCommand::CMD_REJECT,
+					"Max server connections reached."
 				));
 			}
 		}
@@ -315,12 +320,14 @@ final class RTS{
 		$current = [];
 		$i = 1;
 		foreach($sockets as $v){
+			$current[]=$v;
 			if($i%self::MAX_SOCKET_SELECT === 0){
-				$current = [];
 				$res[] = $current;
-			}else $current[]=$v;
+				$current = [];
+			}
 			$i++;
 		}
+		if(!empty($current)) $res[] = $current;
 		return $res;
 	}
 

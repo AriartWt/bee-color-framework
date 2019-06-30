@@ -19,7 +19,7 @@ interface IWebsocketConnection {
 	 * @param bool   $masked  Response mask
 	 * @return bool True if message sent, false otherwise
 	 */
-	public function send(string $payload, string $type, bool $masked = false);
+	public function send(string $payload, string $type = IWebsocketProtocol::TEXT, bool $masked = false);
 
 	/**
 	 * Close connection
@@ -42,4 +42,14 @@ interface IWebsocketConnection {
 	 * @return int Client port
 	 */
 	public function getPort():int;
+
+	/**
+	 * @return resource|null
+	 */
+	public function getSocket();
+
+	/**
+	 * @return bool True if connection is closed, false otherwise
+	 */
+	public function isClosed():bool;
 }

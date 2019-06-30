@@ -108,4 +108,44 @@ interface IRTSEnvironment {
 	 * @return ILogger
 	 */
 	public function getLogger():ILogger;
+	/**
+	 * @return array
+	 */
+	public function getModules(): array ;
+
+	/**
+	 * @return array
+	 */
+	public function getAllowedOrigins(): array ;
+
+	/**
+	 * @return int
+	 */
+	public function getMaxSocketSelect(): int ;
+
+	/**
+	 * @return int
+	 */
+	public function getMaxReadBufferSize(): int;
+
+	/**
+	 * @return int
+	 */
+	public function getMaxWriteBufferSize(): int;
+
+	/**
+	 * @return int
+	 */
+	public function getMaxConnectionsByIp(): int;
+
+	/**
+	 * @return int
+	 */
+	public function getMaxRequestHandshakeSize(): int;
+
+	/**
+	 * @return int
+	 */
+	public function getMaxRequestBySecondByClient(): int;
+
 }

@@ -27,6 +27,7 @@ final class RTSPoolConfs {
 	private $_conf;
 	/**  @var string $_basePath */
 	private $_basePath;
+	/** @var ILogger $_logger */
 	private $_logger;
 	/** @var ILogger[] $_instanceLoggers */
 	private $_instanceLoggers = [];
@@ -78,8 +79,8 @@ final class RTSPoolConfs {
 			FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
 			FileLogger::DEBUG,
 			$this->isCopyLogModeEnabled(null)
-		)->autoConfByLevel($this->_conf->getInt($this->_conf->getInt("logs/level") ?? ILogger::ERR
-		));
+		)->autoConfByLevel($this->_conf->getInt($this->_conf->getInt("logs/level") ?? ILogger::ERR)
+		);
 
 		//On détermine les configurations de chaque instance à créer
 		$this->_instancesConfs = [];
@@ -216,7 +217,7 @@ final class RTSPoolConfs {
 	public function getMaxWSockets(string $instance): int{
 		if(!isset($this->_instancesConfs[$instance]))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("max_wsockets")??1000;
+		return $this->_instancesConfs[$instance]->find("max_websockets_by_worker")??1;
 	}
 
 	/**
@@ -240,7 +241,7 @@ final class RTSPoolConfs {
 	public function getAllowedWSocketOverflow(string $instance): int{
 		if(!isset($this->_instancesConfs[$instance]))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("allowed_wsockets_overflow")??-1;
+		return $this->_instancesConfs[$instance]->find("allowed_wsockets_overflow") ?? -1;
 	}
 
 	/**
@@ -251,18 +252,95 @@ final class RTSPoolConfs {
 	public function getPort(string $instance): int{
 		if(!isset($this->_instancesConfs[$instance]))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("port");
+		return $this->_instancesConfs[$instance]->find("port") ?? 8000;
 	}
 
 	/**
-	 * @param string $instance  Instance dont on souhaite connaitre le port
+	 * @param string $instance  Min time in a loop
 	 * @return int
 	 * @throws \InvalidArgumentException
 	 */
 	public function getSleepInterval(string $instance): int{
 		if(!isset($this->_instancesConfs[$instance]))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("sleep_interval");
+		return $this->_instancesConfs[$instance]->find("sleep_interval") ?? 100;
+	}
+
+	/**
+	 * @param string $instance  Instance
+	 * @return int
+	 * @throws \InvalidArgumentException
+	 */
+	public function getMaxWriteBufferSize(string $instance): int{
+		if(!isset($this->_instancesConfs[$instance]))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return $this->_instancesConfs[$instance]->find("max_write_buffer_size") ?? 49152;
+	}
+
+	/**
+	 * @param string $instance  Instance
+	 * @return int
+	 * @throws \InvalidArgumentException
+	 */
+	public function getMaxReadBufferSize(string $instance): int{
+		if(!isset($this->_instancesConfs[$instance]))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return $this->_instancesConfs[$instance]->find("max_read_buffer_size") ?? 49152;
+	}
+
+	/**
+	 * @param string $instance  Instance
+	 * @return int
+	 * @throws \InvalidArgumentException
+	 */
+	public function getMaxConnectionsByIp(string $instance): int{
+		if(!isset($this->_instancesConfs[$instance]))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return $this->_instancesConfs[$instance]->find("max_connections_by_ip") ?? 20;
+	}
+
+	/**
+	 * @param string $instance  Instance
+	 * @return int
+	 * @throws \InvalidArgumentException
+	 */
+	public function getMaxRequestHandshakeSize(string $instance): int{
+		if(!isset($this->_instancesConfs[$instance]))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return $this->_instancesConfs[$instance]->find("max_request_handshake_size") ?? 1024;
+	}
+
+	/**
+	 * @param string $instance  Instance
+	 * @return array
+	 * @throws \InvalidArgumentException
+	 */
+	public function getAllowedOrigins(string $instance): ?array{
+		if(!isset($this->_instancesConfs[$instance]))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return $this->_instancesConfs[$instance]->find("allowed_origins") ?? null;
+	}
+
+	/**
+	 * @param string $instance  Instance
+	 * @return int
+	 * @throws \InvalidArgumentException
+	 */
+	public function getMaxRequestsBySecondByClient(string $instance): int{
+		if(!isset($this->_instancesConfs[$instance]))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return $this->_instancesConfs[$instance]->find("max_requests_by_second_by_client") ?? 20;
+	}
+
+	/**
+	 * @param string $instance  Instance
+	 * @return int
+	 * @throws \InvalidArgumentException
+	 */
+	public function getMaxSocketSelect(string $instance): int{
+		if(!isset($this->_instancesConfs[$instance]))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return $this->_instancesConfs[$instance]->find("max_socket_select") ?? 20;
 	}
 
 	/**
@@ -273,7 +351,9 @@ final class RTSPoolConfs {
 	public function getHost(string $instance): string{
 		if(!isset($this->_instancesConfs[$instance]))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("host");
+		$res = $this->_instancesConfs[$instance]->find("host");
+		if(is_null($res)) throw new \InvalidArgumentException("A host must be defined !");
+		return $res;
 	}
 
 	/**

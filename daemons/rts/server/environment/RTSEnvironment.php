@@ -31,16 +31,24 @@ final class RTSEnvironment implements IRTSEnvironment{
 	private $_admins;
 	/** @var int $_ttl */
 	private $_ttl;
-
-	private $_debug;
-	private $_maxWriteBuffer;
-	private $_maxReadBuffer;
-	private $_maxRequestHandshakeSize;
-	private $_headerOriginRequired;
-	private $_headerProtocolRequired;
-	private $_willSupportExtensions;
-	private $_maxSocketSelect;
+	/** @var ILogger $_logger */
 	private $_logger;
+	/** @var array $_modules */
+	private $_modules;
+	/** @var array $_allowedOrigins */
+	private $_allowedOrigins;
+	/** @var int $_maxSocketSelect */
+	private $_maxSocketSelect;
+	/** @var int $_maxReadBufferSize */
+	private $_maxReadBufferSize;
+	/** @var int $_maxWriteBufferSize */
+	private $_maxWriteBufferSize;
+	/** @var int $_maxConnectionsByIp */
+	private $_maxConnectionsByIp;
+	/** @var int $_maxRequestHandshakeSize */
+	private $_maxRequestHandshakeSize;
+	/** @var int $_maxRequestBySecondByClient */
+	private $_maxRequestBySecondByClient;
 
 	/**
 	 * MSServerEnvironment constructor.
@@ -50,13 +58,14 @@ final class RTSEnvironment implements IRTSEnvironment{
 	 * @param stdClass     $groups     Liste des groupes d'utilisateur du serveur
 	 * @param stdClass     $admins     Liste des droits d'administration du serveur
 	 * @param null|ILogger $logger
+	 * @param array        $modulesToLoad
 	 * @param int          $sessionTtl (optionnel defaut : 900) temps en secondes avant expiration d'une session inactive.
 	 * @param int          $maxWriteBuffer
 	 * @param int          $maxReadBuffer
 	 * @param int          $maxRequestHandshakeSize
-	 * @param bool         $headerOriginRequired
-	 * @param bool         $headerProtocolRequired
-	 * @param bool         $willSupportExtensions
+	 * @param array        $allowedOrigins
+	 * @param int          $maxConnectionsByIp
+	 * @param int          $maxRequestBySecondByClient
 	 * @param int          $maxSocketSelect
 	 * @throws \InvalidArgumentException
 	 */
@@ -66,13 +75,14 @@ final class RTSEnvironment implements IRTSEnvironment{
 		stdClass $groups,
 		stdClass $admins,
 		ILogger $logger,
+		array $modulesToLoad,
 		int $sessionTtl = 900,
 		int $maxWriteBuffer = 49152,
 		int $maxReadBuffer = 49152,
 		int $maxRequestHandshakeSize = 1024,
-		bool $headerOriginRequired = false,
-		bool $headerProtocolRequired = false,
-		bool $willSupportExtensions = false,
+		array $allowedOrigins = [],
+		int $maxConnectionsByIp = 20,
+		int $maxRequestBySecondByClient = 20,
 		int $maxSocketSelect = 1000
 	) {
 		if(!file_exists($workingDir)){
@@ -82,8 +92,16 @@ final class RTSEnvironment implements IRTSEnvironment{
 				throw new \InvalidArgumentException("$workingDir is not a valid directory !");
 			}
 		}
-		$this->_workingDir = $workingDir;
 		$this->_ttl = $sessionTtl;
+		$this->_workingDir = $workingDir;
+		$this->_modules = $modulesToLoad;
+		$this->_allowedOrigins = $allowedOrigins;
+		$this->_maxSocketSelect = $maxSocketSelect;
+		$this->_maxReadBufferSize = $maxReadBuffer;
+		$this->_maxWriteBufferSize = $maxWriteBuffer;
+		$this->_maxConnectionsByIp = $maxConnectionsByIp;
+		$this->_maxRequestHandshakeSize = $maxRequestHandshakeSize;
+		$this->_maxRequestBySecondByClient = $maxRequestBySecondByClient;
 
 		$this->_users = [];
 		foreach($users as $userName=>$userInfos){
@@ -139,6 +157,62 @@ final class RTSEnvironment implements IRTSEnvironment{
 		}
 
 		$this->_sessions = [];
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getModules(): array {
+		return $this->_modules;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getAllowedOrigins(): array {
+		return $this->_allowedOrigins;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getMaxSocketSelect(): int {
+		return $this->_maxSocketSelect;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getMaxReadBufferSize(): int {
+		return $this->_maxReadBufferSize;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getMaxWriteBufferSize(): int {
+		return $this->_maxWriteBufferSize;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getMaxConnectionsByIp(): int {
+		return $this->_maxConnectionsByIp;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getMaxRequestHandshakeSize(): int {
+		return $this->_maxRequestHandshakeSize;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getMaxRequestBySecondByClient(): int {
+		return $this->_maxRequestBySecondByClient;
 	}
 
 	/**
@@ -290,9 +364,9 @@ final class RTSEnvironment implements IRTSEnvironment{
 	}
 
 	/**
-	 * @return IlLogger
+	 * @return ILogger
 	 */
-	public function getLogger():IlLogger{
+	public function getLogger():ILogger{
 		return $this->_logger;
 	}
 }
