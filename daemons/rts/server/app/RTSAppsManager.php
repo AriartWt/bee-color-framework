@@ -54,23 +54,23 @@ final class RTSAppsManager implements IRTSAppsManager {
 	/**
 	 * @param string $appKey Dispatch data for all apps that listen for appKey
 	 * @param string $data   Data to dispatch
+	 * @return IRTSEvent[]
 	 */
-	public function dispatchData(?string $appKey, string $data): void {
+	public function dispatchData(?string $appKey, string $data): array {
 		$events = [];
 		if(is_null($appKey)) foreach($this->_apps as $k=>$apps)
 			foreach($apps as $app) $events[] = $app->receiveData($data);
 		else if(isset($this->_apps[$appKey]))
 			foreach($this->_apps[$appKey] as $app) $events[] = $app->receiveData($data);
-		$this->dispatch(null,array_merge(...$events));
+		return array_merge(...$events);
 	}
 
 	/**
 	 * Send app events to all event listeners
 	 *
-	 * @param string|null $appKey    If null, will send to all listeners
 	 * @param IRTSEvent   ...$events Event to dispacth
 	 */
-	public function dispatch(?string $appKey, IRTSEvent ...$events): void {
-		$this->_observer->dispatch($appKey,...$events);
+	public function dispatch(IRTSEvent ...$events): void {
+		$this->_observer->dispatch(...$events);
 	}
 }

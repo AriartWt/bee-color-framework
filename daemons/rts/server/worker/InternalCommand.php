@@ -19,7 +19,9 @@ class InternalCommand {
 
 	public const CMD_ACCEPT = "accept_new_client";
 	public const CMD_REJECT = "reject_new_client";
-	public const CMD_BROADCAST = "broadcast";
+	public const CMD_BROADCAST = "broadcast"; //TODO : replace it
+
+	public const DATA_TRANSMISSION = "data_transmission";
 
 	public const FEEDBACK_CLIENT_CREATED = "new_client_created";
 	public const FEEDBACK_CLIENT_DISCONNECTED = "client_disconnected";

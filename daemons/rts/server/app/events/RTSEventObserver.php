@@ -63,19 +63,21 @@ final class RTSEventObserver implements IRTSEventObserver {
 	/**
 	 * Send app events to all event listeners
 	 *
-	 * @param string|null $appKey    If null, will send to all listeners
 	 * @param IRTSEvent   ...$events Event to dispacth
 	 */
-	public function dispatch(?string $appKey, IRTSEvent ...$events): void {
-		if(is_null($appKey)){
-			foreach($this->_listeners as $listeners){
-				foreach($listeners as $l){
-					$l->applyRTSEvents(...$events);
-				}
-			}
-		}else if(isset($this->_listeners[$appKey])){
-			foreach($this->_listeners[$appKey] as $l) $l->applyRTSEvents($events);
-			if($appKey !== '*') foreach($this->_listeners['*'] as $l) $l->applyRTSEvents($events);
+	public function dispatch(IRTSEvent ...$events): void {
+		$eventsByApps = array_fill_keys(
+			array_diff(array_keys($this->_listeners),['*']),[]
+		);
+		foreach($events as $e){
+			$apps = $e->getApps();
+			if(is_null($apps)) foreach($this->_listeners as $k => $listeners)
+				$eventsByApps[$k][] = $e;
+			else foreach($apps as $appKey) if(isset($eventsByApps[$appKey]))
+				$eventsByApps[$appKey][] = $e;
 		}
+		foreach($eventsByApps as $app => $es) foreach($this->_listeners[$app] as $l)
+			$l->applyRTSEvents(...$es);
+		foreach($this->_listeners['*'] as $l) $l->applyRTSEvents($events);
 	}
 }

@@ -6,14 +6,20 @@ namespace wfw\daemons\rts\server\app\events;
  * RTSEvent
  */
 interface IRTSEvent extends \JsonSerializable {
-	public const SCOPE = 1; /* distribued at worker scope */
-	public const DISTRIBUTION = 2; /* distribued to all workers */
+	public const SCOPE = 1; /* distributed at worker scope */
+	public const DISTRIBUTION = 2; /* distributed to all workers */
 	public const CENTRALIZATION = 4; /* passed to the ROOT RTS instance */
 
 	/**
 	 * @return string Event data
 	 */
 	public function getData():string;
+
+	/**
+	 * @return string[] All apps that can recieve the event. If null, event can be dispatched in
+	 *                  every apps.
+	 */
+	public function getApps():?array;
 
 	/**
 	 * @return string

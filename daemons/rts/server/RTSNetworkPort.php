@@ -3,7 +3,6 @@
 namespace wfw\daemons\rts\server;
 
 use wfw\daemons\rts\server\app\events\IRTSEvent;
-use wfw\daemons\rts\server\app\events\IRTSEventListener;
 use wfw\daemons\rts\server\app\IRTSAppsManager;
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
 use wfw\daemons\rts\server\websocket\events\Accepted;
@@ -25,7 +24,7 @@ use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
 /**
  * Network port able to accept/read/write into websockets
  */
-final class RTSNetworkPort implements IWebsocketListener, IRTSEventListener {
+final class RTSNetworkPort implements IWebsocketListener {
 	/** @const int $max_client 1024 is the max with select(), we keep space for rejecting socket */
 	protected const MAX_SOCKET_SELECT = 1000;
 	/** @var resource $_mainSock */
@@ -44,6 +43,7 @@ final class RTSNetworkPort implements IWebsocketListener, IRTSEventListener {
 	private $_procName;
 	/** @var array $_socketIds */
 	private $_socketIds;
+	/** @var IRTSAppsManager $_appsManager */
 	private $_appsManager;
 
 	/**
@@ -290,10 +290,24 @@ final class RTSNetworkPort implements IWebsocketListener, IRTSEventListener {
 						"$this->_procName Data recieved from ".$connection->getId()." (app : "
 						.$connection->getApp().")"
 					);
-					$this->_appsManager->dispatchData(
+					$events = $this->_appsManager->dispatchData(
 						$connection->getApp(),
 						$event->getRecievedData()
 					);
+					$localEvents = [];
+					$mustBeSentEvents = [];
+					foreach($events as $e){
+						if($e->distributionMode(IRTSEvent::SCOPE)) $localEvents[] = $e;
+						if($e->distributionMode(IRTSEvent::CENTRALIZATION)
+							|| $e->distributionMode(IRTSEvent::DISTRIBUTION))
+							$mustBeSentEvents[] = $e;
+					}
+					$this->_appsManager->dispatch(...$localEvents);
+					$this->_mainProtocol->write($this->_mainSock,new InternalCommand(
+						InternalCommand::WORKER,
+						InternalCommand::DATA_TRANSMISSION,
+						$mustBeSentEvents
+					));
 				}else $this->_env->getLogger()->log(
 					"Unable to find connection ".$event->getSocketId(),
 					ILogger::ERR
@@ -314,12 +328,5 @@ final class RTSNetworkPort implements IWebsocketListener, IRTSEventListener {
 				ILogger::ERR
 			);
 		}
-	}
-
-	/**
-	 * @param IRTSEvent[] $event
-	 */
-	public function applyRTSEvents(IRTSEvent ...$event) {
-		// TODO: Implement applyRTSEvents() method.
 	}
 }

@@ -9,8 +9,7 @@ interface IRTSEventDispatcher {
 	/**
 	 * Send app events to all event listeners
 	 *
-	 * @param string|null  $appKey    If null, will send to all listeners
 	 * @param IRTSEvent    ...$events Event to dispacth
 	 */
-	public function dispatch(?string $appKey, IRTSEvent ...$events):void;
+	public function dispatch(IRTSEvent ...$events):void;
 }

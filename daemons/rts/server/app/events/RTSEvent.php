@@ -12,6 +12,7 @@ abstract class RTSEvent implements IRTSEvent {
 	private $_id;
 	/** @var string $_data */
 	private $_data;
+	private $_apps;
 	/** @var string $_senderId */
 	private $_senderId;
 	/** @var float $_creationDate */
@@ -22,11 +23,18 @@ abstract class RTSEvent implements IRTSEvent {
 	/**
 	 * RTSEvent constructor.
 	 *
-	 * @param string $senderId Client ID which created this event
-	 * @param string $data     Data associated to the event
-	 * @param int    $distributionMode Event distribution mode
+	 * @param string     $senderId         Client ID which created this event
+	 * @param string     $data             Data associated to the event
+	 * @param int        $distributionMode Event distribution mode
+	 * @param array|null $apps
 	 */
-	public function __construct(string $senderId, string $data, int $distributionMode = self::CENTRALIZATION) {
+	public function __construct(
+		string $senderId,
+		string $data,
+		int $distributionMode = self::CENTRALIZATION,
+		?array $apps = ["*"]
+	) {
+		$this->_apps = $apps;
 		$this->_id = (string) new UUID(UUID::V4);
 		$this->_creationDate = microtime(true);
 		$this->_data = $data;
@@ -71,6 +79,14 @@ abstract class RTSEvent implements IRTSEvent {
 	}
 
 	/**
+	 * @return string[] All apps that can recieve the event. If null, event can be dispatched in
+	 *                  every apps.
+	 */
+	public function getApps(): ?array {
+		return $this->_apps;
+	}
+
+	/**
 	 * Specify data which should be serialized to JSON
 	 *
 	 * @link  http://php.net/manual/en/jsonserializable.jsonserialize.php
@@ -85,7 +101,8 @@ abstract class RTSEvent implements IRTSEvent {
 			"sender_id" => $this->_senderId,
 			"event" => get_class($this),
 			"mode" => $this->_distributionMode,
+			"apps" => $this->_apps,
 			"creation_date" => $this->_creationDate
 		];
 	}
-}
+ }
