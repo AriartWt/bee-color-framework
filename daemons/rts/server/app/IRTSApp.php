@@ -4,11 +4,12 @@ namespace wfw\daemons\rts\server\app;
 
 use wfw\daemons\rts\server\app\events\IRTSEvent;
 use wfw\daemons\rts\server\app\events\IRTSEventListener;
+use wfw\daemons\rts\server\app\events\IRTSEventObserver;
 
 /**
  * Application du RTS
  */
-interface IRTSApp extends IRTSEventListener {
+interface IRTSApp extends IRTSEventListener, IRTSEventObserver {
 	/**
 	 * @return string
 	 */

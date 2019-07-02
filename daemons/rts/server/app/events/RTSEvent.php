@@ -12,6 +12,7 @@ abstract class RTSEvent implements IRTSEvent {
 	private $_id;
 	/** @var string $_data */
 	private $_data;
+	/** @var array|null $_apps */
 	private $_apps;
 	/** @var string $_senderId */
 	private $_senderId;

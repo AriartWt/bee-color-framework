@@ -3,6 +3,7 @@
 namespace wfw\daemons\rts\server;
 
 use wfw\daemons\rts\server\app\events\IRTSEvent;
+use wfw\daemons\rts\server\app\events\IRTSEventListener;
 use wfw\daemons\rts\server\app\IRTSAppsManager;
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
 use wfw\daemons\rts\server\websocket\events\Accepted;
@@ -24,7 +25,7 @@ use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
 /**
  * Network port able to accept/read/write into websockets
  */
-final class RTSNetworkPort implements IWebsocketListener {
+final class RTSNetworkPort implements IWebsocketListener, IRTSEventListener {
 	/** @const int $max_client 1024 is the max with select(), we keep space for rejecting socket */
 	protected const MAX_SOCKET_SELECT = 1000;
 	/** @var resource $_mainSock */
@@ -69,6 +70,7 @@ final class RTSNetworkPort implements IWebsocketListener {
 		$netSocket = null,
 		int $sleepInterval = 100
 	) {
+		foreach($appsManager->getAll() as $app) $app->addListeners(null,$this);
 		$this->_appsManager = $appsManager;
 		$this->_socketIds = [];
 		$this->_procName = $proc = "[".cli_get_process_title()."]";
@@ -152,11 +154,6 @@ final class RTSNetworkPort implements IWebsocketListener {
 								503,
 								$cmdData
 							));
-							break;
-						case InternalCommand::CMD_BROADCAST :
-							foreach($this->_netSocks as $connection){
-								if(!$connection->isClosed()) $connection->send($data);
-							}
 							break;
 						default :
 							break;
@@ -327,6 +324,16 @@ final class RTSNetworkPort implements IWebsocketListener {
 				.get_class($event)." : $e",
 				ILogger::ERR
 			);
+		}
+	}
+
+	/**
+	 * @param IRTSEvent[] $events
+	 */
+	public function applyRTSEvents(IRTSEvent ...$events) {
+		//TODO : react to events.
+		foreach($events as $e){
+			
 		}
 	}
 }

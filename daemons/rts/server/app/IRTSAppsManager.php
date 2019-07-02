@@ -12,6 +12,11 @@ use wfw\daemons\rts\server\app\events\IRTSEventDispatcher;
  */
 interface IRTSAppsManager extends IRTSEventDispatcher {
 	/**
+	 * @return IRTSApp[]
+	 */
+	public function getAll():array;
+
+	/**
 	 * @param IRTSApp ...$apps Apps to add to the manager
 	 */
 	public function addApps(IRTSApp ...$apps):void;

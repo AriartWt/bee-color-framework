@@ -9,6 +9,8 @@
 namespace wfw\daemons\rts\server;
 
 use PHPMailer\PHPMailer\Exception;
+use wfw\daemons\rts\server\app\events\RTSEventObserver;
+use wfw\daemons\rts\server\app\RTSAppsManager;
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
 use wfw\daemons\rts\server\errors\MaxWorkerLimitReached;
 use wfw\daemons\rts\server\worker\InternalCommand;
@@ -234,13 +236,13 @@ final class RTS{
 				}
 				if(count(array_intersect($read,$local)) === 1){
 					//Si la requête du port local n'est pas valide, elle est ignorée.
-					$request = json_decode($this->read($this->_localPort));
-					if(!is_null($request)) $this->broadCastLocalMessage(new InternalCommand(
+					//$request = json_decode($this->read($this->_localPort));
+					/*if(!is_null($request)) $this->broadCastLocalMessage(new InternalCommand(
 						InternalCommand::LOCAL,
 						InternalCommand::CMD_BROADCAST,
 						$request["data"]??'',
 						$request["user"]??''
-					));
+					));*/
 					$read = array_diff($read,$local);
 				}
 				foreach(array_diff($read,[$local,$master]) as $s){
@@ -265,6 +267,9 @@ final class RTS{
 														$pid,
 														json_decode($decoded["data"],true)
 													);
+													break;
+												case InternalCommand::DATA_TRANSMISSION :
+													//TODO : dispatch accross workers
 													break;
 												default :
 													$error = true;
@@ -332,11 +337,11 @@ final class RTS{
 	 * Envoie une commande à tous les workers
 	 * @param string $message Message à envoyer à tous les workers
 	 */
-	private function broadCastLocalMessage(string $message):void{
+	/*private function broadCastLocalMessage(string $message):void{
 		foreach($this->_workers as $w){
 			$this->write($w,$message);
 		}
-	}
+	}*/
 
 	/**
 	 * Cherche un worker pouvant accepter une nouvelle connection.S'il ne trouve pas, ordonne à un worker
@@ -431,7 +436,12 @@ final class RTS{
 			$this->_mainProcessSocket,
 			$this->_environment,
 			$this->_protocol,
-			$this->_networkPort
+			new RTSAppsManager(
+				new RTSEventObserver(),
+				$this->_environment->getModules()
+			),
+			$this->_networkPort,
+			$this->_sleepInterval
 		);
 		if(is_null($this->_networkPort)) $this->_networkPort = $this->_worker->getNetworkSocket();
 		$this->_worker->start();

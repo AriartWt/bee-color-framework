@@ -60,8 +60,8 @@ final class RTSAppsManager implements IRTSAppsManager {
 		$events = [];
 		if(is_null($appKey)) foreach($this->_apps as $k=>$apps)
 			foreach($apps as $app) $events[] = $app->receiveData($data);
-		else if(isset($this->_apps[$appKey]))
-			foreach($this->_apps[$appKey] as $app) $events[] = $app->receiveData($data);
+		else if(isset($this->_apps[$appKey])) foreach($this->_apps[$appKey] as $app)
+			$events[] = $app->receiveData($data);
 		return array_merge(...$events);
 	}
 
@@ -72,5 +72,12 @@ final class RTSAppsManager implements IRTSAppsManager {
 	 */
 	public function dispatch(IRTSEvent ...$events): void {
 		$this->_observer->dispatch(...$events);
+	}
+
+	/**
+	 * @return IRTSApp[]
+	 */
+	public function getAll(): array {
+		return array_merge(...array_values($this->_apps));
 	}
 }
