@@ -7,7 +7,7 @@ namespace wfw\daemons\rts\server\app\events;
  */
 interface IRTSEventListener {
 	/**
-	 * @param IRTSEvent $event
+	 * @param IRTSEvent[] $event
 	 */
-	public function receive(IRTSEvent $event);
+	public function applyRTSEvents(IRTSEvent ...$event);
 }

@@ -25,10 +25,14 @@ final class WebsocketConnection implements IWebsocketConnection {
 	private $_id;
 	/** @var string $_ip */
 	private $_ip;
+	/** @var string $_app */
+	private $_app;
 	/** @var int $_port */
 	private $_port;
 	/** @var array[][] */
 	private $_queue;
+	/** @var string[] $_headers */
+	private $_headers;
 	/** @var bool $_handshaked */
 	private $_handshaked;
 	/** @var bool $_closed */
@@ -179,6 +183,7 @@ final class WebsocketConnection implements IWebsocketConnection {
 			$this->sendHttpResponse(404, '404 application not found');
 			return;
 		}
+		$this->_app = empty($appKey) ? '*' : $appKey;
 
 		// generate headers array:
 		$headers = [];
@@ -188,6 +193,8 @@ final class WebsocketConnection implements IWebsocketConnection {
 				$headers[$matches[1]] = $matches[2];
 			}
 		}
+
+		$this->_headers = $headers;
 
 		// check for supported websocket version:
 		if (!isset($headers['Sec-WebSocket-Version']) || $headers['Sec-WebSocket-Version'] < 6) {
@@ -224,7 +231,7 @@ final class WebsocketConnection implements IWebsocketConnection {
 		}
 		$this->_handshaked = true;
 		$this->_dispatcher->dispatch(new Handshaked(
-			$this->_id, new WebsocketSender($this), $appKey
+			$this->_id, new WebsocketSender($this), $this
 		));
 		if(!empty($this->_queue)) foreach($this->_queue as $message) $this->send(...$message);
 	}
@@ -435,7 +442,7 @@ final class WebsocketConnection implements IWebsocketConnection {
 		stream_socket_shutdown($this->_socket, STREAM_SHUT_RDWR);
 		$this->_closed = true;
 
-		$this->_dispatcher->dispatch(new Closed($this->_id,$statusCode,$message));
+		$this->_dispatcher->dispatch(new Closed($this->_id,$this,$statusCode,$message));
 	}
 
 	/**
@@ -475,5 +482,37 @@ final class WebsocketConnection implements IWebsocketConnection {
 
 	public function __destruct() {
 		$this->close();
+	}
+
+	/**
+	 * @return array|null Headers used for handshake
+	 */
+	public function getHeaders(): ?array {
+		return $this->_headers;
+	}
+
+	/**
+	 * Specify data which should be serialized to JSON
+	 *
+	 * @link  http://php.net/manual/en/jsonserializable.jsonserialize.php
+	 * @return mixed data which can be serialized by <b>json_encode</b>,
+	 * which is a value of any type other than a resource.
+	 * @since 5.4.0
+	 */
+	public function jsonSerialize() {
+		return [
+			"app" => $this->getApp(),
+			"id" => $this->getId(),
+			"ip" => $this->getIp(),
+			"port" => $this->getPort(),
+			"headers" => $this->getHeaders()
+		];
+	}
+
+	/**
+	 * @return string App linked to the current connection
+	 */
+	public function getApp(): string {
+		return $this->_app;
 	}
 }

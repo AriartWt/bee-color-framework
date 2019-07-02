@@ -2,21 +2,30 @@
 
 namespace wfw\daemons\rts\server;
 
+use wfw\daemons\rts\server\app\events\IRTSEvent;
+use wfw\daemons\rts\server\app\events\IRTSEventListener;
+use wfw\daemons\rts\server\app\IRTSAppsManager;
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
+use wfw\daemons\rts\server\websocket\events\Accepted;
+use wfw\daemons\rts\server\websocket\events\Closed;
+use wfw\daemons\rts\server\websocket\events\DataRecieved;
+use wfw\daemons\rts\server\websocket\events\DataSent;
+use wfw\daemons\rts\server\websocket\events\ErrorOcurred;
+use wfw\daemons\rts\server\websocket\events\Handshaked;
 use wfw\daemons\rts\server\websocket\IWebsocketConnection;
 use wfw\daemons\rts\server\websocket\IWebsocketEvent;
 use wfw\daemons\rts\server\websocket\IWebsocketListener;
 use wfw\daemons\rts\server\websocket\WebsocketConnection;
 use wfw\daemons\rts\server\websocket\WebsocketEventObserver;
 use wfw\daemons\rts\server\websocket\WebsocketProtocol;
-use wfw\daemons\rts\server\worker\WorkerCommand;
+use wfw\daemons\rts\server\worker\InternalCommand;
 use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
 
 /**
  * Network port able to accept/read/write into websockets
  */
-final class RTSNetworkPort implements IWebsocketListener {
+final class RTSNetworkPort implements IWebsocketListener, IRTSEventListener {
 	/** @const int $max_client 1024 is the max with select(), we keep space for rejecting socket */
 	protected const MAX_SOCKET_SELECT = 1000;
 	/** @var resource $_mainSock */
@@ -33,7 +42,9 @@ final class RTSNetworkPort implements IWebsocketListener {
 	private $_sleepInterval;
 	/** @var string $_procName */
 	private $_procName;
-	private $_ipConnections;
+	/** @var array $_socketIds */
+	private $_socketIds;
+	private $_appsManager;
 
 	/**
 	 * RTSNetworkPort constructor.
@@ -43,6 +54,7 @@ final class RTSNetworkPort implements IWebsocketListener {
 	 * @param resource        $mainSocket Socket de communication avec le processus principal
 	 * @param IRTSEnvironment $env        Environnement RTS
 	 * @param ISocketProtocol $mainProtocol
+	 * @param IRTSAppsManager $appsManager
 	 * @param null|resource   $netSocket
 	 * @param int             $sleepInterval
 	 * @throws \RuntimeException
@@ -53,10 +65,12 @@ final class RTSNetworkPort implements IWebsocketListener {
 		$mainSocket,
 		IRTSEnvironment $env,
 		ISocketProtocol $mainProtocol,
+		IRTSAppsManager $appsManager,
 		$netSocket = null,
 		int $sleepInterval = 100
 	) {
-		$this->_ipConnections = [];
+		$this->_appsManager = $appsManager;
+		$this->_socketIds = [];
 		$this->_procName = $proc = "[".cli_get_process_title()."]";
 		$this->_mainSock = $mainSocket;
 		if(is_null($netSocket)){
@@ -105,9 +119,9 @@ final class RTSNetworkPort implements IWebsocketListener {
 					$cmd = $data["cmd"] ?? null;
 					$cmdData = $data["data"] ?? '';
 					switch($cmd){
-						case WorkerCommand::CMD_REJECT:
-						case WorkerCommand::CMD_ACCEPT:
-							if($source !== WorkerCommand::ROOT){
+						case InternalCommand::CMD_REJECT:
+						case InternalCommand::CMD_ACCEPT:
+							if($source !== InternalCommand::ROOT){
 								$this->_env->getLogger()->log(
 									"Command $cmd received from $source socket (ignored)",
 									ILogger::ERR
@@ -122,7 +136,7 @@ final class RTSNetworkPort implements IWebsocketListener {
 								);
 								continue;
 							}
-							if($cmd === WorkerCommand::CMD_ACCEPT) $this->addClient(new WebsocketConnection(
+							if($cmd === InternalCommand::CMD_ACCEPT) $this->addClient(new WebsocketConnection(
 								$socket,
 								new WebsocketProtocol(),
 								$observer,
@@ -139,7 +153,7 @@ final class RTSNetworkPort implements IWebsocketListener {
 								$cmdData
 							));
 							break;
-						case WorkerCommand::CMD_BROADCAST :
+						case InternalCommand::CMD_BROADCAST :
 							foreach($this->_netSocks as $connection){
 								if(!$connection->isClosed()) $connection->send($data);
 							}
@@ -150,17 +164,17 @@ final class RTSNetworkPort implements IWebsocketListener {
 				}
 			}while(!empty($changedSocks));
 
-			//check with socket select, no blocking, no timeout, that no message was found on mainSocket
-			//If there are, read, parse and see
-			if(count($this->_netSocks) !== $lastTmpChunkSize)
+			if(count($this->_netSocks) !== $lastTmpChunkSize){
 				$chunks = $this->splitIntoChunks($this->_netSocks);
+				$lastTmpChunkSize = count($this->_netSocks);
+			}
 
 			foreach($chunks as $chunk){
 				$ready = $chunk;
 				$empty = null;
 				stream_select($ready,$empty,$empty,0);
 				foreach($ready as $socket){
-					if(isset($this->_netSocks[(int)$socket])) $this->_netSocks[(int)$socket]->recieve();
+					if(isset($this->_netSocks[(string)(int)$socket])) $this->_netSocks[(string)(int)$socket]->recieve();
 					else{
 						$this->_env->getLogger()->log(
 							"Unable to find socket ".((int)$socket)." connection object.",
@@ -189,25 +203,34 @@ final class RTSNetworkPort implements IWebsocketListener {
 			"$this->_procName New client "
 			.$connection->getId()." created ( IP : ".$connection->getIp()." )"
 		);
-		$this->_netSocks[(int)$connection->getSocket()] = $connection;
-		if(!isset($this->_ipConnections[$connection->getIp()]))
-			$this->_ipConnections[$connection->getIp()] = [];
-		$this->_ipConnections[$connection->getIp()][$connection->getId()] = $connection;
+		$this->_netSocks[(string)(int)$connection->getSocket()] = $connection;
+		$this->_socketIds[$connection->getId()] = [(string)(int)$connection->getSocket()];
+
 	}
 
 	/**
 	 * @param IWebsocketConnection $connection Connection to remove from server connections
 	 */
 	private function removeClient(IWebsocketConnection $connection):void{
+		if(isset($this->_netSocks[(string)(int)$connection->getSocket()]))
+			unset($this->_netSocks[(string)(int)$connection->getSocket()]);
+
+		if(isset($this->_socketIds[$connection->getId()]))
+			unset($this->_netSocks[$connection->getId()]);
+
 		$this->_env->getLogger()->log(
 			"$this->_procName Client ".$connection->getId()." removed."
 		);
-		if(isset($this->_netSocks[(int)$connection->getSocket()]))
-			unset($this->_netSocks[(int)$connection->getSocket()]);
 
-		if(isset($this->_ipConnections[$connection->getIp()])
-			&& isset($this->_ipConnections[$connection->getIp()][$connection->getId()]))
-			unset($this->_ipConnections[$connection->getIp()][$connection->getId()]);
+		try{
+			$this->_mainProtocol->write($this->_mainSock,new InternalCommand(
+				InternalCommand::WORKER,
+				InternalCommand::FEEDBACK_CLIENT_DISCONNECTED,
+				json_encode($connection)
+			));
+		}catch(\Error | \Exception $e){
+			$this->_env->getLogger()->log("$this->_procName Unable to write in RTS socket : $e");
+		}
 	}
 
 	/**
@@ -222,7 +245,7 @@ final class RTSNetworkPort implements IWebsocketListener {
 		$i = 1;
 		foreach($sockets as $v){
 			if(!$v->isClosed()) $current[] = $v->getSocket();
-			if($i%RTS::MAX_SOCKET_SELECT === 0){
+			if($i % RTS::MAX_SOCKET_SELECT === 0){
 				$res[] = $current;
 				$current = [];
 			}
@@ -235,7 +258,68 @@ final class RTSNetworkPort implements IWebsocketListener {
 	/**
 	 * @param IWebsocketEvent $event Evenement
 	 */
-	public function apply(IWebsocketEvent $event): void {
-		// TODO: Implement apply() method.
+	public function applyWebsocketEvent(IWebsocketEvent $event): void {
+		try{
+			if($event instanceof Handshaked){
+				//TODO : créer des RTS events à dispatcher partout on close et on connect
+				$this->_mainProtocol->write($this->_mainSock,new InternalCommand(
+					InternalCommand::WORKER,
+					InternalCommand::FEEDBACK_CLIENT_CREATED,
+					$event->getConnectionInfos()
+				));
+			}else if($event instanceof Closed){
+				$this->_mainProtocol->write($this->_mainSock,new InternalCommand(
+					InternalCommand::WORKER,
+					InternalCommand::FEEDBACK_CLIENT_DISCONNECTED,
+					$event->getConnectionInfos()
+				));
+			}else if($event instanceof ErrorOcurred){
+				$this->_env->getLogger()->log(
+					"$this->_procName An error occured on connection ".$event->getSocketId()
+					." : ".$event->getError(),
+					ILogger::ERR
+				);
+			}else if($event instanceof DataSent){
+				$this->_env->getLogger()->log(
+					"$this->_procName Data successfully sent to client ".$event->getSocketId()
+				);
+			}else if($event instanceof DataRecieved){
+				$connection = $this->_netSocks[$this->_socketIds[$event->getSocketId()]] ?? null;
+				if($connection){
+					$this->_env->getLogger()->log(
+						"$this->_procName Data recieved from ".$connection->getId()." (app : "
+						.$connection->getApp().")"
+					);
+					$this->_appsManager->dispatchData(
+						$connection->getApp(),
+						$event->getRecievedData()
+					);
+				}else $this->_env->getLogger()->log(
+					"Unable to find connection ".$event->getSocketId(),
+					ILogger::ERR
+				);
+			}else if($event instanceof Accepted){
+				$this->_env->getLogger()->log(
+					"New client accepted : id -> ".$event->getSocketId().", IP -> ".$event->getIp()
+					.", Port -> ".$event->getPort()
+				);
+			}else $this->_env->getLogger()->log(
+				"Unable to handle event ".get_class($event),
+				ILogger::WARN
+			);
+		}catch(\Error | \Exception $e){
+			$this->_env->getLogger()->log(
+				"$this->_procName An error occured while trying to apply event "
+				.get_class($event)." : $e",
+				ILogger::ERR
+			);
+		}
+	}
+
+	/**
+	 * @param IRTSEvent[] $event
+	 */
+	public function applyRTSEvents(IRTSEvent ...$event) {
+		// TODO: Implement applyRTSEvents() method.
 	}
 }

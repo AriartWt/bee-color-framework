@@ -15,7 +15,7 @@ abstract class WebsocketEventListener implements IWebsocketListener {
 	/**
 	 * @param IWebsocketEvent $event Evenement
 	 */
-	public final function apply(IWebsocketEvent $event): void {
+	public final function applyWebsocketEvent(IWebsocketEvent $event): void {
 		$class = (new \ReflectionClass($event))->getShortName();
 		$method = "apply$class";
 		if(!method_exists($this,$method)) throw new IllegalInvocation(

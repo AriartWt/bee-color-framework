@@ -5,7 +5,7 @@ namespace wfw\daemons\rts\server\websocket;
 /**
  * Websocket connection to a client
  */
-interface IWebsocketConnection {
+interface IWebsocketConnection extends \JsonSerializable {
 	/**
 	 * Recieve data from client
 	 */
@@ -52,4 +52,14 @@ interface IWebsocketConnection {
 	 * @return bool True if connection is closed, false otherwise
 	 */
 	public function isClosed():bool;
+
+	/**
+	 * @return array|null Headers used for handshake
+	 */
+	public function getHeaders():?array;
+
+	/**
+	 * @return string App linked to the current connection
+	 */
+	public function getApp():string;
 }

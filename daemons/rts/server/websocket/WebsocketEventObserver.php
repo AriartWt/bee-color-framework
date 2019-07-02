@@ -60,7 +60,7 @@ final class WebsocketEventObserver implements IWebsocketEventObserver {
 		foreach($events as $event){
 			if(isset($this->_listeners[get_class($event)])){
 				foreach($this->_listeners[get_class($event)] as $listener){
-					$listener->apply($event);
+					$listener->applyWebsocketEvent($event);
 					if($event->isPropagationStopped()) break;
 				}
 			}

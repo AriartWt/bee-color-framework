@@ -7,7 +7,7 @@ use wfw\daemons\rts\server\app\events\IRTSEvent;
 /**
  * Base rts class
  */
-abstract class RTSApp implements IRTSApp{
+class RTSApp implements IRTSApp{
 	private $_listeners;
 
 	public function __construct() {
@@ -25,13 +25,6 @@ abstract class RTSApp implements IRTSApp{
 	}
 
 	/**
-	 * @param IRTSEvent $event
-	 */
-	public final function receive(IRTSEvent $event) {
-		// TODO: Implement receive() method.
-	}
-
-	/**
 	 * @param string   $event
 	 * @param callable $listener
 	 */
@@ -40,5 +33,20 @@ abstract class RTSApp implements IRTSApp{
 			throw new \InvalidArgumentException("Class or interface not found : $event");
 		if(!isset($this->_listeners[$event])) $this->_listeners[$event] = [];
 		$this->_listeners[$event][] = $listener;
+	}
+
+	/**
+	 * @param string $data
+	 * @return IRTSEvent[]
+	 */
+	public function receiveData(string $data): array {
+		// TODO: Implement receiveData() method.
+	}
+
+	/**
+	 * @param IRTSEvent[] $event
+	 */
+	public function applyRTSEvents(IRTSEvent ...$event) {
+		// TODO: Implement applyRTSEvents() method.
 	}
 }

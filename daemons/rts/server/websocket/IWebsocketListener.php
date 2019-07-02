@@ -9,5 +9,5 @@ interface IWebsocketListener {
 	/**
 	 * @param IWebsocketEvent $event Evenement
 	 */
-	public function apply(IWebsocketEvent $event):void;
+	public function applyWebsocketEvent(IWebsocketEvent $event):void;
 }

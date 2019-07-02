@@ -2,6 +2,7 @@
 
 namespace wfw\daemons\rts\server\websocket\events;
 
+use wfw\daemons\rts\server\websocket\IWebsocketConnection;
 use wfw\daemons\rts\server\websocket\IWebsocketSender;
 use wfw\daemons\rts\server\websocket\WebsocketEvent;
 
@@ -11,20 +12,24 @@ use wfw\daemons\rts\server\websocket\WebsocketEvent;
 final class Handshaked extends WebsocketEvent {
 	/** @var IWebsocketSender $_sender */
 	private $_sender;
-	/** @var string $_app */
-	private $_app;
+	/** @var string $_connection */
+	private $_connection;
 
 	/**
 	 * Handshaked constructor.
 	 *
-	 * @param string           $socketId
-	 * @param IWebsocketSender $sender
-	 * @param string           $app
+	 * @param string               $socketId
+	 * @param IWebsocketSender     $sender
+	 * @param IWebsocketConnection $connection
 	 */
-	public function __construct(string $socketId, IWebsocketSender $sender, string $app) {
+	public function __construct(
+		string $socketId,
+		IWebsocketSender $sender,
+		IWebsocketConnection $connection
+	) {
 		parent::__construct($socketId);
 		$this->_sender = $sender;
-		$this->_app = $app;
+		$this->_connection = json_encode($connection);
 	}
 
 	/**
@@ -37,7 +42,7 @@ final class Handshaked extends WebsocketEvent {
 	/**
 	 * @return string
 	 */
-	public function getApp(): string {
-		return $this->_app;
+	public function getConnectionInfos(): string {
+		return $this->_connection;
 	}
 }

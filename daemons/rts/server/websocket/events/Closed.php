@@ -2,6 +2,7 @@
 
 namespace wfw\daemons\rts\server\websocket\events;
 
+use wfw\daemons\rts\server\websocket\IWebsocketConnection;
 use wfw\daemons\rts\server\websocket\WebsocketEvent;
 
 /**
@@ -12,18 +13,22 @@ final class Closed extends WebsocketEvent {
 	private $_code;
 	/** @var string $_message */
 	private $_message;
+	/** @var string $_connectionInfos */
+	private $_connectionInfos;
 
 	/**
 	 * Closed constructor.
 	 *
-	 * @param string $socketId
-	 * @param int    $closeCode
-	 * @param string $message
+	 * @param string               $socketId
+	 * @param IWebsocketConnection $connection
+	 * @param int                  $closeCode
+	 * @param string               $message
 	 */
-	public function __construct(string $socketId,int $closeCode, string $message = "") {
+	public function __construct(string $socketId,IWebsocketConnection $connection,int $closeCode, string $message = "") {
 		parent::__construct($socketId);
 		$this->_code = $closeCode;
 		$this->_message = $message;
+		$this->_connectionInfos = json_encode($connection);
 	}
 
 	/**
@@ -38,5 +43,12 @@ final class Closed extends WebsocketEvent {
 	 */
 	public function getMessage():string{
 		return $this->_message;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getConnectionInfos():string{
+		return $this->_connectionInfos;
 	}
 }
