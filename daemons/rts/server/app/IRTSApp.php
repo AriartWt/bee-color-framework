@@ -2,14 +2,14 @@
 
 namespace wfw\daemons\rts\server\app;
 
-use wfw\daemons\rts\server\app\events\IRTSEvent;
-use wfw\daemons\rts\server\app\events\IRTSEventListener;
-use wfw\daemons\rts\server\app\events\IRTSEventObserver;
+use wfw\daemons\rts\server\app\events\IRTSAppEvent;
+use wfw\daemons\rts\server\app\events\IRTSAppEventListener;
+use wfw\daemons\rts\server\app\events\IRTSAppEventRouter;
 
 /**
  * Application du RTS
  */
-interface IRTSApp extends IRTSEventListener, IRTSEventObserver {
+interface IRTSApp extends IRTSAppEventListener{
 	/**
 	 * @return string
 	 */
@@ -24,7 +24,7 @@ interface IRTSApp extends IRTSEventListener, IRTSEventObserver {
 
 	/**
 	 * @param string $data
-	 * @return IRTSEvent[]
+	 * @return IRTSAppEvent[]
 	 */
 	public function receiveData(string $data):array;
 }

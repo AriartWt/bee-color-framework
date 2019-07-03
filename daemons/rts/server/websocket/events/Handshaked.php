@@ -17,17 +17,14 @@ final class Handshaked extends WebsocketEvent {
 
 	/**
 	 * Handshaked constructor.
-	 *
-	 * @param string               $socketId
 	 * @param IWebsocketSender     $sender
 	 * @param IWebsocketConnection $connection
 	 */
 	public function __construct(
-		string $socketId,
 		IWebsocketSender $sender,
 		IWebsocketConnection $connection
 	) {
-		parent::__construct($socketId);
+		parent::__construct($connection->getId());
 		$this->_sender = $sender;
 		$this->_connection = json_encode($connection);
 	}

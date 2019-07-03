@@ -19,13 +19,12 @@ final class Closed extends WebsocketEvent {
 	/**
 	 * Closed constructor.
 	 *
-	 * @param string               $socketId
 	 * @param IWebsocketConnection $connection
 	 * @param int                  $closeCode
 	 * @param string               $message
 	 */
-	public function __construct(string $socketId,IWebsocketConnection $connection,int $closeCode, string $message = "") {
-		parent::__construct($socketId);
+	public function __construct(IWebsocketConnection $connection,int $closeCode, string $message = "") {
+		parent::__construct($connection->getId());
 		$this->_code = $closeCode;
 		$this->_message = $message;
 		$this->_connectionInfos = json_encode($connection);

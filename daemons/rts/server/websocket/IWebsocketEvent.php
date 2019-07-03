@@ -17,16 +17,6 @@ interface IWebsocketEvent {
 	public function getCreationDate():float;
 
 	/**
-	 * The event propagation MUST be stopped.
-	 */
-	public function stopPropagation():void;
-
-	/**
-	 * @return bool True if the event propagation is stopped
-	 */
-	public function isPropagationStopped():bool;
-
-	/**
 	 * @return string The socket id
 	 */
 	public function getSocketId():string;

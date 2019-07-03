@@ -5,13 +5,13 @@ namespace wfw\daemons\rts\server\app\events;
 /**
  * Basic RTSEvent observer
  */
-final class RTSEventObserver implements IRTSEventObserver {
-	/** @var IRTSEventListener[][] $_listeners */
+final class RTSAppEventObserver implements IRTSAppEventObserver {
+	/** @var IRTSAppEventListener[][] $_listeners */
 	private $_listeners = [];
 
 	/**
 	 * @param null|string $appKey If given, return only listeners registered for an appKey
-	 * @return IRTSEventListener[] Return all listeners
+	 * @return IRTSAppEventListener[] Return all listeners
 	 */
 	public function getListeners(?string $appKey): array {
 		if(is_null($appKey)) return array_unique(
@@ -22,10 +22,10 @@ final class RTSEventObserver implements IRTSEventObserver {
 	}
 
 	/**
-	 * @param string|null       $appKey       If null, will add listeners to all keys
-	 * @param IRTSEventListener ...$listeners Listeners that listen to IRTSEvents
+	 * @param string|null          $appKey       If null, will add listeners to all keys
+	 * @param IRTSAppEventListener ...$listeners Listeners that listen to IRTSEvents
 	 */
-	public function addListeners(?string $appKey, IRTSEventListener ...$listeners): void {
+	public function addListeners(?string $appKey, IRTSAppEventListener ...$listeners): void {
 		if(is_null($appKey)){
 			foreach($this->_listeners as $k=>$v) $this->_listeners[$k] = array_merge(
 				$this->_listeners[$k],$listeners
@@ -37,10 +37,10 @@ final class RTSEventObserver implements IRTSEventObserver {
 	}
 
 	/**
-	 * @param null|string       $appKey       If null, will remove listeners from all keys
-	 * @param IRTSEventListener ...$listeners Listeners to remove
+	 * @param null|string          $appKey       If null, will remove listeners from all keys
+	 * @param IRTSAppEventListener ...$listeners Listeners to remove
 	 */
-	public function removeListeners(?string $appKey, IRTSEventListener ...$listeners): void {
+	public function removeListeners(?string $appKey, IRTSAppEventListener ...$listeners): void {
 		if(is_null($appKey)){
 			foreach($this->_listeners as $k=>$listeners){
 				$this->_listeners[$k] = array_diff($this->_listeners[$k],$listeners);
@@ -63,9 +63,9 @@ final class RTSEventObserver implements IRTSEventObserver {
 	/**
 	 * Send app events to all event listeners
 	 *
-	 * @param IRTSEvent   ...$events Event to dispacth
+	 * @param IRTSAppEvent ...$events Event to dispacth
 	 */
-	public function dispatch(IRTSEvent ...$events): void {
+	public function dispatch(IRTSAppEvent ...$events): void {
 		$eventsByApps = array_fill_keys(
 			array_diff(array_keys($this->_listeners),['*']),[]
 		);

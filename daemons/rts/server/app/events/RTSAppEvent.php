@@ -7,7 +7,7 @@ use wfw\engine\lib\PHP\types\UUID;
 /**
  * Base RTSEvent
  */
-abstract class RTSEvent implements IRTSEvent {
+abstract class RTSAppEvent implements IRTSAppEvent {
 	/** @var string $_id */
 	private $_id;
 	/** @var string $_data */

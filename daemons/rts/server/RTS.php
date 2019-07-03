@@ -9,7 +9,7 @@
 namespace wfw\daemons\rts\server;
 
 use PHPMailer\PHPMailer\Exception;
-use wfw\daemons\rts\server\app\events\RTSEventObserver;
+use wfw\daemons\rts\server\app\events\RTSAppEventObserver;
 use wfw\daemons\rts\server\app\RTSAppsManager;
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
 use wfw\daemons\rts\server\errors\MaxWorkerLimitReached;
@@ -437,7 +437,7 @@ final class RTS{
 			$this->_environment,
 			$this->_protocol,
 			new RTSAppsManager(
-				new RTSEventObserver(),
+				new RTSAppEventObserver(),
 				$this->_environment->getModules()
 			),
 			$this->_networkPort,

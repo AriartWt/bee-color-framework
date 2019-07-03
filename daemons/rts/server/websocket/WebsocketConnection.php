@@ -231,7 +231,7 @@ final class WebsocketConnection implements IWebsocketConnection {
 		}
 		$this->_handshaked = true;
 		$this->_dispatcher->dispatch(new Handshaked(
-			$this->_id, new WebsocketSender($this), $this
+			new WebsocketSender($this), $this
 		));
 		if(!empty($this->_queue)) foreach($this->_queue as $message) $this->send(...$message);
 	}
@@ -442,7 +442,7 @@ final class WebsocketConnection implements IWebsocketConnection {
 		stream_socket_shutdown($this->_socket, STREAM_SHUT_RDWR);
 		$this->_closed = true;
 
-		$this->_dispatcher->dispatch(new Closed($this->_id,$this,$statusCode,$message));
+		$this->_dispatcher->dispatch(new Closed($this,$statusCode,$message));
 	}
 
 	/**

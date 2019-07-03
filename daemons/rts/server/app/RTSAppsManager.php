@@ -2,9 +2,9 @@
 
 namespace wfw\daemons\rts\server\app;
 
-use wfw\daemons\rts\server\app\events\IRTSEvent;
-use wfw\daemons\rts\server\app\events\IRTSEventDispatcher;
-use wfw\daemons\rts\server\app\events\IRTSEventObserver;
+use wfw\daemons\rts\server\app\events\IRTSAppEvent;
+use wfw\daemons\rts\server\app\events\IRTSAppEventDispatcher;
+use wfw\daemons\rts\server\app\events\IRTSAppEventObserver;
 
 /**
  * Basic RTS apps manager
@@ -12,19 +12,19 @@ use wfw\daemons\rts\server\app\events\IRTSEventObserver;
 final class RTSAppsManager implements IRTSAppsManager {
 	/** @var IRTSApp[][] $_apps */
 	private $_apps;
-	/** @var IRTSEventDispatcher $_observer */
+	/** @var IRTSAppEventDispatcher $_observer */
 	private $_observer;
 
 	/**
 	 * RTSAppsManager constructor.
 	 *
-	 * @param IRTSEventObserver $observer
-	 * @param array             $appsToCreate
-	 * @param IRTSApp[]         $apps
+	 * @param IRTSAppEventObserver $observer
+	 * @param array                $appsToCreate
+	 * @param IRTSApp[]            $apps
 	 * @throws \InvalidArgumentException
 	 */
 	public function __construct(
-		IRTSEventObserver $observer,
+		IRTSAppEventObserver $observer,
 		array $appsToCreate = [],
 		IRTSApp ...$apps
 	){
@@ -32,7 +32,7 @@ final class RTSAppsManager implements IRTSAppsManager {
 		$createdApps = [];
 		$this->_observer = $observer;
 		foreach($appsToCreate as $appClass => $params){
-			if(!is_a($appClass,IRTSApp::class,true))
+			if(!is_a($appClass, IRTSApp::class, true))
 				throw new \InvalidArgumentException("$appClass must implements ".IRTSApp::class);
 			$createdApps[] = new $appClass(...(is_array($params) ? $params : []));
 		}
@@ -54,7 +54,7 @@ final class RTSAppsManager implements IRTSAppsManager {
 	/**
 	 * @param string $appKey Dispatch data for all apps that listen for appKey
 	 * @param string $data   Data to dispatch
-	 * @return IRTSEvent[]
+	 * @return IRTSAppEvent[]
 	 */
 	public function dispatchData(?string $appKey, string $data): array {
 		$events = [];
@@ -68,9 +68,9 @@ final class RTSAppsManager implements IRTSAppsManager {
 	/**
 	 * Send app events to all event listeners
 	 *
-	 * @param IRTSEvent   ...$events Event to dispacth
+	 * @param IRTSAppEvent ...$events Event to dispacth
 	 */
-	public function dispatch(IRTSEvent ...$events): void {
+	public function dispatch(IRTSAppEvent ...$events): void {
 		$this->_observer->dispatch(...$events);
 	}
 

@@ -2,8 +2,11 @@
 
 namespace wfw\daemons\rts\server;
 
-use wfw\daemons\rts\server\app\events\IRTSEvent;
-use wfw\daemons\rts\server\app\events\IRTSEventListener;
+use wfw\daemons\rts\server\app\events\ClientConnected;
+use wfw\daemons\rts\server\app\events\ClientDisconnected;
+use wfw\daemons\rts\server\app\events\IRTSAppEvent;
+use wfw\daemons\rts\server\app\events\IRTSAppEventListener;
+use wfw\daemons\rts\server\app\events\IRTSAppResponseEvent;
 use wfw\daemons\rts\server\app\IRTSAppsManager;
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
 use wfw\daemons\rts\server\websocket\events\Accepted;
@@ -15,6 +18,7 @@ use wfw\daemons\rts\server\websocket\events\Handshaked;
 use wfw\daemons\rts\server\websocket\IWebsocketConnection;
 use wfw\daemons\rts\server\websocket\IWebsocketEvent;
 use wfw\daemons\rts\server\websocket\IWebsocketListener;
+use wfw\daemons\rts\server\websocket\IWebsocketProtocol;
 use wfw\daemons\rts\server\websocket\WebsocketConnection;
 use wfw\daemons\rts\server\websocket\WebsocketEventObserver;
 use wfw\daemons\rts\server\websocket\WebsocketProtocol;
@@ -25,7 +29,7 @@ use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
 /**
  * Network port able to accept/read/write into websockets
  */
-final class RTSNetworkPort implements IWebsocketListener, IRTSEventListener {
+final class RTSNetworkPort implements IWebsocketListener{
 	/** @const int $max_client 1024 is the max with select(), we keep space for rejecting socket */
 	protected const MAX_SOCKET_SELECT = 1000;
 	/** @var resource $_mainSock */
@@ -42,10 +46,12 @@ final class RTSNetworkPort implements IWebsocketListener, IRTSEventListener {
 	private $_sleepInterval;
 	/** @var string $_procName */
 	private $_procName;
-	/** @var array $_socketIds */
+	/** @var string[] $_socketIds */
 	private $_socketIds;
 	/** @var IRTSAppsManager $_appsManager */
 	private $_appsManager;
+	/** @var int $_maxMainSocketRead */
+	private $_maxMainSocketRead;
 
 	/**
 	 * RTSNetworkPort constructor.
@@ -70,7 +76,7 @@ final class RTSNetworkPort implements IWebsocketListener, IRTSEventListener {
 		$netSocket = null,
 		int $sleepInterval = 100
 	) {
-		foreach($appsManager->getAll() as $app) $app->addListeners(null,$this);
+		$this->_maxMainSocketRead = 20;
 		$this->_appsManager = $appsManager;
 		$this->_socketIds = [];
 		$this->_procName = $proc = "[".cli_get_process_title()."]";
@@ -110,6 +116,7 @@ final class RTSNetworkPort implements IWebsocketListener, IRTSEventListener {
 			$start = microtime(true);
 			$changedSocks = [$this->_mainSock];
 			$empty = null;
+			$mainSocketRead = 0;
 			//accept or reject all client that are waiting on $this->_netSock
 			//only if the main worker asks for it
 			do{
@@ -159,7 +166,7 @@ final class RTSNetworkPort implements IWebsocketListener, IRTSEventListener {
 							break;
 					}
 				}
-			}while(!empty($changedSocks));
+			}while(!empty($changedSocks) && $mainSocketRead <= $this->_maxMainSocketRead);
 
 			if(count($this->_netSocks) !== $lastTmpChunkSize){
 				$chunks = $this->splitIntoChunks($this->_netSocks);
@@ -201,7 +208,7 @@ final class RTSNetworkPort implements IWebsocketListener, IRTSEventListener {
 			.$connection->getId()." created ( IP : ".$connection->getIp()." )"
 		);
 		$this->_netSocks[(string)(int)$connection->getSocket()] = $connection;
-		$this->_socketIds[$connection->getId()] = [(string)(int)$connection->getSocket()];
+		$this->_socketIds[$connection->getId()] = (string)(int)$connection->getSocket();
 
 	}
 
@@ -258,17 +265,18 @@ final class RTSNetworkPort implements IWebsocketListener, IRTSEventListener {
 	public function applyWebsocketEvent(IWebsocketEvent $event): void {
 		try{
 			if($event instanceof Handshaked){
-				//TODO : créer des RTS events à dispatcher partout on close et on connect
+				$this->_appsManager->dispatch($e = new ClientConnected($event));
 				$this->_mainProtocol->write($this->_mainSock,new InternalCommand(
 					InternalCommand::WORKER,
 					InternalCommand::FEEDBACK_CLIENT_CREATED,
-					$event->getConnectionInfos()
+					$e
 				));
 			}else if($event instanceof Closed){
+				$this->_appsManager->dispatch($e = new ClientDisconnected($event));
 				$this->_mainProtocol->write($this->_mainSock,new InternalCommand(
 					InternalCommand::WORKER,
 					InternalCommand::FEEDBACK_CLIENT_DISCONNECTED,
-					$event->getConnectionInfos()
+					$e
 				));
 			}else if($event instanceof ErrorOcurred){
 				$this->_env->getLogger()->log(
@@ -287,19 +295,19 @@ final class RTSNetworkPort implements IWebsocketListener, IRTSEventListener {
 						"$this->_procName Data recieved from ".$connection->getId()." (app : "
 						.$connection->getApp().")"
 					);
-					$events = $this->_appsManager->dispatchData(
+					$events = $this->filterResponseEvents(...$this->_appsManager->dispatchData(
 						$connection->getApp(),
 						$event->getRecievedData()
-					);
+					));
 					$localEvents = [];
 					$mustBeSentEvents = [];
 					foreach($events as $e){
-						if($e->distributionMode(IRTSEvent::SCOPE)) $localEvents[] = $e;
-						if($e->distributionMode(IRTSEvent::CENTRALIZATION)
-							|| $e->distributionMode(IRTSEvent::DISTRIBUTION))
+						if($e->distributionMode(IRTSAppEvent::SCOPE)) $localEvents[] = $e;
+						if($e->distributionMode(IRTSAppEvent::CENTRALIZATION)
+							|| $e->distributionMode(IRTSAppEvent::DISTRIBUTION))
 							$mustBeSentEvents[] = $e;
 					}
-					$this->_appsManager->dispatch(...$localEvents);
+					if(!empty($localEvents)) $this->_appsManager->dispatch(...$localEvents);
 					$this->_mainProtocol->write($this->_mainSock,new InternalCommand(
 						InternalCommand::WORKER,
 						InternalCommand::DATA_TRANSMISSION,
@@ -328,12 +336,36 @@ final class RTSNetworkPort implements IWebsocketListener, IRTSEventListener {
 	}
 
 	/**
-	 * @param IRTSEvent[] $events
+	 *
+	 * @param IRTSAppEvent[] $events
+	 * @return IRTSAppEvent[]
 	 */
-	public function applyRTSEvents(IRTSEvent ...$events) {
-		//TODO : react to events.
-		foreach($events as $e){
-			
+	private function filterResponseEvents(IRTSAppEvent ...$events):array{
+		$keysToRemove = [];
+		foreach($events as $k=>$e) if($e instanceof IRTSAppResponseEvent){
+			if(!is_null($e->getRecipients())){
+				$notInCurrentWorker = array_diff_key(
+					array_flip($e->getRecipients()),$this->_socketIds
+				);
+				if(count($notInCurrentWorker) === 0) $keysToRemove[$k] = true;
+				foreach($e->getRecipients() as $clientId){
+					if(isset($this->_netSocks[$this->_socketIds[$clientId]])) {
+						try {
+							$this->_netSocks[$this->_socketIds[$clientId]]->send(
+								$e->getData(),
+								IWebsocketProtocol::TEXT,
+								true
+							);
+						} catch (\Error | \Exception $e) {
+							$this->_env->getLogger()->log(
+								"$this->_procName Unable to write in client socket $clientId : $e",
+								ILogger::ERR
+							);
+						}
+					}
+				}
+			}
 		}
+		return array_values(array_diff_key($events,$keysToRemove));
 	}
 }

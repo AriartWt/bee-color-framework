@@ -6,7 +6,7 @@ namespace wfw\daemons\rts\server\app\events;
  * Used to respond to a client. The RTSNetwork will write $data into all recipients socket,
  * ignoring execptions.
  */
-interface IRTSResponseEvent extends IRTSEvent {
+interface IRTSAppResponseEvent extends IRTSAppEvent {
 	/**
 	 * @return string[] all exceptions
 	 */
