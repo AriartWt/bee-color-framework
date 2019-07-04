@@ -52,6 +52,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 	private $_appsManager;
 	/** @var int $_maxMainSocketRead */
 	private $_maxMainSocketRead;
+	private $_rootKey;
 
 	/**
 	 * RTSNetworkPort constructor.
@@ -62,6 +63,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 	 * @param IRTSEnvironment $env        Environnement RTS
 	 * @param ISocketProtocol $mainProtocol
 	 * @param IRTSAppsManager $appsManager
+	 * @param string          $rootKey
 	 * @param null|resource   $netSocket
 	 * @param int             $sleepInterval
 	 * @throws \RuntimeException
@@ -73,13 +75,14 @@ final class RTSNetworkPort implements IWebsocketListener{
 		IRTSEnvironment $env,
 		ISocketProtocol $mainProtocol,
 		IRTSAppsManager $appsManager,
+		string $rootKey,
 		$netSocket = null,
 		int $sleepInterval = 100
 	) {
 		$this->_maxMainSocketRead = 20;
 		$this->_appsManager = $appsManager;
 		$this->_socketIds = [];
-		$this->_procName = $proc = "[".cli_get_process_title()."]";
+		$this->_procName = $proc = cli_get_process_title();
 		$this->_mainSock = $mainSocket;
 		if(is_null($netSocket)){
 			$url = "tcp://$host:$port";
@@ -95,6 +98,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 
 		$this->_env = $env;
 		$this->_netSocks = [];
+		$this->_rootKey = $rootKey;
 		$this->_mainProtocol = $mainProtocol;
 		$this->_sleepInterval = $sleepInterval;
 	}
@@ -127,6 +131,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 					$source = $data["source"] ?? null;
 					$cmd = $data["cmd"] ?? null;
 					$cmdData = $data["data"] ?? '';
+					$rootKey = $data["root_key"] ?? '';
 					switch($cmd){
 						case InternalCommand::CMD_REJECT:
 						case InternalCommand::CMD_ACCEPT:
@@ -162,10 +167,27 @@ final class RTSNetworkPort implements IWebsocketListener{
 								$cmdData
 							));
 							break;
+						case InternalCommand::DATA_TRANSMISSION:
+							if($source !== InternalCommand::ROOT) {
+								$this->_env->getLogger()->log(
+									"$this->_procName Command $cmd recieved from $source (ignored)",
+									ILogger::WARN
+								);
+								continue;
+							}
+							if($rootKey !== $this->_rootKey){
+								$this->_env->getLogger()->log(
+									"$this->_procName Invalid root key given for $cmd from $source (ignored)",
+									ILogger::ERR
+								);
+								continue;
+							}
+							break;
 						default :
 							break;
 					}
 				}
+				$mainSocketRead ++;
 			}while(!empty($changedSocks) && $mainSocketRead <= $this->_maxMainSocketRead);
 
 			if(count($this->_netSocks) !== $lastTmpChunkSize){
@@ -230,7 +252,9 @@ final class RTSNetworkPort implements IWebsocketListener{
 			$this->_mainProtocol->write($this->_mainSock,new InternalCommand(
 				InternalCommand::WORKER,
 				InternalCommand::FEEDBACK_CLIENT_DISCONNECTED,
-				json_encode($connection)
+				json_encode($connection),
+				null,
+				$this->_rootKey
 			));
 		}catch(\Error | \Exception $e){
 			$this->_env->getLogger()->log("$this->_procName Unable to write in RTS socket : $e");

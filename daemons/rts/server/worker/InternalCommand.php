@@ -14,7 +14,6 @@ namespace wfw\daemons\rts\server\worker;
 class InternalCommand {
 	public const ROOT = "root";
 	public const LOCAL = "local";
-	public const CLIENT = "client";
 	public const WORKER = "worker";
 
 	public const CMD_ACCEPT = "accept_new_client";
@@ -33,26 +32,31 @@ class InternalCommand {
 	private $_data;
 	/** @var string $_name */
 	private $_name;
+	/** @var string $_rootKey */
+	private $_rootKey;
 
 	/**
 	 * WorkerCommand constructor.
 	 *
-	 * @param string      $source     Source (local : un client port local, root : message du processus principal,
+	 * @param string $source          Source (local : un client port local, root : message du processus principal,
 	 *                                client : message d'un autre client)
-	 * @param string      $name       Nom de la commande
-	 * @param string      $data       Données associées
-	 * @param string      $transmiter Nom de l'emetteur (seulement local)
+	 * @param string $name            Nom de la commande
+	 * @param string $data            Données associées
+	 * @param string $transmiter      Nom de l'emetteur (seulement local)
+	 * @param string $rootKey         Root key generated at server starts.
 	 */
 	public function __construct(
 		string $source,
 		string $name,
 		?string $data = null,
-		?string $transmiter = null
+		?string $transmiter = null,
+		string $rootKey = ''
 	) {
 		$this->_name = $name;
 		$this->_data = $data;
 		$this->_source = $source;
 		$this->_transmiter = $transmiter;
+		$this->_rootKey = $rootKey;
 	}
 
 	/**
@@ -63,6 +67,7 @@ class InternalCommand {
 			'"cmd":"'.$this->_name.'",'.
 			'"source":"'.$this->_source.'"'.
 			((!empty($this->_data)) ? ',"data":"'.$this->_data.'"' : '').
+			((!empty($this->_rootKey)) ? ',"root_key":"'.$this->_rootKey.'"' : '').
 			((!empty($this->_transmiter)) ? ',"transmiter":"'.$this->_transmiter.'"' : '')
 		."}";
 	}

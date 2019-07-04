@@ -60,6 +60,7 @@ final class RTS{
 	private $_allowedOverflow;
 	/** @var resource[] $_workers */
 	private $_workers;
+	/** @var array $_clientsByApp */
 	private $_clientsByApp;
 	/** @var string[] $_workersBySocketId */
 	private $_workersBySocketId;
@@ -75,10 +76,15 @@ final class RTS{
 	private $_worker;
 	/** @var int $_sleepInterval */
 	private $_sleepInterval;
+	/** @var string $_instanceName */
+	private $_instanceName;
+	/** @var string $_procName */
+	private $_procName;
 
 	/**
 	 * RTS constructor.
 	 *
+	 * @param string          $instanceName
 	 * @param string          $socketPath              Chemin vers la socket locale du serveur
 	 * @param string          $host                    Websocket host
 	 * @param int             $port                    Port network
@@ -95,6 +101,7 @@ final class RTS{
 	 * @throws IllegalInvocation
 	 */
 	public function __construct(
+		string $instanceName,
 		string $socketPath,
 		string $host,
 		int $port,
@@ -120,6 +127,7 @@ final class RTS{
 		$this->_requestTtl = $requestTtl;
 		$this->_maxWSockets = $maxWSocket;
 		$this->_environment = $environment;
+		$this->_instanceName = $instanceName;
 		$this->_sleepInterval = $sleepInterval;
 		$this->_sendErrorToClient = $sendErrorToClient;
 		$this->_allowedOverflow = $allowedWSocketsOverflow;
@@ -140,6 +148,7 @@ final class RTS{
 		if($res) throw new IllegalInvocation(
 			"A RTS instance is already running for this directory !"
 		);
+		cli_set_process_title($this->_mainProcessSocket = "[RTS] [$this->_instanceName]");
 	}
 
 	public function start():void{
@@ -147,6 +156,7 @@ final class RTS{
 		socket_create_pair(AF_UNIX,SOCK_STREAM,SOL_TCP,$sockets);
 		$this->_localPortPid = pcntl_fork();
 		if($this->_localPortPid === 0){
+			cli_set_process_title("$this->_procName [LocalPort]");
 			socket_close($sockets[1]);
 			$localPort = new RTSLocalPort(
 				$this->_socketPath,
@@ -222,11 +232,7 @@ final class RTS{
 				[$this->_localPort,$this->_networkPort],
 				array_values($this->_workers))
 			);
-			//TODO : get worker messages from client accepts (ip, for IP checking)
-			//TODO : worker broadcast for apps sync ? or apps in RTS and all
-			//TODO : workers sends back info to the main loop. So the main loops holds
-			//TODO : all apps ? Or distribute events accross workers
-			//bypass the 1024 socket management limit
+			//bypass the 1024 socket_select limit
 			foreach($chunks as $chunk){
 				$read = $chunk; $write = null; $except = null;
 				socket_select($read,$write,$except,0);
@@ -254,31 +260,43 @@ final class RTS{
 									$decoded = json_decode($wData,true);
 									$error = false;
 									if(json_last_error() === JSON_ERROR_NONE){
-										if(isset($decoded["cmd"])){
-											switch($decoded["cmd"]){
-												case InternalCommand::FEEDBACK_CLIENT_CREATED:
-													$this->clientConnected(
-														$pid,
-														json_decode($decoded["data"],true)
-													);
-													break;
-												case InternalCommand::FEEDBACK_CLIENT_DISCONNECTED:
-													$this->clientDisconnected(
-														$pid,
-														json_decode($decoded["data"],true)
-													);
-													break;
-												case InternalCommand::DATA_TRANSMISSION :
-													//TODO : dispatch accross workers
-													break;
-												default :
-													$error = true;
-													break;
-											}
+										$key = $decoded["root_key"] ?? '';
+										$cmd = $decoded["cmd"] ?? '';
+										$source = $decoded["source"] ?? '';
+										$data = $decoded["data"] ?? null;
+										if($key !== $this->_secretKey){
+											$this->_environment->getLogger()->log(
+												"$this->_procName Wrong secret key given by $source ($pid) for command $cmd. Request ignored.",
+												ILogger::ERR
+											);
+											continue;
+										}
+										switch($cmd){
+											case InternalCommand::FEEDBACK_CLIENT_CREATED:
+												$this->clientConnected(
+													$pid,
+													json_decode($data,true)
+												);
+												break;
+											case InternalCommand::FEEDBACK_CLIENT_DISCONNECTED:
+												$this->clientDisconnected(
+													$pid,
+													json_decode($data,true)
+												);
+												break;
+											case InternalCommand::DATA_TRANSMISSION :
+												$this->dataTransmission(
+													$pid,
+													json_decode($data,true)
+												);
+												break;
+											default :
+												$error = true;
+												break;
 										}
 									}else $error = true;
 									if($error) $this->_environment->getLogger()->log(
-										"[RTS] Invalid query recieved form worker "
+										"$this->_procName Invalid query recieved from worker "
 										.$this->_workersBySocketId[(int)$s]." : $wData",
 										ILogger::WARN
 									);
@@ -300,19 +318,31 @@ final class RTS{
 		}
 	}
 
+	private function dataTransmission(string $pid, $events):void{
+		//TODO
+	}
+
 	/**
 	 * Called when a worker send a feedback.
 	 * @param string   $pid Pid du worker
-	 * @param array $connectionInfos Set connections infos in worker
+	 * @param null|array $connectionInfos Set connections infos in worker
 	 */
-	private function clientConnected(string $pid, ?array $connectionInfos):void{
+	private function clientConnected(string $pid, $connectionInfos):void{
+		if(is_null($connectionInfos) || !is_array($connectionInfos)){
+			$this->_environment->getLogger()->log(
+				"$this->_procName Unable to connect client : invalid connectionInfos "
+				."(request sent by Network Port worker $pid).",
+				ILogger::ERR
+			);
+			return;
+		}
 		$this->_clientsByWorkerPid[$connectionInfos["id"]] = $pid;
 		$this->_workersInfos[$pid][$connectionInfos["id"]] = $connectionInfos;
 		if(!isset($this->_clientsByApp[$connectionInfos["app"]]))
 			$this->_clientsByApp[$connectionInfos["app"]] = [];
 		$this->_clientsByApp[$connectionInfos["app"]][$connectionInfos["id"]] = true;
 		$this->_environment->getLogger()->log(
-			"[RTS] New client connected : ".json_encode($connectionInfos)
+			"$this->_procName New client connected : ".json_encode($connectionInfos)
 		);
 	}
 
@@ -321,7 +351,15 @@ final class RTS{
 	 * @param string     $pid
 	 * @param array|null $connectionInfos
 	 */
-	private function clientDisconnected(string $pid, ?array $connectionInfos):void{
+	private function clientDisconnected(string $pid, $connectionInfos):void{
+		if(is_null($connectionInfos) || !is_array($connectionInfos)){
+			$this->_environment->getLogger()->log(
+				"$this->_procName Unable to disconnect client : invalid connectionInfos "
+				."(request sent by Network Port worker $pid).",
+				ILogger::ERR
+			);
+			return;
+		}
 		if(isset($this->_clientsByWorkerPid[$connectionInfos["id"]]))
 			unset($this->_clientsByWorkerPid[$connectionInfos["id"]]);
 		if(isset($this->_workersInfos[$pid][$connectionInfos["id"]]))
@@ -329,19 +367,9 @@ final class RTS{
 		if(isset($this->_clientsByApp[$connectionInfos["app"]][$connectionInfos["id"]]))
 			unset($this->_clientsByApp[$connectionInfos["app"]][$connectionInfos["id"]]);
 		$this->_environment->getLogger()->log(
-			"[RTS] Client disconnected : ".json_encode($connectionInfos)
+			"$this->_procName Client disconnected : ".json_encode($connectionInfos)
 		);
 	}
-
-	/**
-	 * Envoie une commande à tous les workers
-	 * @param string $message Message à envoyer à tous les workers
-	 */
-	/*private function broadCastLocalMessage(string $message):void{
-		foreach($this->_workers as $w){
-			$this->write($w,$message);
-		}
-	}*/
 
 	/**
 	 * Cherche un worker pouvant accepter une nouvelle connection.S'il ne trouve pas, ordonne à un worker
@@ -351,7 +379,11 @@ final class RTS{
 		$accepterFound = false;
 		foreach($this->_workersInfos as $pid=>$infos){
 			if($infos["clients"]<$this->_maxWSockets){
-				$this->write($this->_workers[$pid],'{"cmd":"'.InternalCommand::CMD_ACCEPT.'"}');
+				$this->write($this->_workers[$pid],new InternalCommand(
+					InternalCommand::ROOT,
+					InternalCommand::CMD_ACCEPT,
+					null, null, $this->_secretKey
+				));
 				$this->_workersInfos[$pid]["clients"]++;
 				$accepterFound = true;
 				break;
@@ -373,13 +405,22 @@ final class RTS{
 				//encore recevoir de nouveau client, on lui demande d'accepter la connexion
 				if($this->_allowedOverflow<0 || $less <= $this->_allowedOverflow*$this->_maxWSockets)
 					$this->write($this->_workers[$pid],new InternalCommand(
-						InternalCommand::ROOT, InternalCommand::CMD_ACCEPT
+						InternalCommand::ROOT, InternalCommand::CMD_ACCEPT,
+						null, null, $this->_secretKey
 					));
-				else $this->write($this->_workers[$pid],new InternalCommand(
-					InternalCommand::ROOT,
-					InternalCommand::CMD_REJECT,
-					"Max server connections reached."
-				));
+				else{
+					$this->write($this->_workers[$pid],new InternalCommand(
+						InternalCommand::ROOT,
+						InternalCommand::CMD_REJECT,
+						"Max server connections reached.",
+						null,
+						$this->_secretKey
+					));
+					$this->_environment->getLogger()->log(
+						"$this->_procName Client rejected : max server connections reached.",
+						ILogger::WARN
+					);
+				}
 			}
 		}
 	}
@@ -430,6 +471,7 @@ final class RTS{
 	 * @throws \RuntimeException
 	 */
 	private function wsLoop():void{
+		cli_set_process_title("$this->_procName [Network Port] [".getmypid()."]");
 		$this->_worker = new RTSNetworkPort(
 			$this->_host,
 			$this->_port,
@@ -440,6 +482,7 @@ final class RTS{
 				new RTSAppEventObserver(),
 				$this->_environment->getModules()
 			),
+			$this->_secretKey,
 			$this->_networkPort,
 			$this->_sleepInterval
 		);

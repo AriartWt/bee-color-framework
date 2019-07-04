@@ -41,6 +41,7 @@ try{
 				posix_kill(file_get_contents($pidFile),PCNTLSignalsHelper::SIGALRM);
 
 			$server = new RTS(
+				$name,
 				$confs->getSocketPath($name),
 				$confs->getHost($name),
 				$confs->getPort($name),
