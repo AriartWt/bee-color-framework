@@ -470,6 +470,21 @@ final class RTSPoolConfs {
 
 	/**
 	 * @param null|string $instance
+	 * @return bool
+	 * @throws \InvalidArgumentException
+	 */
+	public function mustSpawnAllWorkersAtStartup(?string $instance=null):bool{
+		if (!isset($this->_instancesConfs[$instance]))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		try {
+			return $this->_instancesConfs[$instance]->find("spawn_all_workers_at_startup");
+		} catch (\Exception $e) {
+			return true;
+		}
+	}
+
+	/**
+	 * @param null|string $instance
 	 * @return ILogger
 	 */
 	public function getLogger(?string $instance=null):ILogger{

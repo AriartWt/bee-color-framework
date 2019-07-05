@@ -13,6 +13,9 @@ use wfw\engine\lib\cli\argv\ArgvOptMap;
 use wfw\engine\lib\cli\argv\ArgvParser;
 use wfw\engine\lib\cli\argv\ArgvReader;
 use wfw\engine\lib\cli\signalHandler\PCNTLSignalsHelper;
+use wfw\engine\lib\data\string\compressor\GZCompressor;
+use wfw\engine\lib\data\string\serializer\LightSerializer;
+use wfw\engine\lib\data\string\serializer\PHPSerializer;
 
 $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
    new ArgvOpt('-pid','Affiche le pid',0,null,true),
@@ -62,9 +65,11 @@ try{
 					$confs->getMaxRequestsBySecondByClient($name),
 					$confs->getMaxSocketSelect($name)
 				),
+				new LightSerializer(new GZCompressor(),new PHPSerializer()),
 				$confs->getMaxWSockets($name),
 				$confs->getMaxWorkers($name),
 				$confs->getAllowedWSocketOverflow($name),
+				$confs->mustSpawnAllWorkersAtStartup($name),
 				$confs->getRequestTtl($name),
 				$confs->getSleepInterval($name)
 			);

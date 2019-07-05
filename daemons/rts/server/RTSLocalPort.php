@@ -10,6 +10,7 @@ namespace wfw\daemons\rts\server;
 
 use Exception;
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
+use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
 use wfw\engine\lib\PHP\errors\IllegalInvocation;
 
@@ -33,12 +34,12 @@ final class RTSLocalPort {
 	private $_lockFile;
 	/** @var bool|resource $_acquiredLockFile */
 	private $_acquiredLockFile;
-	/** @var string $_errorLogPath */
-	private $_errorLogPath;
 	/** @var string $_socketAddr */
 	private $_socketAddr;
 	/** @var array $_socketTimeout */
 	private $_socketTimeout = array("sec"=>10,"usec"=>0);
+	/** @var string $_procName */
+	private $_procName;
 
 	/**
 	 * RTSLocalPort constructor.
@@ -50,7 +51,6 @@ final class RTSLocalPort {
 	 * @param IRTSEnvironment $environment       Environement de travail.
 	 * @param int             $requestTtl        Temps de vie des requêtes
 	 * @param bool            $sendErrorToClient Envoie l'erreur à un client local, si une erreur survient.
-	 * @param string          $errorLogPath      Chemin d'accés au log d'erreur
 	 * @throws IllegalInvocation
 	 */
 	public function __construct(
@@ -60,14 +60,13 @@ final class RTSLocalPort {
 		ISocketProtocol $protocol,
 		IRTSEnvironment $environment,
 		int $requestTtl = 900,
-		bool $sendErrorToClient = true,
-		string $errorLogPath = DAEMONS."/rts/data/local_port.errors.txt"
+		bool $sendErrorToClient = true
 	){
+		$this->_procName = cli_get_process_title();
 		$this->_mainProcessSocket = $socket;
 		$this->_protocol = $protocol;
 		$this->_environment = $environment;
 		$this->_sendErrorToClient = $sendErrorToClient;
-		$this->_errorLogPath = $errorLogPath;
 		$this->_requestTtl = $requestTtl;
 		$this->_socketAddr = $sockAddr;
 
@@ -120,12 +119,12 @@ final class RTSLocalPort {
 					else $this->processCommand($socket,$data);
 				}
 			}else $this->sendError($socket,"No data recieved !");
-		}catch(\Exception $e){
+		}catch(\Exception | \Error $e){
 			$this->sendError($socket,$e);
-			$this->errorLog($e);
-		}catch(\Error $e){
-			$this->sendError($socket,$e);
-			$this->errorLog($e);
+			$this->_environment->getLogger()->log(
+				"Error while trying to execute client request : $e",
+				ILogger::ERR
+			);
 		}
 		socket_close($socket);
 	}
@@ -139,7 +138,7 @@ final class RTSLocalPort {
 		$this->_environment->destroyOutdatedSessions();
 		$cmd = $data["cmd"];
 		switch($cmd){
-			case "broadcast" :
+			case "data" :
 				if(is_string($data['sessid']??null)){
 					if($this->checkAuth($socket,$data["sessid"])){
 						$this->_environment->touchUserSession($data["sessid"]);
@@ -149,10 +148,8 @@ final class RTSLocalPort {
 								$this->_mainProcessSocket,
 								'{"data":"'.$data["data"].'","user":"'.$user->getName().'"}'
 							);
-							$this->write($socket,'broadcasted');
-						}catch(\Exception $e){
-							$this->sendError($socket,$e);
-						}catch(\Error $e){
+							$this->write($socket,'sent');
+						}catch(\Exception | \Error $e){
 							$this->sendError($socket,$e);
 						}
 					}
@@ -230,14 +227,6 @@ final class RTSLocalPort {
 	}
 
 	/**
-	 * Ecrit un log dans le fichier d'erreurs
-	 * @param string $log Log to write
-	 */
-	private function errorLog(string $log){
-		error_log($log.PHP_EOL,3,$this->_errorLogPath);
-	}
-
-	/**
 	 * @param resource $socket Configure la socket
 	 */
 	private function configureSocket($socket){
@@ -260,7 +249,10 @@ final class RTSLocalPort {
 		socket_close($this->_mainProcessSocket);
 
 		if(!is_null($e)){
-			$this->errorLog($e);
+			$this->_environment->getLogger()->log(
+				"$this->_procName An error caused the local port to shutdown : $e",
+				ILogger::ERR
+			);
 			exit(1);
 		}else exit(0);
 	}

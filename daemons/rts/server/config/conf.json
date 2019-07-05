@@ -20,6 +20,7 @@
 		},
 		"max_websockets_by_worker" : 1,
 		"max_workers" : 8,
+		"spawn_all_workers_at_startup" : true,
 		"max_write_buffer_size" : 49152,
 		"max_read_buffer_size" : 49152,
 		"max_request_handshake_size" : 1024,

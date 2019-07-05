@@ -8,15 +8,16 @@
 
 namespace wfw\daemons\rts\client;
 
+use wfw\daemons\rts\server\app\events\IRTSAppEvent;
+
 /**
  * Client permettant de se connecter à une instance de RTS
  */
 interface IRTSClient {
 	/**
-	 * @param string $event Nom de l'événement à dispatcher vers le RTS
-	 * @param string $data  Données associées à l'événement
+	 * @param IRTSAppEvent[] $events
 	 */
-	public function broadcast(string $event, string $data):void;
+	public function send(IRTSAppEvent ...$events):void;
 
 	/**
 	 * Se connecte à une instance RTS

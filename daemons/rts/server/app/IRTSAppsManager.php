@@ -28,4 +28,9 @@ interface IRTSAppsManager extends IRTSAppEventDispatcher {
 	 * @return IRTSAppEvent[] Events arrays produced by apps while receiving data
 	 */
 	public function dispatchData(?string $appKey, string $data):array;
+
+	/**
+	 * @return string[] all apps name that are currently managed
+	 */
+	public function getAppNames():array;
 }

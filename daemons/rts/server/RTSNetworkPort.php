@@ -5,7 +5,6 @@ namespace wfw\daemons\rts\server;
 use wfw\daemons\rts\server\app\events\ClientConnected;
 use wfw\daemons\rts\server\app\events\ClientDisconnected;
 use wfw\daemons\rts\server\app\events\IRTSAppEvent;
-use wfw\daemons\rts\server\app\events\IRTSAppEventListener;
 use wfw\daemons\rts\server\app\events\IRTSAppResponseEvent;
 use wfw\daemons\rts\server\app\IRTSAppsManager;
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
@@ -23,6 +22,7 @@ use wfw\daemons\rts\server\websocket\WebsocketConnection;
 use wfw\daemons\rts\server\websocket\WebsocketEventObserver;
 use wfw\daemons\rts\server\websocket\WebsocketProtocol;
 use wfw\daemons\rts\server\worker\InternalCommand;
+use wfw\engine\lib\data\string\serializer\ISerializer;
 use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
 
@@ -52,7 +52,10 @@ final class RTSNetworkPort implements IWebsocketListener{
 	private $_appsManager;
 	/** @var int $_maxMainSocketRead */
 	private $_maxMainSocketRead;
+	/** @var string $_rootKey */
 	private $_rootKey;
+	/** @var ISerializer $_serializer */
+	private $_serializer;
 
 	/**
 	 * RTSNetworkPort constructor.
@@ -63,6 +66,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 	 * @param IRTSEnvironment $env        Environnement RTS
 	 * @param ISocketProtocol $mainProtocol
 	 * @param IRTSAppsManager $appsManager
+	 * @param ISerializer     $serializer
 	 * @param string          $rootKey
 	 * @param null|resource   $netSocket
 	 * @param int             $sleepInterval
@@ -75,10 +79,12 @@ final class RTSNetworkPort implements IWebsocketListener{
 		IRTSEnvironment $env,
 		ISocketProtocol $mainProtocol,
 		IRTSAppsManager $appsManager,
+		ISerializer $serializer,
 		string $rootKey,
 		$netSocket = null,
 		int $sleepInterval = 100
 	) {
+		$this->_serializer = $serializer;
 		$this->_maxMainSocketRead = 20;
 		$this->_appsManager = $appsManager;
 		$this->_socketIds = [];
@@ -154,15 +160,15 @@ final class RTSNetworkPort implements IWebsocketListener{
 								$socket,
 								new WebsocketProtocol(),
 								$observer,
-								$this->_allowedOrigins[],
-								$this->_allowedApplications[]
+								$this->_env->getAllowedOrigins(),
+								$this->_appsManager->getAppNames()
 							));
 							else $this->addClient(new WebsocketConnection(
 								$socket,
 								new WebsocketProtocol(),
 								$observer,
-								$this->_allowedOrigins[],
-								$this->_allowedApplications[],
+								$this->_env->getAllowedOrigins(),
+								$this->_appsManager->getAppNames(),
 								503,
 								$cmdData
 							));
@@ -181,6 +187,16 @@ final class RTSNetworkPort implements IWebsocketListener{
 									ILogger::ERR
 								);
 								continue;
+							}
+							try{
+								$this->_appsManager->dispatch(...$this->_serializer->unserialize(
+									$data
+								));
+							}catch(\Error | \Exception $e){
+								$this->_env->getLogger()->log(
+									"An error occured while trying to dispatch $source command events : $e",
+									ILogger::ERR
+								);
 							}
 							break;
 						default :
@@ -335,7 +351,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 					$this->_mainProtocol->write($this->_mainSock,new InternalCommand(
 						InternalCommand::WORKER,
 						InternalCommand::DATA_TRANSMISSION,
-						$mustBeSentEvents
+						$this->_serializer->serialize($mustBeSentEvents)
 					));
 				}else $this->_env->getLogger()->log(
 					"Unable to find connection ".$event->getSocketId(),

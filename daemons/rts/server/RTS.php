@@ -9,12 +9,15 @@
 namespace wfw\daemons\rts\server;
 
 use PHPMailer\PHPMailer\Exception;
+use wfw\daemons\rts\server\app\events\IRTSAppEvent;
+use wfw\daemons\rts\server\app\events\IRTSAppResponseEvent;
 use wfw\daemons\rts\server\app\events\RTSAppEventObserver;
 use wfw\daemons\rts\server\app\RTSAppsManager;
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
 use wfw\daemons\rts\server\errors\MaxWorkerLimitReached;
 use wfw\daemons\rts\server\worker\InternalCommand;
 use wfw\engine\lib\cli\signalHandler\PCNTLSignalsHelper;
+use wfw\engine\lib\data\string\serializer\ISerializer;
 use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\network\socket\errors\SocketFailure;
 use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
@@ -80,6 +83,12 @@ final class RTS{
 	private $_instanceName;
 	/** @var string $_procName */
 	private $_procName;
+	/** @var ISerializer $_serializer */
+	private $_serializer;
+	/** @var RTSAppsManager $_appsManager */
+	private $_appsManager;
+	/** @var bool $_spawnAllWorkersAtStartup */
+	private $_spawnAllWorkersAtStartup;
 
 	/**
 	 * RTS constructor.
@@ -90,15 +99,19 @@ final class RTS{
 	 * @param int             $port                    Port network
 	 * @param ISocketProtocol $protocol                Protocol de communication sur la socket serveur
 	 * @param IRTSEnvironment $environment             Environement du serveur
+	 * @param ISerializer     $serializer
 	 * @param int             $maxWSocket              Nombre maximum de requêtes par worker (0 pour no-limit)
 	 * @param int             $maxWorkers              Nombre maximum de workers (0 pour no-limit)
 	 * @param int             $allowedWSocketsOverflow Nombre de fois que l'on peut augmenter le nombre
-	 *                                                 maximum de sockets par worker lorsque le nombre maximum de worker est atteint
+	 *                                                 maximum de sockets par worker lorsque le nombre maximum de
+	 *                                                 worker est atteint
 	 *                                                 -1 : pas de limite, n : max_wsockets * (n+1)
+	 * @param bool            $spawnAllWorkersAtStartup
 	 * @param int             $requestTtl              Durée maximum de chaque requête
 	 * @param int             $sleepInterval           Sleep interval between two loops (in ms)
 	 * @param bool            $sendErrorToClient       Envoir les erreurs sur les clients socket locale
 	 * @throws IllegalInvocation
+	 * @throws \InvalidArgumentException
 	 */
 	public function __construct(
 		string $instanceName,
@@ -107,9 +120,11 @@ final class RTS{
 		int $port,
 		ISocketProtocol $protocol,
 		IRTSEnvironment $environment,
-		int $maxWSocket = 0,
-		int $maxWorkers = 0,
+		ISerializer $serializer,
+		int $maxWSocket = 1,
+		int $maxWorkers = 8,
 		int $allowedWSocketsOverflow = -1,
+		bool $spawnAllWorkersAtStartup = true,
 		int $requestTtl = 900,
 		int $sleepInterval = 100,
 		bool $sendErrorToClient = true
@@ -125,13 +140,19 @@ final class RTS{
 		$this->_maxWorkers = $maxWorkers;
 		$this->_socketPath = $socketPath;
 		$this->_requestTtl = $requestTtl;
+		$this->_serializer = $serializer;
 		$this->_maxWSockets = $maxWSocket;
 		$this->_environment = $environment;
 		$this->_instanceName = $instanceName;
 		$this->_sleepInterval = $sleepInterval;
 		$this->_sendErrorToClient = $sendErrorToClient;
 		$this->_allowedOverflow = $allowedWSocketsOverflow;
+		$this->_spawnAllWorkersAtStartup = $spawnAllWorkersAtStartup;
 		$this->_secretKey = (string) new UUID(UUID::V4);
+		$this->_appsManager = new RTSAppsManager(
+			new RTSAppEventObserver(),
+			$this->_environment->getModules()
+		);
 
 		//On commence par vérifier l'existence du fichier lock
 		//Un seul RTS est autorisé par repertoir de travail.
@@ -156,7 +177,7 @@ final class RTS{
 		socket_create_pair(AF_UNIX,SOCK_STREAM,SOL_TCP,$sockets);
 		$this->_localPortPid = pcntl_fork();
 		if($this->_localPortPid === 0){
-			cli_set_process_title("$this->_procName [LocalPort]");
+			cli_set_process_title("$this->_procName [LocalPort] [".getmypid()."]");
 			socket_close($sockets[1]);
 			$localPort = new RTSLocalPort(
 				$this->_socketPath,
@@ -223,7 +244,9 @@ final class RTS{
 	 * @throws MaxWorkerLimitReached
 	 */
 	private function workerManagerLoop():void{
-		$this->newWorker();
+		if($this->_spawnAllWorkersAtStartup) for($i=0; $i < $this->_maxWorkers; $i++)
+			$this->newWorker();
+		else $this->newWorker();
 		while(true){
 			$start = microtime(true);
 			$master = [$this->_networkPort];
@@ -241,15 +264,17 @@ final class RTS{
 					$read = array_diff($read,$master);
 				}
 				if(count(array_intersect($read,$local)) === 1){
-					//Si la requête du port local n'est pas valide, elle est ignorée.
-					//$request = json_decode($this->read($this->_localPort));
-					/*if(!is_null($request)) $this->broadCastLocalMessage(new InternalCommand(
-						InternalCommand::LOCAL,
-						InternalCommand::CMD_BROADCAST,
-						$request["data"]??'',
-						$request["user"]??''
-					));*/
-					$read = array_diff($read,$local);
+					try{
+						$this->dataTransmission(null,$this->_serializer->unserialize(
+							$this->read($this->_localPort)
+						));
+						$read = array_diff($read,$local);
+					}catch(\Error | \Exception $e){
+						$this->_environment->getLogger()->log(
+							"An error occured whil trying to read on local port : $e",
+							ILogger::ERR
+						);
+					}
 				}
 				foreach(array_diff($read,[$local,$master]) as $s){
 					foreach(array_diff($this->_workers,[$s]) as $pid=>$w){
@@ -287,7 +312,7 @@ final class RTS{
 											case InternalCommand::DATA_TRANSMISSION :
 												$this->dataTransmission(
 													$pid,
-													json_decode($data,true)
+													$this->_serializer->unserialize($data)
 												);
 												break;
 											default :
@@ -318,8 +343,42 @@ final class RTS{
 		}
 	}
 
-	private function dataTransmission(string $pid, $events):void{
-		//TODO
+	/**
+	 * @param string $pid
+	 * @param IRTSAppEvent[]  $events
+	 */
+	private function dataTransmission(?string $pid, array $events):void{
+		$selfApply = [];
+		$distribued = [];
+		$workersToSend = [];
+		/** @var IRTSAppEvent $e */
+		foreach($events as $e){
+			if($e->distributionMode(IRTSAppEvent::CENTRALIZATION)) $selfApply[] = $e;
+			if($e->distributionMode(IRTSAppEvent::DISTRIBUTION)){
+				if($e instanceof IRTSAppResponseEvent){
+					$recipients = $e->getRecipients();
+					$exepts  = $e->getExcepts();
+					if(is_null($recipients)) $sList = array_keys($this->_clientsByWorkerPid);
+					else $sList = array_diff($recipients,$exepts);
+					foreach($sList as $s){
+						if(isset($this->_clientsByWorkerPid[$s])){
+							if(!isset($workersToSend[$this->_clientsByWorkerPid[$s]]))
+								$workersToSend[$this->_clientsByWorkerPid[$s]] = [];
+							$workersToSend[$this->_clientsByWorkerPid[$s]][] = $s;
+						}
+					}
+				}else $distribued[] = $e;
+			}
+		}
+		if(!empty($selfApply)) $this->_appsManager->dispatch(...$selfApply);
+		foreach($workersToSend as $wpid=>$events) if($wpid !== $pid)
+			$this->write($this->_workers[$wpid],new InternalCommand(
+				InternalCommand::ROOT,
+				InternalCommand::DATA_TRANSMISSION,
+				$this->_serializer->serialize($events),
+				null,
+				$this->_secretKey
+			));
 	}
 
 	/**
@@ -471,17 +530,15 @@ final class RTS{
 	 * @throws \RuntimeException
 	 */
 	private function wsLoop():void{
-		cli_set_process_title("$this->_procName [Network Port] [".getmypid()."]");
+		cli_set_process_title("$this->_procName [NetworkPort] [".getmypid()."]");
 		$this->_worker = new RTSNetworkPort(
 			$this->_host,
 			$this->_port,
 			$this->_mainProcessSocket,
 			$this->_environment,
 			$this->_protocol,
-			new RTSAppsManager(
-				new RTSAppEventObserver(),
-				$this->_environment->getModules()
-			),
+			$this->_appsManager,
+			$this->_serializer,
 			$this->_secretKey,
 			$this->_networkPort,
 			$this->_sleepInterval

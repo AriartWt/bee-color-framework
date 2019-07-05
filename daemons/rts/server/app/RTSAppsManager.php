@@ -80,4 +80,11 @@ final class RTSAppsManager implements IRTSAppsManager {
 	public function getAll(): array {
 		return array_merge(...array_values($this->_apps));
 	}
+
+	/**
+	 * @return string[] all apps name that are currently managed
+	 */
+	public function getAppNames(): array {
+		return array_keys($this->_apps);
+	}
 }
