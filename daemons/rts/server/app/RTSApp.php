@@ -3,11 +3,6 @@
 namespace wfw\daemons\rts\server\app;
 
 use wfw\daemons\rts\server\app\events\IRTSAppEvent;
-use wfw\daemons\rts\server\app\events\IRTSAppEventHandler;
-use wfw\daemons\rts\server\app\events\IRTSAppEventListener;
-use wfw\daemons\rts\server\app\events\IRTSAppEventObserver;
-use wfw\daemons\rts\server\app\events\IRTSAppEventRouter;
-use wfw\daemons\rts\server\app\events\RTSAppEventObserver;
 use wfw\engine\lib\PHP\types\UUID;
 
 /**

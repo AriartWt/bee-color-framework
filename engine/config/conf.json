@@ -7,7 +7,8 @@
 		"daemons": {
 			"kvs": "kvstore\/server\/config\/conf.json",
 			"model_supervisor": "modelSupervisor\/server\/config\/conf.json",
-			"sctl": "sctl\/config\/conf.json"
+			"sctl": "sctl\/config\/conf.json",
+			"rts": "rts\/server\/config\/conf.json"
 		},
 		"cli": {
 			"backup": "backup\/config\/conf.json",

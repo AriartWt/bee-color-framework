@@ -39,13 +39,18 @@ final class RTSPoolConfs {
 	 *
 	 * @param string      $engineConfs Données de configuration générales
 	 * @param null|string $siteConfs   (optionnel) données de configuration du site
-	 * @param string $basePath (optionnel defaut : DAEMONS) chemin absolu permettant la
-	 *                         résolution du chemin relatif des fichiers.
+	 * @param string      $basePath    (optionnel defaut : DAEMONS) chemin absolu permettant la
+	 *                                 résolution du chemin relatif des fichiers.
+	 * @param bool        $noLogger
+	 * @throws \InvalidArgumentException
+	 * @throws \wfw\engine\lib\errors\InvalidTypeSupplied
+	 * @throws \wfw\engine\lib\errors\PermissionDenied
 	 */
 	public function __construct(
 		string $engineConfs,
 		?string $siteConfs=null,
-		string $basePath = DAEMONS
+		string $basePath = DAEMONS,
+		bool $noLogger = false
 	){
 		$this->_basePath = $basePath;
 		$confIO = new JSONConfIOAdapter();
@@ -69,18 +74,19 @@ final class RTSPoolConfs {
 		}
 
 		$this->_conf = new FileBasedConf($confPath,$confIO);
-
-		$this->_logger = (new FileLogger(new DefaultLogFormater(),...[
-			$this->getLogPath(null,"log"),
-			$this->getLogPath(null,"err"),
-			$this->getLogPath(null,"warn"),
-			$this->getLogPath(null,"debug")
-		]))->autoConfFileByLevel(
-			FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
-			FileLogger::DEBUG,
-			$this->isCopyLogModeEnabled(null)
-		)->autoConfByLevel($this->_conf->getInt($this->_conf->getInt("logs/level") ?? ILogger::ERR)
-		);
+		if(!$noLogger){
+			$this->_logger = (new FileLogger(new DefaultLogFormater(),...[
+				$this->getLogPath(null,"log"),
+				$this->getLogPath(null,"err"),
+				$this->getLogPath(null,"warn"),
+				$this->getLogPath(null,"debug")
+			]))->autoConfFileByLevel(
+				FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
+				FileLogger::DEBUG,
+				$this->isCopyLogModeEnabled(null)
+			)->autoConfByLevel($this->_conf->getInt($this->_conf->getInt("logs/level") ?? ILogger::ERR)
+			);
+		}
 
 		//On détermine les configurations de chaque instance à créer
 		$this->_instancesConfs = [];
@@ -90,19 +96,28 @@ final class RTSPoolConfs {
 			$tmp->mergeStdClass($defInstance);
 			$tmp->mergeStdClass($instanceConf);
 			$this->_instancesConfs[$instanceName] = $tmp;
-			$this->_instanceLoggers[$instanceName] = (new FileLogger(new DefaultLogFormater(),...[
-				$this->getLogPath($instanceName,"log"),
-				$this->getLogPath($instanceName,"err"),
-				$this->getLogPath($instanceName,"warn"),
-				$this->getLogPath($instanceName,"debug")
-			]))->autoConfFileByLevel(
-				FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
-				FileLogger::DEBUG,
-				$this->isCopyLogModeEnabled($instanceName)
-			)->autoConfByLevel($this->_conf->getInt("instances/$instanceName/logs/level")
-				?? $this->_conf->getInt("logs/level") ?? ILogger::ERR
-			);
+			if(!$noLogger){
+				$this->_instanceLoggers[$instanceName] = (new FileLogger(new DefaultLogFormater(),...[
+					$this->getLogPath($instanceName,"log"),
+					$this->getLogPath($instanceName,"err"),
+					$this->getLogPath($instanceName,"warn"),
+					$this->getLogPath($instanceName,"debug")
+				]))->autoConfFileByLevel(
+					FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
+					FileLogger::DEBUG,
+					$this->isCopyLogModeEnabled($instanceName)
+				)->autoConfByLevel($this->_conf->getInt("instances/$instanceName/logs/level")
+				                   ?? $this->_conf->getInt("logs/level") ?? ILogger::ERR
+				);
+			}
 		}
+	}
+
+	/**
+	 * @return FileBasedConf
+	 */
+	public function getConfFile():FileBasedConf{
+		return $this->_conf;
 	}
 
 	/**
@@ -465,6 +480,21 @@ final class RTSPoolConfs {
 			return $this->resolvePath($modelsToLoad,false);
 		}else{
 			return $modelsToLoad;
+		}
+	}
+
+	/**
+	 * @param null|string $instance
+	 * @return bool
+	 * @throws \InvalidArgumentException
+	 */
+	public function enabled(?string $instance=null):bool{
+		if (!isset($this->_instancesConfs[$instance]))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		try {
+			return $this->_instancesConfs[$instance]->find("enabled");
+		} catch (\Exception $e) {
+			return false;
 		}
 	}
 

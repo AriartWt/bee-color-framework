@@ -81,8 +81,8 @@ final class RTS{
 	private $_sleepInterval;
 	/** @var string $_instanceName */
 	private $_instanceName;
-	/** @var string $_procName */
-	private $_procName;
+	/** @var string $_logHead */
+	private $_logHead;
 	/** @var ISerializer $_serializer */
 	private $_serializer;
 	/** @var RTSAppsManager $_appsManager */
@@ -169,7 +169,8 @@ final class RTS{
 		if($res) throw new IllegalInvocation(
 			"A RTS instance is already running for this directory !"
 		);
-		cli_set_process_title($this->_mainProcessSocket = "[RTS] [$this->_instanceName]");
+		cli_set_process_title("WFW RTS $this->_instanceName");
+		$this->_logHead = "[RTS] [$this->_instanceName]";
 	}
 
 	public function start():void{
@@ -177,7 +178,7 @@ final class RTS{
 		socket_create_pair(AF_UNIX,SOCK_STREAM,SOL_TCP,$sockets);
 		$this->_localPortPid = pcntl_fork();
 		if($this->_localPortPid === 0){
-			cli_set_process_title("$this->_procName [LocalPort] [".getmypid()."]");
+			cli_set_process_title(cli_get_process_title()." Local Port");
 			socket_close($sockets[1]);
 			$localPort = new RTSLocalPort(
 				$this->_socketPath,
@@ -186,7 +187,8 @@ final class RTS{
 				$this->_protocol,
 				$this->_environment,
 				$this->_requestTtl,
-				$this->_sendErrorToClient
+				$this->_sendErrorToClient,
+				$this->_logHead
 			);
 			$localPort->start();
 			exit(1); //If something goes wrong
@@ -271,7 +273,7 @@ final class RTS{
 						$read = array_diff($read,$local);
 					}catch(\Error | \Exception $e){
 						$this->_environment->getLogger()->log(
-							"An error occured whil trying to read on local port : $e",
+							"An error occured while trying to read on local port : $e",
 							ILogger::ERR
 						);
 					}
@@ -291,7 +293,7 @@ final class RTS{
 										$data = $decoded["data"] ?? null;
 										if($key !== $this->_secretKey){
 											$this->_environment->getLogger()->log(
-												"$this->_procName Wrong secret key given by $source ($pid) for command $cmd. Request ignored.",
+												"$this->_logHead Wrong secret key given by $source ($pid) for command $cmd. Request ignored.",
 												ILogger::ERR
 											);
 											continue;
@@ -321,7 +323,7 @@ final class RTS{
 										}
 									}else $error = true;
 									if($error) $this->_environment->getLogger()->log(
-										"$this->_procName Invalid query recieved from worker "
+										"$this->_logHead Invalid query recieved from worker "
 										.$this->_workersBySocketId[(int)$s]." : $wData",
 										ILogger::WARN
 									);
@@ -389,7 +391,7 @@ final class RTS{
 	private function clientConnected(string $pid, $connectionInfos):void{
 		if(is_null($connectionInfos) || !is_array($connectionInfos)){
 			$this->_environment->getLogger()->log(
-				"$this->_procName Unable to connect client : invalid connectionInfos "
+				"$this->_logHead Unable to connect client : invalid connectionInfos "
 				."(request sent by Network Port worker $pid).",
 				ILogger::ERR
 			);
@@ -401,7 +403,7 @@ final class RTS{
 			$this->_clientsByApp[$connectionInfos["app"]] = [];
 		$this->_clientsByApp[$connectionInfos["app"]][$connectionInfos["id"]] = true;
 		$this->_environment->getLogger()->log(
-			"$this->_procName New client connected : ".json_encode($connectionInfos)
+			"$this->_logHead New client connected : ".json_encode($connectionInfos)
 		);
 	}
 
@@ -413,7 +415,7 @@ final class RTS{
 	private function clientDisconnected(string $pid, $connectionInfos):void{
 		if(is_null($connectionInfos) || !is_array($connectionInfos)){
 			$this->_environment->getLogger()->log(
-				"$this->_procName Unable to disconnect client : invalid connectionInfos "
+				"$this->_logHead Unable to disconnect client : invalid connectionInfos "
 				."(request sent by Network Port worker $pid).",
 				ILogger::ERR
 			);
@@ -426,7 +428,7 @@ final class RTS{
 		if(isset($this->_clientsByApp[$connectionInfos["app"]][$connectionInfos["id"]]))
 			unset($this->_clientsByApp[$connectionInfos["app"]][$connectionInfos["id"]]);
 		$this->_environment->getLogger()->log(
-			"$this->_procName Client disconnected : ".json_encode($connectionInfos)
+			"$this->_logHead Client disconnected : ".json_encode($connectionInfos)
 		);
 	}
 
@@ -476,7 +478,7 @@ final class RTS{
 						$this->_secretKey
 					));
 					$this->_environment->getLogger()->log(
-						"$this->_procName Client rejected : max server connections reached.",
+						"$this->_logHead Client rejected : max server connections reached.",
 						ILogger::WARN
 					);
 				}
@@ -530,7 +532,7 @@ final class RTS{
 	 * @throws \RuntimeException
 	 */
 	private function wsLoop():void{
-		cli_set_process_title("$this->_procName [NetworkPort] [".getmypid()."]");
+		cli_set_process_title(cli_get_process_title()." Network Port");
 		$this->_worker = new RTSNetworkPort(
 			$this->_host,
 			$this->_port,
@@ -541,7 +543,8 @@ final class RTS{
 			$this->_serializer,
 			$this->_secretKey,
 			$this->_networkPort,
-			$this->_sleepInterval
+			$this->_sleepInterval,
+			"$this->_logHead [NetworkPort]"
 		);
 		if(is_null($this->_networkPort)) $this->_networkPort = $this->_worker->getNetworkSocket();
 		$this->_worker->start();

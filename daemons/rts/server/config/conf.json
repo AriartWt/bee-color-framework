@@ -2,11 +2,6 @@
 	"working_dir" : "rts/data",
 	"socket_path" : "rts.socket",
 	"default_instance" : {
-		"users" : {
-			"root" : {
-				"password" : "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"
-			}
-		},
 		"port" : 8000,
 		"modules_to_load_path" : "{ROOT}/site/config/load/rts.php",
 		"request_ttl" : 900,
@@ -29,6 +24,7 @@
 		"allowed_worker_sockets_overflow" : -1,
 		"max_connections_by_ip" : 20,
 		"max_socket_select" : 1000,
+		"enabled" : false,
 		"max_clients" : null
 	},
 	"instances" : {
@@ -36,6 +32,10 @@
 			"modules_to_load_path" : "{ROOT}/BeeColor/config/load/rts.php",
 			"host" : "bee-color.local.dev",
 			"port" : 2670,
+			"enabled" : true,
+			"logs" : {
+				"level" : 15
+			},
 			"users" : {
 				"bee-color_website" : {
 					"password" : "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"

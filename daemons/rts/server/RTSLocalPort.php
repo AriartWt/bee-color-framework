@@ -38,8 +38,8 @@ final class RTSLocalPort {
 	private $_socketAddr;
 	/** @var array $_socketTimeout */
 	private $_socketTimeout = array("sec"=>10,"usec"=>0);
-	/** @var string $_procName */
-	private $_procName;
+	/** @var string $_logHead */
+	private $_logHead;
 
 	/**
 	 * RTSLocalPort constructor.
@@ -51,6 +51,7 @@ final class RTSLocalPort {
 	 * @param IRTSEnvironment $environment       Environement de travail.
 	 * @param int             $requestTtl        Temps de vie des requêtes
 	 * @param bool            $sendErrorToClient Envoie l'erreur à un client local, si une erreur survient.
+	 * @param string          $logHead
 	 * @throws IllegalInvocation
 	 */
 	public function __construct(
@@ -60,9 +61,10 @@ final class RTSLocalPort {
 		ISocketProtocol $protocol,
 		IRTSEnvironment $environment,
 		int $requestTtl = 900,
-		bool $sendErrorToClient = true
+		bool $sendErrorToClient = true,
+		string $logHead = "[RTS] [LocalPort]"
 	){
-		$this->_procName = cli_get_process_title();
+		$this->_logHead = "$logHead [".getmypid()."]";
 		$this->_mainProcessSocket = $socket;
 		$this->_protocol = $protocol;
 		$this->_environment = $environment;
@@ -250,7 +252,7 @@ final class RTSLocalPort {
 
 		if(!is_null($e)){
 			$this->_environment->getLogger()->log(
-				"$this->_procName An error caused the local port to shutdown : $e",
+				"$this->_logHead An error caused the local port to shutdown : $e",
 				ILogger::ERR
 			);
 			exit(1);

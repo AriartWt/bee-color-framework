@@ -6,6 +6,7 @@ use wfw\cli\wfw\templates\db\DBTemplate;
 use wfw\daemons\kvstore\server\conf\KVSConfs;
 use wfw\daemons\modelSupervisor\client\MSInstanceAddrResolver;
 use wfw\daemons\modelSupervisor\server\conf\MSServerPoolConfs;
+use wfw\daemons\rts\server\conf\RTSPoolConfs;
 use wfw\engine\core\conf\FileBasedConf;
 use wfw\engine\core\conf\io\adapters\JSONConfIOAdapter;
 use wfw\engine\core\data\DBAccess\NOSQLDB\msServer\MSServerWriterAccess;
@@ -588,6 +589,19 @@ try{
 			$mss->save();
 		}
 		fwrite(STDOUT,"MSServer instances removed.\n");
+
+		fwrite(STDOUT,"Removing RTS instances...\n");
+		$rts = ($rtsConf = new RTSPoolConfs(
+			ENGINE."/config/conf.json",null,DAEMONS,true
+		))->getConfFile();
+		if(!is_null($rts->getArray("instances/$project"))){
+			$instances = $rts->getArray("instances");
+			unset($instances[$project]);
+			$rts->set("instances",$instances);
+			$rts->save();
+		}
+		fwrite(STDOUT,"RTS instances removed.\n");
+
 		//unlink ROOT
 		if(is_link(ROOT."/$project")){
 			unlink(ROOT."/$project");
@@ -613,7 +627,7 @@ try{
 		fwrite(STDOUT,"$project have been successfully removed.\n");
 		fwrite(STDOUT,"\e[96m[INFO] $project folder still remains on disk ($pName) for safety concerns.\n"
 				."If your intent was to totaly remove this project, please do it manually following this steps :\n"
-				."\t- remove all logs (defaults : /var/log/wfw/kvs/containers & /var/log/wfw/msserver/instances)\n"
+				."\t- remove all logs (defaults : /var/log/wfw/kvs/containers & /var/log/wfw/msserver/instances & /var/log/wfw/rts/instances)\n"
 				."\t- remove project files (default : /srv/wfw/$project)\n"
 				."\t- remove all kvs data (defaults : /srv/wfw/global/kvstore/data/kvs_db/${project}_db)\n"
 				."\t- remove all msserver data (defaults : /srv/wfw/global/modelSupervisor/data/$project)\n"

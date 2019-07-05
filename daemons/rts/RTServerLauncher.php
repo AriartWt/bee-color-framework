@@ -18,13 +18,11 @@ use wfw\engine\lib\data\string\serializer\LightSerializer;
 use wfw\engine\lib\data\string\serializer\PHPSerializer;
 
 $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
-   new ArgvOpt('-pid','Affiche le pid',0,null,true),
-   new ArgvOpt('--debug','Affiche le détail des erreurs',0,null,true)
+   new ArgvOpt('-pid','Affiche le pid',0,null,true)
 ])),$argv);
 
 try{
-	if($argvReader->exists('-pid'))
-		fwrite(STDOUT,getmypid().PHP_EOL);
+	if($argvReader->exists('-pid')) fwrite(STDOUT,getmypid().PHP_EOL);
 	cli_set_process_title("WFW RTS server");
 	//On récupère les configurations.
 	$confs = new RTSPoolConfs(
@@ -33,7 +31,7 @@ try{
 	);
 
 	$pids = [];
-
+	$enabled = 0;
 	foreach($confs->getInstances() as $name){
 		$pid = pcntl_fork();
 		if($pid === 0 ){
@@ -42,60 +40,63 @@ try{
 			$pidFile = $servWorkingDir."/rts.pid";
 			if(file_exists($pidFile))
 				posix_kill(file_get_contents($pidFile),PCNTLSignalsHelper::SIGALRM);
+			if($confs->enabled($name)){
+				$enabled++;
+				$server = new RTS(
+					$name,
+					$confs->getSocketPath($name),
+					$confs->getHost($name),
+					$confs->getPort($name),
+					new DefaultProtocol(),
+					new RTSEnvironment(
+						$servWorkingDir,
+						$confs->getUsers($name),
+						$confs->getGroups($name),
+						$confs->getAdmins($name),
+						$confs->getLogger($name),
+						$confs->getModulesToLoad($name),
+						$confs->getSessionTtl($name),
+						$confs->getMaxWriteBufferSize($name),
+						$confs->getMaxReadBufferSize($name),
+						$confs->getMaxRequestHandshakeSize($name),
+						$confs->getAllowedOrigins($name) ?? [$confs->getHost($name)],
+						$confs->getMaxConnectionsByIp($name),
+						$confs->getMaxRequestsBySecondByClient($name),
+						$confs->getMaxSocketSelect($name)
+					),
+					new LightSerializer(new GZCompressor(),new PHPSerializer()),
+					$confs->getMaxWSockets($name),
+					$confs->getMaxWorkers($name),
+					$confs->getAllowedWSocketOverflow($name),
+					$confs->mustSpawnAllWorkersAtStartup($name),
+					$confs->getRequestTtl($name),
+					$confs->getSleepInterval($name)
+				);
 
-			$server = new RTS(
-				$name,
-				$confs->getSocketPath($name),
-				$confs->getHost($name),
-				$confs->getPort($name),
-				new DefaultProtocol(),
-				new RTSEnvironment(
-					$servWorkingDir,
-					$confs->getUsers($name),
-					$confs->getGroups($name),
-					$confs->getAdmins($name),
-					$confs->getLogger($name),
-					$confs->getModulesToLoad($name),
-					$confs->getSessionTtl($name),
-					$confs->getMaxWriteBufferSize($name),
-					$confs->getMaxReadBufferSize($name),
-					$confs->getMaxRequestHandshakeSize($name),
-					$confs->getAllowedOrigins($name) ?? [$confs->getHost($name)],
-					$confs->getMaxConnectionsByIp($name),
-					$confs->getMaxRequestsBySecondByClient($name),
-					$confs->getMaxSocketSelect($name)
-				),
-				new LightSerializer(new GZCompressor(),new PHPSerializer()),
-				$confs->getMaxWSockets($name),
-				$confs->getMaxWorkers($name),
-				$confs->getAllowedWSocketOverflow($name),
-				$confs->mustSpawnAllWorkersAtStartup($name),
-				$confs->getRequestTtl($name),
-				$confs->getSleepInterval($name)
-			);
+				$pcntlHelper = new PCNTLSignalsHelper(true);
+				$pcntlHelper->handleAll([
+						PCNTLSignalsHelper::SIGINT,
+						PCNTLSignalsHelper::SIGHUP,
+						PCNTLSignalsHelper::SIGTERM,
+						PCNTLSignalsHelper::SIGUSR1,
+						PCNTLSignalsHelper::SIGUSR2,
+						PCNTLSignalsHelper::SIGALRM
+					],function($signo)use($server){
+					$server->shutdown("PCNTL signal $signo recieved. Server shutdown gracefully.");
+				});
 
-			$pcntlHelper = new PCNTLSignalsHelper(true);
-			$pcntlHelper->handleAll([
-				PCNTLSignalsHelper::SIGINT,
-				PCNTLSignalsHelper::SIGHUP,
-				PCNTLSignalsHelper::SIGTERM,
-				PCNTLSignalsHelper::SIGUSR1,
-				PCNTLSignalsHelper::SIGUSR2,
-				PCNTLSignalsHelper::SIGALRM
-			],function($signo)use($server){
-				$server->shutdown("PCNTL signal $signo recieved. Server shutdown gracefully.");
-			});
-
-			$server->start();
-			//If something goes wrong, break the loop for not spawning some out of controls army
-			//of machiavellian childs
+				$server->start();
+				//If something goes wrong, break the loop for not spawning some out of controls army
+				//of machiavellian childs
+			}
 			break;
 		}else if($pid < 0 ){
 			throw new Exception("Unable to fork");
 		}
 		else $pids[]=$pid;
 	}
-	if(count($pids) > 0 || count($confs->getInstances()) === 0){
+	if(count($pids) > 0 && $enabled > 0){
+		cli_set_process_title("WFW RTSPool server");
 		$poolServer = new RTSPool(
 			$confs->getSocketPath(),
 			$confs->getWorkingDir(),
@@ -129,26 +130,22 @@ try{
 		});
 
 		$poolServer->start();
-	}
+	}else if($enabled === 0) $confs->getLogger()->log(
+		"[RTSPool] No RTS instance enabled, RTSPool not started."
+	);
 }catch(\InvalidArgumentException $e){
 	fwrite(STDOUT,"\e[33mWFW_rts WRONG_USAGE\e[0m : {$e->getMessage()}".PHP_EOL);
 	exit(1);
 }catch(\Exception $e){
-	if($argvReader->exists('--debug')) fwrite(
-			STDOUT,"\e[31mWFW_rts ERROR\e[0m : ".PHP_EOL."$e".PHP_EOL
-	);
-	else fwrite(
+	fwrite(
 		STDOUT,
-		"\e[31mWFW_rts ERROR\e[0m (try --debug for more) : {$e->getMessage()}".PHP_EOL
+		"\e[31mWFW_rts ERROR\e[0m $e".PHP_EOL
 	);
 	exit(2);
 }catch(\Error $e){
-	if($argvReader->exists('--debug')) fwrite(
-			STDOUT,"\e[31mWFW_rts FATAL_ERROR\e[0m : ".PHP_EOL."$e".PHP_EOL
-	);
-	else fwrite(
+	fwrite(
 		STDOUT,
-		"\e[31mWFW_rts FATAL_ERROR\e[0m (try --debug for more) : {$e->getMessage()}".PHP_EOL
+		"\e[31mWFW_rts FATAL_ERROR\e[0m $e".PHP_EOL
 	);
 	exit(3);
 }

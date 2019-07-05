@@ -44,8 +44,8 @@ final class RTSNetworkPort implements IWebsocketListener{
 	private $_mainProtocol;
 	/** @var int $_sleepInterval */
 	private $_sleepInterval;
-	/** @var string $_procName */
-	private $_procName;
+	/** @var string $_logHead */
+	private $_logHead;
 	/** @var string[] $_socketIds */
 	private $_socketIds;
 	/** @var IRTSAppsManager $_appsManager */
@@ -70,6 +70,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 	 * @param string          $rootKey
 	 * @param null|resource   $netSocket
 	 * @param int             $sleepInterval
+	 * @param string          $logHead
 	 * @throws \RuntimeException
 	 */
 	public function __construct(
@@ -82,13 +83,14 @@ final class RTSNetworkPort implements IWebsocketListener{
 		ISerializer $serializer,
 		string $rootKey,
 		$netSocket = null,
-		int $sleepInterval = 100
+		int $sleepInterval = 100,
+		string $logHead = "[RTS] [NetworkPort]"
 	) {
 		$this->_serializer = $serializer;
 		$this->_maxMainSocketRead = 20;
 		$this->_appsManager = $appsManager;
 		$this->_socketIds = [];
-		$this->_procName = $proc = cli_get_process_title();
+		$this->_logHead = "$logHead [".getmypid()."]";
 		$this->_mainSock = $mainSocket;
 		if(is_null($netSocket)){
 			$url = "tcp://$host:$port";
@@ -117,7 +119,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 	}
 
 	public function start():void{
-		$this->_env->getLogger()->log("$this->_procName start (pid : ".getmypid().")");
+		$this->_env->getLogger()->log("$this->_logHead start (pid : ".getmypid().")");
 		$observer = new WebsocketEventObserver();
 		$observer->addEventListener(IWebsocketEvent::class,$this);
 		$lastTmpChunkSize = 0;
@@ -176,14 +178,14 @@ final class RTSNetworkPort implements IWebsocketListener{
 						case InternalCommand::DATA_TRANSMISSION:
 							if($source !== InternalCommand::ROOT) {
 								$this->_env->getLogger()->log(
-									"$this->_procName Command $cmd recieved from $source (ignored)",
+									"$this->_logHead Command $cmd recieved from $source (ignored)",
 									ILogger::WARN
 								);
 								continue;
 							}
 							if($rootKey !== $this->_rootKey){
 								$this->_env->getLogger()->log(
-									"$this->_procName Invalid root key given for $cmd from $source (ignored)",
+									"$this->_logHead Invalid root key given for $cmd from $source (ignored)",
 									ILogger::ERR
 								);
 								continue;
@@ -242,7 +244,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 	 */
 	private function addClient(IWebsocketConnection $connection):void{
 		$this->_env->getLogger()->log(
-			"$this->_procName New client "
+			"$this->_logHead New client "
 			.$connection->getId()." created ( IP : ".$connection->getIp()." )"
 		);
 		$this->_netSocks[(string)(int)$connection->getSocket()] = $connection;
@@ -261,7 +263,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 			unset($this->_netSocks[$connection->getId()]);
 
 		$this->_env->getLogger()->log(
-			"$this->_procName Client ".$connection->getId()." removed."
+			"$this->_logHead Client ".$connection->getId()." removed."
 		);
 
 		try{
@@ -273,7 +275,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 				$this->_rootKey
 			));
 		}catch(\Error | \Exception $e){
-			$this->_env->getLogger()->log("$this->_procName Unable to write in RTS socket : $e");
+			$this->_env->getLogger()->log("$this->_logHead Unable to write in RTS socket : $e");
 		}
 	}
 
@@ -320,19 +322,19 @@ final class RTSNetworkPort implements IWebsocketListener{
 				));
 			}else if($event instanceof ErrorOcurred){
 				$this->_env->getLogger()->log(
-					"$this->_procName An error occured on connection ".$event->getSocketId()
+					"$this->_logHead An error occured on connection ".$event->getSocketId()
 					." : ".$event->getError(),
 					ILogger::ERR
 				);
 			}else if($event instanceof DataSent){
 				$this->_env->getLogger()->log(
-					"$this->_procName Data successfully sent to client ".$event->getSocketId()
+					"$this->_logHead Data successfully sent to client ".$event->getSocketId()
 				);
 			}else if($event instanceof DataRecieved){
 				$connection = $this->_netSocks[$this->_socketIds[$event->getSocketId()]] ?? null;
 				if($connection){
 					$this->_env->getLogger()->log(
-						"$this->_procName Data recieved from ".$connection->getId()." (app : "
+						"$this->_logHead Data recieved from ".$connection->getId()." (app : "
 						.$connection->getApp().")"
 					);
 					$events = $this->filterResponseEvents(...$this->_appsManager->dispatchData(
@@ -368,7 +370,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 			);
 		}catch(\Error | \Exception $e){
 			$this->_env->getLogger()->log(
-				"$this->_procName An error occured while trying to apply event "
+				"$this->_logHead An error occured while trying to apply event "
 				.get_class($event)." : $e",
 				ILogger::ERR
 			);
@@ -398,7 +400,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 							);
 						} catch (\Error | \Exception $e) {
 							$this->_env->getLogger()->log(
-								"$this->_procName Unable to write in client socket $clientId : $e",
+								"$this->_logHead Unable to write in client socket $clientId : $e",
 								ILogger::ERR
 							);
 						}
