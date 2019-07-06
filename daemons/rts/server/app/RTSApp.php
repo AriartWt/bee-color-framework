@@ -53,4 +53,8 @@ class RTSApp implements IRTSApp{
 	public function applyRTSEvents(IRTSAppEvent ...$event) {
 		// TODO: Implement applyRTSEvents() method.
 	}
+
+	protected function switchContext(string $user){
+
+	}
 }

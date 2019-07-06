@@ -2,28 +2,45 @@
 
 namespace wfw\daemons\rts\server\app\events;
 
-use wfw\daemons\rts\server\websocket\events\Handshaked;
+use wfw\daemons\rts\server\websocket\IWebsocketConnection;
 
 /**
  * When a new client have been successfully handshaked
  */
 final class ClientConnected extends RTSAppEvent {
-	public const INFOS = "connection_infos";
-	public const DATE = "connection_date";
+	/** @var IWebsocketConnection $_connection */
+	private $_connection;
+	/** @var float $_date */
+	private $_date;
+
 	/**
 	 * ClientConnected constructor.
 	 *
-	 * @param Handshaked $data
+	 * @param IWebsocketConnection $connection
+	 * @param float                $date
 	 */
-	public function __construct(Handshaked $data) {
+	public function __construct(IWebsocketConnection $connection, float $date) {
 		parent::__construct(
 			'',
-			json_encode([
-				self::INFOS => $data->getConnectionInfos(),
-				self::DATE => $data->getCreationDate()
-			 ]),
+			null,
 			IRTSAppEvent::SCOPE | IRTSAppEvent::CENTRALIZATION | IRTSAppEvent::DISTRIBUTION,
 			null
 		);
+		$this->_date = $date;
+		$this->_connection = $connection;
+	}
+
+	/**
+	 * @return IWebsocketConnection
+	 */
+	public function getConnection(): IWebsocketConnection {
+		return $this->_connection;
+	}
+
+	/**
+	 * @return float
+	 */
+	public function getDate(): float {
+		return $this->_date;
 	}
 }

@@ -28,16 +28,11 @@
 		"max_clients" : null
 	},
 	"instances" : {
-		"bee-color" : {
+		"BeeColor" : {
+			"project_path" : "/var/wfw/BeeColor",
 			"modules_to_load_path" : "{ROOT}/BeeColor/config/load/rts.php",
-			"host" : "bee-color.local.dev",
-			"port" : 2670,
-			"enabled" : true,
-			"logs" : {
-				"level" : 15
-			},
 			"users" : {
-				"bee-color_website" : {
+				"BeeColor" : {
 					"password" : "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"
 				}
 			}

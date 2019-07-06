@@ -26,7 +26,7 @@ final class Handshaked extends WebsocketEvent {
 	) {
 		parent::__construct($connection->getId());
 		$this->_sender = $sender;
-		$this->_connection = json_encode($connection);
+		$this->_connection = $connection;
 	}
 
 	/**
@@ -37,9 +37,9 @@ final class Handshaked extends WebsocketEvent {
 	}
 
 	/**
-	 * @return string
+	 * @return IWebsocketConnection
 	 */
-	public function getConnectionInfos(): string {
+	public function getConnectionInfos(): IWebsocketConnection {
 		return $this->_connection;
 	}
 }

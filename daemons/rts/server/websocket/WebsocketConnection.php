@@ -2,6 +2,7 @@
 
 namespace wfw\daemons\rts\server\websocket;
 
+use wfw\daemons\rts\server\websocket\errors\InvalidWebsocketConnection;
 use wfw\daemons\rts\server\websocket\errors\WebsocketConnectionClosed;
 use wfw\daemons\rts\server\websocket\errors\WebsocketHandhaskeFailure;
 use wfw\daemons\rts\server\websocket\errors\WebsocketIOFailure;
@@ -53,6 +54,8 @@ final class WebsocketConnection implements IWebsocketConnection {
 	private $_rejectOnHandshakeCode;
 	/** @var null|string $_rejectOnHandshakeMessage */
 	private $_rejectOnHandshakeMessage;
+	/** @var bool $_unserialized */
+	private $_unserialized;
 
 	/**
 	 * WebsocketConnection constructor.
@@ -106,6 +109,7 @@ final class WebsocketConnection implements IWebsocketConnection {
 		$this->_closed = false;
 		$this->_handshaked = false;
 		$this->_waitingForData = false;
+		$this->_unserialized = false;
 
 		$dispatcher->dispatch(new Accepted(
 			$this->_id,
@@ -331,6 +335,9 @@ final class WebsocketConnection implements IWebsocketConnection {
 	 * @throws WebsocketConnectionClosed
 	 */
 	private function throwIfClosed(string $op):void{
+		if($this->_unserialized) throw new InvalidWebsocketConnection(
+			"Attempting to perform the following action on an unserialized connection : $op ($this->_id)."
+		);
 		if($this->_closed) throw new WebsocketConnectionClosed(
 			"Attempting to perform the following action on a closed connection : $op ($this->_id)."
 		);
@@ -514,5 +521,43 @@ final class WebsocketConnection implements IWebsocketConnection {
 	 */
 	public function getApp(): string {
 		return $this->_app;
+	}
+
+	/**
+	 * String representation of object
+	 *
+	 * @link  http://php.net/manual/en/serializable.serialize.php
+	 * @return string the string representation of the object or null
+	 * @since 5.1.0
+	 */
+	public function serialize() {
+		return serialize([
+			$this->_id,
+			$this->_app,
+			$this->_headers,
+			$this->_allowedOrigins,
+			$this->_port
+		]);
+	}
+
+	/**
+	 * Constructs the object
+	 *
+	 * @link  http://php.net/manual/en/serializable.unserialize.php
+	 * @param string $serialized <p>
+	 *                           The string representation of the object.
+	 *                           </p>
+	 * @return void
+	 * @since 5.1.0
+	 */
+	public function unserialize($serialized) {
+		$this->_unserialized = true;
+		list(
+			$this->_id,
+			$this->_app,
+			$this->_headers,
+			$this->_allowedOrigins,
+			$this->_port
+		) = unserialize($serialized);
 	}
 }

@@ -7,6 +7,7 @@ use wfw\engine\core\conf\io\adapters\JSONConfIOAdapter;
 use wfw\engine\lib\logger\DefaultLogFormater;
 use wfw\engine\lib\logger\FileLogger;
 use wfw\engine\lib\logger\ILogger;
+use wfw\engine\lib\PHP\objects\StdClassOperator;
 use wfw\engine\lib\PHP\types\PHPString;
 
 /**
@@ -90,6 +91,18 @@ final class KVSConfs {
 			)->autoConfByLevel($this->_conf->getInt("logs/level") ?? ILogger::ERR);
 
 			foreach($this->getContainers(false) as $containerName=>$data){
+				try{
+					$path = $this->_conf->getString("containers/$containerName/project_path");
+					if(file_exists("$path/site/config/conf.json")){
+						$tmpConf = new FileBasedConf($path,new JSONConfIOAdapter());
+						$customConf = $tmpConf->getObject("server/daemons/custom_config/kvs");
+						if(!is_null($customConf)){
+							$currentConf = new StdClassOperator($this->_conf->getObject("containers/$containerName"));
+							$currentConf->mergeStdClass($customConf);
+							$this->_conf->set("containers/$containerName",$currentConf->getStdClass());
+						}
+					}
+				}catch(\Exception $e){}
 				$this->_instanceLoggers[$containerName] = (new FileLogger(new DefaultLogFormater(),...[
 					$this->getLogPath($containerName,"log"),
 					$this->getLogPath($containerName,"err"),

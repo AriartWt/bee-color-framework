@@ -5,7 +5,7 @@ namespace wfw\daemons\rts\server\websocket;
 /**
  * Websocket connection to a client
  */
-interface IWebsocketConnection extends \JsonSerializable {
+interface IWebsocketConnection extends \JsonSerializable, \Serializable {
 	/**
 	 * Recieve data from client
 	 */

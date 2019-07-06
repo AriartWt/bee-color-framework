@@ -9,6 +9,8 @@
 namespace wfw\daemons\rts\server;
 
 use PHPMailer\PHPMailer\Exception;
+use wfw\daemons\rts\server\app\events\ClientConnected;
+use wfw\daemons\rts\server\app\events\ClientDisconnected;
 use wfw\daemons\rts\server\app\events\IRTSAppEvent;
 use wfw\daemons\rts\server\app\events\IRTSAppResponseEvent;
 use wfw\daemons\rts\server\app\events\RTSAppEventObserver;
@@ -302,19 +304,19 @@ final class RTS{
 											case InternalCommand::FEEDBACK_CLIENT_CREATED:
 												$this->clientConnected(
 													$pid,
-													json_decode($data,true)
+													$this->_serializer->unserialize($data)
 												);
 												break;
 											case InternalCommand::FEEDBACK_CLIENT_DISCONNECTED:
 												$this->clientDisconnected(
 													$pid,
-													json_decode($data,true)
+													$this->_serializer->unserialize($data)
 												);
 												break;
 											case InternalCommand::DATA_TRANSMISSION :
 												$this->dataTransmission(
 													$pid,
-													$this->_serializer->unserialize($data)
+													...$this->_serializer->unserialize($data)
 												);
 												break;
 											default :
@@ -349,7 +351,7 @@ final class RTS{
 	 * @param string $pid
 	 * @param IRTSAppEvent[]  $events
 	 */
-	private function dataTransmission(?string $pid, array $events):void{
+	private function dataTransmission(?string $pid, IRTSAppEvent ...$events):void{
 		$selfApply = [];
 		$distribued = [];
 		$workersToSend = [];
@@ -389,22 +391,26 @@ final class RTS{
 	 * @param null|array $connectionInfos Set connections infos in worker
 	 */
 	private function clientConnected(string $pid, $connectionInfos):void{
-		if(is_null($connectionInfos) || !is_array($connectionInfos)){
+		if(is_null($connectionInfos) || !( $connectionInfos instanceof ClientConnected )){
 			$this->_environment->getLogger()->log(
-				"$this->_logHead Unable to connect client : invalid connectionInfos "
-				."(request sent by Network Port worker $pid).",
+				"$this->_logHead Unable to connect client : connectionInfos must be "
+				.ClientConnected::class." but ".gettype($connectionInfos)
+				." given (request sent by Network Port worker $pid).",
 				ILogger::ERR
 			);
 			return;
 		}
+		$event = $connectionInfos;
+		$connectionInfos = json_decode($connectionInfos->getData(),true);
 		$this->_clientsByWorkerPid[$connectionInfos["id"]] = $pid;
 		$this->_workersInfos[$pid][$connectionInfos["id"]] = $connectionInfos;
 		if(!isset($this->_clientsByApp[$connectionInfos["app"]]))
 			$this->_clientsByApp[$connectionInfos["app"]] = [];
 		$this->_clientsByApp[$connectionInfos["app"]][$connectionInfos["id"]] = true;
 		$this->_environment->getLogger()->log(
-			"$this->_logHead New client connected : ".json_encode($connectionInfos)
+			"$this->_logHead New client connected : ".$event->getData()
 		);
+		$this->dataTransmission($pid,$event);
 	}
 
 	/**
@@ -413,14 +419,17 @@ final class RTS{
 	 * @param array|null $connectionInfos
 	 */
 	private function clientDisconnected(string $pid, $connectionInfos):void{
-		if(is_null($connectionInfos) || !is_array($connectionInfos)){
+		if(is_null($connectionInfos) || !($connectionInfos instanceof ClientDisconnected)){
 			$this->_environment->getLogger()->log(
-				"$this->_logHead Unable to disconnect client : invalid connectionInfos "
-				."(request sent by Network Port worker $pid).",
+				"$this->_logHead Unable to disconnect client : connectionInfos must be "
+				.ClientDisconnected::class." but ".gettype($connectionInfos)
+				." given (request sent by Network Port worker $pid).",
 				ILogger::ERR
 			);
 			return;
 		}
+		$event = $connectionInfos;
+		$connectionInfos = json_decode($connectionInfos->getData(),true);
 		if(isset($this->_clientsByWorkerPid[$connectionInfos["id"]]))
 			unset($this->_clientsByWorkerPid[$connectionInfos["id"]]);
 		if(isset($this->_workersInfos[$pid][$connectionInfos["id"]]))
@@ -428,8 +437,9 @@ final class RTS{
 		if(isset($this->_clientsByApp[$connectionInfos["app"]][$connectionInfos["id"]]))
 			unset($this->_clientsByApp[$connectionInfos["app"]][$connectionInfos["id"]]);
 		$this->_environment->getLogger()->log(
-			"$this->_logHead Client disconnected : ".json_encode($connectionInfos)
+			"$this->_logHead Client disconnected : ".$event->getData()
 		);
+		$this->dataTransmission($pid,$event);
 	}
 
 	/**

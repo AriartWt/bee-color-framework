@@ -224,7 +224,7 @@ try{
 			//clear all caches to be sure all will be reloaded
 			(new HTTPRequest("http://127.0.0.1/wfw/clear_caches.php",[],["method" =>  "GET"]))
 				->send();
-			fwrite(STDOUT,"Cache reloaded.\n");
+			fwrite(STDOUT,"Cache cleared.\n");
 
 			fwrite(STDOUT,"Restarting daemons...\n");
 			//start and restart daemons
@@ -336,6 +336,8 @@ try{
 		$kvsContainer = $pName."_db";
 		$mssPwd =(string) new UUID(UUID::V4);
 		$mssUser = $pName."_website";
+		$rtsPwd = (string) new UUID(UUID::V4);
+		$rtsUser = $pName;
 		$dbPwd =(string) new UUID(UUID::V4);
 		$dbRootPwd =(string) new UUID(UUID::V4);
 		$dbRootUser = "$pName-root";
@@ -401,6 +403,7 @@ try{
 		$kvs->set("admin_mail",$adminMail);
 		$containers = $kvs->getArray("containers");
 		$containers[$kvsContainer] = [
+			"project_path" => $path,
 			"permissions" => [
 				"users" => [ $kvsUser => [ "read" => true, "write" => true, "admin" => true ] ],
 				"default_storage" => "IN_MEMORY_PERSISTED_ON_DISK"
@@ -417,6 +420,7 @@ try{
 			)->getConfFile();
 		$mss->set("admin_mail",$adminMail);
 		$mss->set("instances/$pName",[
+			"project_path" => $path,
 			"models_to_load_path" => "{ROOT}/$pName/config/load/models.php",
 			"kvs" => [ "login" => $kvsUser, "password" => $kvsPwd, "container" => $kvsContainer ],
 			"users" => [ $mssUser => [ "password"=>$mssPwd ] ],
@@ -429,6 +433,19 @@ try{
 		$mss->save();
 		fwrite(STDOUT,"MSServer instance ready.\n");
 
+		fwrite(STDOUT, "Creating and configuring RTS instance...\n");
+		$rts = ($rtsConf = new RTSPoolConfs(
+			ENGINE."/config/conf.json",null,DAEMONS,true
+		))->getConfFile();
+		$rts->set("admin_mail",$adminMail);
+		$rts->set("instances/$pName",[
+			"project_path" => $path,
+			"modules_to_load_path" => "{ROOT}/$pName/config/load/rts.php",
+			"users" => [ $rtsUser => [ "password" => $rtsPwd ] ]
+		]);
+		$rts->save();
+		fwrite(STDOUT,"RTS instance ready.\n");
+
 		fwrite(STDOUT,"Configuring project...\n");
 		//next project files :
 		$globalConf = new FileBasedConf(ENGINE."/config/conf.json");
@@ -439,7 +456,8 @@ try{
 		$engine->set("server/daemons",[
 			"kvs"=>$kvs->getConfPath(),
 			"model_supervisor"=>$mss->getConfPath(),
-			"sctl" => $sctlPath
+			"sctl" => $sctlPath,
+			"rts" => $rts->getConfPath()
 		]);
 		$engine->save();
 
@@ -627,10 +645,11 @@ try{
 		fwrite(STDOUT,"$project have been successfully removed.\n");
 		fwrite(STDOUT,"\e[96m[INFO] $project folder still remains on disk ($pName) for safety concerns.\n"
 				."If your intent was to totaly remove this project, please do it manually following this steps :\n"
-				."\t- remove all logs (defaults : /var/log/wfw/kvs/containers & /var/log/wfw/msserver/instances & /var/log/wfw/rts/instances)\n"
+				."\t- remove all logs (defaults : /var/log/wfw/kvs/containers/$project & /var/log/wfw/msserver/instances/$project & /var/log/wfw/rts/instances/$project)\n"
 				."\t- remove project files (default : /srv/wfw/$project)\n"
 				."\t- remove all kvs data (defaults : /srv/wfw/global/kvstore/data/kvs_db/${project}_db)\n"
 				."\t- remove all msserver data (defaults : /srv/wfw/global/modelSupervisor/data/$project)\n"
+				."\t- remove all rts data (defaults : /srv/wfw/global/rts/data/$project)\n"
 				."\t- delete mysql db (default : ${project}_EventStore)\n"
 				."\t- delete mysql user (default : ${project}_website)\n"
 				."\t- disable site confs in apache2 (depends on your config)\n"

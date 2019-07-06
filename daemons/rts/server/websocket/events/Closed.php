@@ -13,7 +13,7 @@ final class Closed extends WebsocketEvent {
 	private $_code;
 	/** @var string $_message */
 	private $_message;
-	/** @var string $_connectionInfos */
+	/** @var IWebsocketConnection $_connectionInfos */
 	private $_connectionInfos;
 
 	/**
@@ -27,7 +27,7 @@ final class Closed extends WebsocketEvent {
 		parent::__construct($connection->getId());
 		$this->_code = $closeCode;
 		$this->_message = $message;
-		$this->_connectionInfos = json_encode($connection);
+		$this->_connectionInfos = $connection;
 	}
 
 	/**
@@ -45,9 +45,9 @@ final class Closed extends WebsocketEvent {
 	}
 
 	/**
-	 * @return string
+	 * @return IWebsocketConnection
 	 */
-	public function getConnectionInfos():string{
+	public function getConnectionInfos():IWebsocketConnection{
 		return $this->_connectionInfos;
 	}
 }

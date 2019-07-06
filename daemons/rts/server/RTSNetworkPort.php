@@ -191,9 +191,15 @@ final class RTSNetworkPort implements IWebsocketListener{
 								continue;
 							}
 							try{
-								$this->_appsManager->dispatch(...$this->_serializer->unserialize(
+								$this->_appsManager->dispatch(...$events = $this->_serializer->unserialize(
 									$data
 								));
+								foreach($events as $e){
+									if($e instanceof ClientConnected)
+										$this->addClient($e->getConnection(),false);
+									else if($e instanceof ClientDisconnected)
+										$this->removeClient($e->getConnection(),false);
+								}
 							}catch(\Error | \Exception $e){
 								$this->_env->getLogger()->log(
 									"An error occured while trying to dispatch $source command events : $e",
@@ -241,8 +247,9 @@ final class RTSNetworkPort implements IWebsocketListener{
 
 	/**
 	 * @param IWebsocketConnection $connection Connection to add to server connections
+	 * @param bool                 $sendFeedBack
 	 */
-	private function addClient(IWebsocketConnection $connection):void{
+	private function addClient(IWebsocketConnection $connection,bool $sendFeedBack = true):void{
 		$this->_env->getLogger()->log(
 			"$this->_logHead New client "
 			.$connection->getId()." created ( IP : ".$connection->getIp()." )"
@@ -250,12 +257,24 @@ final class RTSNetworkPort implements IWebsocketListener{
 		$this->_netSocks[(string)(int)$connection->getSocket()] = $connection;
 		$this->_socketIds[$connection->getId()] = (string)(int)$connection->getSocket();
 
+		try{//TODO : continue to clear JSON & replace serialized
+			if($sendFeedBack) $this->_mainProtocol->write($this->_mainSock,new InternalCommand(
+				InternalCommand::WORKER,
+				InternalCommand::FEEDBACK_CLIENT_CREATED,
+				$this->_serializer->serialize($connection),
+				null,
+				$this->_rootKey
+			));
+		}catch(\Error | \Exception $e){
+			$this->_env->getLogger()->log("$this->_logHead Unable to write in RTS socket : $e");
+		}
 	}
 
 	/**
 	 * @param IWebsocketConnection $connection Connection to remove from server connections
+	 * @param bool                 $sendFeedBack
 	 */
-	private function removeClient(IWebsocketConnection $connection):void{
+	private function removeClient(IWebsocketConnection $connection, bool $sendFeedBack = true):void{
 		if(isset($this->_netSocks[(string)(int)$connection->getSocket()]))
 			unset($this->_netSocks[(string)(int)$connection->getSocket()]);
 
@@ -267,10 +286,10 @@ final class RTSNetworkPort implements IWebsocketListener{
 		);
 
 		try{
-			$this->_mainProtocol->write($this->_mainSock,new InternalCommand(
+			if($sendFeedBack) $this->_mainProtocol->write($this->_mainSock,new InternalCommand(
 				InternalCommand::WORKER,
 				InternalCommand::FEEDBACK_CLIENT_DISCONNECTED,
-				json_encode($connection),
+				$this->_serializer->serialize($connection),
 				null,
 				$this->_rootKey
 			));
@@ -307,18 +326,30 @@ final class RTSNetworkPort implements IWebsocketListener{
 	public function applyWebsocketEvent(IWebsocketEvent $event): void {
 		try{
 			if($event instanceof Handshaked){
-				$this->_appsManager->dispatch($e = new ClientConnected($event));
+				$this->_appsManager->dispatch($e = new ClientConnected(
+					$event->getConnectionInfos(),
+					$event->getCreationDate()
+				));
 				$this->_mainProtocol->write($this->_mainSock,new InternalCommand(
 					InternalCommand::WORKER,
 					InternalCommand::FEEDBACK_CLIENT_CREATED,
-					$e
+					$this->_serializer->serialize($e),
+					null,
+					$this->_rootKey
 				));
 			}else if($event instanceof Closed){
-				$this->_appsManager->dispatch($e = new ClientDisconnected($event));
+				$this->_appsManager->dispatch($e = new ClientDisconnected(
+					$event->getConnectionInfos(),
+					$event->getCreationDate(),
+					$event->getMessage(),
+					$event->getCode()
+				));
 				$this->_mainProtocol->write($this->_mainSock,new InternalCommand(
 					InternalCommand::WORKER,
 					InternalCommand::FEEDBACK_CLIENT_DISCONNECTED,
-					$e
+					$this->_serializer->serialize($e),
+					null,
+					$this->_rootKey
 				));
 			}else if($event instanceof ErrorOcurred){
 				$this->_env->getLogger()->log(

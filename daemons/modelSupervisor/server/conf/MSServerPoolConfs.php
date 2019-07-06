@@ -97,6 +97,14 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 			$tmp = new StdClassOperator(new stdClass());
 			$tmp->mergeStdClass($defInstance);
 			$tmp->mergeStdClass($instanceConf);
+			try{
+				$path = $tmp->find("project_path");
+				if(file_exists("$path/site/config/conf.json")){
+					$tmpConf = new FileBasedConf($path,new JSONConfIOAdapter());
+					$custom_conf = $tmpConf->getObject("server/daemons/custom_config/msserver");
+					if(!is_null($custom_conf)) $tmp->mergeStdClass($custom_conf);
+				}
+			}catch(\Exception $e){}
 			$this->_instancesConfs[$instanceName] = $tmp;
 			if(!$noLogger)
 			$this->_instanceLoggers[$instanceName] = (new FileLogger(new DefaultLogFormater(),...[
