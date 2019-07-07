@@ -4,7 +4,6 @@ namespace wfw\daemons\rts\server\app;
 
 use wfw\daemons\rts\server\app\events\IRTSAppEvent;
 use wfw\daemons\rts\server\app\events\IRTSAppEventListener;
-use wfw\daemons\rts\server\app\events\IRTSAppEventRouter;
 
 /**
  * Application du RTS

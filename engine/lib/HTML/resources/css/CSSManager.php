@@ -9,6 +9,19 @@ use wfw\engine\lib\HTML\resources\FileIncluder;
 final class CSSManager extends FileIncluder implements ICSSManager {
 	/** @var array $_inlineCSS */
 	protected $_inlineCSS=array();
+	/** @var bool $_preload */
+	private $_preload;
+
+	/**
+	 * CSSManager constructor.
+	 *
+	 * @param bool $preload
+	 * @param int  $exceptionFlag
+	 */
+	public function __construct(bool $preload = true, int $exceptionFlag = self::EMIT_EXCEPTION_OFF) {
+		parent::__construct($exceptionFlag);
+		$this->_preload = $preload;
+	}
 
 	/**
 	 *   Ecrit les dépendances CSS dans le code HTML. (AInsi que les inclusions de CSS généré dynamiquement)
@@ -18,6 +31,7 @@ final class CSSManager extends FileIncluder implements ICSSManager {
 	public function write(string $add_to_url=""):string{
 		$res="";
 		foreach($this->_registered as $v){
+			if($this->_preload) header("Link: <$v$add_to_url>; rel=preload; as=style",false);
 			$res.="<link rel=\"stylesheet\" href=\"$v$add_to_url\">";
 		}
 		if(count($this->_inlineCSS)>0){

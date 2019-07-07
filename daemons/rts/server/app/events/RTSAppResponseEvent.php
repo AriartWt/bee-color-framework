@@ -18,13 +18,13 @@ class RTSAppResponseEvent extends RTSAppEvent implements IRTSAppResponseEvent {
 	 * @param string     $senderId
 	 * @param string     $data
 	 * @param array|null $recipients If null -> all sockets for given apps
-	 * @param array|null $exepts     If set, will exclude from sockets all that are listed below.
+	 * @param array|null $excepts    If set, will exclude from sockets all that are listed below.
 	 */
 	public function __construct(
 		string $senderId,
 		string $data,
 		?array $recipients = [],
-		array $exepts = []
+		array $excepts = []
 	){
 		parent::__construct(
 			$senderId,
@@ -32,7 +32,7 @@ class RTSAppResponseEvent extends RTSAppEvent implements IRTSAppResponseEvent {
 			IRTSAppResponseEvent::SCOPE | IRTSAppResponseEvent::DISTRIBUTION,
 			null
 		);
-		$this->_excepts = $exepts;
+		$this->_excepts = $excepts;
 		$this->_recipients = $recipients;
 	}
 

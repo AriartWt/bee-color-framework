@@ -13,6 +13,7 @@ use wfw\daemons\rts\server\app\events\ClientDisconnected;
 use wfw\daemons\rts\server\app\events\IRTSAppEvent;
 use wfw\daemons\rts\server\app\events\IRTSAppResponseEvent;
 use wfw\daemons\rts\server\app\events\RTSAppEventObserver;
+use wfw\daemons\rts\server\app\events\RTSCloseConnectionsEvent;
 use wfw\daemons\rts\server\app\RTSAppsManager;
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
 use wfw\daemons\rts\server\errors\MaxWorkerLimitReached;
@@ -350,6 +351,15 @@ final class RTS{
 		$workersToSend = [];
 		/** @var IRTSAppEvent $e */
 		foreach($events as $e){
+			if($e instanceof RTSCloseConnectionsEvent && $local) continue;
+			if($e instanceof ClientConnected){
+				if(!$local) $this->clientConnected($pid,$e);
+				else continue;
+			}
+			else if($e instanceof ClientDisconnected && !$local){
+				if(!$local) $this->clientDisconnected($pid,$e);
+				else continue;
+			}
 			if($e->distributionMode(IRTSAppEvent::CENTRALIZATION)) $selfApply[] = $e;
 			if($e->distributionMode(IRTSAppEvent::DISTRIBUTION)){
 				if($e instanceof IRTSAppResponseEvent){
@@ -366,8 +376,6 @@ final class RTS{
 					}
 				}else $distribued[] = $e;
 			}
-			if($e instanceof ClientConnected && !$local) $this->clientConnected($pid,$e);
-			else if($e instanceof ClientDisconnected && !$local) $this->clientDisconnected($pid,$e);
 		}
 		if(!empty($selfApply)) $this->_appsManager->dispatch(...$selfApply);
 		foreach($workersToSend as $wpid=>$events) if($wpid !== $pid){

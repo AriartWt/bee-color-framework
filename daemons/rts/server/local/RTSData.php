@@ -2,7 +2,6 @@
 
 namespace wfw\daemons\rts\server\local;
 
-
 use wfw\daemons\rts\server\app\events\ClientConnected;
 use wfw\daemons\rts\server\app\events\ClientDisconnected;
 use wfw\daemons\rts\server\app\events\IRTSAppEvent;

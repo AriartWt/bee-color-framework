@@ -12,6 +12,10 @@ use wfw\daemons\multiProcWorker\socket\protocol\DefaultProtocol;
 use wfw\daemons\rts\client\errors\MustBeLogged;
 use wfw\daemons\rts\client\errors\RTSClientFailure;
 use wfw\daemons\rts\server\app\events\IRTSAppEvent;
+use wfw\daemons\rts\server\local\IRTSLocalCommand;
+use wfw\daemons\rts\server\local\RTSData;
+use wfw\daemons\rts\server\local\RTSLogin;
+use wfw\daemons\rts\server\local\RTSLogout;
 use wfw\engine\lib\data\string\compressor\GZCompressor;
 use wfw\engine\lib\data\string\serializer\ISerializer;
 use wfw\engine\lib\data\string\serializer\LightSerializer;
@@ -70,11 +74,7 @@ class RTSClient implements IRTSClient{
 	 * @param IRTSAppEvent[] $events
 	 */
 	public function send(IRTSAppEvent ...$events): void {
-		$res = $this->sendRequest([
-			"sessid" => $this->_sessId,
-			"data" => $this->_serializer->serialize($events),
-			"cmd" => "data"
-		]);
+		$res = $this->sendRequest(new RTSData($this->_sessId,...$events));
 		if($res !== "broadcasted") $this->parseError($res);
 	}
 
@@ -82,11 +82,7 @@ class RTSClient implements IRTSClient{
 	 * Se connecte à une instance RTS
 	 */
 	public function login(): void {
-		$res = $this->sendRequest([
-			"cmd"=>"login",
-			"login"=>$this->_login,
-			"password"=>$this->_password
-		]);
+		$res = $this->sendRequest(new RTSLogin($this->_login,$this->_password));
 		$parsed = json_decode($res,true);
 		if(is_null($parsed) || !isset($parsed["sessid"])) $this->parseError($res);
 		else $this->_sessId = $parsed["sessid"];
@@ -99,7 +95,7 @@ class RTSClient implements IRTSClient{
 	public function logout(): void {
 		if(is_null($this->_sessId))
 			throw new MustBeLogged("You must le logged before trying to logout !");
-		$res = $this->sendRequest(["sessid"=>$this->_sessId,"cmd"=>"logout"]);
+		$res = $this->sendRequest(new RTSLogout($this->_sessId));
 		if($res !== "disconnected") $this->parseError($res);
 	}
 
@@ -114,12 +110,12 @@ class RTSClient implements IRTSClient{
 	}
 
 	/**
-	 * @param array $req Envoie la requête $req et renvoie la réponse du serveur
+	 * @param IRTSLocalCommand $req Send the command to the local port
 	 * @return string
 	 */
-	protected function sendRequest(array $req):string{
+	protected function sendRequest(IRTSLocalCommand $req):string{
 		$socket = $this->createClientSocket();
-		$this->_protocol->write($socket,json_encode($req));
+		$this->_protocol->write($socket,$this->_serializer->serialize($req));
 		return $this->_protocol->read($socket);
 	}
 
