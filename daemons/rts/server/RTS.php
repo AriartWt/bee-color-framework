@@ -8,7 +8,6 @@
 
 namespace wfw\daemons\rts\server;
 
-use PHPMailer\PHPMailer\Exception;
 use wfw\daemons\rts\server\app\events\ClientConnected;
 use wfw\daemons\rts\server\app\events\ClientDisconnected;
 use wfw\daemons\rts\server\app\events\IRTSAppEvent;
@@ -188,6 +187,7 @@ final class RTS{
 				$sockets[0],
 				$this->_protocol,
 				$this->_environment,
+				$this->_serializer,
 				$this->_requestTtl,
 				$this->_sendErrorToClient,
 				$this->_logHead
@@ -237,9 +237,7 @@ final class RTS{
 			$this->_workers[$pid] = $sockets[1];
 			$this->_workersBySocketId[(string)(int)$sockets[1]] = $pid;
 			$this->configureSocket($sockets[1]);
-			$this->_workersInfos[$pid] = [
-				"clients" => []
-			];
+			$this->_workersInfos[$pid] = [];
 			return $pid;
 		}else throw new \Exception("Unable to fork !");
 	}
@@ -269,7 +267,7 @@ final class RTS{
 				}
 				if(count(array_intersect($read,$local)) === 1){
 					try{
-						$this->dataTransmission(null,$this->_serializer->unserialize(
+						$this->dataTransmission(null,true,$this->_serializer->unserialize(
 							$this->read($this->_localPort)
 						));
 						$read = array_diff($read,$local);
@@ -283,54 +281,7 @@ final class RTS{
 				foreach(array_diff($read,[$local,$master]) as $s){
 					foreach(array_diff($this->_workers,[$s]) as $pid=>$w){
 						try{
-							while(strlen($wData = $this->read($s))>0){
-								if($wData === "connection_closed") $this->_workersInfos[$pid]["clients"]--;
-								else{
-									$decoded = json_decode($wData,true);
-									$error = false;
-									if(json_last_error() === JSON_ERROR_NONE){
-										$key = $decoded["root_key"] ?? '';
-										$cmd = $decoded["cmd"] ?? '';
-										$source = $decoded["source"] ?? '';
-										$data = $decoded["data"] ?? null;
-										if($key !== $this->_secretKey){
-											$this->_environment->getLogger()->log(
-												"$this->_logHead Wrong secret key given by $source ($pid) for command $cmd. Request ignored.",
-												ILogger::ERR
-											);
-											continue;
-										}
-										switch($cmd){
-											case InternalCommand::FEEDBACK_CLIENT_CREATED:
-												$this->clientConnected(
-													$pid,
-													$this->_serializer->unserialize($data)
-												);
-												break;
-											case InternalCommand::FEEDBACK_CLIENT_DISCONNECTED:
-												$this->clientDisconnected(
-													$pid,
-													$this->_serializer->unserialize($data)
-												);
-												break;
-											case InternalCommand::DATA_TRANSMISSION :
-												$this->dataTransmission(
-													$pid,
-													...$this->_serializer->unserialize($data)
-												);
-												break;
-											default :
-												$error = true;
-												break;
-										}
-									}else $error = true;
-									if($error) $this->_environment->getLogger()->log(
-										"$this->_logHead Invalid query recieved from worker "
-										.$this->_workersBySocketId[(int)$s]." : $wData",
-										ILogger::WARN
-									);
-								}
-							}
+							$this->processWorkerSocket($w,$pid);
 						}catch(SocketFailure $e){
 							//If a worker dropped the connection, or died for somewhat reason,
 							//clean it up.
@@ -348,10 +299,52 @@ final class RTS{
 	}
 
 	/**
+	 * @param        $s
 	 * @param string $pid
-	 * @param IRTSAppEvent[]  $events
 	 */
-	private function dataTransmission(?string $pid, IRTSAppEvent ...$events):void{
+	private function processWorkerSocket($s,string $pid){
+		while(strlen($wData = $this->read($s))>0){
+			try{
+				$decoded = $this->_serializer->unserialize($wData);
+				if($decoded instanceof InternalCommand){
+					if($decoded->getRootKey() === $this->_secretKey){
+						if($decoded->getName() === InternalCommand::DATA_TRANSMISSION){
+							$this->dataTransmission(
+								$pid,
+								$decoded->getSource() === InternalCommand::LOCAL,
+								...$decoded->getData()
+							);
+						}else $this->_environment->getLogger()->log(
+							"$this->_logHead Unsupported command "
+							.$decoded->getName()." given (ignored).",
+							ILogger::ERR
+						);
+					}else $this->_environment->getLogger()->log(
+						"$this->_logHead Wrong secret key given by "
+						.$decoded->getSource()." ($pid) for command ".$decoded->getName()
+						.". Request ignored.",
+						ILogger::ERR
+					);
+				}else $this->_environment->getLogger()->log(
+					"$this->_logHead Expected ".InternalCommand::class." but "
+					.gettype($decoded)." given.",
+					ILogger::ERR
+				);
+			}catch(\Error | \Exception $e){
+				$this->_environment->getLogger()->log(
+					"$this->_logHead Unable to decode worker $pid data : $e",
+					ILogger::ERR
+				);
+			}
+		}
+	}
+
+	/**
+	 * @param string         $pid
+	 * @param bool           $local
+	 * @param IRTSAppEvent[] $events
+	 */
+	private function dataTransmission(?string $pid,bool $local =false, IRTSAppEvent ...$events):void{
 		$selfApply = [];
 		$distribued = [];
 		$workersToSend = [];
@@ -373,72 +366,53 @@ final class RTS{
 					}
 				}else $distribued[] = $e;
 			}
+			if($e instanceof ClientConnected && !$local) $this->clientConnected($pid,$e);
+			else if($e instanceof ClientDisconnected && !$local) $this->clientDisconnected($pid,$e);
 		}
 		if(!empty($selfApply)) $this->_appsManager->dispatch(...$selfApply);
-		foreach($workersToSend as $wpid=>$events) if($wpid !== $pid)
-			$this->write($this->_workers[$wpid],new InternalCommand(
+		foreach($workersToSend as $wpid=>$events) if($wpid !== $pid){
+			$this->write($this->_workers[$wpid],$this->_serializer->serialize(new InternalCommand(
 				InternalCommand::ROOT,
 				InternalCommand::DATA_TRANSMISSION,
 				$this->_serializer->serialize($events),
 				null,
 				$this->_secretKey
-			));
+			)));
+		}
 	}
 
 	/**
 	 * Called when a worker send a feedback.
-	 * @param string   $pid Pid du worker
-	 * @param null|array $connectionInfos Set connections infos in worker
+	 *
+	 * @param string          $pid worker's pid
+	 * @param ClientConnected $event
 	 */
-	private function clientConnected(string $pid, $connectionInfos):void{
-		if(is_null($connectionInfos) || !( $connectionInfos instanceof ClientConnected )){
-			$this->_environment->getLogger()->log(
-				"$this->_logHead Unable to connect client : connectionInfos must be "
-				.ClientConnected::class." but ".gettype($connectionInfos)
-				." given (request sent by Network Port worker $pid).",
-				ILogger::ERR
-			);
-			return;
-		}
-		$event = $connectionInfos;
-		$connectionInfos = json_decode($connectionInfos->getData(),true);
-		$this->_clientsByWorkerPid[$connectionInfos["id"]] = $pid;
-		$this->_workersInfos[$pid][$connectionInfos["id"]] = $connectionInfos;
-		if(!isset($this->_clientsByApp[$connectionInfos["app"]]))
-			$this->_clientsByApp[$connectionInfos["app"]] = [];
-		$this->_clientsByApp[$connectionInfos["app"]][$connectionInfos["id"]] = true;
-		$this->_environment->getLogger()->log(
-			"$this->_logHead New client connected : ".$event->getData()
-		);
+	private function clientConnected(string $pid, ClientConnected $event):void{
+		$cid = $event->getConnection()->getId();
+		$this->_clientsByWorkerPid[$cid] = $pid;
+		$this->_workersInfos[$pid][$cid] = $event->getConnection();
+		if(!isset($this->_clientsByApp[$event->getConnection()->getApp()]))
+			$this->_clientsByApp[$event->getConnection()->getApp()] = [];
+		$this->_clientsByApp[$event->getConnection()->getApp()][$cid] = true;
+		$this->_environment->getLogger()->log("$this->_logHead New client connected : $cid");
 		$this->dataTransmission($pid,$event);
 	}
 
 	/**
 	 * Cleanup connections while receive a closed feedback from worker
-	 * @param string     $pid
-	 * @param array|null $connectionInfos
+	 *
+	 * @param string             $pid
+	 * @param ClientDisconnected $event
 	 */
-	private function clientDisconnected(string $pid, $connectionInfos):void{
-		if(is_null($connectionInfos) || !($connectionInfos instanceof ClientDisconnected)){
-			$this->_environment->getLogger()->log(
-				"$this->_logHead Unable to disconnect client : connectionInfos must be "
-				.ClientDisconnected::class." but ".gettype($connectionInfos)
-				." given (request sent by Network Port worker $pid).",
-				ILogger::ERR
-			);
-			return;
-		}
-		$event = $connectionInfos;
-		$connectionInfos = json_decode($connectionInfos->getData(),true);
-		if(isset($this->_clientsByWorkerPid[$connectionInfos["id"]]))
-			unset($this->_clientsByWorkerPid[$connectionInfos["id"]]);
-		if(isset($this->_workersInfos[$pid][$connectionInfos["id"]]))
-			unset($this->_workersInfos[$pid][$connectionInfos["id"]]);
-		if(isset($this->_clientsByApp[$connectionInfos["app"]][$connectionInfos["id"]]))
-			unset($this->_clientsByApp[$connectionInfos["app"]][$connectionInfos["id"]]);
-		$this->_environment->getLogger()->log(
-			"$this->_logHead Client disconnected : ".$event->getData()
-		);
+	private function clientDisconnected(string $pid, ClientDisconnected $event):void{
+		$cid = $event->getConnection()->getId();
+		if(isset($this->_clientsByWorkerPid[$cid]))
+			unset($this->_clientsByWorkerPid[$cid]);
+		if(isset($this->_workersInfos[$pid][$cid]))
+			unset($this->_workersInfos[$pid][$cid]);
+		if(isset($this->_clientsByApp[$event->getConnection()->getApp()][$cid]))
+			unset($this->_clientsByApp[$event->getConnection()->getApp()][$cid]);
+		$this->_environment->getLogger()->log("$this->_logHead Client disconnected : $cid");
 		$this->dataTransmission($pid,$event);
 	}
 
@@ -449,13 +423,12 @@ final class RTS{
 	private function accept():void{
 		$accepterFound = false;
 		foreach($this->_workersInfos as $pid=>$infos){
-			if($infos["clients"]<$this->_maxWSockets){
-				$this->write($this->_workers[$pid],new InternalCommand(
+			if(count($infos) < $this->_maxWSockets){
+				$this->write($this->_workers[$pid],$this->_serializer->serialize(new InternalCommand(
 					InternalCommand::ROOT,
 					InternalCommand::CMD_ACCEPT,
 					null, null, $this->_secretKey
-				));
-				$this->_workersInfos[$pid]["clients"]++;
+				)));
 				$accepterFound = true;
 				break;
 			}
@@ -465,28 +438,28 @@ final class RTS{
 				$less=null; $pid=null;
 				foreach($this->_workersInfos as $k=>$v){
 					if(is_null($less)){
-						$less = $v["clients"];
+						$less = count($v);
 						$pid = $k;
-					} else if($less > $v["clients"]){
-						$less = $v["clients"];
+					} else if($less > count($v)){
+						$less = count($v);
 						$pid = $k;
 					}
 				}
 				//S'il n'y a pas de limite de clients par worker, ou si le worker en question peut
 				//encore recevoir de nouveau client, on lui demande d'accepter la connexion
 				if($this->_allowedOverflow<0 || $less <= $this->_allowedOverflow*$this->_maxWSockets)
-					$this->write($this->_workers[$pid],new InternalCommand(
+					$this->write($this->_workers[$pid],$this->_serializer->serialize(new InternalCommand(
 						InternalCommand::ROOT, InternalCommand::CMD_ACCEPT,
 						null, null, $this->_secretKey
-					));
+					)));
 				else{
-					$this->write($this->_workers[$pid],new InternalCommand(
+					$this->write($this->_workers[$pid],$this->_serializer->serialize(new InternalCommand(
 						InternalCommand::ROOT,
 						InternalCommand::CMD_REJECT,
 						"Max server connections reached.",
 						null,
 						$this->_secretKey
-					));
+					)));
 					$this->_environment->getLogger()->log(
 						"$this->_logHead Client rejected : max server connections reached.",
 						ILogger::WARN
@@ -570,9 +543,10 @@ final class RTS{
 
 	/**
 	 * Eteint le serveur RTS et tous ses workers.
-	 * @param null|Exception $e
+	 *
+	 * @param \Exception|null $e
 	 */
-	public function shutdown(?Exception $e=null):void{
+	public function shutdown(?\Exception $e=null):void{
 		flock($this->_acquiredLockFile,LOCK_UN);
 		fclose($this->_acquiredLockFile);
 		unlink($this->_lockFile);

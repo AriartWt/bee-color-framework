@@ -11,7 +11,7 @@ namespace wfw\daemons\rts\server\worker;
 /**
  * Commande à envoyer à des workers
  */
-class InternalCommand {
+final class InternalCommand implements \Serializable {
 	public const ROOT = "root";
 	public const LOCAL = "local";
 	public const WORKER = "worker";
@@ -20,9 +20,6 @@ class InternalCommand {
 	public const CMD_REJECT = "reject_new_client";
 
 	public const DATA_TRANSMISSION = "data_transmission";
-
-	public const FEEDBACK_CLIENT_CREATED = "new_client_created";
-	public const FEEDBACK_CLIENT_DISCONNECTED = "client_disconnected";
 
 	/** @var string $_transmiter */
 	private $_transmiter;
@@ -62,13 +59,72 @@ class InternalCommand {
 	/**
 	 * @return string
 	 */
-	public function __toString() {
-		return "{".
-			'"cmd":"'.$this->_name.'",'.
-			'"source":"'.$this->_source.'"'.
-			((!empty($this->_data)) ? ',"data":"'.$this->_data.'"' : '').
-			((!empty($this->_rootKey)) ? ',"root_key":"'.$this->_rootKey.'"' : '').
-			((!empty($this->_transmiter)) ? ',"transmiter":"'.$this->_transmiter.'"' : '')
-		."}";
+	public function getTransmiter(): string {
+		return $this->_transmiter;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getSource(): string {
+		return $this->_source;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getData(): string {
+		return $this->_data;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getName(): string {
+		return $this->_name;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getRootKey(): string {
+		return $this->_rootKey;
+	}
+
+	/**
+	 * String representation of object
+	 *
+	 * @link  http://php.net/manual/en/serializable.serialize.php
+	 * @return string the string representation of the object or null
+	 * @since 5.1.0
+	 */
+	public function serialize() {
+		return serialize([
+			$this->_rootKey,
+			$this->_data,
+			$this->_source,
+			$this->_name,
+			$this->_transmiter
+		]);
+	}
+
+	/**
+	 * Constructs the object
+	 *
+	 * @link  http://php.net/manual/en/serializable.unserialize.php
+	 * @param string $serialized <p>
+	 *                           The string representation of the object.
+	 *                           </p>
+	 * @return void
+	 * @since 5.1.0
+	 */
+	public function unserialize($serialized) {
+		list(
+			$this->_rootKey,
+			$this->_data,
+			$this->_source,
+			$this->_name,
+			$this->_transmiter
+		) = unserialize($serialized);
 	}
 }

@@ -16,6 +16,7 @@ use wfw\daemons\rts\server\websocket\events\ErrorOcurred;
 use wfw\daemons\rts\server\websocket\events\Handshaked;
 use wfw\daemons\rts\server\websocket\IWebsocketConnection;
 use wfw\daemons\rts\server\websocket\IWebsocketEvent;
+use wfw\daemons\rts\server\websocket\IWebsocketEventObserver;
 use wfw\daemons\rts\server\websocket\IWebsocketListener;
 use wfw\daemons\rts\server\websocket\IWebsocketProtocol;
 use wfw\daemons\rts\server\websocket\WebsocketConnection;
@@ -101,7 +102,9 @@ final class RTSNetworkPort implements IWebsocketListener{
 				STREAM_SERVER_BIND | STREAM_SERVER_LISTEN,
 				stream_context_create()
 			);
-			if ($this->_netSock === false) throw new \RuntimeException("($errno) Unable to create the main socket : $err");
+			if ($this->_netSock === false) throw new \RuntimeException(
+				"($errno) Unable to create the main socket : $err"
+			);
 		}
 
 		$this->_env = $env;
@@ -134,81 +137,22 @@ final class RTSNetworkPort implements IWebsocketListener{
 			do{
 				socket_select($changedSocks,$empty,$empty,0);
 				if(!empty($changedSocks)){
-					$data = json_decode($this->_mainProtocol->read($this->_mainSock));
-					if(json_last_error() !== JSON_ERROR_NONE) continue;
-					$source = $data["source"] ?? null;
-					$cmd = $data["cmd"] ?? null;
-					$cmdData = $data["data"] ?? '';
-					$rootKey = $data["root_key"] ?? '';
-					switch($cmd){
-						case InternalCommand::CMD_REJECT:
-						case InternalCommand::CMD_ACCEPT:
-							if($source !== InternalCommand::ROOT){
-								$this->_env->getLogger()->log(
-									"Command $cmd received from $source socket (ignored)",
-									ILogger::ERR
-								);
-								continue;
-							}
-							$socket = ($ressource = stream_socket_accept($this->_netSock));
-							if(!is_resource($socket)){
-								$this->_env->getLogger()->log(
-									"Unable to execute command $cmd on accepted socket : stream_socket_accept failed.",
-									ILogger::ERR
-								);
-								continue;
-							}
-							if($cmd === InternalCommand::CMD_ACCEPT) $this->addClient(new WebsocketConnection(
-								$socket,
-								new WebsocketProtocol(),
-								$observer,
-								$this->_env->getAllowedOrigins(),
-								$this->_appsManager->getAppNames()
-							));
-							else $this->addClient(new WebsocketConnection(
-								$socket,
-								new WebsocketProtocol(),
-								$observer,
-								$this->_env->getAllowedOrigins(),
-								$this->_appsManager->getAppNames(),
-								503,
-								$cmdData
-							));
-							break;
-						case InternalCommand::DATA_TRANSMISSION:
-							if($source !== InternalCommand::ROOT) {
-								$this->_env->getLogger()->log(
-									"$this->_logHead Command $cmd recieved from $source (ignored)",
-									ILogger::WARN
-								);
-								continue;
-							}
-							if($rootKey !== $this->_rootKey){
-								$this->_env->getLogger()->log(
-									"$this->_logHead Invalid root key given for $cmd from $source (ignored)",
-									ILogger::ERR
-								);
-								continue;
-							}
-							try{
-								$this->_appsManager->dispatch(...$events = $this->_serializer->unserialize(
-									$data
-								));
-								foreach($events as $e){
-									if($e instanceof ClientConnected)
-										$this->addClient($e->getConnection(),false);
-									else if($e instanceof ClientDisconnected)
-										$this->removeClient($e->getConnection(),false);
-								}
-							}catch(\Error | \Exception $e){
-								$this->_env->getLogger()->log(
-									"An error occured while trying to dispatch $source command events : $e",
-									ILogger::ERR
-								);
-							}
-							break;
-						default :
-							break;
+					try{
+						$decoded = $this->_serializer->unserialize(
+							$this->_mainProtocol->read($this->_mainSock)
+						);
+						if($decoded instanceof InternalCommand){
+							$this->processCommand($decoded,$observer);
+						}else $this->_env->getLogger()->log(
+							"$this->_logHead ".InternalCommand::class." was expected but "
+							.gettype($decoded)." recieved. (ignored)",
+							ILogger::ERR
+						);
+					}catch(\Error | \Exception $e){
+						$this->_env->getLogger()->log(
+							"$this->_logHead Unable to decode root command : $e",
+							ILogger::ERR
+						);
 					}
 				}
 				$mainSocketRead ++;
@@ -246,35 +190,102 @@ final class RTSNetworkPort implements IWebsocketListener{
 	}
 
 	/**
-	 * @param IWebsocketConnection $connection Connection to add to server connections
-	 * @param bool                 $sendFeedBack
+	 * @param InternalCommand         $decoded
+	 * @param IWebsocketEventObserver $observer
 	 */
-	private function addClient(IWebsocketConnection $connection,bool $sendFeedBack = true):void{
+	private function processCommand(InternalCommand $decoded,IWebsocketEventObserver $observer):void{
+		$source = $decoded->getSource();
+		$cmd = $decoded->getName();
+		$cmdData = $decoded->getData();
+		$rootKey = $decoded->getRootKey();
+		switch($cmd){
+			case InternalCommand::CMD_REJECT:
+			case InternalCommand::CMD_ACCEPT:
+				if($source !== InternalCommand::ROOT){
+					$this->_env->getLogger()->log(
+						"Command $cmd received from $source socket (ignored)",
+						ILogger::ERR
+					);
+					return;
+				}
+				$socket = ($ressource = stream_socket_accept($this->_netSock));
+				if(!is_resource($socket)){
+					$this->_env->getLogger()->log(
+						"Unable to execute command $cmd on accepted socket : stream_socket_accept failed.",
+						ILogger::ERR
+					);
+					return;
+				}
+				if($cmd === InternalCommand::CMD_ACCEPT) $this->addClient(new WebsocketConnection(
+					$socket,
+					new WebsocketProtocol(),
+					$observer,
+					$this->_env->getAllowedOrigins(),
+					$this->_appsManager->getAppNames()
+				));
+				else $this->addClient(new WebsocketConnection(
+					$socket,
+					new WebsocketProtocol(),
+					$observer,
+					$this->_env->getAllowedOrigins(),
+					$this->_appsManager->getAppNames(),
+					503,
+					$cmdData
+				));
+				break;
+			case InternalCommand::DATA_TRANSMISSION:
+				if($source !== InternalCommand::ROOT) {
+					$this->_env->getLogger()->log(
+						"$this->_logHead Command $cmd recieved from $source (ignored)",
+						ILogger::WARN
+					);
+					return;
+				}
+				if($rootKey !== $this->_rootKey){
+					$this->_env->getLogger()->log(
+						"$this->_logHead Invalid root key given for $cmd from $source (ignored)",
+						ILogger::ERR
+					);
+					return;
+				}
+				if(!is_array($cmdData)){
+					$this->_env->getLogger()->log(
+						"$this->_logHead Invalid command data from $source. "
+						."An array was expected (ignored).",
+						ILogger::ERR
+					);
+					return;
+				}
+				try{
+					$this->_appsManager->dispatch(...$cmdData);
+				}catch(\Error | \Exception $e){
+					$this->_env->getLogger()->log(
+						"An error occured while trying to dispatch $source command events : $e",
+						ILogger::ERR
+					);
+				}
+				break;
+			default :
+				break;
+		}
+	}
+
+	/**
+	 * @param IWebsocketConnection $connection Connection to add to server connections
+	 */
+	private function addClient(IWebsocketConnection $connection):void{
 		$this->_env->getLogger()->log(
 			"$this->_logHead New client "
 			.$connection->getId()." created ( IP : ".$connection->getIp()." )"
 		);
 		$this->_netSocks[(string)(int)$connection->getSocket()] = $connection;
 		$this->_socketIds[$connection->getId()] = (string)(int)$connection->getSocket();
-
-		try{//TODO : continue to clear JSON & replace serialized
-			if($sendFeedBack) $this->_mainProtocol->write($this->_mainSock,new InternalCommand(
-				InternalCommand::WORKER,
-				InternalCommand::FEEDBACK_CLIENT_CREATED,
-				$this->_serializer->serialize($connection),
-				null,
-				$this->_rootKey
-			));
-		}catch(\Error | \Exception $e){
-			$this->_env->getLogger()->log("$this->_logHead Unable to write in RTS socket : $e");
-		}
 	}
 
 	/**
 	 * @param IWebsocketConnection $connection Connection to remove from server connections
-	 * @param bool                 $sendFeedBack
 	 */
-	private function removeClient(IWebsocketConnection $connection, bool $sendFeedBack = true):void{
+	private function removeClient(IWebsocketConnection $connection):void{
 		if(isset($this->_netSocks[(string)(int)$connection->getSocket()]))
 			unset($this->_netSocks[(string)(int)$connection->getSocket()]);
 
@@ -284,18 +295,6 @@ final class RTSNetworkPort implements IWebsocketListener{
 		$this->_env->getLogger()->log(
 			"$this->_logHead Client ".$connection->getId()." removed."
 		);
-
-		try{
-			if($sendFeedBack) $this->_mainProtocol->write($this->_mainSock,new InternalCommand(
-				InternalCommand::WORKER,
-				InternalCommand::FEEDBACK_CLIENT_DISCONNECTED,
-				$this->_serializer->serialize($connection),
-				null,
-				$this->_rootKey
-			));
-		}catch(\Error | \Exception $e){
-			$this->_env->getLogger()->log("$this->_logHead Unable to write in RTS socket : $e");
-		}
 	}
 
 	/**
@@ -330,13 +329,13 @@ final class RTSNetworkPort implements IWebsocketListener{
 					$event->getConnectionInfos(),
 					$event->getCreationDate()
 				));
-				$this->_mainProtocol->write($this->_mainSock,new InternalCommand(
+				$this->_mainProtocol->write($this->_mainSock,$this->_serializer->serialize(new InternalCommand(
 					InternalCommand::WORKER,
-					InternalCommand::FEEDBACK_CLIENT_CREATED,
-					$this->_serializer->serialize($e),
+					InternalCommand::DATA_TRANSMISSION,
+					$this->_serializer->serialize([$e]),
 					null,
 					$this->_rootKey
-				));
+				)));
 			}else if($event instanceof Closed){
 				$this->_appsManager->dispatch($e = new ClientDisconnected(
 					$event->getConnectionInfos(),
@@ -344,13 +343,13 @@ final class RTSNetworkPort implements IWebsocketListener{
 					$event->getMessage(),
 					$event->getCode()
 				));
-				$this->_mainProtocol->write($this->_mainSock,new InternalCommand(
+				$this->_mainProtocol->write($this->_mainSock,$this->_serializer->serialize(new InternalCommand(
 					InternalCommand::WORKER,
-					InternalCommand::FEEDBACK_CLIENT_DISCONNECTED,
-					$this->_serializer->serialize($e),
+					InternalCommand::DATA_TRANSMISSION,
+					$this->_serializer->serialize([$e]),
 					null,
 					$this->_rootKey
-				));
+				)));
 			}else if($event instanceof ErrorOcurred){
 				$this->_env->getLogger()->log(
 					"$this->_logHead An error occured on connection ".$event->getSocketId()
@@ -381,11 +380,11 @@ final class RTSNetworkPort implements IWebsocketListener{
 							$mustBeSentEvents[] = $e;
 					}
 					if(!empty($localEvents)) $this->_appsManager->dispatch(...$localEvents);
-					$this->_mainProtocol->write($this->_mainSock,new InternalCommand(
+					$this->_mainProtocol->write($this->_mainSock,$this->_serializer->serialize(new InternalCommand(
 						InternalCommand::WORKER,
 						InternalCommand::DATA_TRANSMISSION,
 						$this->_serializer->serialize($mustBeSentEvents)
-					));
+					)));
 				}else $this->_env->getLogger()->log(
 					"Unable to find connection ".$event->getSocketId(),
 					ILogger::ERR

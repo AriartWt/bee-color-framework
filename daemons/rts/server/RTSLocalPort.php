@@ -10,6 +10,12 @@ namespace wfw\daemons\rts\server;
 
 use Exception;
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
+use wfw\daemons\rts\server\local\IRTSLocalCommand;
+use wfw\daemons\rts\server\local\RTSData;
+use wfw\daemons\rts\server\local\RTSLogin;
+use wfw\daemons\rts\server\local\RTSLogout;
+use wfw\daemons\rts\server\worker\InternalCommand;
+use wfw\engine\lib\data\string\serializer\ISerializer;
 use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
 use wfw\engine\lib\PHP\errors\IllegalInvocation;
@@ -40,6 +46,10 @@ final class RTSLocalPort {
 	private $_socketTimeout = array("sec"=>10,"usec"=>0);
 	/** @var string $_logHead */
 	private $_logHead;
+	/** @var ISerializer $_serializer */
+	private $_serializer;
+	/** @var string $_rootKey */
+	private $_rootKey;
 
 	/**
 	 * RTSLocalPort constructor.
@@ -49,6 +59,8 @@ final class RTSLocalPort {
 	 * @param resource        $socket            Socket de communication
 	 * @param ISocketProtocol $protocol          Protocole de communication pour les sockets locales
 	 * @param IRTSEnvironment $environment       Environement de travail.
+	 * @param ISerializer     $serializer
+	 * @param string          $rootKey
 	 * @param int             $requestTtl        Temps de vie des requêtes
 	 * @param bool            $sendErrorToClient Envoie l'erreur à un client local, si une erreur survient.
 	 * @param string          $logHead
@@ -60,6 +72,8 @@ final class RTSLocalPort {
 		$socket,
 		ISocketProtocol $protocol,
 		IRTSEnvironment $environment,
+		ISerializer $serializer,
+		string $rootKey,
 		int $requestTtl = 900,
 		bool $sendErrorToClient = true,
 		string $logHead = "[RTS] [LocalPort]"
@@ -71,6 +85,8 @@ final class RTSLocalPort {
 		$this->_sendErrorToClient = $sendErrorToClient;
 		$this->_requestTtl = $requestTtl;
 		$this->_socketAddr = $sockAddr;
+		$this->_serializer = $serializer;
+		$this->_rootKey = $rootKey;
 
 		//On commence par vérifier l'existence du fichier lock
 		//Un seul RTSLocalPort est autorisé par repertoir de travail.
@@ -114,12 +130,14 @@ final class RTSLocalPort {
 		try{
 			$data = $this->read($socket);
 			if(strlen($data)>0){
-				$data = json_decode($data,true);
-				if(is_null($data)) $this->sendError($socket,"Invalid JSON string !");
-				else{
-					if(!isset($data["cmd"])) $this->sendError($socket,"No cmd specified !");
-					else $this->processCommand($socket,$data);
-				}
+				$data = $this->_serializer->unserialize($data);
+				if(is_null($data)) $this->sendError($socket,"Unable to read the request !");
+				else if($data instanceof IRTSLocalCommand) $this->processCommand($socket,$data);
+				else $this->sendError(
+					$socket,
+					"Invalid request given. ".IRTSLocalCommand::class
+					." expected but ".gettype($data)." given."
+				);
 			}else $this->sendError($socket,"No data recieved !");
 		}catch(\Exception | \Error $e){
 			$this->sendError($socket,$e);
@@ -133,51 +151,52 @@ final class RTSLocalPort {
 
 	/**
 	 * Traite une commande de la requête
-	 * @param resource $socket Socket
-	 * @param array $data
+	 *
+	 * @param resource         $socket Socket
+	 * @param IRTSLocalCommand $data
 	 */
-	private function processCommand($socket, array $data){
+	private function processCommand($socket, IRTSLocalCommand $data){
 		$this->_environment->destroyOutdatedSessions();
-		$cmd = $data["cmd"];
+		$cmd = get_class($data);
 		switch($cmd){
-			case "data" :
-				if(is_string($data['sessid']??null)){
-					if($this->checkAuth($socket,$data["sessid"])){
-						$this->_environment->touchUserSession($data["sessid"]);
-						try{
-							$user = $this->_environment->getUserSession($data["sessid"])->getUser();
-							$this->write(
-								$this->_mainProcessSocket,
-								'{"data":"'.$data["data"].'","user":"'.$user->getName().'"}'
-							);
-							$this->write($socket,'sent');
-						}catch(\Exception | \Error $e){
-							$this->sendError($socket,$e);
-						}
+			case RTSData::class :
+				/** @var RTSData $data */
+				if($this->checkAuth($socket,$data->getSessid())){
+					$this->_environment->touchUserSession($data->getSessid());
+					try{
+						$this->write(
+							$this->_mainProcessSocket,
+							$this->_serializer->serialize(new InternalCommand(
+								InternalCommand::LOCAL,
+								InternalCommand::DATA_TRANSMISSION,
+								$data->getEvents(),
+								null,
+								$this->_rootKey
+							)
+						));
+						$this->write($socket,'sent');
+					}catch(\Exception | \Error $e){
+						$this->sendError($socket,$e);
 					}
-				}else $this->sendError($socket,"Field sessid have to be defined !");
+				}
 				break;
-			case "login" :
-				if(is_string($data['login']??null) && is_string($data['password']??null)){
-					$sessId = $this->_environment->createSessionForUser(
-						$data['login'],
-						$data['password']
-					);
-					if(is_null($sessId)) $this->sendError(
-						$socket,"Wrong login/password !","rejected"
-					);
-					else $this->write($socket,'{"sessid":"'.$sessId.'"}');
-				} else $this->sendError(
-					$socket,"Fields login and password have to be defined !","data"
+			case RTSLogin::class :
+				/** @var RTSLogin $data */
+				$sessId = $this->_environment->createSessionForUser(
+					$data['login'],
+					$data['password']
 				);
+				if(is_null($sessId)) $this->sendError(
+					$socket,"Wrong login/password !","rejected"
+				);
+				else $this->write($socket,'{"sessid":"'.$sessId.'"}');
 				break;
-			case "logout" :
-				if(is_string($data['sessid']??null)){
-					if($this->checkAuth($socket,$data["sessid"])){
-						$this->_environment->destroyUserSession($data['sessid']);
-						$this->_protocol->write($socket,"disconnected");
-					}
-				}else $this->sendError($socket,"Field sessid have to be defined !");
+			case RTSLogout::class :
+				/** @var RTSLogout $data */
+				if($this->checkAuth($socket,$data->getSessid())){
+					$this->_environment->destroyUserSession($data['sessid']);
+					$this->_protocol->write($socket,"disconnected");
+				}
 				break;
 			default :
 				$this->sendError($socket,"Unknown command $cmd","command");
