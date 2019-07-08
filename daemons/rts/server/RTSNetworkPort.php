@@ -6,6 +6,7 @@ use wfw\daemons\rts\server\app\events\ClientConnected;
 use wfw\daemons\rts\server\app\events\ClientDisconnected;
 use wfw\daemons\rts\server\app\events\IRTSAppEvent;
 use wfw\daemons\rts\server\app\events\IRTSAppResponseEvent;
+use wfw\daemons\rts\server\app\events\RTSAppError;
 use wfw\daemons\rts\server\app\events\RTSCloseConnectionsEvent;
 use wfw\daemons\rts\server\app\IRTSAppsManager;
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
@@ -287,7 +288,16 @@ final class RTSNetworkPort implements IWebsocketListener{
 							else $responses[] = $event;
 						}else $dispatches[] = $event;
 					}
-					//TODo : send responses and close connections
+					foreach($responses as $response){
+						foreach($this->findClients($response) as $client) $client->send(
+							$response->getData(), IWebsocketProtocol::TEXT,true
+						);
+					}
+					foreach($closes as $close){
+						foreach($this->findClients($close) as $client) $client->close(
+							IWebsocketProtocol::STATUS_NORMAL_CLOSE
+						);
+					}
 					$this->_appsManager->dispatch(...$dispatches);
 				}catch(\Error | \Exception $e){
 					$this->_env->getLogger()->log(
@@ -299,6 +309,22 @@ final class RTSNetworkPort implements IWebsocketListener{
 			default :
 				break;
 		}
+	}
+
+	/**
+	 * @param IRTSAppResponseEvent $event
+	 * @return IWebsocketConnection[]
+	 */
+	private function findClients(IRTSAppResponseEvent $event):array{
+		$recepts = array_flip($event->getRecipients() ?? []);
+		$excepts = array_flip($event->getExcepts());
+		$clients = [];
+		if(is_null($event->getRecipients())) $clients = $this->_netSocks;
+		else foreach($this->_netSocks as $sock){
+			if(isset($recepts[$sock->getId()]) && !isset($excepts[$sock->getId()]))
+				$clients[$sock->getId()] = $sock;
+		}
+		return $clients;
 	}
 
 	/**
@@ -389,7 +415,6 @@ final class RTSNetworkPort implements IWebsocketListener{
 	 */
 	public function applyWebsocketEvent(IWebsocketEvent $event): void {
 		try{
-			//TODO : dispatch ErrorOcurred to local apps ?
 			if($event instanceof Handshaked){
 				$this->_appsManager->dispatch($e = new ClientConnected(
 					$event->getConnectionInfos(),
@@ -399,7 +424,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 					InternalCommand::WORKER,
 					InternalCommand::DATA_TRANSMISSION,
 					$this->_serializer->serialize([$e]),
-					null,
+					$event->getConnectionInfos()->getId(),
 					$this->_rootKey
 				)));
 			}else if($event instanceof Closed){
@@ -413,10 +438,15 @@ final class RTSNetworkPort implements IWebsocketListener{
 					InternalCommand::WORKER,
 					InternalCommand::DATA_TRANSMISSION,
 					$this->_serializer->serialize([$e]),
-					null,
+					$event->getConnectionInfos()->getId(),
 					$this->_rootKey
 				)));
 			}else if($event instanceof ErrorOcurred){
+				if(isset($this->_netSocks[$event->getSocketId()])) $this->_appsManager->dispatch(
+					new RTSAppError(
+						$this->_netSocks[$event->getSocketId()],$event->getError()
+					)
+				);
 				$this->_env->getLogger()->log(
 					"$this->_logHead An error occured on connection ".$event->getSocketId()
 					." : ".$event->getError(),
@@ -440,10 +470,24 @@ final class RTSNetworkPort implements IWebsocketListener{
 					$localEvents = [];
 					$mustBeSentEvents = [];
 					foreach($events as $e){
-						if($e->distributionMode(IRTSAppEvent::SCOPE)) $localEvents[] = $e;
+						if($e->distributionMode(IRTSAppEvent::SCOPE)){
+							$localEvents[] = $e;
+							if($e instanceof IRTSAppResponseEvent) foreach($this->findClients($e) as $client){
+								if($e instanceof RTSCloseConnectionsEvent) $client->close(
+									IWebsocketProtocol::STATUS_NORMAL_CLOSE
+								);
+								else $client->send(
+									$e->getData(),IWebsocketProtocol::TEXT,true
+								);
+							}
+						}
 						if($e->distributionMode(IRTSAppEvent::CENTRALIZATION)
-							|| $e->distributionMode(IRTSAppEvent::DISTRIBUTION))
-							$mustBeSentEvents[] = $e;
+							|| $e->distributionMode(IRTSAppEvent::DISTRIBUTION)){
+							if(!($e instanceof IRTSAppResponseEvent)
+								|| count($this->findClients($e)) < count($e->getRecipients())){
+								$mustBeSentEvents[] = $e;//do not send events if all clients are in the current worker
+							}
+						}
 					}
 					if(!empty($localEvents)) $this->_appsManager->dispatch(...$localEvents);
 					$this->_mainProtocol->write($this->_mainSock,$this->_serializer->serialize(new InternalCommand(

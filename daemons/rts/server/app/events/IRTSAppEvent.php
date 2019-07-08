@@ -5,7 +5,7 @@ namespace wfw\daemons\rts\server\app\events;
 /**
  * RTSEvent
  */
-interface IRTSAppEvent extends \JsonSerializable {
+interface IRTSAppEvent{
 	public const SCOPE = 1; /* distributed at worker scope */
 	public const DISTRIBUTION = 2; /* distributed to all workers */
 	public const CENTRALIZATION = 4; /* passed to the ROOT RTS instance */

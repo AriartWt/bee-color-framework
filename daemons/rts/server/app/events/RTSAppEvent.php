@@ -86,24 +86,4 @@ abstract class RTSAppEvent implements IRTSAppEvent {
 	public function getApps(): ?array {
 		return $this->_apps;
 	}
-
-	/**
-	 * Specify data which should be serialized to JSON
-	 *
-	 * @link  http://php.net/manual/en/jsonserializable.jsonserialize.php
-	 * @return mixed data which can be serialized by <b>json_encode</b>,
-	 * which is a value of any type other than a resource.
-	 * @since 5.4.0
-	 */
-	public function jsonSerialize() {
-		return [
-			"id" => $this->_id,
-			"data" => $this->_data,
-			"sender_id" => $this->_senderId,
-			"event" => get_class($this),
-			"mode" => $this->_distributionMode,
-			"apps" => $this->_apps,
-			"creation_date" => $this->_creationDate
-		];
-	}
- }
+}
