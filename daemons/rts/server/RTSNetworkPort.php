@@ -6,6 +6,7 @@ use wfw\daemons\rts\server\app\events\ClientConnected;
 use wfw\daemons\rts\server\app\events\ClientDisconnected;
 use wfw\daemons\rts\server\app\events\IRTSAppEvent;
 use wfw\daemons\rts\server\app\events\IRTSAppResponseEvent;
+use wfw\daemons\rts\server\app\events\RTSCloseConnectionsEvent;
 use wfw\daemons\rts\server\app\IRTSAppsManager;
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
 use wfw\daemons\rts\server\websocket\events\Accepted;
@@ -57,6 +58,8 @@ final class RTSNetworkPort implements IWebsocketListener{
 	private $_rootKey;
 	/** @var ISerializer $_serializer */
 	private $_serializer;
+	/** @var array $_ipCount */
+	private $_ipCount;
 
 	/**
 	 * RTSNetworkPort constructor.
@@ -87,6 +90,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 		int $sleepInterval = 100,
 		string $logHead = "[RTS] [NetworkPort]"
 	) {
+		$this->_ipCount = [];
 		$this->_serializer = $serializer;
 		$this->_maxMainSocketRead = 20;
 		$this->_appsManager = $appsManager;
@@ -220,13 +224,24 @@ final class RTSNetworkPort implements IWebsocketListener{
 					$socket,
 					new WebsocketProtocol(),
 					$observer,
+					$this->_env->getMaxReadBufferSize(),
+					$this->_env->getMaxWriteBufferSize(),
+					$this->_env->getMaxRequestHandshakeSize(),
+					$this->_env->getMaxRequestBySecondByClient(),
 					$this->_env->getAllowedOrigins(),
-					$this->_appsManager->getAppNames()
+					$this->_appsManager->getAppNames(),
+					null,
+					null,
+					$this->reachedIpCount()
 				));
 				else $this->addClient(new WebsocketConnection(
 					$socket,
 					new WebsocketProtocol(),
 					$observer,
+					$this->_env->getMaxReadBufferSize(),
+					$this->_env->getMaxWriteBufferSize(),
+					$this->_env->getMaxRequestHandshakeSize(),
+					$this->_env->getMaxRequestBySecondByClient(),
 					$this->_env->getAllowedOrigins(),
 					$this->_appsManager->getAppNames(),
 					503,
@@ -257,7 +272,23 @@ final class RTSNetworkPort implements IWebsocketListener{
 					return;
 				}
 				try{
-					$this->_appsManager->dispatch(...$cmdData);
+					/** @var IRTSAppResponseEvent[] $responses */
+					$responses = [];
+					/** @var RTSCloseConnectionsEvent[] $closes */
+					$closes = [];
+					$dispatches = [];
+					foreach($cmdData as $event){
+						if($event instanceof ClientConnected)
+							$this->addToIpCount($event->getConnection()->getIp());
+						else if($event instanceof ClientDisconnected)
+							$this->removeFromIpCount($event->getConnection()->getIp());
+						if($event instanceof IRTSAppResponseEvent){
+							if($event instanceof RTSCloseConnectionsEvent) $closes[] = $event;
+							else $responses[] = $event;
+						}else $dispatches[] = $event;
+					}
+					//TODo : send responses and close connections
+					$this->_appsManager->dispatch(...$dispatches);
 				}catch(\Error | \Exception $e){
 					$this->_env->getLogger()->log(
 						"An error occured while trying to dispatch $source command events : $e",
@@ -271,6 +302,37 @@ final class RTSNetworkPort implements IWebsocketListener{
 	}
 
 	/**
+	 * @param string $ip
+	 */
+	private function addToIpCount(string $ip):void{
+		if(!isset($this->_ipCount[$ip])) $this->_ipCount[$ip]=1;
+		else $this->_ipCount[$ip]++;
+	}
+
+	/**
+	 * @param string $ip
+	 */
+	private function removeFromIpCount(string $ip):void{
+		if(isset($this->_ipCount[$ip])){
+			$this->_ipCount[$ip]--;
+			if($this->_ipCount[$ip] <= 0) unset($this->_ipCount[$ip]);
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	private function reachedIpCount():array{
+		$maxConByIp = $this->_env->getMaxConnectionsByIp();
+		if($maxConByIp <= 0) return [];
+		$res = [];
+		foreach($this->_ipCount as $ip=>$n){
+			if($n >= $maxConByIp) $res[$ip] = true;
+		}
+		return $res;
+	}
+
+	/**
 	 * @param IWebsocketConnection $connection Connection to add to server connections
 	 */
 	private function addClient(IWebsocketConnection $connection):void{
@@ -280,6 +342,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 		);
 		$this->_netSocks[(string)(int)$connection->getSocket()] = $connection;
 		$this->_socketIds[$connection->getId()] = (string)(int)$connection->getSocket();
+		$this->addToIpCount($connection->getIp());
 	}
 
 	/**
@@ -291,6 +354,8 @@ final class RTSNetworkPort implements IWebsocketListener{
 
 		if(isset($this->_socketIds[$connection->getId()]))
 			unset($this->_netSocks[$connection->getId()]);
+
+		$this->removeFromIpCount($connection->getIp());
 
 		$this->_env->getLogger()->log(
 			"$this->_logHead Client ".$connection->getId()." removed."
@@ -324,6 +389,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 	 */
 	public function applyWebsocketEvent(IWebsocketEvent $event): void {
 		try{
+			//TODO : dispatch ErrorOcurred to local apps ?
 			if($event instanceof Handshaked){
 				$this->_appsManager->dispatch($e = new ClientConnected(
 					$event->getConnectionInfos(),

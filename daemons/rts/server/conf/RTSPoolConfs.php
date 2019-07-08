@@ -349,10 +349,10 @@ final class RTSPoolConfs {
 	 * @return int
 	 * @throws \InvalidArgumentException
 	 */
-	public function getMaxRequestsBySecondByClient(string $instance): int{
+	public function getMaxRequestsByMinuteByClient(string $instance): int{
 		if(!isset($this->_instancesConfs[$instance]))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("max_requests_by_second_by_client") ?? 20;
+		return $this->_instancesConfs[$instance]->find("max_requests_by_minute_by_client") ?? 20;
 	}
 
 	/**

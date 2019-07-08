@@ -7,7 +7,7 @@ use Throwable;
 /**
  * When the websocket handhaske fails
  */
-class WebsocketHandhaskeFailure extends WebsocketFailure {
+class WebsocketHandshakeFailure extends WebsocketFailure {
 	/** @var int $_httpCode */
 	private $_httpCode;
 
@@ -30,6 +30,4 @@ class WebsocketHandhaskeFailure extends WebsocketFailure {
 	public function getHttpCode(): int {
 		return $this->_httpCode;
 	}
-
-
 }

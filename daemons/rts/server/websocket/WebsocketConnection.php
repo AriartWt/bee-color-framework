@@ -4,7 +4,7 @@ namespace wfw\daemons\rts\server\websocket;
 
 use wfw\daemons\rts\server\websocket\errors\InvalidWebsocketConnection;
 use wfw\daemons\rts\server\websocket\errors\WebsocketConnectionClosed;
-use wfw\daemons\rts\server\websocket\errors\WebsocketHandhaskeFailure;
+use wfw\daemons\rts\server\websocket\errors\WebsocketHandshakeFailure;
 use wfw\daemons\rts\server\websocket\errors\WebsocketIOFailure;
 use wfw\daemons\rts\server\websocket\events\Accepted;
 use wfw\daemons\rts\server\websocket\events\Closed;
@@ -56,6 +56,20 @@ final class WebsocketConnection implements IWebsocketConnection {
 	private $_rejectOnHandshakeMessage;
 	/** @var bool $_unserialized */
 	private $_unserialized;
+	/** @var int $_maxReadBufferSize */
+	private $_maxReadBufferSize;
+	/** @var int $_maxWriteBufferSize */
+	private $_maxWriteBufferSize;
+	/** @var int $_maxRequestHandshakeSize */
+	private $_maxRequestHandshakeSize;
+	/** @var int $_maxRequestByMinute */
+	private $_maxRequestByMinute;
+	/** @var float|int $_requestsCounterDate */
+	private $_requestsCounterDate;
+	/** @var int $_requestsCounter */
+	private $_requestsCounter;
+	/** @var array $_rejectIps */
+	private $_rejectIps;
 
 	/**
 	 * WebsocketConnection constructor.
@@ -63,30 +77,48 @@ final class WebsocketConnection implements IWebsocketConnection {
 	 * @param resource                  $socket The client socket
 	 * @param IWebsocketProtocol        $protocol
 	 * @param IWebsocketEventDispatcher $dispatcher
+	 * @param int                       $maxReadBufferSize
+	 * @param int                       $maxWriteBufferSize
+	 * @param int                       $maxRequestHandshakeSize
+	 * @param int                       $maxRequestsByMinute
 	 * @param array                     $allowedOrigins
 	 * @param array                     $allowedApplications
 	 * @param int|null                  $rejectOnHandshakeCode
 	 * @param null|string               $rejectOnHandshakeMessage
+	 * @param array                     $rejectIps
 	 */
 	public function __construct(
 		$socket,
 		IWebsocketProtocol $protocol,
 		IWebsocketEventDispatcher $dispatcher,
+		int $maxReadBufferSize = 49152,
+		int $maxWriteBufferSize = 49152,
+		int $maxRequestHandshakeSize = 1024,
+		int $maxRequestsByMinute = 20,
 		array $allowedOrigins = [],
 		array $allowedApplications = [],
 		?int $rejectOnHandshakeCode = null,
-		?string $rejectOnHandshakeMessage = "Server busy"
+		?string $rejectOnHandshakeMessage = "Server busy",
+		array $rejectIps = []
 	){
 		$this->_queue = [];
 		$this->_socket = $socket;
+		$this->_requestsCounter = 0;
+		$this->_requestsCounterDate = time() * 1000;
+		$this->_maxReadBufferSize = $maxReadBufferSize;
+		$this->_maxWriteBufferSize = $maxWriteBufferSize;
+		$this->_maxRequestByMinute = $maxRequestsByMinute;
+		$this->_maxRequestHandshakeSize = $maxRequestHandshakeSize;
 		$this->_rejectOnHandshakeMessage = $rejectOnHandshakeMessage;
 		$this->_rejectOnHandshakeCode = $rejectOnHandshakeCode;
 		$this->_protocol = $protocol;
+		$this->_rejectIps = $rejectIps;
 		$this->_dispatcher = $dispatcher;
 		$this->_allowedOrigins = (function(string ...$origins){
 			$res = [];
 			foreach($origins as $domain){
 				$domain = str_replace('http://', '', $domain);
+				$domain = str_replace('https://', '', $domain);
 				$domain = str_replace('www.', '', $domain);
 				$domain = (strpos($domain, '/') !== false) ? substr($domain, 0, strpos($domain, '/')) : $domain;
 				if (!empty($domain)) {
@@ -152,6 +184,14 @@ final class WebsocketConnection implements IWebsocketConnection {
 	 */
 	public function recieve(): void {
 		$this->throwIfClosed("receive data");
+		//if the client exceed the max request rate, connection is closed.
+		if(!$this->counter(true)){
+			$this->close(
+				IWebsocketProtocol::STATUS_MESSAGE_VIOLATES_SERVER_POLICY,
+				"Max request by second rate reached."
+			);
+			return;
+		}
 		if($this->_handshaked) $this->handle();
 		else $this->handshake();
 	}
@@ -161,6 +201,11 @@ final class WebsocketConnection implements IWebsocketConnection {
 			$data = $this->read();
 		}catch(\Error | \Exception $e){
 			$this->_dispatcher->dispatch(new ErrorOcurred($this->_id,$e));
+			return;
+		}
+
+		if(isset($this->_rejectIps[$this->_ip])){
+			$this->sendHttpResponse(429);
 			return;
 		}
 
@@ -261,6 +306,12 @@ final class WebsocketConnection implements IWebsocketConnection {
 			case 404:
 				$httpHeader .= $message ?? '404 Not Found';
 				break;
+			case 413 :
+				$httpHeader .= $message ?? '413 Entity too large';
+				break;
+			case 429 :
+				$httpHeader .= $message ?? '429 Too many requests';
+				break;
 			case 501:
 				$httpHeader .= $message ?? '501 Not Implemented';
 				break;
@@ -272,7 +323,7 @@ final class WebsocketConnection implements IWebsocketConnection {
 			$this->_closed = true;
 			$this->_dispatcher->dispatch(new ErrorOcurred(
 				$this->_id,
-				new WebsocketHandhaskeFailure($httpStatusCode,$httpHeader)
+				new WebsocketHandshakeFailure($httpStatusCode, $httpHeader)
 			));
 		} catch (\Error | \Exception $e) {
 			$this->_dispatcher->dispatch(new ErrorOcurred($this->_id,$e));
@@ -311,9 +362,9 @@ final class WebsocketConnection implements IWebsocketConnection {
 
 		switch ($decodedData['type']) {
 			case IWebsocketProtocol::TEXT:
-				$this->_dispatcher->dispatch(new DataRecieved(
+				if($this->counter()) $this->_dispatcher->dispatch(new DataRecieved(
 					$this->_id,$decodedData['payload']
-				 ));
+				));
 				break;
 			case IWebsocketProtocol::BINARY:
 				$this->close(1003);
@@ -331,6 +382,23 @@ final class WebsocketConnection implements IWebsocketConnection {
 	}
 
 	/**
+	 * @param bool $checkOnly If true, will only perform the check without counting.
+	 * @return bool True if the request can be handle, false otherwise, depending on the maxRequestBySecond
+	 *              rate.
+	 */
+	private function counter(bool $checkOnly = false):bool{
+		if($this->_maxRequestByMinute <= 0) return true;
+		if(!$checkOnly) $this->_requestsCounter++;
+		if(time() - $this->_requestsCounterDate > 60){
+			if(!$checkOnly){
+				$this->_requestsCounterDate = time();
+				$this->_requestsCounter = 0;
+			}
+		}else if($this->_requestsCounter > $this->_maxRequestByMinute) return false;
+		return true;
+	}
+
+	/**
 	 * @param string $op Action
 	 * @throws WebsocketConnectionClosed
 	 */
@@ -345,12 +413,14 @@ final class WebsocketConnection implements IWebsocketConnection {
 
 	/**
 	 * @return string Data read from socket
+	 * @throws WebsocketConnectionClosed
 	 * @throws WebsocketIOFailure
 	 */
 	private function read():string{
 		$buffer = '';
 		$buffsize = 8192;
 		$metadata['unread_bytes'] = 0;
+		$maxSize = $this->_handshaked ? $this->_maxReadBufferSize : $this->_maxRequestHandshakeSize;
 		do {
 			if (feof($this->_socket)) throw new WebsocketIOFailure(
 				"No more data to read from client socket $this->_id. Incomplete message recieved."
@@ -362,6 +432,14 @@ final class WebsocketConnection implements IWebsocketConnection {
 			$buffer .= $result;
 			$metadata = stream_get_meta_data($this->_socket);
 			$buffsize = ($metadata['unread_bytes'] > $buffsize) ? $buffsize : $metadata['unread_bytes'];
+			if($buffsize > $maxSize){
+				if($this->_handshaked) $this->close(IWebsocketProtocol::STATUS_MESSAGE_TOO_LARGE);
+				else $this->sendHttpResponse(413);
+				throw new WebsocketIOFailure(
+					($this->_handshaked ? "Message" : "Header")
+					." too large from $this->_id ($maxSize limit exceed). Client connection closed."
+				);
+			}
 		} while ($metadata['unread_bytes'] > 0);
 
 		return $buffer;
@@ -393,6 +471,8 @@ final class WebsocketConnection implements IWebsocketConnection {
 	private function write(string $data):int{
 		$stringLength = strlen($data);
 		if ($stringLength === 0) return 0;
+		else if($stringLength > $this->_maxWriteBufferSize && $this->_maxReadBufferSize > 0)
+			throw new WebsocketIOFailure("Max response size reached ($this->_maxWriteBufferSize)");
 
 		for ($written = 0; $written < $stringLength; $written += $fwrite) {
 			$fwrite = @fwrite($this->_socket, substr($data, $written));
@@ -410,10 +490,14 @@ final class WebsocketConnection implements IWebsocketConnection {
 	/**
 	 * Close the connection
 	 *
-	 * @param int $statusCode
+	 * @param int         $statusCode
+	 * @param null|string $msg
 	 * @throws WebsocketConnectionClosed
 	 */
-	public function close(int $statusCode = IWebsocketProtocol::STATUS_NORMAL_CLOSE): void {
+	public function close(
+		int $statusCode = IWebsocketProtocol::STATUS_NORMAL_CLOSE,
+		?string $msg = null
+	): void {
 		$this->throwIfClosed("close connection");
 		$payload = str_split(sprintf('%016b', $statusCode), 8);
 		$payload[0] = chr(bindec($payload[0]));
@@ -431,7 +515,7 @@ final class WebsocketConnection implements IWebsocketConnection {
 				$payload .= $message = 'protocol error';
 				break;
 			case IWebsocketProtocol::STATUS_UNKNOWN_DATA:
-				$payload .= $message = 'unknown data (opcode)';
+				$payload .= $message = 'unknown data';
 				break;
 			case IWebsocketProtocol::STATUS_MESSAGE_TOO_LARGE:
 				$payload .= $message = 'frame too large';
@@ -449,7 +533,9 @@ final class WebsocketConnection implements IWebsocketConnection {
 		stream_socket_shutdown($this->_socket, STREAM_SHUT_RDWR);
 		$this->_closed = true;
 
-		$this->_dispatcher->dispatch(new Closed($this,$statusCode,$message));
+		$this->_dispatcher->dispatch(new Closed(
+			$this,$statusCode,$msg ?? $message
+		));
 	}
 
 	/**

@@ -61,7 +61,7 @@ try{
 						$confs->getMaxRequestHandshakeSize($name),
 						$confs->getAllowedOrigins($name) ?? [$confs->getHost($name)],
 						$confs->getMaxConnectionsByIp($name),
-						$confs->getMaxRequestsBySecondByClient($name),
+						$confs->getMaxRequestsByMinuteByClient($name),
 						$confs->getMaxSocketSelect($name)
 					),
 					new LightSerializer(new GZCompressor(),new PHPSerializer()),
