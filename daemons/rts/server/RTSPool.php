@@ -64,7 +64,7 @@ final class RTSPool {
 
 		//On commence par vérifier l'existence du fichier lock permettant d'obtenir le lock
 		//Un seul MSServer est autorisé par repertoir de travail.
-		$this->_lockFile = "$workingDir/server.lock";
+		$this->_lockFile = "$workingDir/server-pool.lock";
 		if(!file_exists($this->_lockFile)){
 			touch($this->_lockFile);
 		}

@@ -12,7 +12,7 @@ LOGROTATE_PATH="/etc/logrotate.d/wfw"
 A2_SITES_CONFS="/etc/apache2/wfw-sites"
 A2CONF="/etc/apache2/conf-available/wfw-global.conf"
 
-declare -a services=("msserver" "kvs" "sctl")
+declare -a services=("msserver" "kvs" "rts" "sctl")
 for i in "${services[@]}"
 do
 	SERVICE_NAME="wfw-$i"

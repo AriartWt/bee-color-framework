@@ -1,6 +1,11 @@
 {
 	"working_dir" : "rts/data",
 	"socket_path" : "rts.socket",
+	"logs" : {
+		"level" : 2,
+		"copy" : true,
+		"default_path" : "/var/log/wfw/rts"
+	},
 	"default_instance" : {
 		"port" : 8000,
 		"modules_to_load_path" : "{ROOT}/site/config/load/rts.php",

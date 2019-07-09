@@ -40,6 +40,8 @@ $argvReader=$argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 	new ArgvOpt('create','Crée un nouveau projet et l\'ajoute au gestionnaire (create [nom projet] [chemin]',2,null,true),
 	new ArgvOpt('import','Importe un projet dans un projet existant (import [nom du projet] [chemin des fichiers] [(optionnel)-keepConf]))',null,null,true),
 	new ArgvOpt('self','Applique les commandes sur le wfw global',null,null,true),
+	new ArgvOpt('reinstall','Reinstall wfw and all daemons',null,null,true),
+	new ArgvOpt('uninstall','Uninstall wfw and all daemons',null,null,true),
 	new ArgvOpt(
 			'update','Met à jour les fichiers wfw du projet ciblé avec les fichiers contenus dans le dossier spécifié '
 			.'(update [-self(global) | -all(tous) | -projet,projet2,...(projets spécifiés)] [sources path]',
@@ -57,6 +59,8 @@ $argvReader=$argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 	new ArgvOpt('[PROJECT] [cmd](args...)',"Execute une commande sur un projet",null,null,true)
 ])),$argv);
 
+CONST FILE_DB_KEY = "@ TEMPLATE FILES @";
+
 try{
 	if(count($argv) < 2)
 		throw new InvalidArgumentException("At least one arg expected ! --help for command usage");
@@ -65,7 +69,10 @@ try{
 	$data = $db->read(true);
 	$validName = function(string $name):bool{
 		return preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/',$name)
-			&& !in_array($name,["all","self","update","locate","remove","create","import","maintenance","list","restore"]);
+			&& !in_array($name,[
+					"all","self","update","locate","remove","create","import","maintenance","list","restore",
+				'uninstall','reinstall'
+			]);
 	};
 	$exec = function(string $cmd):void{
 		$outputs = []; $res = null;
@@ -97,6 +104,10 @@ try{
 		foreach($data as $path){
 			fwrite(STDOUT,dirname($path)."\n");
 		}
+	}else if($argvReader->exists('reinstall')){
+		system("\"".CLI."/installer/reinstall.sh\" 2>&1");
+	}else if($argvReader->exists('uninstall')){
+		system("\"".CLI."/installer/uninstall.sh\" 2>&1");
 	}else if($argvReader->exists('restore')){
 		foreach($data as $project=>$p){
 			$p=dirname($p);
@@ -176,6 +187,7 @@ try{
 			$confs = [
 				"engine" => "engine/config/conf.json",
 				"kvs" => "daemons/kvstore/server/config/conf.json",
+				"rts" => "daemons/rts/server/config/conf.json",
 				"mss" => "daemons/modelSupervisor/server/config/conf.json",
 				"sctl" => "daemons/sctl/config/conf.json",
 				"wfw" => "cli/wfw/config/conf.json",

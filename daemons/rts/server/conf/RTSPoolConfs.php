@@ -17,7 +17,6 @@ use wfw\engine\lib\PHP\types\PHPString;
  * @package wfw\daemons\rts\server\conf
  */
 final class RTSPoolConfs {
-	private const DEFAULT_INSTANCE = "default_instance";
 	private const WORKING_DIR = "working_dir";
 	private const SOCKET_PATH = "socket_path";
 	private const REQUEST_TTL = "request_ttl";
@@ -74,7 +73,14 @@ final class RTSPoolConfs {
 		}
 
 		$this->_conf = new FileBasedConf($confPath,$confIO);
+		$workingDir = $this->getWorkingDir();
+		if(!is_dir($workingDir)) mkdir($workingDir,0700,true);
+
 		if(!$noLogger){
+			foreach(['err','log','warn','debug'] as $l){
+				if(!is_dir($logdir = dirname($this->getLogPath(null,$l))))
+					mkdir($logdir,0700,true);
+			}
 			$this->_logger = (new FileLogger(new DefaultLogFormater(),...[
 				$this->getLogPath(null,"log"),
 				$this->getLogPath(null,"err"),
@@ -84,27 +90,40 @@ final class RTSPoolConfs {
 				FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
 				FileLogger::DEBUG,
 				$this->isCopyLogModeEnabled(null)
-			)->autoConfByLevel($this->_conf->getInt($this->_conf->getInt("logs/level") ?? ILogger::ERR)
-			);
+			)->autoConfByLevel($this->_conf->getInt("logs/level") ?? ILogger::ERR);
 		}
 
 		//On détermine les configurations de chaque instance à créer
 		$this->_instancesConfs = [];
-		$defInstance = $this->_conf->getObject(self::DEFAULT_INSTANCE);
+		$defInstance = $this->_conf->getObject("default_instance");
 		foreach($this->_conf->getArray("instances") as $instanceName=>$instanceConf){
 			$tmp = new StdClassOperator(new stdClass());
 			$tmp->mergeStdClass($defInstance);
 			$tmp->mergeStdClass($instanceConf);
+
 			try{
 				$path = $tmp->find("project_path");
 				if(file_exists("$path/site/config/conf.json")){
-					$tmpConf = new FileBasedConf($path,new JSONConfIOAdapter());
+					$tmpConf = new FileBasedConf(
+						"$path/site/config/conf.json",
+						new JSONConfIOAdapter()
+					);
 					$custom_conf = $tmpConf->getObject("server/daemons/custom_config/rts");
 					if(!is_null($custom_conf)) $tmp->mergeStdClass($custom_conf);
 				}
-			}catch(\Exception $e){}
+			}catch(\Exception $e){
+				$this->_logger->log(
+					"An error occured while trying to merge project conf for $instanceName : $e",
+					ILogger::ERR
+				);
+			}
+			$this->_conf->set("instances/$instanceName",$tmp->getStdClass());
 			$this->_instancesConfs[$instanceName] = $tmp;
 			if(!$noLogger){
+				foreach(['err','log','warn','debug'] as $l){
+					if(!is_dir($logdir = dirname($this->getLogPath($instanceName,$l))))
+						mkdir($logdir,0700,true);
+				}
 				$this->_instanceLoggers[$instanceName] = (new FileLogger(new DefaultLogFormater(),...[
 					$this->getLogPath($instanceName,"log"),
 					$this->getLogPath($instanceName,"err"),
@@ -179,11 +198,12 @@ final class RTSPoolConfs {
 	private function getLogPath(?string $instance, string $level="err"):?string{
 		if($instance) $path = $this->_conf->getString("instances/$instance/".self::LOGS."/$level");
 		else $path = $this->_conf->getString(self::LOGS."/$level");
-		$errorPath = $path ?? "kvs".(($instance)?"-$instance":"")."-$level.log";
+		$errorPath = $path ?? "rts".(($instance)?"-$instance":"")."-$level.log";
 
 		if(strpos($errorPath,"/")!==0){
-			if($instance) $basePath = $this->_conf->getString("instances/$instance/logs/default_path")
-				?? $this->_conf->getString("logs/default_path")."/containers";
+			if($instance)
+				$basePath = ($this->_conf->getString("instances/$instance/logs/default_path")
+				?? $this->_conf->getString("logs/default_path"))."/instances";
 			else $basePath = $this->_conf->getString("logs/default_path");
 			if(!$basePath) $basePath = $this->getWorkingDir($instance);
 			if(!is_dir($basePath)) mkdir($basePath,0700,true);
@@ -227,9 +247,9 @@ final class RTSPoolConfs {
 	 * @throws \InvalidArgumentException
 	 */
 	public function getUsers(string $instance): stdClass{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("users");
+		return $this->_conf->getObject("instances/$instance/users");
 	}
 
 	/**
@@ -238,9 +258,9 @@ final class RTSPoolConfs {
 	 * @throws \InvalidArgumentException
 	 */
 	public function getMaxWSockets(string $instance): int{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("max_websockets_by_worker")??1;
+		return $this->_conf->getInt("instances/$instance/max_websockets_by_worker") ?? 1;
 	}
 
 	/**
@@ -249,9 +269,9 @@ final class RTSPoolConfs {
 	 * @throws \InvalidArgumentException
 	 */
 	public function getMaxWorkers(string $instance): int{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("max_workers")??0;
+		return $this->_conf->getInt("instances/$instance/max_workers")??0;
 	}
 
 	/**
@@ -262,9 +282,9 @@ final class RTSPoolConfs {
 	 * @throws \InvalidArgumentException
 	 */
 	public function getAllowedWSocketOverflow(string $instance): int{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("allowed_wsockets_overflow") ?? -1;
+		return $this->_conf->getInt("instances/$instance/allowed_wsockets_overflow") ?? -1;
 	}
 
 	/**
@@ -273,9 +293,9 @@ final class RTSPoolConfs {
 	 * @throws \InvalidArgumentException
 	 */
 	public function getPort(string $instance): int{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("port") ?? 8000;
+		return $this->_conf->getInt("instances/$instance/port") ?? 8000;
 	}
 
 	/**
@@ -284,9 +304,9 @@ final class RTSPoolConfs {
 	 * @throws \InvalidArgumentException
 	 */
 	public function getSleepInterval(string $instance): int{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("sleep_interval") ?? 100;
+		return $this->_conf->getInt("instances/$instance/sleep_interval") ?? 100;
 	}
 
 	/**
@@ -295,9 +315,9 @@ final class RTSPoolConfs {
 	 * @throws \InvalidArgumentException
 	 */
 	public function getMaxWriteBufferSize(string $instance): int{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("max_write_buffer_size") ?? 49152;
+		return $this->_conf->getInt("instances/$instance/max_write_buffer_size") ?? 49152;
 	}
 
 	/**
@@ -306,9 +326,9 @@ final class RTSPoolConfs {
 	 * @throws \InvalidArgumentException
 	 */
 	public function getMaxReadBufferSize(string $instance): int{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("max_read_buffer_size") ?? 49152;
+		return $this->_conf->getInt("instances/$instance/max_read_buffer_size") ?? 49152;
 	}
 
 	/**
@@ -317,9 +337,9 @@ final class RTSPoolConfs {
 	 * @throws \InvalidArgumentException
 	 */
 	public function getMaxConnectionsByIp(string $instance): int{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("max_connections_by_ip") ?? 20;
+		return $this->_conf->getInt("instances/$instance/max_connections_by_ip") ?? 20;
 	}
 
 	/**
@@ -328,9 +348,9 @@ final class RTSPoolConfs {
 	 * @throws \InvalidArgumentException
 	 */
 	public function getMaxRequestHandshakeSize(string $instance): int{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("max_request_handshake_size") ?? 1024;
+		return $this->_conf->getInt("instances/$instance/max_request_handshake_size") ?? 1024;
 	}
 
 	/**
@@ -339,9 +359,9 @@ final class RTSPoolConfs {
 	 * @throws \InvalidArgumentException
 	 */
 	public function getAllowedOrigins(string $instance): ?array{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("allowed_origins") ?? null;
+		return $this->_conf->getArray("instances/$instance/allowed_origins") ?? null;
 	}
 
 	/**
@@ -350,9 +370,9 @@ final class RTSPoolConfs {
 	 * @throws \InvalidArgumentException
 	 */
 	public function getMaxRequestsByMinuteByClient(string $instance): int{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("max_requests_by_minute_by_client") ?? 20;
+		return $this->_conf->getInt("instances/$instance/max_requests_by_minute_by_client") ?? 20;
 	}
 
 	/**
@@ -361,9 +381,9 @@ final class RTSPoolConfs {
 	 * @throws \InvalidArgumentException
 	 */
 	public function getMaxSocketSelect(string $instance): int{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		return $this->_instancesConfs[$instance]->find("max_socket_select") ?? 20;
+		return $this->_conf->getInt("instances/$instance/max_socket_select") ?? 20;
 	}
 
 	/**
@@ -372,9 +392,9 @@ final class RTSPoolConfs {
 	 * @throws \InvalidArgumentException
 	 */
 	public function getHost(string $instance): string{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		$res = $this->_instancesConfs[$instance]->find("host");
+		$res = $this->_conf->getString("instances/$instance/host");
 		if(is_null($res)) throw new \InvalidArgumentException("A host must be defined !");
 		return $res;
 	}
@@ -385,13 +405,9 @@ final class RTSPoolConfs {
 	 * @throws \InvalidArgumentException
 	 */
 	public function getGroups(string $instance): stdClass{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		try{
-			return $this->_instancesConfs[$instance]->find("groups");
-		}catch(\Exception $e){
-			return new stdClass;
-		}
+		return $this->_conf->getObject("instances/$instance/groups") ?? new stdClass();
 	}
 
 	/**
@@ -400,13 +416,9 @@ final class RTSPoolConfs {
 	 * @throws \InvalidArgumentException
 	 */
 	public function getAdmins(string $instance):stdClass{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		try{
-			return $this->_instancesConfs[$instance]->find("admins");
-		}catch(\Exception $e){
-			return new stdClass;
-		}
+		return $this->_conf->getObject("instances/$instance/admins") ?? new stdClass();
 	}
 
 	/**
@@ -415,13 +427,9 @@ final class RTSPoolConfs {
 	 */
 	public function getRequestTtl(?string $instance = null):int{
 		if($instance){
-			if(!isset($this->_instancesConfs[$instance]))
+			if(!$this->_conf->existsKey("instances/$instance"))
 				throw new \InvalidArgumentException("Unknown instance $instance");
-			try{
-				return $this->_instancesConfs[$instance]->find("request_ttl");
-			}catch(\Exception $e){
-				return 900;
-			}
+			return $this->_conf->getInt("instances/$instance/request_ttl") ?? 900;
 		}else return $this->_conf->getInt(self::REQUEST_TTL)??900;
 	}
 
@@ -430,13 +438,9 @@ final class RTSPoolConfs {
 	 * @return int
 	 */
 	public function getSessionTtl(string $instance):int{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		try{
-			return $this->_instancesConfs[$instance]->find("session_ttl");
-		}catch(\Exception $e){
-			return 60;
-		}
+		return $this->_conf->getInt("instances/$instance/session_ttl") ?? 60;
 	}
 
 	/**
@@ -444,13 +448,9 @@ final class RTSPoolConfs {
 	 * @return bool
 	 */
 	public function haveToSendErrorToClient(string $instance):bool{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		try{
-			return $this->_instancesConfs[$instance]->find("send_error_to_client");
-		}catch(\Exception $e){
-			return true;
-		}
+		return $this->_conf->getBoolean("instances/$instance/send_error_to_client") ?? true;
 	}
 
 	/**
@@ -458,13 +458,9 @@ final class RTSPoolConfs {
 	 * @return bool
 	 */
 	public function haveToShutdownOnError(string $instance):bool {
-		if (!isset($this->_instancesConfs[$instance]))
+		if (!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		try {
-			return $this->_instancesConfs[$instance]->find("shutdown_on_error");
-		} catch (\Exception $e) {
-			return false;
-		}
+		return $this->_conf->getBoolean("instances/$instance/shutdown_on_error") ?? false;
 	}
 
 
@@ -473,17 +469,13 @@ final class RTSPoolConfs {
 	 * @return string
 	 */
 	public function getModulesToLoad(string $instance):string{
-		if(!isset($this->_instancesConfs[$instance]))
+		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		$path = null;
 
-		try{
-			$path = $this->_instancesConfs[$instance]->find("modules_to_load_path");
-		}catch(\Exception $e){
-			$path = "{ROOT}/site/config/load/rts.php";
-		}
-
-		$modelsToLoad = new PHPString($path);
+		$modelsToLoad = new PHPString(
+			$this->_conf->getString("instances/$instance/modules_to_load_path")
+				?? "{ROOT}/site/config/load/rts.php"
+		);
 		if(!$modelsToLoad->startBy("/")){
 			return $this->resolvePath($modelsToLoad,false);
 		}else{
@@ -497,13 +489,9 @@ final class RTSPoolConfs {
 	 * @throws \InvalidArgumentException
 	 */
 	public function enabled(?string $instance=null):bool{
-		if (!isset($this->_instancesConfs[$instance]))
+		if (!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		try {
-			return $this->_instancesConfs[$instance]->find("enabled");
-		} catch (\Exception $e) {
-			return false;
-		}
+		return $this->_conf->getBoolean("instances/$instance/enabled") ?? false;
 	}
 
 	/**
@@ -512,13 +500,9 @@ final class RTSPoolConfs {
 	 * @throws \InvalidArgumentException
 	 */
 	public function mustSpawnAllWorkersAtStartup(?string $instance=null):bool{
-		if (!isset($this->_instancesConfs[$instance]))
+		if (!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
-		try {
-			return $this->_instancesConfs[$instance]->find("spawn_all_workers_at_startup");
-		} catch (\Exception $e) {
-			return true;
-		}
+		return $this->_conf->getBoolean("instances/$instance/spawn_all_workers_at_startup") ?? true;
 	}
 
 	/**

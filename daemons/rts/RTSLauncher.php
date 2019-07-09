@@ -95,44 +95,41 @@ try{
 		}
 		else $pids[]=$pid;
 	}
-	if(count($pids) > 0 && $enabled > 0){
-		cli_set_process_title("WFW RTSPool server");
-		$poolServer = new RTSPool(
-			$confs->getSocketPath(),
-			$confs->getWorkingDir(),
-			new DefaultProtocol(),
-			$pids,
-			array_combine(
-				$confs->getInstances(),
-				array_map(
-					function($name) use($confs){
-						return [
-							"path" => $confs->getSocketPath($name),
-							"port" => $confs->getPort($name)
-						];
-					},
-					$confs->getInstances()
-				)
-			),
-			$confs->getLogger()
-		);
 
-		$pcntlHelper = new PCNTLSignalsHelper(true);
-		$pcntlHelper->handleAll([
-			PCNTLSignalsHelper::SIGINT,
-			PCNTLSignalsHelper::SIGHUP,
-			PCNTLSignalsHelper::SIGTERM,
-			PCNTLSignalsHelper::SIGUSR1,
-			PCNTLSignalsHelper::SIGUSR2,
-			PCNTLSignalsHelper::SIGALRM
-		],function() use ($poolServer){
-			$poolServer->shutdown();
-		});
-
-		$poolServer->start();
-	}else if($enabled === 0) $confs->getLogger()->log(
-		"[RTSPool] No RTS instance enabled, RTSPool not started."
+	cli_set_process_title("WFW RTSPool server");
+	$poolServer = new RTSPool(
+		$confs->getSocketPath(),
+		$confs->getWorkingDir(),
+		new DefaultProtocol(),
+		$pids,
+		array_combine(
+			$confs->getInstances(),
+			array_map(
+				function($name) use($confs){
+					return [
+						"path" => $confs->getSocketPath($name),
+						"port" => $confs->getPort($name)
+					];
+				},
+				$confs->getInstances()
+			)
+		),
+		$confs->getLogger()
 	);
+
+	$pcntlHelper = new PCNTLSignalsHelper(true);
+	$pcntlHelper->handleAll([
+		PCNTLSignalsHelper::SIGINT,
+		PCNTLSignalsHelper::SIGHUP,
+		PCNTLSignalsHelper::SIGTERM,
+		PCNTLSignalsHelper::SIGUSR1,
+		PCNTLSignalsHelper::SIGUSR2,
+		PCNTLSignalsHelper::SIGALRM
+	],function() use ($poolServer){
+		$poolServer->shutdown();
+	});
+
+	$poolServer->start();
 }catch(\InvalidArgumentException $e){
 	fwrite(STDOUT,"\e[33mWFW_rts WRONG_USAGE\e[0m : {$e->getMessage()}".PHP_EOL);
 	exit(1);

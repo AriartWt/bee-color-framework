@@ -1,0 +1,13 @@
+[Unit]
+Description=WFW real time server (rts)
+
+[Service]
+Type=simple
+User=www-data
+KillSignal=SIGALRM
+KillMode=process
+ExecStart=/usr/bin/php -q @ROOT/daemons/rts/RTSLauncher.php
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
