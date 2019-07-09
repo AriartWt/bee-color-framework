@@ -16,6 +16,7 @@ final class InternalCommand implements \Serializable {
 	public const LOCAL = "local";
 	public const WORKER = "worker";
 
+	public const SHUTDOWN = "shutdown";
 	public const CMD_ACCEPT = "accept_new_client";
 	public const CMD_REJECT = "reject_new_client";
 

@@ -466,21 +466,20 @@ final class RTSPoolConfs {
 
 	/**
 	 * @param string $instance Instance concernée
-	 * @return string
+	 * @return array
 	 */
-	public function getModulesToLoad(string $instance):string{
+	public function getModulesToLoad(string $instance):array{
 		if(!$this->_conf->existsKey("instances/$instance"))
 			throw new \InvalidArgumentException("Unknown instance $instance");
 
-		$modelsToLoad = new PHPString(
+		$modulesToLoad = new PHPString(
 			$this->_conf->getString("instances/$instance/modules_to_load_path")
 				?? "{ROOT}/site/config/load/rts.php"
 		);
-		if(!$modelsToLoad->startBy("/")){
-			return $this->resolvePath($modelsToLoad,false);
-		}else{
-			return $modelsToLoad;
+		if(!$modulesToLoad->startBy("/")){
+			$modulesToLoad = $this->resolvePath($modulesToLoad,false);
 		}
+		return require($modulesToLoad) ?? [];
 	}
 
 	/**

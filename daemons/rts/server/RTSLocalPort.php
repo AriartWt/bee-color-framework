@@ -117,7 +117,8 @@ final class RTSLocalPort {
 	 */
 	public function start(){
 		while(true){
-			$socket= socket_accept($this->_localSocket);
+			//TODO : read InternalCommands too
+			$socket = socket_accept($this->_localSocket);
 			$this->configureSocket($socket);
 			$this->process($socket);
 		}

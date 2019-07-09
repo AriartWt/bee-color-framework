@@ -177,7 +177,7 @@ final class RTS{
 
 	public function start():void{
 		$sockets =  [];
-		socket_create_pair(AF_UNIX,SOCK_STREAM,SOL_TCP,$sockets);
+		socket_create_pair(AF_UNIX,SOCK_STREAM,0,$sockets);
 		$this->_localPortPid = pcntl_fork();
 		if($this->_localPortPid === 0){
 			cli_set_process_title(cli_get_process_title()." Local Port");
@@ -214,23 +214,37 @@ final class RTS{
 			count($this->_workers)." workers already created !"
 		);
 		$sockets = [];
-		socket_create_pair(AF_UNIX,SOCK_STREAM,SOL_TCP,$sockets);
+		socket_create_pair(AF_UNIX,SOCK_STREAM,0,$sockets);
+		$this->_mainProcessSocket = $sockets[0];
+		cli_set_process_title(cli_get_process_title()." Network Port");
+		$this->_worker = new RTSNetworkPort(
+			$this->_host,
+			$this->_port,
+			$this->_mainProcessSocket,
+			$this->_environment,
+			$this->_protocol,
+			$this->_appsManager,
+			$this->_serializer,
+			$this->_secretKey,
+			$this->_networkPort,
+			$this->_sleepInterval,
+			"$this->_logHead [NetworkPort]"
+		);
+		if(is_null($this->_networkPort)) $this->_networkPort = $this->_worker->getNetworkSocket();
 		$pid = pcntl_fork();
 		if($pid === 0){
 			socket_close($sockets[1]);
-			$this->_mainProcessSocket = $sockets[0];
 			$this->configureSocket($sockets[0]);
 			//cleanup not needed stuff
 			foreach($this->_workers as $pid=>$w){
 				socket_close($w);
-				socket_close($this->_localPort);
 			}
+			if(is_resource($this->_localPort)) socket_close($this->_localPort);
 			$this->_workers = [];
 			$this->_workersInfos = [];
-			$this->_environment = null;
 			$this->_workersBySocketId = [];
 			$this->_clientsByWorkerPid = [];
-			$this->wsLoop();
+			$this->_worker->start();
 			return -1;
 		}else if($pid > 0){
 			$pid = (string) $pid;
@@ -254,14 +268,15 @@ final class RTS{
 			$start = microtime(true);
 			$master = [$this->_networkPort];
 			$local = [$this->_localPort];
-			$chunks = $this->splitIntoChunks(array_merge(
+			$sockets = array_merge(
 				[$this->_localPort,$this->_networkPort],
-				array_values($this->_workers))
+				array_values($this->_workers)
 			);
+			$chunks = $this->splitIntoChunks($sockets);
 			//bypass the 1024 socket_select limit
 			foreach($chunks as $chunk){
-				$read = $chunk; $write = null; $except = null;
-				socket_select($read,$write,$except,0);
+				$read = $chunk; $write = []; $except = [];
+				socket_select($read,$write,$except,(count($chunks) === 1 && count($chunk)<1024) ? null : 0);
 				if(count(array_intersect($master,$chunk)) === 1){
 					$this->accept();
 					$read = array_diff($read,$master);
@@ -295,7 +310,7 @@ final class RTS{
 				}
 			}
 			$execTime = microtime(true) - $start;
-			if( $execTime < $this->_sleepInterval) usleep($execTime - $start);
+			if($execTime < $this->_sleepInterval) usleep($this->_sleepInterval - $execTime);
 		}
 	}
 
@@ -518,30 +533,6 @@ final class RTS{
 	}
 
 	/**
-	 * Loop du port network
-	 *
-	 * @throws \RuntimeException
-	 */
-	private function wsLoop():void{
-		cli_set_process_title(cli_get_process_title()." Network Port");
-		$this->_worker = new RTSNetworkPort(
-			$this->_host,
-			$this->_port,
-			$this->_mainProcessSocket,
-			$this->_environment,
-			$this->_protocol,
-			$this->_appsManager,
-			$this->_serializer,
-			$this->_secretKey,
-			$this->_networkPort,
-			$this->_sleepInterval,
-			"$this->_logHead [NetworkPort]"
-		);
-		if(is_null($this->_networkPort)) $this->_networkPort = $this->_worker->getNetworkSocket();
-		$this->_worker->start();
-	}
-
-	/**
 	 * @param resource $socket Configure la socket
 	 */
 	private function configureSocket($socket){
@@ -558,11 +549,24 @@ final class RTS{
 		flock($this->_acquiredLockFile,LOCK_UN);
 		fclose($this->_acquiredLockFile);
 		unlink($this->_lockFile);
-		if(!is_null($this->_localPort)) socket_close($this->_localPort);
-		if(!is_null($this->_networkPort)) socket_close($this->_networkPort);
+		$cmd = new InternalCommand(
+			InternalCommand::ROOT,
+			InternalCommand::SHUTDOWN,
+			null,
+			null,
+			$this->_secretKey
+		);
+		if(!is_null($this->_localPort)){
+			$this->write($this->_localPort,$this->_serializer->serialize($cmd));
+			socket_close($this->_localPort);
+		}
+		if(!is_null($this->_networkPort)){
+			$this->write($this->_networkPort,$this->_serializer->serialize($cmd));
+			socket_close($this->_networkPort);
+		}
 
 		foreach($this->_workersInfos as $pid=>$info){
-			posix_kill($pid,PCNTLSignalsHelper::SIGALRM);
+			$this->write($this->_workers[$pid],$this->_serializer->serialize($cmd));
 		}
 
 		if(!is_null($e)){

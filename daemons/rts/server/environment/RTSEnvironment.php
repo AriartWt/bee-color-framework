@@ -92,6 +92,7 @@ final class RTSEnvironment implements IRTSEnvironment{
 				throw new \InvalidArgumentException("$workingDir is not a valid directory !");
 			}
 		}
+		$this->_logger = $logger;
 		$this->_ttl = $sessionTtl;
 		$this->_workingDir = $workingDir;
 		$this->_modules = $modulesToLoad;

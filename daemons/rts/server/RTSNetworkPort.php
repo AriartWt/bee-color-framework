@@ -135,7 +135,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 		while(true){
 			$start = microtime(true);
 			$changedSocks = [$this->_mainSock];
-			$empty = null;
+			$empty = [];
 			$mainSocketRead = 0;
 			//accept or reject all client that are waiting on $this->_netSock
 			//only if the main worker asks for it
@@ -171,7 +171,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 			foreach($chunks as $chunk){
 				$ready = $chunk;
 				$empty = null;
-				stream_select($ready,$empty,$empty,0);
+				stream_select($ready,$empty,$empty,(count($chunks) === 1 && count($chunk)<1024) ? null : 0);
 				foreach($ready as $socket){
 					if(isset($this->_netSocks[(string)(int)$socket])) $this->_netSocks[(string)(int)$socket]->recieve();
 					else{
@@ -190,7 +190,8 @@ final class RTSNetworkPort implements IWebsocketListener{
 			//allow the process to not wait if many tasks was done, but to wait and let other process
 			//run if nothing or little to do.
 			$execTime = microtime(true) - $start;
-			if( $execTime < $this->_sleepInterval) usleep($execTime - $start);
+			if($execTime < $this->_sleepInterval)
+				usleep($this->_sleepInterval - $execTime);
 		}
 	}
 
@@ -199,6 +200,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 	 * @param IWebsocketEventObserver $observer
 	 */
 	private function processCommand(InternalCommand $decoded,IWebsocketEventObserver $observer):void{
+		//TODO : implements network port selection between libevent and raw stream_select
 		$source = $decoded->getSource();
 		$cmd = $decoded->getName();
 		$cmdData = $decoded->getData();
@@ -306,7 +308,29 @@ final class RTSNetworkPort implements IWebsocketListener{
 					);
 				}
 				break;
+			case InternalCommand::SHUTDOWN:
+				if($source === InternalCommand::ROOT && $this->_rootKey === $rootKey){
+					$this->_env->getLogger()->log(
+						"$this->_logHead $source shutdown command recieved. Closing clients..."
+					);
+					foreach($this->_netSocks as $sock){
+						$sock->close();
+						$this->_env->getLogger()->log("Client ".$sock->getId()." closed.");
+					}
+					$this->_env->getLogger()->log("All clients closed.");
+					exit(0);
+				}else{
+					$this->_env->getLogger()->log(
+						"Invalid shutdown request recieved from $source",
+						ILogger::WARN
+					);
+				}
+				break;
 			default :
+				$this->_env->getLogger()->log(
+					"$this->_logHead Unknown iternal command $cmd from $source",
+					ILogger::ERR
+				);
 				break;
 		}
 	}

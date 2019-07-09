@@ -11,7 +11,7 @@
 		"modules_to_load_path" : "{ROOT}/site/config/load/rts.php",
 		"request_ttl" : 900,
 		"session_ttl" : 60,
-		"sleep_interval" : 100,
+		"sleep_interval" : 10000,
 		"send_error_to_client" : true,
 		"logs" : {
 			"level" : 2,
@@ -19,7 +19,7 @@
 			"default_path" : "/var/log/wfw/rts"
 		},
 		"max_websockets_by_worker" : 1,
-		"max_workers" : 8,
+		"max_workers" : 4,
 		"spawn_all_workers_at_startup" : true,
 		"max_write_buffer_size" : 49152,
 		"max_read_buffer_size" : 49152,

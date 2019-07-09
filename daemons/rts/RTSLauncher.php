@@ -31,7 +31,6 @@ try{
 	);
 
 	$pids = [];
-	$enabled = 0;
 	foreach($confs->getInstances() as $name){
 		$pid = pcntl_fork();
 		if($pid === 0 ){
@@ -41,7 +40,6 @@ try{
 			if(file_exists($pidFile))
 				posix_kill(file_get_contents($pidFile),PCNTLSignalsHelper::SIGALRM);
 			if($confs->enabled($name)){
-				$enabled++;
 				$server = new RTS(
 					$name,
 					$confs->getSocketPath($name),
@@ -81,13 +79,14 @@ try{
 						PCNTLSignalsHelper::SIGUSR1,
 						PCNTLSignalsHelper::SIGUSR2,
 						PCNTLSignalsHelper::SIGALRM
-					],function($signo)use($server){
-					$server->shutdown("PCNTL signal $signo recieved. Server shutdown gracefully.");
+					],function()use($server){
+					$server->shutdown();
 				});
 
 				$server->start();
 				//If something goes wrong, break the loop for not spawning some out of controls army
 				//of machiavellian childs
+				exit(0);
 			}
 			break;
 		}else if($pid < 0 ){
