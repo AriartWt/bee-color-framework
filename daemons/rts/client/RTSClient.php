@@ -8,7 +8,7 @@
 
 namespace wfw\daemons\rts\client;
 
-use wfw\daemons\multiProcWorker\socket\protocol\DefaultProtocol;
+use wfw\engine\lib\network\socket\protocol\SocketProtocol;
 use wfw\daemons\rts\client\errors\MustBeLogged;
 use wfw\daemons\rts\client\errors\RTSClientFailure;
 use wfw\daemons\rts\server\app\events\IRTSAppEvent;
@@ -64,7 +64,7 @@ class RTSClient implements IRTSClient{
 			new GZCompressor(),
 			new PHPSerializer()
 		);
-		$this->_protocol = $protocol ?? new DefaultProtocol();
+		$this->_protocol = $protocol ?? new SocketProtocol();
 
 	}
 

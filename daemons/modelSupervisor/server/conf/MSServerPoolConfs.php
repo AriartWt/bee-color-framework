@@ -6,7 +6,7 @@ use wfw\daemons\kvstore\server\conf\KVSConfs;
 use wfw\daemons\modelSupervisor\server\IMSServerPoolConf;
 use wfw\engine\core\conf\FileBasedConf;
 use wfw\engine\core\conf\io\adapters\JSONConfIOAdapter;
-use wfw\engine\lib\logger\DefaultLogFormater;
+use wfw\engine\lib\logger\SimpleLogFormater;
 use wfw\engine\lib\logger\FileLogger;
 use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\PHP\objects\StdClassOperator;
@@ -80,7 +80,7 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 		$workingDir = $this->getWorkingDir();
 		if(!is_dir($workingDir)) mkdir($workingDir,0700,true);
 
-		if(!$noLogger) $this->_logger = (new FileLogger(new DefaultLogFormater(),...[
+		if(!$noLogger) $this->_logger = (new FileLogger(new SimpleLogFormater(),...[
 			$this->getLogPath(null,"log"),
 			$this->getLogPath(null,"err"),
 			$this->getLogPath(null,"warn"),
@@ -107,7 +107,7 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 			}catch(\Exception $e){}
 			$this->_instancesConfs[$instanceName] = $tmp;
 			if(!$noLogger)
-			$this->_instanceLoggers[$instanceName] = (new FileLogger(new DefaultLogFormater(),...[
+			$this->_instanceLoggers[$instanceName] = (new FileLogger(new SimpleLogFormater(),...[
 				$this->getLogPath($instanceName,"log"),
 				$this->getLogPath($instanceName,"err"),
 				$this->getLogPath($instanceName,"warn"),

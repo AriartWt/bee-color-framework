@@ -3,7 +3,6 @@
 
 require_once dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR."init.environment.php";
 
-use wfw\daemons\multiProcWorker\socket\protocol\DefaultProtocol;
 use wfw\daemons\rts\server\conf\RTSPoolConfs;
 use wfw\daemons\rts\server\environment\RTSEnvironment;
 use wfw\daemons\rts\server\RTS;
@@ -16,6 +15,8 @@ use wfw\engine\lib\cli\signalHandler\PCNTLSignalsHelper;
 use wfw\engine\lib\data\string\compressor\GZCompressor;
 use wfw\engine\lib\data\string\serializer\LightSerializer;
 use wfw\engine\lib\data\string\serializer\PHPSerializer;
+use wfw\engine\lib\network\socket\protocol\SocketProtocol;
+use wfw\engine\lib\network\socket\protocol\StreamProtocol;
 
 $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
    new ArgvOpt('-pid','Affiche le pid',0,null,true)
@@ -45,7 +46,7 @@ try{
 					$confs->getSocketPath($name),
 					$confs->getHost($name),
 					$confs->getPort($name),
-					new DefaultProtocol(),
+					new StreamProtocol(),
 					new RTSEnvironment(
 						$servWorkingDir,
 						$confs->getUsers($name),
@@ -99,7 +100,7 @@ try{
 	$poolServer = new RTSPool(
 		$confs->getSocketPath(),
 		$confs->getWorkingDir(),
-		new DefaultProtocol(),
+		new SocketProtocol(),
 		$pids,
 		array_combine(
 			$confs->getInstances(),

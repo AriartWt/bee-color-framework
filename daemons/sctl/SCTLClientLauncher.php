@@ -1,6 +1,6 @@
 #!/usr/bin/php -q
 <?php
-use wfw\daemons\multiProcWorker\socket\protocol\DefaultProtocol;
+use wfw\engine\lib\network\socket\protocol\SocketProtocol;
 use wfw\daemons\sctl\conf\SCTLConf;
 use wfw\daemons\sctl\SCTLClient;
 use wfw\engine\lib\cli\argv\ArgvOpt;
@@ -37,7 +37,7 @@ try{
 			null,
 			$argvReader->exists('-path') ? $argvReader->get('-path')[0] : null
 		),
-		new DefaultProtocol()
+		new SocketProtocol()
 	);
 	$args = ($argvReader->exists('-cmd'))
 		? $argvReader->get('-cmd')

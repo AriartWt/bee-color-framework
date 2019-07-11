@@ -127,45 +127,17 @@ final class RTSNetworkPort implements IWebsocketListener{
 	}
 
 	public function start():void{
-		$this->_env->getLogger()->log("$this->_logHead start (pid : ".getmypid().")");
+		$this->_env->getLogger()->log("$this->_logHead Started.");
 		$observer = new WebsocketEventObserver();
 		$observer->addEventListener(IWebsocketEvent::class,$this);
 		$lastTmpChunkSize = 0;
 		$chunks = [];
 		while(true){
 			$start = microtime(true);
-			$changedSocks = [$this->_mainSock];
-			$empty = [];
-			$mainSocketRead = 0;
-			//accept or reject all client that are waiting on $this->_netSock
-			//only if the main worker asks for it
-			do{
-				socket_select($changedSocks,$empty,$empty,0);
-				if(!empty($changedSocks)){
-					try{
-						$decoded = $this->_serializer->unserialize(
-							$this->_mainProtocol->read($this->_mainSock)
-						);
-						if($decoded instanceof InternalCommand){
-							$this->processCommand($decoded,$observer);
-						}else $this->_env->getLogger()->log(
-							"$this->_logHead ".InternalCommand::class." was expected but "
-							.gettype($decoded)." recieved. (ignored)",
-							ILogger::ERR
-						);
-					}catch(\Error | \Exception $e){
-						$this->_env->getLogger()->log(
-							"$this->_logHead Unable to decode root command : $e",
-							ILogger::ERR
-						);
-					}
-				}
-				$mainSocketRead ++;
-			}while(!empty($changedSocks) && $mainSocketRead <= $this->_maxMainSocketRead);
-
-			if(count($this->_netSocks) !== $lastTmpChunkSize){
-				$chunks = $this->splitIntoChunks($this->_netSocks);
-				$lastTmpChunkSize = count($this->_netSocks);
+			$socks = array_merge([$this->_mainSock],$this->_netSocks);
+			if(count($socks) !== $lastTmpChunkSize){
+				$chunks = $this->splitIntoChunks($socks);
+				$lastTmpChunkSize = count($socks);
 			}
 
 			foreach($chunks as $chunk){
@@ -173,8 +145,28 @@ final class RTSNetworkPort implements IWebsocketListener{
 				$empty = null;
 				stream_select($ready,$empty,$empty,(count($chunks) === 1 && count($chunk)<1024) ? null : 0);
 				foreach($ready as $socket){
-					if(isset($this->_netSocks[(string)(int)$socket])) $this->_netSocks[(string)(int)$socket]->recieve();
-					else{
+					if($socket === $this->_mainSock){
+						try{
+							$data = $this->_mainProtocol->read($this->_mainSock);
+							if(!empty($data)){
+								$decoded = $this->_serializer->unserialize($data);
+								if($decoded instanceof InternalCommand){
+									$this->processCommand($decoded,$observer);
+								}else $this->_env->getLogger()->log(
+									"$this->_logHead ".InternalCommand::class." was expected but "
+									.gettype($decoded)." recieved. (ignored)",
+									ILogger::ERR
+								);
+							}
+						}catch(\Error | \Exception $e){
+							$this->_env->getLogger()->log(
+								"$this->_logHead Unable to decode root command : $e",
+								ILogger::ERR
+							);
+						}
+					}else if(isset($this->_netSocks[(string)(int)$socket])) {
+						$this->_netSocks[(string)(int)$socket]->recieve();
+					} else{
 						$this->_env->getLogger()->log(
 							"Unable to find socket ".((int)$socket)." connection object.",
 							ILogger::ERR
@@ -317,7 +309,8 @@ final class RTSNetworkPort implements IWebsocketListener{
 						$sock->close();
 						$this->_env->getLogger()->log("Client ".$sock->getId()." closed.");
 					}
-					$this->_env->getLogger()->log("All clients closed.");
+					$this->_env->getLogger()->log("$this->_logHead All clients closed.");
+					$this->_env->getLogger()->log("$this->_logHead Gracefull shutdown.");
 					exit(0);
 				}else{
 					$this->_env->getLogger()->log(
@@ -422,8 +415,9 @@ final class RTSNetworkPort implements IWebsocketListener{
 		$res = [];
 		$current = [];
 		$i = 1;
-		foreach($sockets as $v){
-			if(!$v->isClosed()) $current[] = $v->getSocket();
+		foreach($sockets as $k=>$v){
+			if(is_resource($v)) $current[] = $v;
+			else if(!$v->isClosed()) $current[] = $v->getSocket();
 			if($i % RTS::MAX_SOCKET_SELECT === 0){
 				$res[] = $current;
 				$current = [];

@@ -1,6 +1,6 @@
 #!/usr/bin/php -q
 <?php
-use wfw\daemons\multiProcWorker\socket\protocol\DefaultProtocol;
+use wfw\engine\lib\network\socket\protocol\SocketProtocol;
 use wfw\daemons\sctl\conf\SCTLConf;
 use wfw\daemons\sctl\SCTLServer;
 use wfw\engine\lib\cli\argv\ArgvOpt;
@@ -8,7 +8,7 @@ use wfw\engine\lib\cli\argv\ArgvOptMap;
 use wfw\engine\lib\cli\argv\ArgvParser;
 use wfw\engine\lib\cli\argv\ArgvReader;
 use wfw\engine\lib\cli\signalHandler\PCNTLSignalsHelper;
-use wfw\engine\lib\logger\DefaultLogFormater;
+use wfw\engine\lib\logger\SimpleLogFormater;
 use wfw\engine\lib\logger\FileLogger;
 
 require_once dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR."init.environment.php";
@@ -45,8 +45,8 @@ try{
 			$argvReader->exists('-path') ? $argvReader->get('-path')[0] : null,
 			...($argvReader->exists('-daemons') ? $argvReader->get('-daemons') : [])
 		),
-		new DefaultProtocol(),
-		(new FileLogger(new DefaultLogFormater(),
+		new SocketProtocol(),
+		(new FileLogger(new SimpleLogFormater(),
 				$conf->getLogFile("log"),
 				$conf->getLogFile("err"),
 				$conf->getLogFile("warn"),

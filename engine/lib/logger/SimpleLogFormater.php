@@ -5,7 +5,7 @@ namespace wfw\engine\lib\logger;
 /**
  * Formateur de log par défaut
  */
-final class DefaultLogFormater implements ILogFormater {
+final class SimpleLogFormater implements ILogFormater {
 	/**
 	 * @param string $message Message à formater
 	 * @param int    $loglevel

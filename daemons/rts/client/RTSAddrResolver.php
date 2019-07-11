@@ -8,7 +8,7 @@
 
 namespace wfw\daemons\rts\client;
 
-use wfw\daemons\multiProcWorker\socket\protocol\DefaultProtocol;
+use wfw\engine\lib\network\socket\protocol\SocketProtocol;
 use wfw\daemons\rts\errors\RTSFailure;
 use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
 
@@ -30,7 +30,7 @@ final class RTSAddrResolver implements IRTSAddrResolver{
 	 */
 	public function __construct(string $msserverAddr,?ISocketProtocol $protocol=null) {
 		$this->_addr = $msserverAddr;
-		$this->_protocol = $protocol ?? new DefaultProtocol();
+		$this->_protocol = $protocol ?? new SocketProtocol();
 	}
 
 	/**

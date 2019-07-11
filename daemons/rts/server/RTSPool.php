@@ -85,6 +85,7 @@ final class RTSPool {
 	}
 
 	public function start():void{
+		$this->_logger->log("[RTSPool] Started (".getmypid().")");
 		while(true){
 			try{
 				$socket = socket_accept($this->_socket);
@@ -166,6 +167,7 @@ final class RTSPool {
 	 * Eteint le serveur
 	 */
 	public function shutdown():void{
+		$this->_logger->log("[RTSPool] Shutdown signal recieved.");
 		$this->closeConnections();
 
 		flock($this->_acquiredLockFile,LOCK_UN);
@@ -174,8 +176,11 @@ final class RTSPool {
 		if(file_exists($this->_workingDir."/rts.pid"))
 			unlink($this->_workingDir."/rts.pid");
 
+		$this->_logger->log("[RTSPool] Sending close commands to all RTS instances...");
 		foreach($this->_pids as $pid){
 			posix_kill($pid,PCNTLSignalsHelper::SIGALRM);
 		}
+		$this->_logger->log("[RTSPool] Close commands sent.");
+		$this->_logger->log("[RTSPool] Gracefull shutdown.");
 	}
 }

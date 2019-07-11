@@ -42,14 +42,16 @@ final class RTSLocalPort {
 	private $_acquiredLockFile;
 	/** @var string $_socketAddr */
 	private $_socketAddr;
-	/** @var array $_socketTimeout */
-	private $_socketTimeout = array("sec"=>10,"usec"=>0);
 	/** @var string $_logHead */
 	private $_logHead;
 	/** @var ISerializer $_serializer */
 	private $_serializer;
 	/** @var string $_rootKey */
 	private $_rootKey;
+	/** @var int $_lastStreamError */
+	private $_lastStreamError;
+	/** @var bool string */
+	private $_lastStreamErrorMessage;
 
 	/**
 	 * RTSLocalPort constructor.
@@ -78,7 +80,7 @@ final class RTSLocalPort {
 		bool $sendErrorToClient = true,
 		string $logHead = "[RTS] [LocalPort]"
 	){
-		$this->_logHead = "$logHead [".getmypid()."]";
+		$this->_logHead = $logHead;
 		$this->_mainProcessSocket = $socket;
 		$this->_protocol = $protocol;
 		$this->_environment = $environment;
@@ -100,27 +102,73 @@ final class RTSLocalPort {
 		$res = !flock($fp,LOCK_NB | LOCK_EX);
 		$this->_acquiredLockFile = $fp;
 
-		$this->_localSocket = socket_create(AF_UNIX,SOCK_STREAM,0);
 		if(file_exists($sockAddr)){
 			unlink($sockAddr);
 		}
-		socket_bind($this->_localSocket,$sockAddr);
-		socket_listen($this->_localSocket);
+		$this->_localSocket = stream_socket_server(
+			"unix://$sockAddr",
+			$this->_lastStreamError,
+			$this->_lastStreamErrorMessage,
+			STREAM_SERVER_BIND | STREAM_SERVER_LISTEN
+		);
 
 		if($res) throw new IllegalInvocation(
 			"A RTS instance is already running for this directory !"
 		);
 	}
 
-	/**
-	 * Handle only one-shot connections.
-	 */
-	public function start(){
+	public function start():void{
+		$this->_logHead = "$this->_logHead [LocalPort] ";
+		$this->_environment->getLogger()->log("$this->_logHead Started (".getmypid().")");
 		while(true){
-			//TODO : read InternalCommands too
-			$socket = socket_accept($this->_localSocket);
-			$this->configureSocket($socket);
-			$this->process($socket);
+			try{
+				$this->run();
+			}catch(\Error | Exception $e){
+				$this->_environment->getLogger()->log(
+					"$this->_logHead Unexpected an error occured : $e",
+					ILogger::ERR
+				);
+			}
+		}
+	}
+
+	private function run():void{
+		$read = [$this->_localSocket,$this->_mainProcessSocket];
+		$empty = [];
+		stream_select($read,$empty,$empty,0, 5000);
+		foreach($read as $socket){
+			if($socket === $this->_localSocket){
+				$socket = stream_socket_accept($this->_localSocket);
+				$this->configureSocket($socket);
+				$this->process($socket);
+			}else{
+				try{
+					$data = $this->_protocol->read($socket);
+					if(!empty($data)){
+						$data = $this->_serializer->unserialize($data);
+						if($data instanceof InternalCommand){
+							if($data->getSource() === InternalCommand::ROOT
+								&& $data->getName() === InternalCommand::SHUTDOWN
+								&& $data->getRootKey() === $this->_rootKey){
+								$this->shutdown();
+							}else $this->_environment->getLogger()->log(
+								"$this->_logHead Invalid command '{$data->getName()}' recieved from "
+								."{$data->getSource()} (ignored)",
+								ILogger::WARN
+							);
+						}else $this->_environment->getLogger()->log(
+							"$this->_logHead Local Port expects an instance of ".InternalCommand::class
+							." but ".gettype($data)." given.",
+							ILogger::ERR
+						);
+					}
+				}catch(\Error | \Exception $e){
+					$this->_environment->getLogger()->log(
+						"$this->_logHead An error occured while trying to process RTS command : $e",
+						ILogger::ERR
+					);
+				}
+			}
 		}
 	}
 
@@ -143,11 +191,11 @@ final class RTSLocalPort {
 		}catch(\Exception | \Error $e){
 			$this->sendError($socket,$e);
 			$this->_environment->getLogger()->log(
-				"Error while trying to execute client request : $e",
+				"$this->_logHead Error while trying to execute client request : $e",
 				ILogger::ERR
 			);
 		}
-		socket_close($socket);
+		stream_socket_shutdown($socket,STREAM_SHUT_RDWR);
 	}
 
 	/**
@@ -252,8 +300,7 @@ final class RTSLocalPort {
 	 * @param resource $socket Configure la socket
 	 */
 	private function configureSocket($socket){
-		socket_set_option($socket,SOL_SOCKET,SO_RCVTIMEO,$this->_socketTimeout);
-		socket_set_option($socket,SOL_SOCKET,SO_SNDTIMEO,$this->_socketTimeout);
+		stream_set_blocking($socket,false);
 	}
 
 	/**
@@ -261,15 +308,17 @@ final class RTSLocalPort {
 	 * @param null|Exception $e
 	 */
 	public function shutdown(?Exception $e=null):void{
+		$this->_environment->getLogger()->log("$this->_logHead Shutdown command received.");
 		flock($this->_acquiredLockFile,LOCK_UN);
 		fclose($this->_acquiredLockFile);
 		unlink($this->_lockFile);
 		if(!is_null($this->_localSocket)){
-			socket_close($this->_localSocket);
+			stream_socket_shutdown($this->_localSocket,STREAM_SHUT_RDWR);
 			if(file_exists($this->_socketAddr)) unlink($this->_socketAddr);
 		}
-		socket_close($this->_mainProcessSocket);
+		stream_socket_shutdown($this->_mainProcessSocket,STREAM_SHUT_RDWR);
 
+		$this->_environment->getLogger()->log("$this->_logHead Gracefull shutdown.");
 		if(!is_null($e)){
 			$this->_environment->getLogger()->log(
 				"$this->_logHead An error caused the local port to shutdown : $e",

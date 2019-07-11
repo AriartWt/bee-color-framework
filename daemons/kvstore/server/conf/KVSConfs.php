@@ -4,7 +4,7 @@ namespace wfw\daemons\kvstore\server\conf;
 use stdClass;
 use wfw\engine\core\conf\FileBasedConf;
 use wfw\engine\core\conf\io\adapters\JSONConfIOAdapter;
-use wfw\engine\lib\logger\DefaultLogFormater;
+use wfw\engine\lib\logger\SimpleLogFormater;
 use wfw\engine\lib\logger\FileLogger;
 use wfw\engine\lib\logger\ILogger;
 use wfw\engine\lib\PHP\objects\StdClassOperator;
@@ -79,7 +79,7 @@ final class KVSConfs {
 		if(!is_dir($workingDir)) mkdir($workingDir,0700,true);
 
 		if(!$noLogger){
-			$this->_logger = (new FileLogger(new DefaultLogFormater(),...[
+			$this->_logger = (new FileLogger(new SimpleLogFormater(),...[
 				$this->getLogPath(null,"log"),
 				$this->getLogPath(null,"err"),
 				$this->getLogPath(null,"warn"),
@@ -103,7 +103,7 @@ final class KVSConfs {
 						}
 					}
 				}catch(\Exception $e){}
-				$this->_instanceLoggers[$containerName] = (new FileLogger(new DefaultLogFormater(),...[
+				$this->_instanceLoggers[$containerName] = (new FileLogger(new SimpleLogFormater(),...[
 					$this->getLogPath($containerName,"log"),
 					$this->getLogPath($containerName,"err"),
 					$this->getLogPath($containerName,"warn"),

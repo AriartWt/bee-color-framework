@@ -5,9 +5,12 @@ namespace wfw\daemons\rts\server\conf;
 use stdClass;
 use wfw\engine\core\conf\FileBasedConf;
 use wfw\engine\core\conf\io\adapters\JSONConfIOAdapter;
-use wfw\engine\lib\logger\DefaultLogFormater;
+use wfw\engine\lib\logger\CombinedLogger;
+use wfw\engine\lib\logger\ConsoleLogFormater;
+use wfw\engine\lib\logger\SimpleLogFormater;
 use wfw\engine\lib\logger\FileLogger;
 use wfw\engine\lib\logger\ILogger;
+use wfw\engine\lib\logger\StandardLogger;
 use wfw\engine\lib\PHP\objects\StdClassOperator;
 use wfw\engine\lib\PHP\types\PHPString;
 
@@ -81,7 +84,7 @@ final class RTSPoolConfs {
 				if(!is_dir($logdir = dirname($this->getLogPath(null,$l))))
 					mkdir($logdir,0700,true);
 			}
-			$this->_logger = (new FileLogger(new DefaultLogFormater(),...[
+			$this->_logger = (new FileLogger(new SimpleLogFormater(),...[
 				$this->getLogPath(null,"log"),
 				$this->getLogPath(null,"err"),
 				$this->getLogPath(null,"warn"),
@@ -91,6 +94,10 @@ final class RTSPoolConfs {
 				FileLogger::DEBUG,
 				$this->isCopyLogModeEnabled(null)
 			)->autoConfByLevel($this->_conf->getInt("logs/level") ?? ILogger::ERR);
+			$this->_logger = new CombinedLogger(
+				new StandardLogger(new ConsoleLogFormater(new SimpleLogFormater())),
+				$this->_logger
+			);
 		}
 
 		//On détermine les configurations de chaque instance à créer
@@ -124,7 +131,7 @@ final class RTSPoolConfs {
 					if(!is_dir($logdir = dirname($this->getLogPath($instanceName,$l))))
 						mkdir($logdir,0700,true);
 				}
-				$this->_instanceLoggers[$instanceName] = (new FileLogger(new DefaultLogFormater(),...[
+				$this->_instanceLoggers[$instanceName] = (new FileLogger(new SimpleLogFormater(),...[
 					$this->getLogPath($instanceName,"log"),
 					$this->getLogPath($instanceName,"err"),
 					$this->getLogPath($instanceName,"warn"),
@@ -135,6 +142,10 @@ final class RTSPoolConfs {
 					$this->isCopyLogModeEnabled($instanceName)
 				)->autoConfByLevel($this->_conf->getInt("instances/$instanceName/logs/level")
 				                   ?? $this->_conf->getInt("logs/level") ?? ILogger::ERR
+				);
+				$this->_instanceLoggers[$instanceName] = new CombinedLogger(
+					new StandardLogger(new ConsoleLogFormater(new SimpleLogFormater())),
+					$this->_instanceLoggers[$instanceName]
 				);
 			}
 		}

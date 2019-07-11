@@ -75,8 +75,6 @@ final class RTS{
 	private $_mainProcessSocket;
 	/** @var array $_workersInfos */
 	private $_workersInfos;
-	/** @var array $_socketTimeout */
-	private $_socketTimeout = array("sec"=>10,"usec"=>0);
 	/** @var RTSNetworkPort $_worker */
 	private $_worker;
 	/** @var int $_sleepInterval */
@@ -176,12 +174,10 @@ final class RTS{
 	}
 
 	public function start():void{
-		$sockets =  [];
-		socket_create_pair(AF_UNIX,SOCK_STREAM,0,$sockets);
+		$sockets =  stream_socket_pair(STREAM_PF_UNIX,STREAM_SOCK_STREAM, 0);
 		$this->_localPortPid = pcntl_fork();
 		if($this->_localPortPid === 0){
 			cli_set_process_title(cli_get_process_title()." Local Port");
-			socket_close($sockets[1]);
 			$localPort = new RTSLocalPort(
 				$this->_socketPath,
 				$this->_environment->getWorkingDir(),
@@ -189,6 +185,7 @@ final class RTS{
 				$this->_protocol,
 				$this->_environment,
 				$this->_serializer,
+				$this->_secretKey,
 				$this->_requestTtl,
 				$this->_sendErrorToClient,
 				$this->_logHead
@@ -196,7 +193,7 @@ final class RTS{
 			$localPort->start();
 			exit(1); //If something goes wrong
 		}else if($this->_localPortPid > 0){
-			socket_close($sockets[0]);
+			$this->_environment->getLogger()->log("$this->_logHead Started (".getmypid().")");
 			$this->_localPort = $sockets[1];
 			$this->workerManagerLoop();
 		}else throw new \Exception("Unable to fork !");
@@ -213,10 +210,8 @@ final class RTS{
 		if(count($this->_workers) > $this->_maxWorkers) throw new MaxWorkerLimitReached(
 			count($this->_workers)." workers already created !"
 		);
-		$sockets = [];
-		socket_create_pair(AF_UNIX,SOCK_STREAM,0,$sockets);
+		$sockets = stream_socket_pair(STREAM_PF_UNIX,STREAM_SOCK_STREAM, 0);
 		$this->_mainProcessSocket = $sockets[0];
-		cli_set_process_title(cli_get_process_title()." Network Port");
 		$this->_worker = new RTSNetworkPort(
 			$this->_host,
 			$this->_port,
@@ -233,13 +228,9 @@ final class RTS{
 		if(is_null($this->_networkPort)) $this->_networkPort = $this->_worker->getNetworkSocket();
 		$pid = pcntl_fork();
 		if($pid === 0){
-			socket_close($sockets[1]);
+			cli_set_process_title(cli_get_process_title()." Network Port");
 			$this->configureSocket($sockets[0]);
 			//cleanup not needed stuff
-			foreach($this->_workers as $pid=>$w){
-				socket_close($w);
-			}
-			if(is_resource($this->_localPort)) socket_close($this->_localPort);
 			$this->_workers = [];
 			$this->_workersInfos = [];
 			$this->_workersBySocketId = [];
@@ -248,7 +239,6 @@ final class RTS{
 			return -1;
 		}else if($pid > 0){
 			$pid = (string) $pid;
-			socket_close($sockets[0]);
 			$this->_workers[$pid] = $sockets[1];
 			$this->_workersBySocketId[(string)(int)$sockets[1]] = $pid;
 			$this->configureSocket($sockets[1]);
@@ -261,57 +251,65 @@ final class RTS{
 	 * @throws MaxWorkerLimitReached
 	 */
 	private function workerManagerLoop():void{
-		if($this->_spawnAllWorkersAtStartup) for($i=0; $i < $this->_maxWorkers; $i++)
+		if($this->_spawnAllWorkersAtStartup) for($i=0; $i < $this->_maxWorkers; $i++){
 			$this->newWorker();
-		else $this->newWorker();
+		} else $this->newWorker();
 		while(true){
-			$start = microtime(true);
-			$master = [$this->_networkPort];
-			$local = [$this->_localPort];
-			$sockets = array_merge(
-				[$this->_localPort,$this->_networkPort],
-				array_values($this->_workers)
-			);
-			$chunks = $this->splitIntoChunks($sockets);
-			//bypass the 1024 socket_select limit
-			foreach($chunks as $chunk){
-				$read = $chunk; $write = []; $except = [];
-				socket_select($read,$write,$except,(count($chunks) === 1 && count($chunk)<1024) ? null : 0);
-				if(count(array_intersect($master,$chunk)) === 1){
-					$this->accept();
-					$read = array_diff($read,$master);
+			try{
+				$this->workerManager();
+			}catch(\Error | \Exception $e){
+				$this->_environment->getLogger()->log("$e",ILogger::ERR);
+			}
+		}
+	}
+
+	private function workerManager():void{
+		$start = microtime(true);
+		$master = [$this->_networkPort];
+		$local = [$this->_localPort];
+		$sockets = array_merge(
+			[$this->_localPort,$this->_networkPort],
+			array_values($this->_workers)
+		);
+		$chunks = $this->splitIntoChunks($sockets);
+		//bypass the 1024 socket_select limit
+		foreach($chunks as $chunk){
+			$read = $chunk; $write = []; $except = [];
+			stream_select($read,$write,$except,(count($chunks) === 1 && count($chunk)<1024) ? null : 0);
+			if(count(array_intersect($master,$chunk)) === 1){
+				$this->accept();
+				$read = array_diff($read,$master);
+			}
+			if(count(array_intersect($read,$local)) === 1){
+				try{
+					$this->dataTransmission(null,true,$this->_serializer->unserialize(
+						$this->read($this->_localPort)
+					));
+					$read = array_diff($read,$local);
+				}catch(\Error | \Exception $e){
+					$this->_environment->getLogger()->log(
+						"An error occured while trying to read on local port : $e",
+						ILogger::ERR
+					);
 				}
-				if(count(array_intersect($read,$local)) === 1){
+			}
+			foreach(array_diff($read,[$local,$master]) as $s){
+				foreach(array_diff($this->_workers,[$s]) as $pid=>$w){
 					try{
-						$this->dataTransmission(null,true,$this->_serializer->unserialize(
-							$this->read($this->_localPort)
-						));
-						$read = array_diff($read,$local);
-					}catch(\Error | \Exception $e){
-						$this->_environment->getLogger()->log(
-							"An error occured while trying to read on local port : $e",
-							ILogger::ERR
-						);
-					}
-				}
-				foreach(array_diff($read,[$local,$master]) as $s){
-					foreach(array_diff($this->_workers,[$s]) as $pid=>$w){
-						try{
-							$this->processWorkerSocket($w,$pid);
-						}catch(SocketFailure $e){
-							//If a worker dropped the connection, or died for somewhat reason,
-							//clean it up.
-							posix_kill($pid,PCNTLSignalsHelper::SIGALRM);
-							socket_close($this->_workers[$pid]);
-							unset($this->_workers[$pid]);
-							unset($this->_workersInfos[$pid]);
-						}
+						$this->processWorkerSocket($w,$pid);
+					}catch(SocketFailure $e){
+						//If a worker dropped the connection, or died for somewhat reason,
+						//clean it up.
+						posix_kill($pid,PCNTLSignalsHelper::SIGALRM);
+						stream_socket_shutdown($this->_workers[$pid],STREAM_SHUT_RDWR);
+						unset($this->_workers[$pid]);
+						unset($this->_workersInfos[$pid]);
 					}
 				}
 			}
-			$execTime = microtime(true) - $start;
-			if($execTime < $this->_sleepInterval) usleep($this->_sleepInterval - $execTime);
 		}
+		$execTime = microtime(true) - $start;
+		if($execTime < $this->_sleepInterval) usleep($this->_sleepInterval - $execTime);
 	}
 
 	/**
@@ -536,8 +534,7 @@ final class RTS{
 	 * @param resource $socket Configure la socket
 	 */
 	private function configureSocket($socket){
-		socket_set_option($socket,SOL_SOCKET,SO_RCVTIMEO,$this->_socketTimeout);
-		socket_set_option($socket,SOL_SOCKET,SO_SNDTIMEO,$this->_socketTimeout);
+		stream_set_blocking($socket,false);
 	}
 
 	/**
@@ -546,29 +543,33 @@ final class RTS{
 	 * @param \Exception|null $e
 	 */
 	public function shutdown(?\Exception $e=null):void{
+		$this->_environment->getLogger()->log("$this->_logHead Shutting down current instance...");
 		flock($this->_acquiredLockFile,LOCK_UN);
 		fclose($this->_acquiredLockFile);
-		unlink($this->_lockFile);
-		$cmd = new InternalCommand(
+		if(file_exists($this->_lockFile)) unlink($this->_lockFile);
+		$cmd = $this->_serializer->serialize(new InternalCommand(
 			InternalCommand::ROOT,
 			InternalCommand::SHUTDOWN,
 			null,
 			null,
 			$this->_secretKey
-		);
+		));
+		$this->_environment->getLogger()->log("$this->_logHead Sending close command to LocalPort...");
 		if(!is_null($this->_localPort)){
-			$this->write($this->_localPort,$this->_serializer->serialize($cmd));
-			socket_close($this->_localPort);
+			try{
+				$this->write($this->_localPort,$cmd);
+				stream_socket_shutdown($this->_localPort,STREAM_SHUT_RDWR);
+			}catch(\Error | \Exception $e){}
 		}
-		if(!is_null($this->_networkPort)){
-			$this->write($this->_networkPort,$this->_serializer->serialize($cmd));
-			socket_close($this->_networkPort);
-		}
+		$this->_environment->getLogger()->log("$this->_logHead Close command sent.");
 
+		$this->_environment->getLogger()->log("$this->_logHead Sending close commands to all NetworkPort workers...");
 		foreach($this->_workersInfos as $pid=>$info){
-			$this->write($this->_workers[$pid],$this->_serializer->serialize($cmd));
+			$this->write($this->_workers[$pid],$cmd);
 		}
+		$this->_environment->getLogger()->log("$this->_logHead Close commands sent.");
 
+		$this->_environment->getLogger()->log("$this->_logHead Gracefull shutdown.");
 		if(!is_null($e)){
 			$this->_environment->getLogger()->log($e,ILogger::ERR);
 			exit(1);

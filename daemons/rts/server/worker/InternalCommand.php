@@ -58,9 +58,9 @@ final class InternalCommand implements \Serializable {
 	}
 
 	/**
-	 * @return string
+	 * @return null|string
 	 */
-	public function getTransmiter(): string {
+	public function getTransmiter(): ?string {
 		return $this->_transmiter;
 	}
 
@@ -72,9 +72,9 @@ final class InternalCommand implements \Serializable {
 	}
 
 	/**
-	 * @return string
+	 * @return null|string
 	 */
-	public function getData(): string {
+	public function getData(): ?string {
 		return $this->_data;
 	}
 
