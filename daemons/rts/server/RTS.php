@@ -276,34 +276,36 @@ final class RTS{
 		foreach($chunks as $chunk){
 			$read = $chunk; $write = []; $except = [];
 			stream_select($read,$write,$except,(count($chunks) === 1 && count($chunk)<1024) ? null : 0);
-			if(count(array_intersect($master,$chunk)) === 1){
-				$this->accept();
-				$read = array_diff($read,$master);
-			}
-			if(count(array_intersect($read,$local)) === 1){
-				try{
-					$this->dataTransmission(null,true,$this->_serializer->unserialize(
-						$this->read($this->_localPort)
-					));
-					$read = array_diff($read,$local);
-				}catch(\Error | \Exception $e){
-					$this->_environment->getLogger()->log(
-						"An error occured while trying to read on local port : $e",
-						ILogger::ERR
-					);
-				}
-			}
-			foreach(array_diff($read,[$local,$master]) as $s){
-				foreach(array_diff($this->_workers,[$s]) as $pid=>$w){
+			foreach($read as $socket){
+				if($socket === $this->_networkPort){
+					$this->accept();
+				}else if($socket === $this->_localPort){
 					try{
-						$this->processWorkerSocket($w,$pid);
-					}catch(SocketFailure $e){
-						//If a worker dropped the connection, or died for somewhat reason,
-						//clean it up.
-						posix_kill($pid,PCNTLSignalsHelper::SIGALRM);
-						stream_socket_shutdown($this->_workers[$pid],STREAM_SHUT_RDWR);
-						unset($this->_workers[$pid]);
-						unset($this->_workersInfos[$pid]);
+						$this->dataTransmission(null,true,$this->_serializer->unserialize(
+							$this->read($this->_localPort)
+						));
+						$read = array_diff($read,$local);
+					}catch(\Error | \Exception $e){
+						$this->_environment->getLogger()->log(
+							"An error occured while trying to read on local port : $e",
+							ILogger::ERR
+						);
+					}
+				}else{
+					foreach($this->_workers as $pid => $w){
+						if($w === $socket){
+							try{
+								$this->processWorkerSocket($w,$pid);
+								break;
+							}catch(SocketFailure $e){
+								//If a worker dropped the connection, or died for somewhat reason,
+								//clean it up.
+								posix_kill($pid,PCNTLSignalsHelper::SIGALRM);
+								stream_socket_shutdown($this->_workers[$pid],STREAM_SHUT_RDWR);
+								unset($this->_workers[$pid]);
+								unset($this->_workersInfos[$pid]);
+							}
+						}
 					}
 				}
 			}
@@ -442,9 +444,13 @@ final class RTS{
 	 * de refuser le nouveau client.
 	 */
 	private function accept():void{
+		$this->_environment->getLogger()->log(
+			"$this->_logHead New incoming connection found. Trying to find a worker to handle it..."
+		);
 		$accepterFound = false;
 		foreach($this->_workersInfos as $pid=>$infos){
 			if(count($infos) < $this->_maxWSockets){
+				$this->_environment->getLogger()->log("$this->_logHead Worker $pid selected.");
 				$this->write($this->_workers[$pid],$this->_serializer->serialize(new InternalCommand(
 					InternalCommand::ROOT,
 					InternalCommand::CMD_ACCEPT,
@@ -468,12 +474,14 @@ final class RTS{
 				}
 				//S'il n'y a pas de limite de clients par worker, ou si le worker en question peut
 				//encore recevoir de nouveau client, on lui demande d'accepter la connexion
-				if($this->_allowedOverflow<0 || $less <= $this->_allowedOverflow*$this->_maxWSockets)
+				if($this->_allowedOverflow<0 || $less <= $this->_allowedOverflow*$this->_maxWSockets){
+					$this->_environment->getLogger()->log("$this->_logHead Worker $pid selected.");
 					$this->write($this->_workers[$pid],$this->_serializer->serialize(new InternalCommand(
 						InternalCommand::ROOT, InternalCommand::CMD_ACCEPT,
 						null, null, $this->_secretKey
 					)));
-				else{
+				}else{
+					$this->_environment->getLogger()->log("$this->_logHead Worker $pid selected to reject the connexion.");
 					$this->write($this->_workers[$pid],$this->_serializer->serialize(new InternalCommand(
 						InternalCommand::ROOT,
 						InternalCommand::CMD_REJECT,

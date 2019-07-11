@@ -96,7 +96,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 		$this->_maxMainSocketRead = 20;
 		$this->_appsManager = $appsManager;
 		$this->_socketIds = [];
-		$this->_logHead = "$logHead [".getmypid()."]";
+		$this->_logHead = $logHead;
 		$this->_mainSock = $mainSocket;
 		if(is_null($netSocket)){
 			$url = "tcp://$host:$port";
@@ -127,6 +127,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 	}
 
 	public function start():void{
+		$this->_logHead = "$this->_logHead [".getmypid()."]";
 		$this->_env->getLogger()->log("$this->_logHead Started.");
 		$observer = new WebsocketEventObserver();
 		$observer->addEventListener(IWebsocketEvent::class,$this);
@@ -166,7 +167,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 						}
 					}else if(isset($this->_netSocks[(string)(int)$socket])) {
 						$this->_netSocks[(string)(int)$socket]->recieve();
-					} else{
+					}else{
 						$this->_env->getLogger()->log(
 							"Unable to find socket ".((int)$socket)." connection object.",
 							ILogger::ERR
@@ -400,9 +401,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 
 		$this->removeFromIpCount($connection->getIp());
 
-		$this->_env->getLogger()->log(
-			"$this->_logHead Client ".$connection->getId()." removed."
-		);
+		$this->_env->getLogger()->log("$this->_logHead Client ".$connection->getId()." removed.");
 	}
 
 	/**
@@ -432,8 +431,12 @@ final class RTSNetworkPort implements IWebsocketListener{
 	 * @param IWebsocketEvent $event Evenement
 	 */
 	public function applyWebsocketEvent(IWebsocketEvent $event): void {
+		$this->_env->getLogger()->log(
+			"New connection event : ".get_class($event)." (client ".$event->getSocketId()." )"
+		);
 		try{
 			if($event instanceof Handshaked){
+				$this->_env->getLogger()->log("$this->_logHead Client ".$event->getSocketId()." handshaked.");
 				$this->_appsManager->dispatch($e = new ClientConnected(
 					$event->getConnectionInfos(),
 					$event->getCreationDate()
@@ -446,6 +449,9 @@ final class RTSNetworkPort implements IWebsocketListener{
 					$this->_rootKey
 				)));
 			}else if($event instanceof Closed){
+				$this->_env->getLogger()->log("$this->_logHead Client ".$event->getSocketId()
+					." connection closed (".$event->getCode()." : ".$event->getMessage().")."
+				);
 				$this->_appsManager->dispatch($e = new ClientDisconnected(
 					$event->getConnectionInfos(),
 					$event->getCreationDate(),
@@ -466,8 +472,8 @@ final class RTSNetworkPort implements IWebsocketListener{
 					)
 				);
 				$this->_env->getLogger()->log(
-					"$this->_logHead An error occured on connection ".$event->getSocketId()
-					." : ".$event->getError(),
+					"$this->_logHead Error occured on client ".$event->getSocketId()." : "
+					.$event->getError(),
 					ILogger::ERR
 				);
 			}else if($event instanceof DataSent){

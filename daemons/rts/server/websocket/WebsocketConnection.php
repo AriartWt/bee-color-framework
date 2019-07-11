@@ -574,7 +574,7 @@ final class WebsocketConnection implements IWebsocketConnection {
 	}
 
 	public function __destruct() {
-		$this->close();
+		if(!$this->isClosed()) $this->close();
 	}
 
 	/**
