@@ -26,7 +26,7 @@ final class InternalCommand implements \Serializable {
 	private $_transmiter;
 	/** @var string $_source */
 	private $_source;
-	/** @var string $_data */
+	/** @var mixed $_data */
 	private $_data;
 	/** @var string $_name */
 	private $_name;
@@ -39,14 +39,14 @@ final class InternalCommand implements \Serializable {
 	 * @param string $source          Source (local : un client port local, root : message du processus principal,
 	 *                                client : message d'un autre client)
 	 * @param string $name            Nom de la commande
-	 * @param string $data            Données associées
+	 * @param mixed  $data            Données associées
 	 * @param string $transmiter      Nom de l'emetteur (seulement local)
 	 * @param string $rootKey         Root key generated at server starts.
 	 */
 	public function __construct(
 		string $source,
 		string $name,
-		?string $data = null,
+		$data = null,
 		?string $transmiter = null,
 		string $rootKey = ''
 	) {
@@ -72,9 +72,9 @@ final class InternalCommand implements \Serializable {
 	}
 
 	/**
-	 * @return null|string
+	 * @return mixed
 	 */
-	public function getData(): ?string {
+	public function getData() {
 		return $this->_data;
 	}
 

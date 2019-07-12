@@ -2,6 +2,8 @@
 
 namespace wfw\daemons\rts\server\app\events;
 
+use wfw\daemons\rts\server\app\IRTSAppMessage;
+
 /**
  * Used to respond to a client. The RTSNetwork will write $data into all recipients socket,
  * ignoring execptions.
@@ -15,20 +17,20 @@ class RTSAppResponseEvent extends RTSAppEvent implements IRTSAppResponseEvent {
 	/**
 	 * RTSResponseEvent constructor.
 	 *
-	 * @param string     $senderId
-	 * @param string     $data
-	 * @param array|null $recipients If null -> all sockets for given apps
-	 * @param array|null $excepts    If set, will exclude from sockets all that are listed below.
+	 * @param string              $senderId
+	 * @param IRTSAppMessage|null $data
+	 * @param array|null          $recipients If null -> all sockets for given apps
+	 * @param array|null          $excepts    If set, will exclude from sockets all that are listed below.
 	 */
 	public function __construct(
 		string $senderId,
-		string $data,
+		?IRTSAppMessage $data = null,
 		?array $recipients = [],
 		array $excepts = []
 	){
 		parent::__construct(
 			$senderId,
-			$data,
+			$data ? json_encode($data) : null,
 			IRTSAppResponseEvent::SCOPE | IRTSAppResponseEvent::DISTRIBUTION,
 			null
 		);

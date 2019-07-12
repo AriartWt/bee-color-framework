@@ -2,17 +2,24 @@
 
 namespace wfw\daemons\rts\server\app;
 
-use wfw\daemons\rts\server\app\events\IRTSAppEvent;
+use wfw\daemons\rts\server\app\events\IRTSAppEventApplyer;
+use wfw\daemons\rts\server\app\events\IRTSAppEventDispatcher;
+use wfw\daemons\rts\server\app\events\IRTSAppEventEmitter;
 use wfw\daemons\rts\server\app\events\IRTSAppEventListener;
 
 /**
  * Application du RTS
  */
-interface IRTSApp extends IRTSAppEventListener{
+interface IRTSApp extends IRTSAppEventEmitter, IRTSAppEventListener, IRTSAppEventDispatcher, IRTSAppMessageApplyer, IRTSAppEventApplyer {
 	/**
 	 * @return string
 	 */
 	public function getId():string;
+
+	/**
+	 * @return int
+	 */
+	public function getCurrentScope():int;
 
 	/**
 	 * Return the app key that will be used on the handshake to check if an app can recieve events.
@@ -22,8 +29,7 @@ interface IRTSApp extends IRTSAppEventListener{
 	public function getKey():string;
 
 	/**
-	 * @param string $data
-	 * @return IRTSAppEvent[]
+	 * @param string $data Data sent through websocket
 	 */
-	public function receiveData(string $data):array;
+	public function receiveData(string $data):void;
 }

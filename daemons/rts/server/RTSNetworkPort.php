@@ -5,10 +5,12 @@ namespace wfw\daemons\rts\server;
 use wfw\daemons\rts\server\app\events\ClientConnected;
 use wfw\daemons\rts\server\app\events\ClientDisconnected;
 use wfw\daemons\rts\server\app\events\IRTSAppEvent;
+use wfw\daemons\rts\server\app\events\IRTSAppEventListener;
 use wfw\daemons\rts\server\app\events\IRTSAppResponseEvent;
 use wfw\daemons\rts\server\app\events\RTSAppError;
 use wfw\daemons\rts\server\app\events\RTSCloseConnectionsEvent;
 use wfw\daemons\rts\server\app\IRTSAppsManager;
+use wfw\daemons\rts\server\app\RTSAppMessage;
 use wfw\daemons\rts\server\environment\IRTSEnvironment;
 use wfw\daemons\rts\server\websocket\events\Accepted;
 use wfw\daemons\rts\server\websocket\events\Closed;
@@ -32,7 +34,7 @@ use wfw\engine\lib\network\socket\protocol\ISocketProtocol;
 /**
  * Network port able to accept/read/write into websockets
  */
-final class RTSNetworkPort implements IWebsocketListener{
+final class RTSNetworkPort implements IWebsocketListener, IRTSAppEventListener {
 	/** @const int $max_client 1024 is the max with select(), we keep space for rejecting socket */
 	protected const MAX_SOCKET_SELECT = 1000;
 	/** @var resource $_mainSock */
@@ -41,7 +43,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 	private $_netSock;
 	/** @var IRTSEnvironment $_env */
 	private $_env;
-	/** @var IWebsocketConnection[] $_netSocks */
+	/** @var IWebsocketConnection[][] $_netSocks */
 	private $_netSocks;
 	/** @var ISocketProtocol $_mainProtocol */
 	private $_mainProtocol;
@@ -131,6 +133,9 @@ final class RTSNetworkPort implements IWebsocketListener{
 		$this->_env->getLogger()->log("$this->_logHead Started.");
 		$observer = new WebsocketEventObserver();
 		$observer->addEventListener(IWebsocketEvent::class,$this);
+		foreach($this->_appsManager->getAll() as $app){
+			$app->subscribeToAppEmitter(IRTSAppEvent::class, $this);
+		}
 		$lastTmpChunkSize = 0;
 		$chunks = [];
 		while(true){
@@ -285,7 +290,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 					}
 					foreach($responses as $response){
 						foreach($this->findClients($response) as $client) $client->send(
-							$response->getData(), IWebsocketProtocol::TEXT,true
+							$response->getData(), IWebsocketProtocol::TEXT,false
 						);
 					}
 					foreach($closes as $close){
@@ -337,8 +342,11 @@ final class RTSNetworkPort implements IWebsocketListener{
 		$recepts = array_flip($event->getRecipients() ?? []);
 		$excepts = array_flip($event->getExcepts());
 		$clients = [];
-		if(is_null($event->getRecipients())) $clients = $this->_netSocks;
-		else foreach($this->_netSocks as $sock){
+		if(is_null($event->getRecipients())){
+			foreach($this->_netSocks as $sock){
+				if(!isset($excepts[$sock->getId()])) $clients[$sock->getId()] = $sock;
+			}
+		} else foreach($this->_netSocks as $sock){
 			if(isset($recepts[$sock->getId()]) && !isset($excepts[$sock->getId()]))
 				$clients[$sock->getId()] = $sock;
 		}
@@ -431,9 +439,6 @@ final class RTSNetworkPort implements IWebsocketListener{
 	 * @param IWebsocketEvent $event Evenement
 	 */
 	public function applyWebsocketEvent(IWebsocketEvent $event): void {
-		$this->_env->getLogger()->log(
-			"New connection event : ".get_class($event)." (client ".$event->getSocketId()." )"
-		);
 		try{
 			if($event instanceof Handshaked){
 				$this->_env->getLogger()->log("$this->_logHead Client ".$event->getSocketId()." handshaked.");
@@ -444,7 +449,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 				$this->_mainProtocol->write($this->_mainSock,$this->_serializer->serialize(new InternalCommand(
 					InternalCommand::WORKER,
 					InternalCommand::DATA_TRANSMISSION,
-					$this->_serializer->serialize([$e]),
+					[$e],
 					$event->getConnectionInfos()->getId(),
 					$this->_rootKey
 				)));
@@ -461,7 +466,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 				$this->_mainProtocol->write($this->_mainSock,$this->_serializer->serialize(new InternalCommand(
 					InternalCommand::WORKER,
 					InternalCommand::DATA_TRANSMISSION,
-					$this->_serializer->serialize([$e]),
+					[$e],
 					$event->getConnectionInfos()->getId(),
 					$this->_rootKey
 				)));
@@ -481,44 +486,24 @@ final class RTSNetworkPort implements IWebsocketListener{
 					"$this->_logHead Data successfully sent to client ".$event->getSocketId()
 				);
 			}else if($event instanceof DataRecieved){
+				/** @var IWebsocketConnection $connection */
 				$connection = $this->_netSocks[$this->_socketIds[$event->getSocketId()]] ?? null;
 				if($connection){
 					$this->_env->getLogger()->log(
 						"$this->_logHead Data recieved from ".$connection->getId()." (app : "
 						.$connection->getApp().")"
 					);
-					$events = $this->filterResponseEvents(...$this->_appsManager->dispatchData(
-						$connection->getApp(),
-						$event->getRecievedData()
-					));
-					$localEvents = [];
-					$mustBeSentEvents = [];
-					foreach($events as $e){
-						if($e->distributionMode(IRTSAppEvent::SCOPE)){
-							$localEvents[] = $e;
-							if($e instanceof IRTSAppResponseEvent) foreach($this->findClients($e) as $client){
-								if($e instanceof RTSCloseConnectionsEvent) $client->close(
-									IWebsocketProtocol::STATUS_NORMAL_CLOSE
-								);
-								else $client->send(
-									$e->getData(),IWebsocketProtocol::TEXT,true
-								);
-							}
-						}
-						if($e->distributionMode(IRTSAppEvent::CENTRALIZATION)
-							|| $e->distributionMode(IRTSAppEvent::DISTRIBUTION)){
-							if(!($e instanceof IRTSAppResponseEvent)
-								|| count($this->findClients($e)) < count($e->getRecipients())){
-								$mustBeSentEvents[] = $e;//do not send events if all clients are in the current worker
-							}
-						}
+					try{
+						$this->_appsManager->dispatchData(
+							$connection->getApp(),
+							$event->getRecievedData()
+						);
+					}catch(\Error | \Exception $e){
+						$connection->send(json_encode(new RTSAppMessage("error",[
+							"message" => $e->getMessage(),
+							"error" => "$e"
+						])), IWebsocketProtocol::TEXT, false);
 					}
-					if(!empty($localEvents)) $this->_appsManager->dispatch(...$localEvents);
-					$this->_mainProtocol->write($this->_mainSock,$this->_serializer->serialize(new InternalCommand(
-						InternalCommand::WORKER,
-						InternalCommand::DATA_TRANSMISSION,
-						$this->_serializer->serialize($mustBeSentEvents)
-					)));
 				}else $this->_env->getLogger()->log(
 					"Unable to find connection ".$event->getSocketId(),
 					ILogger::ERR
@@ -560,7 +545,7 @@ final class RTSNetworkPort implements IWebsocketListener{
 							$this->_netSocks[$this->_socketIds[$clientId]]->send(
 								$e->getData(),
 								IWebsocketProtocol::TEXT,
-								true
+								false
 							);
 						} catch (\Error | \Exception $e) {
 							$this->_env->getLogger()->log(
@@ -573,5 +558,44 @@ final class RTSNetworkPort implements IWebsocketListener{
 			}
 		}
 		return array_values(array_diff_key($events,$keysToRemove));
+	}
+
+	/**
+	 * @param IRTSAppEvent[] $events
+	 */
+	public function applyRTSEvents(IRTSAppEvent ...$events) {
+		$events = $this->filterResponseEvents(...$events);
+		$localEvents = [];
+		$mustBeSentEvents = [];
+		foreach($events as $e){
+			if($e->distributionMode(IRTSAppEvent::SCOPE)){
+				$localEvents[] = $e;
+				if($e instanceof IRTSAppResponseEvent) foreach($this->findClients($e) as $client){
+					if($e instanceof RTSCloseConnectionsEvent) $client->close(
+						IWebsocketProtocol::STATUS_NORMAL_CLOSE
+					);
+					else $client->send(
+						$e->getData(),IWebsocketProtocol::TEXT,false
+					);
+				}
+			}
+			if($e->distributionMode(IRTSAppEvent::CENTRALIZATION)
+				|| $e->distributionMode(IRTSAppEvent::DISTRIBUTION)){
+				if(!($e instanceof IRTSAppResponseEvent)
+					|| count($this->findClients($e)) < count($e->getRecipients() ?? [])){
+					$mustBeSentEvents[] = $e;//do not send events if all clients are in the current worker
+				}
+			}
+		}
+		if(!empty($localEvents)) $this->_appsManager->dispatch(...$localEvents);
+		if(count($mustBeSentEvents) > 0) $this->_mainProtocol->write(
+			$this->_mainSock,
+			$this->_serializer->serialize(new InternalCommand(
+					InternalCommand::WORKER,
+					InternalCommand::DATA_TRANSMISSION,
+					$mustBeSentEvents
+				)
+			)
+		);
 	}
 }

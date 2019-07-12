@@ -31,7 +31,7 @@ abstract class RTSAppEvent implements IRTSAppEvent {
 	 */
 	public function __construct(
 		string $senderId,
-		string $data,
+		?string $data = null,
 		int $distributionMode = self::CENTRALIZATION,
 		?array $apps = ["*"]
 	) {
@@ -44,9 +44,9 @@ abstract class RTSAppEvent implements IRTSAppEvent {
 	}
 
 	/**
-	 * @return string Event data
+	 * @return string|null Event data
 	 */
-	public function getData(): string {
+	public function getData(): ?string {
 		return $this->_data;
 	}
 

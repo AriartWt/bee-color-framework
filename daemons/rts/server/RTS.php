@@ -11,6 +11,7 @@ namespace wfw\daemons\rts\server;
 use wfw\daemons\rts\server\app\events\ClientConnected;
 use wfw\daemons\rts\server\app\events\ClientDisconnected;
 use wfw\daemons\rts\server\app\events\IRTSAppEvent;
+use wfw\daemons\rts\server\app\events\IRTSAppEventListener;
 use wfw\daemons\rts\server\app\events\IRTSAppResponseEvent;
 use wfw\daemons\rts\server\app\events\RTSAppEventObserver;
 use wfw\daemons\rts\server\app\events\RTSCloseConnectionsEvent;
@@ -29,7 +30,7 @@ use wfw\engine\lib\PHP\types\UUID;
 /**
  * RealTimeServer
  */
-final class RTS{
+final class RTS implements IRTSAppEventListener {
 	public const MAX_SOCKET_SELECT = 1000;
 	/** @var resource $_localPort */
 	private $_localPort;
@@ -218,7 +219,10 @@ final class RTS{
 			$this->_mainProcessSocket,
 			$this->_environment,
 			$this->_protocol,
-			$this->_appsManager,
+			new RTSAppsManager(
+				new RTSAppEventObserver(),
+				$this->_environment->getModules()
+			),
 			$this->_serializer,
 			$this->_secretKey,
 			$this->_networkPort,
@@ -265,8 +269,6 @@ final class RTS{
 
 	private function workerManager():void{
 		$start = microtime(true);
-		$master = [$this->_networkPort];
-		$local = [$this->_localPort];
 		$sockets = array_merge(
 			[$this->_localPort,$this->_networkPort],
 			array_values($this->_workers)
@@ -284,7 +286,6 @@ final class RTS{
 						$this->dataTransmission(null,true,$this->_serializer->unserialize(
 							$this->read($this->_localPort)
 						));
-						$read = array_diff($read,$local);
 					}catch(\Error | \Exception $e){
 						$this->_environment->getLogger()->log(
 							"An error occured while trying to read on local port : $e",
@@ -328,7 +329,7 @@ final class RTS{
 							$this->dataTransmission(
 								$pid,
 								$decoded->getSource() === InternalCommand::LOCAL,
-								...$decoded->getData()
+								...$decoded->getData() ?? []
 							);
 						}else $this->_environment->getLogger()->log(
 							"$this->_logHead Unsupported command "
@@ -357,10 +358,10 @@ final class RTS{
 
 	/**
 	 * @param string         $pid
-	 * @param bool           $local
+	 * @param bool           $local If true, dataTransmission comes from LocalPort, so some events are disabled.
 	 * @param IRTSAppEvent[] $events
 	 */
-	private function dataTransmission(?string $pid,bool $local =false, IRTSAppEvent ...$events):void{
+	private function dataTransmission(?string $pid,bool $local = false, IRTSAppEvent ...$events):void{
 		$selfApply = [];
 		$distribued = [];
 		$workersToSend = [];
@@ -393,15 +394,15 @@ final class RTS{
 			}
 		}
 		if(!empty($selfApply)) $this->_appsManager->dispatch(...$selfApply);
-		foreach($workersToSend as $wpid=>$events) if($wpid !== $pid){
+		if(count($events) > 0) foreach($workersToSend as $wpid=>$events) if($wpid !== $pid){
 			$this->write($this->_workers[$wpid],$this->_serializer->serialize(new InternalCommand(
-				InternalCommand::ROOT,
-				InternalCommand::DATA_TRANSMISSION,
-				$this->_serializer->serialize($events),
-				null,
-				$this->_secretKey
-			)));
-		}
+					InternalCommand::ROOT,
+					InternalCommand::DATA_TRANSMISSION,
+					$events,
+					null,
+					$this->_secretKey
+				)));
+			}
 	}
 
 	/**
@@ -418,7 +419,7 @@ final class RTS{
 			$this->_clientsByApp[$event->getConnection()->getApp()] = [];
 		$this->_clientsByApp[$event->getConnection()->getApp()][$cid] = true;
 		$this->_environment->getLogger()->log("$this->_logHead New client connected : $cid");
-		$this->dataTransmission($pid,$event);
+		//$this->dataTransmission($pid,false,$event);
 	}
 
 	/**
@@ -436,7 +437,7 @@ final class RTS{
 		if(isset($this->_clientsByApp[$event->getConnection()->getApp()][$cid]))
 			unset($this->_clientsByApp[$event->getConnection()->getApp()][$cid]);
 		$this->_environment->getLogger()->log("$this->_logHead Client disconnected : $cid");
-		$this->dataTransmission($pid,$event);
+		//$this->dataTransmission($pid,false,$event);
 	}
 
 	/**
@@ -582,5 +583,12 @@ final class RTS{
 			$this->_environment->getLogger()->log($e,ILogger::ERR);
 			exit(1);
 		}else exit(0);
+	}
+
+	/**
+	 * @param IRTSAppEvent[] $events
+	 */
+	public function applyRTSEvents(IRTSAppEvent ...$events) {
+		$this->dataTransmission(null,false,...$events);
 	}
 }

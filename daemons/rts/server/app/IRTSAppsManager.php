@@ -25,9 +25,8 @@ interface IRTSAppsManager extends IRTSAppEventDispatcher {
 	 * @param string|null $appKey Dispatch data for all apps that listen for appKey. If null, dispatch to all
 	 *                            listeners
 	 * @param string      $data   Data to dispatch
-	 * @return IRTSAppEvent[] Events arrays produced by apps while receiving data
 	 */
-	public function dispatchData(?string $appKey, string $data):array;
+	public function dispatchData(?string $appKey, string $data):void;
 
 	/**
 	 * @return string[] all apps name that are currently managed

@@ -54,15 +54,12 @@ final class RTSAppsManager implements IRTSAppsManager {
 	/**
 	 * @param string $appKey Dispatch data for all apps that listen for appKey
 	 * @param string $data   Data to dispatch
-	 * @return IRTSAppEvent[]
 	 */
-	public function dispatchData(?string $appKey, string $data): array {
-		$events = [];
+	public function dispatchData(?string $appKey, string $data): void {
 		if(is_null($appKey)) foreach($this->_apps as $k=>$apps)
-			foreach($apps as $app) $events[] = $app->receiveData($data);
+			foreach($apps as $app) $app->receiveData($data);
 		else if(isset($this->_apps[$appKey])) foreach($this->_apps[$appKey] as $app)
-			$events[] = $app->receiveData($data);
-		return array_merge(...$events);
+			$app->receiveData($data);
 	}
 
 	/**
@@ -78,7 +75,7 @@ final class RTSAppsManager implements IRTSAppsManager {
 	 * @return IRTSApp[]
 	 */
 	public function getAll(): array {
-		return array_merge(...array_values($this->_apps));
+		return !empty($this->_apps) ? array_merge(...array_values($this->_apps)) : [];
 	}
 
 	/**

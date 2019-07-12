@@ -78,6 +78,6 @@ final class RTSAppEventObserver implements IRTSAppEventObserver {
 		}
 		foreach($eventsByApps as $app => $es) foreach($this->_listeners[$app] as $l)
 			$l->applyRTSEvents(...$es);
-		foreach($this->_listeners['*'] as $l) $l->applyRTSEvents($events);
+		foreach($this->_listeners['*'] ?? [] as $l) $l->applyRTSEvents($events);
 	}
 }

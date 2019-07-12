@@ -125,7 +125,7 @@ final class WebsocketConnection implements IWebsocketConnection {
 					$res[$domain] = true;
 				}
 			}
-			return $origins;
+			return array_flip($origins);
 		})(...$allowedOrigins);
 		$this->_allowedApplications = (function(string ...$apps){
 			return array_flip($apps);
@@ -159,13 +159,11 @@ final class WebsocketConnection implements IWebsocketConnection {
 	 */
 	private function checkOrigin(string $domain): bool {
 		if(empty($this->_allowedOrigins)) return true;
-
 		$domain = str_replace('http://', '', $domain);
 		$domain = str_replace('https://', '', $domain);
 		$domain = str_replace('www.', '', $domain);
 		$domain = str_replace('/', '', $domain);
-
-		return isset($this->allowedOrigins[$domain]);
+		return isset($this->_allowedOrigins[$domain]);
 	}
 
 	/**
@@ -200,6 +198,12 @@ final class WebsocketConnection implements IWebsocketConnection {
 		try{
 			$data = $this->read();
 		}catch(\Error | \Exception $e){
+			try{
+				if($e instanceof WebsocketIOFailure)
+					$this->close(IWebsocketProtocol::STATUS_ABNORMAL_CLOSING);
+			}catch(\Error | \Exception $e){
+				$this->_closed = true;
+			}
 			$this->_dispatcher->dispatch(new ErrorOcurred($this->_id,$e));
 			return;
 		}
@@ -226,13 +230,12 @@ final class WebsocketConnection implements IWebsocketConnection {
 
 		// check for valid application:
 		$path = $matches[1];
-		$appKey = strlen($path) > 1 ? substr($path,1) : '';
 
-		if(!$this->checkApp($appKey)){
+		if(!$this->checkApp($path)){
 			$this->sendHttpResponse(404, '404 application not found');
 			return;
 		}
-		$this->_app = empty($appKey) ? '*' : $appKey;
+		$this->_app = $path;
 
 		// generate headers array:
 		$headers = [];
@@ -334,6 +337,12 @@ final class WebsocketConnection implements IWebsocketConnection {
 		try{
 			$data = $this->read();
 		}catch(\Error | \Exception $e){
+			try{
+				if($e instanceof WebsocketIOFailure)
+					$this->close(IWebsocketProtocol::STATUS_ABNORMAL_CLOSING);
+			}catch(\Error | \Exception $e){
+				$this->_closed = true;
+			}
 			$this->_dispatcher->dispatch(new ErrorOcurred($this->_id,$e));
 			return;
 		}
@@ -529,7 +538,9 @@ final class WebsocketConnection implements IWebsocketConnection {
 			default :
 				$payload .= $message = 'Unknown error';
 		}
-		$this->send($payload, 'close', false);
+		if(IWebsocketProtocol::STATUS_ABNORMAL_CLOSING !== $statusCode)
+			$this->send($payload, 'close', false);
+
 		stream_socket_shutdown($this->_socket, STREAM_SHUT_RDWR);
 		$this->_closed = true;
 
@@ -620,6 +631,7 @@ final class WebsocketConnection implements IWebsocketConnection {
 	 */
 	public function unserialize($serialized) {
 		$this->_unserialized = true;
+		$this->_closed = true;
 		list(
 			$this->_id,
 			$this->_app,

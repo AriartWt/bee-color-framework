@@ -11,9 +11,9 @@ interface IRTSAppEvent{
 	public const CENTRALIZATION = 4; /* passed to the ROOT RTS instance */
 
 	/**
-	 * @return string Event data
+	 * @return string|null Event data
 	 */
-	public function getData():string;
+	public function getData():?string;
 
 	/**
 	 * @return string[] All apps that can recieve the event. If null, event can be dispatched in
