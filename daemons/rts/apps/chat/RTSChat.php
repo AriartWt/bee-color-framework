@@ -15,11 +15,10 @@ class RTSChat extends RTSApp {
 	/**
 	 * RTSChat constructor.
 	 *
-	 * @param int $currentScope
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct(int $currentScope) {
-		parent::__construct(new RTSAppEventEmitter(), $currentScope,"/chat");
+	public function __construct() {
+		parent::__construct(new RTSAppEventEmitter(), "/chat");
 		$this->_userManagement = new RTSAppEventSubscriber();
 		$this->subscribeToAppEvents($this->_userManagement);
 	}

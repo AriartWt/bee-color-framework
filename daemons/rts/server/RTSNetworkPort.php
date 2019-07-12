@@ -300,6 +300,7 @@ final class RTSNetworkPort implements IWebsocketListener, IRTSAppEventListener {
 					}
 					$this->_appsManager->dispatch(...$dispatches);
 				}catch(\Error | \Exception $e){
+					var_dump([$decoded]);
 					$this->_env->getLogger()->log(
 						"An error occured while trying to dispatch $source command events : $e",
 						ILogger::ERR

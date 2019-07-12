@@ -25,25 +25,25 @@ abstract class RTSApp implements IRTSApp{
 	private $_emitter;
 	/** @var string $_appName */
 	private $_appName;
-	/** @var int $_currentScope */
-	private $_currentScope;
+	/** @var bool $_centralized */
+	private $_centralized;
 
 	/**
 	 * RTSApp constructor.
 	 *
 	 * @param RTSAppEventEmitter $emitter
 	 * @param string             $appName
-	 * @param int                $currentScope
+	 * @param bool               $centralized
 	 */
 	public function __construct(
 		RTSAppEventEmitter $emitter,
-		int $currentScope,
-		string $appName = '*'
+		string $appName = '*',
+		bool $centralized = true
 	){
-		$this->_currentScope = $currentScope;
 		$this->_appName = $appName;
 		$this->_emitter = $emitter;
 		$this->_messageListeners = [];
+		$this->_centralized = $centralized;
 		$this->_id = (string) new UUID(UUID::V4);
 	}
 
@@ -58,10 +58,10 @@ abstract class RTSApp implements IRTSApp{
 	}
 
 	/**
-	 * @return int
+	 * @return bool
 	 */
-	public function getCurrentScope(): int {
-		return $this->_currentScope;
+	public function isCentralized(): bool {
+		return $this->_centralized;
 	}
 
 	/**

@@ -14,22 +14,27 @@ final class RTSAppsManager implements IRTSAppsManager {
 	private $_apps;
 	/** @var IRTSAppEventDispatcher $_observer */
 	private $_observer;
+	/** @var bool $_inCentral */
+	private $_inCentral;
 
 	/**
 	 * RTSAppsManager constructor.
 	 *
 	 * @param IRTSAppEventObserver $observer
 	 * @param array                $appsToCreate
+	 * @param bool                 $inCentral
 	 * @param IRTSApp[]            $apps
 	 * @throws \InvalidArgumentException
 	 */
 	public function __construct(
 		IRTSAppEventObserver $observer,
 		array $appsToCreate = [],
+		bool $inCentral = false,
 		IRTSApp ...$apps
 	){
 		$this->_apps = [];
 		$createdApps = [];
+		$this->_inCentral = $inCentral;
 		$this->_observer = $observer;
 		foreach($appsToCreate as $appClass => $params){
 			if(!is_a($appClass, IRTSApp::class, true))
@@ -47,7 +52,9 @@ final class RTSAppsManager implements IRTSAppsManager {
 		foreach($apps as $app){
 			if(!isset($this->_apps[$app->getKey()])) $this->_apps[$app->getKey()] = [];
 			$this->_apps[$app->getKey()][$app->getId()] = $app;
-			$this->_observer->addListeners($app->getKey(),$app);
+			if($this->_inCentral === $app->isCentralized()){
+				$this->_observer->addListeners($app->getKey(),$app);
+			}
 		}
 	}
 

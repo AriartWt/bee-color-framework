@@ -152,8 +152,12 @@ final class RTS implements IRTSAppEventListener {
 		$this->_secretKey = (string) new UUID(UUID::V4);
 		$this->_appsManager = new RTSAppsManager(
 			new RTSAppEventObserver(),
-			$this->_environment->getModules()
+			$this->_environment->getModules(),
+			true
 		);
+		foreach($this->_appsManager->getAll() as $app){
+			$app->subscribeToAppEmitter(IRTSAppEvent::class,$this);
+		}
 
 		//On commence par vérifier l'existence du fichier lock
 		//Un seul RTS est autorisé par repertoir de travail.
@@ -394,7 +398,7 @@ final class RTS implements IRTSAppEventListener {
 			}
 		}
 		if(!empty($selfApply)) $this->_appsManager->dispatch(...$selfApply);
-		if(count($events) > 0) foreach($workersToSend as $wpid=>$events) if($wpid !== $pid){
+		if(count($events) > 0) foreach($workersToSend as $wpid=>$socket) if($wpid !== $pid){
 			$this->write($this->_workers[$wpid],$this->_serializer->serialize(new InternalCommand(
 					InternalCommand::ROOT,
 					InternalCommand::DATA_TRANSMISSION,
@@ -419,7 +423,6 @@ final class RTS implements IRTSAppEventListener {
 			$this->_clientsByApp[$event->getConnection()->getApp()] = [];
 		$this->_clientsByApp[$event->getConnection()->getApp()][$cid] = true;
 		$this->_environment->getLogger()->log("$this->_logHead New client connected : $cid");
-		//$this->dataTransmission($pid,false,$event);
 	}
 
 	/**
@@ -437,7 +440,6 @@ final class RTS implements IRTSAppEventListener {
 		if(isset($this->_clientsByApp[$event->getConnection()->getApp()][$cid]))
 			unset($this->_clientsByApp[$event->getConnection()->getApp()][$cid]);
 		$this->_environment->getLogger()->log("$this->_logHead Client disconnected : $cid");
-		//$this->dataTransmission($pid,false,$event);
 	}
 
 	/**

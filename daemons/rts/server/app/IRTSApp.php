@@ -17,9 +17,9 @@ interface IRTSApp extends IRTSAppEventEmitter, IRTSAppEventListener, IRTSAppEven
 	public function getId():string;
 
 	/**
-	 * @return int
+	 * @return bool
 	 */
-	public function getCurrentScope():int;
+	public function isCentralized():bool;
 
 	/**
 	 * Return the app key that will be used on the handshake to check if an app can recieve events.
