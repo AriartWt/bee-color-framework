@@ -24,7 +24,7 @@ final class ClientConnected extends RTSAppEvent {
 			'',
 			null,
 			IRTSAppEvent::SCOPE | IRTSAppEvent::CENTRALIZATION | IRTSAppEvent::DISTRIBUTION,
-			null
+			[$connection->getApp()]
 		);
 		$this->_date = $date;
 		$this->_connection = $connection;

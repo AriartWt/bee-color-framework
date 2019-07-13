@@ -30,7 +30,7 @@ final class ClientDisconnected extends RTSAppEvent {
 			'',
 			null,
 			IRTSAppEvent::SCOPE | IRTSAppEvent::CENTRALIZATION | IRTSAppEvent::DISTRIBUTION,
-			null
+			[$connection->getApp()]
 		);
 		$this->_connection = $connection;
 		$this->_date = $date;

@@ -214,6 +214,7 @@ final class RTSNetworkPort implements IWebsocketListener, IRTSAppEventListener {
 					return;
 				}
 				$socket = ($ressource = stream_socket_accept($this->_netSock));
+				$this->configureSocket($socket);
 				if(!is_resource($socket)){
 					$this->_env->getLogger()->log(
 						"Unable to execute command $cmd on accepted socket : stream_socket_accept failed.",
@@ -525,6 +526,10 @@ final class RTSNetworkPort implements IWebsocketListener, IRTSAppEventListener {
 				ILogger::ERR
 			);
 		}
+	}
+
+	private function configureSocket($socket){
+		stream_set_blocking($socket,false);
 	}
 
 	/**

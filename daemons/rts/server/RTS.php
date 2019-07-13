@@ -454,7 +454,7 @@ final class RTS implements IRTSAppEventListener {
 		foreach($this->_workersInfos as $pid=>$infos){
 			if(count($infos) < $this->_maxWSockets){
 				$this->_environment->getLogger()->log("$this->_logHead Worker $pid selected.");
-				$this->write($this->_workers[$pid],$data = $this->_serializer->serialize(new InternalCommand(
+				$this->write($this->_workers[$pid],$this->_serializer->serialize(new InternalCommand(
 					InternalCommand::ROOT,
 					InternalCommand::CMD_ACCEPT,
 					null, null, $this->_secretKey
@@ -464,7 +464,14 @@ final class RTS implements IRTSAppEventListener {
 			}
 		}
 		if(!$accepterFound){
+			$this->_environment->getLogger()->log(
+				"No worker found to accept connection. Creating a new worker..."
+			);
 			try{ $this->newWorker(); } catch (MaxWorkerLimitReached $e){
+				$this->_environment->getLogger()->log(
+					"Max worker limit reached. Checking if any overflow is allowed...",
+					ILogger::WARN
+				);
 				$less=null; $pid=null;
 				foreach($this->_workersInfos as $k=>$v){
 					if(is_null($less)){
