@@ -100,7 +100,7 @@ final class RTSNetworkPort implements IWebsocketListener, IRTSAppEventListener {
 		$this->_socketIds = [];
 		$this->_logHead = $logHead;
 		$this->_mainSock = $mainSocket;
-		if(is_null($netSocket)){
+		if(!is_resource($netSocket)){
 			$url = "tcp://$host:$port";
 			$this->_netSock = stream_socket_server(
 				$url,
@@ -112,7 +112,7 @@ final class RTSNetworkPort implements IWebsocketListener, IRTSAppEventListener {
 			if ($this->_netSock === false) throw new \RuntimeException(
 				"($errno) Unable to create the main socket : $err"
 			);
-		}
+		}else $this->_netSock = $netSocket;
 
 		$this->_env = $env;
 		$this->_netSocks = [];

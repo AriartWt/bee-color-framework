@@ -83,7 +83,7 @@ abstract class RTSApp implements IRTSApp{
 			$d = json_decode($data,true);
 			if(json_last_error() === JSON_ERROR_NONE){
 				if(isset($d["event"])){
-					if($this->_messageListeners[$d["event"]]){
+					if(isset($this->_messageListeners[$d["event"]])){
 						foreach($this->_messageListeners[$d["event"]] as $callable){
 							$callable($this,$d["data"]??null);
 						}

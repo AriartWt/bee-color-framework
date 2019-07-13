@@ -21,7 +21,7 @@ class RTSAppEventSubscriber implements IRTSAppEventSubscriber {
 	}
 
 	public function clientConnected(RTSChat $app, ClientConnected $event){
-		fwrite(STDOUT, "CLIENT CONNECTED TO CHAT : ".$event->getConnection()->getId().PHP_EOL);
+		fwrite(STDOUT, "CLIENT CONNECTED TO CHAT : ".$event->getConnection()->getId()." ".getmypid().PHP_EOL);
 		$app->dispatch(new RTSAppResponseEvent($event->getConnection()->getId(),new RTSAppMessage(
 			"Connected",$event->getConnection()->getId()
 		),null));

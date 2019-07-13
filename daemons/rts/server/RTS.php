@@ -454,7 +454,7 @@ final class RTS implements IRTSAppEventListener {
 		foreach($this->_workersInfos as $pid=>$infos){
 			if(count($infos) < $this->_maxWSockets){
 				$this->_environment->getLogger()->log("$this->_logHead Worker $pid selected.");
-				$this->write($this->_workers[$pid],$this->_serializer->serialize(new InternalCommand(
+				$this->write($this->_workers[$pid],$data = $this->_serializer->serialize(new InternalCommand(
 					InternalCommand::ROOT,
 					InternalCommand::CMD_ACCEPT,
 					null, null, $this->_secretKey
