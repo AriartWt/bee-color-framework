@@ -1,40 +1,39 @@
 <?php
+	define("START_TIME",microtime(true));
 
+	define('DS',DIRECTORY_SEPARATOR);
+	define('WEBROOT', dirname(__FILE__)); /**< path to engine/webroot */
+	define("ENGINE",dirname(WEBROOT));
+	define("ROOT",dirname(ENGINE));/**<  path to project root */
+	define("SITE",ROOT.DS."site");/**<  path to site/ */
+	define("DAEMONS",ROOT.DS."daemons");/**<  path to daemons/ */
+	define("CLI",ROOT.DS."cli");
+	define("WWW",dirname(ROOT));/**<  path to public folder */
+	define('CORE', ENGINE.DS.'core');/**< path to egine/core */
+	define('BASE_URL',
+		((dirname(dirname(dirname($_SERVER['SCRIPT_NAME'])))!=="\\")
+			?dirname(dirname(dirname($_SERVER['SCRIPT_NAME'])))
+			:false)
+	);
+	define('PLUGINS',ENGINE.DS.'plugin'.DS);/**  path to website/engine/plugin */
 
-    define("START_TIME",microtime(1));
+	mb_internal_encoding('UTF-8');
+	ignore_user_abort(true);
+	ini_set("session.serialize_handler","php_serialize");
 
-    define('DS',DIRECTORY_SEPARATOR);
-    /**
-     * définit une constante globale webroot permettant d'obtenir le chemin d'accès global
-     * vers le répertoir engine/webroot
-     */
-    define('WEBROOT', dirname(__FILE__));
-    define("ENGINE",dirname(WEBROOT));
-    define("ROOT",dirname(ENGINE));/**<  Chemin d'accés au dossier website (racine du projet) */
-    define("SITE",ROOT.DS."site");/**<  Chemin d'accés au dossier website/site */
-    define("DAEMONS",ROOT.DS."daemons");/**<  Chemin d'accés au dossier website/daemons */
-    define("CLI",ROOT.DS."cli");
-    define("WWW",dirname(ROOT));/**<  obtient le chemin d'accés au dossier HTTPD/WWW */
-    define('CORE', ENGINE.DS.'core');/**<  obtient le chemin d'accés vers le dossier egine/core */
-    /**  défini le chemin d'accé au fichier website */
-    define('BASE_URL',
-        ((dirname(dirname(dirname($_SERVER['SCRIPT_NAME'])))!=="\\")
-            ?dirname(dirname(dirname($_SERVER['SCRIPT_NAME'])))
-            :false)
-    );
-    define('PLUGINS',ENGINE.DS.'plugin'.DS);/**  Chemin d'accés au fichier website/engine/plugin */
+	setlocale(LC_CTYPE, 'fr_FR','fra');
+	date_default_timezone_set('Europe/Paris');
 
-    mb_internal_encoding('UTF-8');
-    ignore_user_abort(true);//N'interromp pas l'execution à la deconnexion du client
+	require CORE.DS.'Autoloader.php';
+	use wfw\Autoloader;
+	Autoloader::register();
 
-    setlocale(LC_CTYPE, 'fr_FR','fra');
-    date_default_timezone_set('Europe/Paris');
+	use wfw\engine\lib\debug\Debuger;
 
-    require CORE.DS.'Autoloader.php';
-    use wfw\Autoloader;
-    Autoloader::register();
-
-    use wfw\engine\lib\debug\Debuger;
-    function debug($var){
-        Debuger::get()->debug($var);
-    }
+	/**
+	 * Define a global function to make debug easier.
+	 * @param $var var to debug
+	 */
+	function debug($var){
+		Debuger::get()->debug($var);
+	}

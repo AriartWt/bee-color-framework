@@ -32,7 +32,7 @@ final class DefaultErrorHandler implements IErrorHandler {
 	 * @return bool
 	 * @throws ErrorException
 	 */
-	public function php_warning_error_to_exception(string $errno, string $errstr, string $errfile, string $errline, array $errcontext) {
+	public function php_warning_error_to_exception(string $errno, string $errstr, string $errfile, string $errline, ?array $errcontext) {
 		if((int) $errno === E_WARNING && !$this->_turnWarningIntoException) return false;
 		throw new ErrorException(str_replace("\n","<\br>",$errstr), 0, $errno, $errfile, $errline);
 	}

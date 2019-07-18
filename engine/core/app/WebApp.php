@@ -31,6 +31,7 @@ final class WebApp {
 	private function run():void{
 		$action = $this->_context->getAction();
 		$session = $this->_context->getSession();
+		$session->start();
 		$cache = $this->_context->getCacheSystem();
 		$cacheKey = $this->_context::CACHE_KEYS[$this->_context::VIEWS]
 					."/".$action->getLang()."::".$action->getRequest()->getURI();

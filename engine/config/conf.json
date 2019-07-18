@@ -23,8 +23,8 @@
 		"router": {
 			"connections": []
 		},
-		"tmp": {
-			"dir": "site\/tmp"
+		"sessions" : {
+			"timeout" : 1800
 		},
 		"uploader" : {
 			"dir" : "site/webroot/uploads",

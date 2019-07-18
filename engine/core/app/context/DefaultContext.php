@@ -348,7 +348,7 @@ class DefaultContext implements IWebAppContext {
 			],
 			ISession::class => [
 				'instanceOf' => Session::class,
-				'constructParams' => [ "user", $conf->getString("server/tmp/dir") ],
+				'constructParams' => [ "user", $conf->getString("server/sessions/timeout") ],
 				'shared' => true
 			],
 			SessionHandlerInterface::class => [ 'instanceOf' => PHPSessionHandler::class ],
