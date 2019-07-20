@@ -34,7 +34,7 @@ class CLIFileSessionHandler implements ICLISessionHandler {
 		ISerializer $serializer,
 		bool $bypassCliCheck = false
 	){
-		if($bypassCliCheck && $this->inCli()) throw new IllegalInvocation(
+		if(!$bypassCliCheck && $this->inCli()) throw new IllegalInvocation(
 			static::class." can only be used in a cli php script !"
 		);
 		if(!is_dir($sessionPath)) throw new SessionNotFound(

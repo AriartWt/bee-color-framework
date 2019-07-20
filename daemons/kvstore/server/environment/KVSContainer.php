@@ -134,7 +134,7 @@ final class KVSContainer implements IKVSContainer {
 	 * @return string Chemin d'accés au repertoir du container.
 	 */
 	public function getSavePath(): string {
-		return $this->_dbPath.DS.$this->getName();
+		return $this->_dbPath.'/'.$this->getName();
 	}
 
 	/**

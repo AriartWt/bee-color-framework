@@ -61,19 +61,19 @@ try{
 	$path = null;
 	switch($argv[1]){
 		case 'backup' :
-			$path = CLI.'/backup/BackupLauncher.php';
+			$path = dirname(__DIR__).'/backup/BackupLauncher.php';
 			break;
 		/*case 'update' :
 			$path = CLI.'/updator/UpdatorLauncher.php';
 			break;*/
 		case 'package' :
-			$path = CLI.'/installer/PackageLauncher.php';
+			$path = dirname(__DIR__).'/installer/PackageLauncher.php';
 			break;
 		case 'service' :
-			$path = DAEMONS.'/sctl/SCTLClientLauncher.php';
+			$path = dirname(__DIR__,2).'/daemons/sctl/SCTLClientLauncher.php';
 			break;
 		case 'test' :
-			$path = CLI.'/tester/testsLauncher.php';
+			$path = dirname(__DIR__).'/tester/testsLauncher.php';
 			break;
 		default :
 			throw new InvalidArgumentException("Unknown command $argv[1]. --help to display the command list.");

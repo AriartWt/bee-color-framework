@@ -109,7 +109,7 @@ final class Writer implements IMSServerComponent {
 
 		//Si le serveur n'a pas été éteint correctement et qu'un worker est toujours actif,
 		//on le tue.
-		$pidFile = $environment->getWorkingDir().DS."pid";
+		$pidFile = $environment->getWorkingDir()."/pid";
 		if(file_exists($pidFile)){
 			posix_kill(file_get_contents($pidFile),9);
 			unlink($pidFile);
@@ -168,7 +168,7 @@ final class Writer implements IMSServerComponent {
 		$snapshotDir = $environment->getString("snapshot_path")??$environment->getWorkingDir();
 		$snapshotDir = new PHPString($snapshotDir);
 		if(!$snapshotDir->startBy("/")){
-			$snapshotDir = $environment->getWorkingDir().DS.$snapshotDir;
+			$snapshotDir = $environment->getWorkingDir().'/'.$snapshotDir;
 		}
 		$snapshotDir = (string)$snapshotDir;
 		//On initialise le mode de stockage par défaut pour les KVSAccess

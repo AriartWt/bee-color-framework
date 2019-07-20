@@ -20,7 +20,7 @@ final class HTMLPurifierBasedSanitizer implements IHTMLSanitizer {
 	 */
 	public function __construct() {
 		if(!self::$_LOADED){
-			require_once(ENGINE."/lib/htmlPurifier/HTMLPurifier.auto.php");
+			require_once(dirname(dirname(dirname(dirname(__DIR__))))."/lib/htmlPurifier/HTMLPurifier.auto.php");
 			self::$_LOADED = true;
 		}
 

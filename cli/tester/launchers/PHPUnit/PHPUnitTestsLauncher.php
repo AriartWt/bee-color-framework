@@ -33,7 +33,7 @@ final class PHPUnitTestsLauncher implements ITestsLauncher{
 	public function launchTests(string... $tests): void {
 		foreach($tests as $t){
 			$t = str_replace('"','',$t);
-			if(strpos($t,"/") !== 0) $t = ROOT."/tests/PHPUnit/$t";
+			if(strpos($t,"/") !== 0) $t = dirname(__DIR__,4)."/tests/PHPUnit/$t";
 			$this->output("Launching tests for $t\n");
 			$this->exec($t);
 		}
@@ -95,7 +95,7 @@ final class PHPUnitTestsLauncher implements ITestsLauncher{
 				."Please check your conf (keys under sequences/PHPUnit)"
 			);
 		}
-		$basePath = ROOT."/tests/PHPUnit/".implode("/",$path);
+		$basePath = dirname(__DIR__,4)."/tests/PHPUnit/".implode("/",$path);
 		foreach($this->getTestSequenceObjects($current,$basePath) as $toRun){
 			$toRun->start();
 		}
@@ -115,7 +115,7 @@ final class PHPUnitTestsLauncher implements ITestsLauncher{
 				$environments[$k] = $this->_conf->getString("environments/$e");
 			}
 			$coveragePath = $this->_conf->getString("launcherCommands/PHPUnit/--coverage-html");
-			$coveragePath = str_replace(ROOT,$coveragePath,$path);
+			$coveragePath = str_replace(dirname(__DIR__,4),$coveragePath,$path);
 			return [new PHPUnitTestSequence(
 				[$path],
 				$environments,
@@ -149,8 +149,9 @@ final class PHPUnitTestsLauncher implements ITestsLauncher{
 	 * @param string $path Execute les tests contenus dans $path
 	 * @param string $bootstrapPath Fichier de démarrage context
 	 */
-	private function exec(string $path,string $bootstrapPath = CLI."/init.environment.php"):void{
-		system(CLI."/tester/launchers/PHPUnit/phpunit.phar --bootstrap \"$bootstrapPath\""
+	private function exec(string $path,?string $bootstrapPath = null):void{
+		if(is_null($bootstrapPath)) $bootstrapPath = dirname(__DIR__,3)."/init.environment.php";
+		system(dirname(__DIR__,3)."/tester/launchers/PHPUnit/phpunit.phar --bootstrap \"$bootstrapPath\""
 			." --testdox \"$path\" 2>&1");
 	}
 }

@@ -14,7 +14,6 @@ use wfw\engine\core\security\IAccessControlCenter;
 use wfw\engine\core\session\ISession;
 use wfw\engine\core\cache\ICacheSystem;
 use wfw\engine\core\conf\IConf;
-use wfw\engine\core\errors\IErrorHandler;
 use wfw\engine\core\view\ILayoutResolver;
 
 /**
@@ -34,11 +33,6 @@ interface IWebAppContext {
 		self::DOMAIN_EVENT_LISTENERS => "WFW/WebApp/DomainEventListeners",
 		self::VIEWS => "WFW/WebApp/Views"
 	];
-
-	/**
-	 * @return IErrorHandler Gestionnaire d'erreurs.
-	 */
-	public function getErrorHandler():IErrorHandler;
 
 	/**
 	 * @return ICacheSystem Système de cache de l'application.

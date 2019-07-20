@@ -29,7 +29,7 @@ class UserAdminTest extends TestCase{
 	 */
 	public function __construct(?string $name = null, array $data = [], string $dataName = ''){
 		parent::__construct($name, $data, $dataName);
-		require_once CLI."/tester/helpers/session_auto_logged_user.php";//load an admin user
+		require_once dirname(__DIR__,5)."/cli/tester/helpers/session_auto_logged_user.php";//load an admin user
 		TestEnv::get()->init();
 		TestEnv::restoreEmptyTestSqlDb();
 		TestEnv::restoreModels();

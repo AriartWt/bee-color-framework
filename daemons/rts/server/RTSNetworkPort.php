@@ -532,7 +532,6 @@ final class RTSNetworkPort implements IWebsocketListener, IRTSAppEventListener {
 	 * @param resource $socket
 	 */
 	private function configureSocket($socket){
-		new \SessionHandler();
 		stream_set_blocking($socket,false);
 	}
 

@@ -38,9 +38,9 @@ try{
 
 	$sctlServer = new SCTLServer(
 		$conf = new SCTLConf(
-			ENGINE."/config/conf.json",
-			SITE."/config/conf.json",
-			DAEMONS,
+			dirname(dirname(__DIR__))."/engine/config/conf.json",
+			dirname(dirname(__DIR__))."/site/config/conf.json",
+			dirname(__DIR__),
 			$argvReader->exists('-user') ? $argvReader->get('-user')[0] : null,
 			$argvReader->exists('-path') ? $argvReader->get('-path')[0] : null,
 			...($argvReader->exists('-daemons') ? $argvReader->get('-daemons') : [])

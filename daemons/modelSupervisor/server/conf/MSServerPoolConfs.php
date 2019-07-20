@@ -50,10 +50,11 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 	public function __construct(
 		string $engineConfs,
 		?string $siteConfs=null,
-		string $basePath = DAEMONS,
+		?string $basePath = null,
 		bool $noLogger = false
 	){
-		$this->_kvsAddr = (new KVSConfs($engineConfs,$siteConfs,DAEMONS,true))->getSocketPath();
+		if(is_null($basePath)) $basePath = dirname(__DIR__,3);
+		$this->_kvsAddr = (new KVSConfs($engineConfs,$siteConfs,$basePath,true))->getSocketPath();
 		$this->_basePath = $basePath;
 		$this->_instancesConfs = [];
 		$confIO = new JSONConfIOAdapter();
@@ -70,11 +71,8 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 		}
 
 		$confPath = new PHPString($confPath);
-		if(!$confPath->startBy("/")){
-			$confPath = $basePath.DS.$confPath;
-		}else{
-			$confPath = (string) $confPath;
-		}
+		if(!$confPath->startBy("/")) $confPath = "$basePath/$confPath";
+		else $confPath = (string) $confPath;
 
 		$this->_conf = new FileBasedConf($confPath,$confIO);
 		$workingDir = $this->getWorkingDir();
@@ -142,7 +140,7 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 
 		return $this->resolvePath(
 			$this->_conf->getString(self::WORKING_DIR).$instance
-			?? $this->_basePath.DS."modelSupervisor/data$instance",false);
+			?? "$this->_basePath/modelSupervisor/data$instance",false);
 	}
 
 	/**
@@ -159,12 +157,12 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 		$path = new PHPString($path);
 		if(!$path->startBy("/")){
 			if($path->startBy("{ROOT}")){
-				return $path->replaceAll("{ROOT}",ROOT);
+				return $path->replaceAll("{ROOT}",dirname(__DIR__,4));
 			}else{
 				if($useWorkingPathAsbase){
-					return $this->getWorkingDir().DS.$path;
+					return $this->getWorkingDir().'/'.$path;
 				}else{
-					return $this->_basePath.DS.$path;
+					return $this->_basePath.'/'.$path;
 				}
 			}
 		}else{

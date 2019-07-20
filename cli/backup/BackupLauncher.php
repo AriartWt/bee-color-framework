@@ -29,7 +29,10 @@ $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 ])),$argv);
 
 try{
-	$confs = new BackupManagerConf(ENGINE.'/config/conf.json', SITE.'/config/conf.json');
+	$confs = new BackupManagerConf(
+		dirname(dirname(__DIR__)).'/engine/config/conf.json',
+		dirname(dirname(__DIR__)).'/site/config/conf.json'
+	);
 
 	$saveFile = $confs->getManagerFolder().'/manager.backup';
 	$serializer = new LightSerializer(new GZCompressor(), new PHPSerializer());
@@ -41,7 +44,7 @@ try{
 	else $manager = new BackupManager($confs->getMaxBackups());
 	$args=[];
 	if(count($argv) === 1 || count($argv) === 2 && $argvReader->exists("-make")){
-		$dirs = glob(ROOT."/*",GLOB_ONLYDIR);
+		$dirs = glob(dirname(__DIR__,2)."/*",GLOB_ONLYDIR);
 		foreach($dirs  as &$v){ $v = basename($v); }
 		$args = array_merge(["dbs"],array_diff($dirs,["backups",".",".."]));
 		var_dump($args);
@@ -63,7 +66,7 @@ try{
 			array_shift($args);
 			$path = array_shift($args);
 			if(!(new PHPString($path))->startBy('/'))
-				$path = CLI."/$path";
+				$path = dirname(__DIR__)."/$path";
 			if(!is_dir($path))
 				throw new InvalidArgumentException("$path is not a valide directory");
 			$backupFolder = $path;
@@ -91,11 +94,11 @@ try{
 					);
 				}
 			}else{
-				if(is_dir(ROOT."/$v")){
-					$backups[] = new LocalFilesBackup(ROOT."/$v",$backupFolder);
+				if(is_dir(dirname(__DIR__,2)."/$v")){
+					$backups[] = new LocalFilesBackup(dirname(__DIR__,2)."/$v",$backupFolder);
 				}else{
 					throw new InvalidArgumentException(
-						"Unknown backup type '$v' : Only direct folders under ".ROOT
+						"Unknown backup type '$v' : Only direct folders under ".dirname(__DIR__,2)
 						." or special keyword 'dbs' are accepted !"
 					);
 				}

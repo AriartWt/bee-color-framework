@@ -32,8 +32,8 @@ abstract class UploadHandler implements IActionHandler {
 	public function __construct(IConf $conf, ITranslator $translator,?string $uploadsConfKey=null) {
 		$this->_conf = $conf;
 		$this->_translator = $translator;
-		$this->_path = ROOT."/".$conf->getString($uploadsConfKey ?? "server/uploader/dir");
-		$this->_folder = str_replace(SITE."/webroot/",'',$this->_path);
+		$this->_path = dirname(__DIR__,5)."/".$conf->getString($uploadsConfKey ?? "server/uploader/dir");
+		$this->_folder = str_replace(dirname(__DIR__,5)."/site/webroot/",'',$this->_path);
 	}
 
 	/**
@@ -86,8 +86,8 @@ abstract class UploadHandler implements IActionHandler {
 	 * @return string
 	 */
 	private function absolutePath(string $path):string{
-		$path = str_replace(array('/', '\\'), DS, $path);
-		$parts = array_filter(explode(DS, $path), 'strlen');
+		$path = str_replace(array('/', '\\'), '/', $path);
+		$parts = array_filter(explode('/', $path), 'strlen');
 		$absolutes = array();
 		foreach ($parts as $part) {
 			if ('.' == $part) continue;
@@ -97,7 +97,7 @@ abstract class UploadHandler implements IActionHandler {
 				$absolutes[] = $part;
 			}
 		}
-		return implode(DS, $absolutes);
+		return implode('/', $absolutes);
 	}
 
 	/**

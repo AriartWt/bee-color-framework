@@ -115,7 +115,7 @@ final class Session implements ISession {
 	 */
 	public function close():void {
 		if(session_status() === PHP_SESSION_ACTIVE) session_write_close();
-		else throw new SessionFailure("Can't close a unactive session !");
+		else throw new SessionFailure("Can't close not open session !");
 	}
 
 	/**

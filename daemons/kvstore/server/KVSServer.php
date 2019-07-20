@@ -177,7 +177,7 @@ final class KVSServer {
 	 * @throws \InvalidArgumentException
 	 */
 	private function startContainer(IKVSContainer $container,bool $restart=false):void{
-		$pidFile = $container->getSavePath().DS."container.pid";
+		$pidFile = $container->getSavePath()."/container.pid";
 		//Si le KVServer a été arrêté soudainement et que les worker sont toujours en cours d'execution,
 		//on les tue
 		if(file_exists($pidFile)){

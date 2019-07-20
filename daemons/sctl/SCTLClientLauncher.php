@@ -31,9 +31,9 @@ $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 try{
 	$sctlClient = new SCTLClient(
 		new SCTLConf(
-			ENGINE."/config/conf.json",
-			SITE."/config/conf.json",
-			DAEMONS,
+			dirname(dirname(__DIR__))."/engine/config/conf.json",
+			dirname(dirname(__DIR__))."/site/config/conf.json",
+			dirname(__DIR__),
 			null,
 			$argvReader->exists('-path') ? $argvReader->get('-path')[0] : null
 		),

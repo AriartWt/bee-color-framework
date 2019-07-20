@@ -12,7 +12,7 @@ final class Main {
 	 * @param array $args Arguments
 	 */
 	public function __construct(array $args=[]){
-		$contextInfos = (require SITE."/config/site.context.php")($args);
+		$contextInfos = (require dirname(__DIR__)."/config/site.context.php")($args);
 		new WebApp(new $contextInfos["class"](...$contextInfos["args"]));
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 
 return array_merge(
-    require ENGINE.DS."config".DS."default.domain_events.listeners.php",
-    require SITE.DS."config".DS."site.domain_events.listeners.php"
+    require dirname(__DIR__,3)."/engine/config/default.domain_events.listeners.php",
+    require dirname(__DIR__)."/site.domain_events.listeners.php"
 );

@@ -132,7 +132,7 @@ final class WebApp {
 		if(!$action->getRequest()->isAjax()
 			&& $this->_context->getConf()->getBoolean("server/display_loading_time")){
 			echo "<div style=\"background-color:red;position:fixed;color:white;text-align:center;"
-				."width:100%;bottom:0;\">Page générée en ".((microtime(1)-START_TIME)*1000)
+				."width:100%;bottom:0;\">Generated in ".((microtime(1)-START_TIME)*1000)
 				."ms</div>";
 		}
 		if(in_array(http_response_code(),[

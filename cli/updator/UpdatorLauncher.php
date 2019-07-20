@@ -26,7 +26,10 @@ $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 
 try{
 	throw new Exception("For now this functionnality is deprecated and should not be used anymore !");
-	$confs = new UpdatorConf(ENGINE.'/config/conf.json', SITE.'/config/conf.json');
+	$confs = new UpdatorConf(
+		dirname(dirname(__DIR__))."/engine/config/conf.json",
+		dirname(dirname(__DIR__))."/site/config/conf.json"
+	);
 	$updator = new Updator($confs);
 	$check = false; $download = false; $install = false;
 	if($argvReader->exists('-update') || count($argv) === 1){

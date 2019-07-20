@@ -37,7 +37,8 @@ final class UpdatorConf {
 	 * @param string      $basepath   Chemin de base pour la résolution de chemins relatifs
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct(string $engineConf,?string $siteConf, string $basepath = CLI) {
+	public function __construct(string $engineConf,?string $siteConf, ?string $basepath = null) {
+		if(is_null($basepath)) $basepath = dirname(__DIR__,2);
 		$this->_basepath = $basepath;
 		$confIo = new JSONConfIOAdapter();
 		$this->_engineConf = new FileBasedConf($engineConf,$confIo);

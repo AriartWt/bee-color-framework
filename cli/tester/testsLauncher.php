@@ -37,7 +37,7 @@ try{
 			if(is_null($conf)) $conf = $c;
 			else $conf->merge($c);
 		}
-	}else $conf = new FileBasedConf(CLI."/tester/config/conf.json",$confIOAdpater);
+	}else $conf = new FileBasedConf(dirname(__DIR__)."/tester/config/conf.json",$confIOAdpater);
 
 	$mode = $argvReader->exists("-mode") ? $argvReader->get("-mode")[0] : "s";
 	$list = $argvReader->exists("-list") ? $argvReader->get("-list") : null;
@@ -48,7 +48,7 @@ try{
 			$list = [];
 			$sequences = $conf->getArray("sequences");
 			foreach($sequences as $l=>$s){ $list[]="$l:*";}
-		} else $list = ["PHPUnit:\"".ROOT."/tests\""];
+		} else $list = ["PHPUnit:\"".dirname(__DIR__,2)."/tests\""];
 	}
 	foreach($list as $l){
 		$tmp = explode(":",$l);

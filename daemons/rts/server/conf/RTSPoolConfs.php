@@ -51,9 +51,10 @@ final class RTSPoolConfs {
 	public function __construct(
 		string $engineConfs,
 		?string $siteConfs=null,
-		string $basePath = DAEMONS,
+		?string $basePath = null,
 		bool $noLogger = false
 	){
+		if(is_null($basePath)) $basePath = dirname(__DIR__,3);
 		$this->_basePath = $basePath;
 		$confIO = new JSONConfIOAdapter();
 		//On récupère les configurations générales
@@ -70,7 +71,7 @@ final class RTSPoolConfs {
 
 		$confPath = new PHPString($confPath);
 		if(!$confPath->startBy("/")){
-			$confPath = $basePath.DS.$confPath;
+			$confPath = "$basePath/$confPath";
 		}else{
 			$confPath = (string) $confPath;
 		}
@@ -171,7 +172,7 @@ final class RTSPoolConfs {
 
 		return $this->resolvePath(
 			$this->_conf->getString(self::WORKING_DIR).$instance
-			?? $this->_basePath.DS."rts/data$instance",false);
+			?? $this->_basePath."/rts/data$instance",false);
 	}
 
 	/**
@@ -188,13 +189,10 @@ final class RTSPoolConfs {
 		$path = new PHPString($path);
 		if(!$path->startBy("/")){
 			if($path->startBy("{ROOT}")){
-				return $path->replaceAll("{ROOT}",ROOT);
+				return $path->replaceAll("{ROOT}",dirname(__DIR__,4));
 			}else{
-				if($useWorkingPathAsbase){
-					return $this->getWorkingDir().DS.$path;
-				}else{
-					return $this->_basePath.DS.$path;
-				}
+				if($useWorkingPathAsbase) return $this->getWorkingDir().'/'.$path;
+				else return "$this->_basePath/$path";
 			}
 		}else{
 			return $path;

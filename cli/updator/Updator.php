@@ -126,7 +126,7 @@ final class Updator implements IUpdator {
 		}
 		$dirs = array_diff(scandir("$dir/src"),['.','..']);
 		foreach ($dirs as $d){
-			$this->exec("cp -R \"$dir/src/$d\" \"".ROOT."\"");
+			$this->exec("cp -R \"$dir/src/$d\" \"".dirname(__DIR__,2)."\"");
 		}
 	}
 

@@ -50,7 +50,13 @@ final class KVSConfs {
 	 * @throws \wfw\engine\lib\errors\InvalidTypeSupplied
 	 * @throws \wfw\engine\lib\errors\PermissionDenied
 	 */
-	public function __construct(string $engineConfs,?string $siteConfs=null,string $basePath = DAEMONS,bool $noLogger=false) {
+	public function __construct(
+		string $engineConfs,
+		?string $siteConfs=null,
+		?string $basePath = null,
+		bool $noLogger=false
+	) {
+		if(is_null($basePath)) $basePath = dirname(__DIR__,3);
 		$this->_basePath = $this->resolvePath($basePath);
 
 		$confIO = new JSONConfIOAdapter();
@@ -68,7 +74,7 @@ final class KVSConfs {
 
 		$confPath = new PHPString($confPath);
 		if(!$confPath->startBy("/")){
-			$confPath = $basePath.DS.$confPath;
+			$confPath = "$basePath/$confPath";
 		}else{
 			$confPath = (string) $confPath;
 		}
@@ -155,13 +161,10 @@ final class KVSConfs {
 		$path = new PHPString($path);
 		if(!$path->startBy("/")){
 			if($path->startBy("{ROOT}")){
-				return $path->replaceAll("{ROOT}",ROOT);
+				return $path->replaceAll("{ROOT}",dirname(__DIR__,4));
 			}else{
-				if($useWorkingPathAsbase){
-					return $this->getWorkingDir().DS.$path;
-				}else{
-					return $this->_basePath.DS.$path;
-				}
+				if($useWorkingPathAsbase) return $this->getWorkingDir()."/$path";
+				else return "$this->_basePath/$path";
 			}
 		}else{
 			return $path;
@@ -176,7 +179,7 @@ final class KVSConfs {
 			$this->resolvePath($this->_conf->getString(self::SOCKET_PATH))
 		);
 		if(!$socketPath->startBy("/")){
-			return $this->getWorkingDir().DS.$socketPath;
+			return $this->getWorkingDir().'/'.$socketPath;
 		}else{
 			return $socketPath;
 		}
@@ -190,7 +193,7 @@ final class KVSConfs {
 			$this->resolvePath($this->_conf->getString(self::DB_PATH))
 		);
 		if(!$dbPath->startBy("/")){
-			return $this->getWorkingDir().DS.$dbPath;
+			return $this->getWorkingDir().'/'.$dbPath;
 		}else{
 			return $dbPath;
 		}
@@ -272,7 +275,7 @@ final class KVSConfs {
 			$this->resolvePath($this->_conf->getString(self::ERROR_LOGS)??"error_logs.txt")
 		);
 		if(!$errorPath->startBy("/")){
-			return $this->getWorkingDir().DS.$errorPath;
+			return $this->getWorkingDir().'/'.$errorPath;
 		}else{
 			return $errorPath;
 		}

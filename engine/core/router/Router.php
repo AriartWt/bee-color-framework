@@ -37,7 +37,7 @@ final class Router implements IRouter {
 		?string $lang = null,
 		?string $baseUrl = null
 	){
-		$this->_baseUrl = $baseUrl ?? BASE_URL ?? '';
+		$this->_baseUrl = $baseUrl ?? '';
 		$this->_langs = [];
 		$this->_routes = [];
 		$this->_langRoutes = [];

@@ -27,8 +27,8 @@ try{
 	cli_set_process_title("WFW RTS server");
 	//On récupère les configurations.
 	$confs = new RTSPoolConfs(
-		ENGINE.DS."config".DS."conf.json",
-		SITE.DS."config".DS."conf.json"
+		dirname(dirname(__DIR__))."/engine/config/conf.json",
+		dirname(dirname(__DIR__))."/site/config/conf.json"
 	);
 
 	$pids = [];

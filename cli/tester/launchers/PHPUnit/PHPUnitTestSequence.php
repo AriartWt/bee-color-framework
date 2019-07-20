@@ -59,7 +59,7 @@ final class PHPUnitTestSequence extends TestSequence {
 		if($environment) fwrite(STDOUT,"\e[105mTest environment :  $environment.\e[0m\n");
 		$fileName = "$this->_tmpPath/".(new UUID(UUID::V4)).".phpunit.bootstrap.php";
 		$res = "<?php 
-			require_once \"".CLI."/init.environment.php\";
+			require_once \"".dirname(__DIR__,3)."/init.environment.php\";
 		";
 		if($environment) $res.=$this->printEnvironment($environment);
 		file_put_contents($fileName,$res);
@@ -84,9 +84,10 @@ final class PHPUnitTestSequence extends TestSequence {
 	 * @param string      $bootstrapPath Fichier de démarrage context
 	 * @param null|string $envName       Nom de l'environment
 	 */
-	private function exec(string $path,string $bootstrapPath = CLI."/init.environment.php",?string $envName=null):void{
-		system(CLI."/tester/launchers/PHPUnit/phpunit.phar --bootstrap \"$bootstrapPath\""
-			   ." --whitelist \"".ROOT."/$this->_codePath\" --coverage-html \"$this->_coverage".($envName?"/$envName":'')
+	private function exec(string $path,?string $bootstrapPath = null,?string $envName=null):void{
+		if(is_null($bootstrapPath)) $bootstrapPath = dirname(__DIR__,3)."/init.environment.php";
+		system(dirname(__DIR__,3)."/tester/launchers/PHPUnit/phpunit.phar --bootstrap \"$bootstrapPath\""
+			   ." --whitelist \"".dirname(__DIR__,4)."/$this->_codePath\" --coverage-html \"$this->_coverage".($envName?"/$envName":'')
 			   ."\" \"$path\" 2>&1");
 	}
 }

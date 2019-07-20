@@ -405,9 +405,9 @@ final class ContainerWorker extends Worker {
 	private function getWorkerSocketAddr():string{
 		$socketEndName = ".socket";
 		if($this->getWorkerMode() === self::WORKER_MODE){
-			return $this->_workerParams->getSocketDir().DS.$this->_workerParams->getContainer()->getName().$socketEndName;
+			return $this->_workerParams->getSocketDir().'/'.$this->_workerParams->getContainer()->getName().$socketEndName;
 		}else{
-			return $this->_clientParams->getSocketDir().DS.$this->_clientParams->getContainer()->getName().$socketEndName;
+			return $this->_clientParams->getSocketDir().'/'.$this->_clientParams->getContainer()->getName().$socketEndName;
 		}
 	}
 

@@ -107,7 +107,7 @@ final class WriterWorker extends Worker {
 			?? "error_logs.txt"
 		);
 		if(!$errorLog->startBy("/")){
-			$errorLog = $environment->getWorkingDir().DS.$errorLog;
+			$errorLog = $environment->getWorkingDir().'/'.$errorLog;
 		}else{
 			$errorLog = (string) $errorLog;
 		}
@@ -707,7 +707,7 @@ final class WriterWorker extends Worker {
 	 */
 	private function triggerSave(bool $wait = false):array{
 		if($this->getWorkerMode() === self::WORKER_MODE){
-			$saveLockFile = $this->_environment->getWorkingDir().DS."save.lock";
+			$saveLockFile = $this->_environment->getWorkingDir()."/save.lock";
 			touch($saveLockFile);
 			$fp = fopen($saveLockFile,"r+");
 			if($wait){

@@ -52,10 +52,10 @@ class SimpleZipper {
 				foreach ($files as $file) {
 					$file = realpath($file);
 					if (is_dir($file)) {
-						$zip->addEmptyDir(str_replace($source.DS, '', $file));
+						$zip->addEmptyDir(str_replace($source.'/', '', $file));
 					} else if (is_file($file)) {
 						if(is_readable($file)){
-							if(!$zip->addFile($file,str_replace($source.DS, '', $file)/*,basename(str_replace($source.DS, '', $file))*/)){
+							if(!$zip->addFile($file,str_replace($source.'/', '', $file))){
 								throw new ZIPFailure("Cannot add file $file in archive !");
 							}
 						}else{

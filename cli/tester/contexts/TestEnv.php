@@ -55,12 +55,13 @@ final class TestEnv {
 	 * @param null|string $password
 	 */
 	public static function restoreEmptyTestSqlDb(
-		string $sqlDbFile=CLI."/tester/config/clean_db.sql",
+		?string $sqlDbFile=null,
 		string $dbName = "event_store_test",
 		?string $host = null,
 		?string $user = null,
 		?string $password = null
 	):void{
+		if(is_null($sqlDbFile)) $sqlDbFile = dirname(__DIR__,2)."/tester/config/clean_db.sql";
 		/** @var IConf $conf */
 		$conf = self::get()->getAppContext()->getConf();
 		$sqlBackup = new LocalMysqlDbBackup(
@@ -82,11 +83,13 @@ final class TestEnv {
 	 * @param string $password     Password de l'utilisateur de test
 	 */
 	public static function restoreModels(
-		string $resolverAddr = DAEMONS."/modelSupervisor/data/ModelSupervisor.socket",
+		?string $resolverAddr = null,
 		string $instanceName = "test",
 		string $user = "tester",
 		string $password = "test"
 	):void{
+		if(is_null($resolverAddr))
+			$resolverAddr = dirname(__DIR__,3)."daemons/modelSupervisor/data/ModelSupervisor.socket";
 		$client = self::createMSClient(
 			$resolverAddr,
 			$instanceName,
@@ -109,11 +112,13 @@ final class TestEnv {
 	 * @return IMSClient
 	 */
 	public static function createMSClient(
-		string $resolverAddr = DAEMONS."/modelSupervisor/data/ModelSupervisor.socket",
+		?string $resolverAddr = null,
 		string $instanceName = "test",
 		string $user = "tester",
 		string $password = "test"
 	):IMSClient{
+		if(is_null($resolverAddr))
+			$resolverAddr = dirname(__DIR__,3)."/daemons/modelSupervisor/data/ModelSupervisor.socket";
 		$instanceAddr = (new MSInstanceAddrResolver($resolverAddr))->find($instanceName);
 		$client = new MSClient($instanceAddr, $user, $password);
 		return $client;

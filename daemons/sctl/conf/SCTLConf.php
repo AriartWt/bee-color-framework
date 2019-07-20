@@ -35,11 +35,12 @@ final class SCTLConf {
 	public function __construct(
 		string $engineConf,
 		?string $siteConf,
-		string $basepath = DAEMONS,
+		?string $basepath = null,
 		?string $user = null,
 		?string $dir = null,
 		string ...$daemons
 	){
+		if(is_null($basepath)) $basepath = dirname(__DIR__,2);
 		$this->_basepath = $basepath;
 		$confIo = new JSONConfIOAdapter();
 		$conf = new FileBasedConf($engineConf,$confIo);

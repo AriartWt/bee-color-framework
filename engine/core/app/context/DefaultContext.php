@@ -155,7 +155,6 @@ class DefaultContext implements IWebAppContext {
 	 * @param array       $diceRules          Regles à ajouter à Dice
 	 * @param array       $globals            Contient la variables globales de php aux index _GET,_POST,_FILES,_SERVER
 	 * @param array       $confFiles          Liste des fichiers de configuration à charger
-	 * @param null|string $baseurl            Base url
 	 * @param null|string $projectName        Nom du projet. Sert de namespace pour les clés du cache.
 	 * @throws \InvalidArgumentException
 	 */
@@ -170,9 +169,10 @@ class DefaultContext implements IWebAppContext {
 		array $diceRules = [],
 		array $globals = [],
 		?array $confFiles = null,
-		?string $baseurl = BASE_URL,
-		?string $projectName = ROOT
+		?string $projectName = null
 	){
+		if(is_null($projectName))
+			$projectName = dirname(__DIR__,4);
 		$genericFactory = new DiceBasedFactory($this->_dice = $dice = new Dice());
 		$this->getErrorHandler()->handle();
 
@@ -206,8 +206,8 @@ class DefaultContext implements IWebAppContext {
 		]);
 
 		$this->_conf = $conf = $this->initConfs($confFiles ?? [
-			ENGINE."/config/conf.json",
-			SITE."/config/conf.json"
+			dirname(__DIR__,3)."/config/conf.json",
+			dirname(__DIR__,4)."/site/config/conf.json"
 		]);
 
 		//Trying to dynamicaly resolve the msserver socket addr. If MSServerPool is unavailable,
@@ -215,7 +215,9 @@ class DefaultContext implements IWebAppContext {
 		$msinstanceAddr = $this->getMSServerAddr(
 			$msserverAddr = $this->_conf->getString("server/msserver/addr")
 				?? "/srv/wfw/global/daemons/modelSupervisor/data/ModelSupervisor.socket"
-		) ?? "/srv/wfw/global/daemons/modelSupervisor/data/".basename(ROOT)."/".basename(ROOT).".socket";
+		) ?? "/srv/wfw/global/daemons/modelSupervisor/data/"
+			.basename(dirname(__DIR__,4))
+			."/".basename(dirname(__DIR__,4)).".socket";
 
 		$this->_dice->addRules([
 			ILanguageLoader::class => [
@@ -237,8 +239,7 @@ class DefaultContext implements IWebAppContext {
 							$conf->getArray("server/language/availables") ?? []
 						)
 					),
-					null,
-					$baseurl
+					null
 				]
 			]
 		]);
@@ -425,7 +426,8 @@ class DefaultContext implements IWebAppContext {
 		if($cache->contains("server/msserver/addr") && is_string($res = $cache->get("server/msserver/addr")))
 			return $res;
 		else{
-			if(strpos($msserverAddr,"/")!==0) $msserverAddr = ROOT."/$msserverAddr";
+			if(strpos($msserverAddr,"/")!==0)
+				$msserverAddr = dirname(__DIR__,4)."/$msserverAddr";
 			try{
 				$msinstanceAddr = (new MSInstanceAddrResolver($msserverAddr))->find(
 					$this->_conf->getString('server/msserver/db')
@@ -534,10 +536,12 @@ class DefaultContext implements IWebAppContext {
 	 */
 	protected function getDomainEventListeners():array{
 		$listeners = $this->getCacheSystem()->get(self::CACHE_KEYS[self::DOMAIN_EVENT_LISTENERS]);
+		$site = dirname(dirname(dirname(dirname(__DIR__)))).'/site';
+		$engine = dirname(dirname(dirname(__DIR__)));
 		if(is_null($listeners)){
-			if(file_exists(SITE.'/config/load/domain_events.listeners.php'))
-				$listeners = require(SITE.'/config/load/domain_events.listeners.php');
-			else $listeners = require(ENGINE.'/config/default.domain_events.listeners.php');
+			if(file_exists("$site/config/load/domain_events.listeners.php"))
+				$listeners = require("$site/config/load/domain_events.listeners.php");
+			else $listeners = require("$engine/config/default.domain_events.listeners.php");
 			$this->getCacheSystem()->set(self::CACHE_KEYS[self::DOMAIN_EVENT_LISTENERS],$listeners);
 		}
 		return $listeners;
@@ -546,7 +550,7 @@ class DefaultContext implements IWebAppContext {
 	/**
 	 * @return IErrorHandler Gestionnaire d'erreurs.
 	 */
-	public final function getErrorHandler(): IErrorHandler{
+	protected final function getErrorHandler(): IErrorHandler{
 		/** @var IErrorHandler $handler */
 		$handler =  $this->_dice->create(DefaultErrorHandler::class);
 		return $handler;

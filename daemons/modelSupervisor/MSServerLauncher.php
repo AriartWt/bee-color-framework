@@ -35,8 +35,8 @@ try{
 
 	//On récupère les configurations.
 	$confs = new MSServerPoolConfs(
-		ENGINE.DS."config".DS."conf.json",
-		SITE.DS."config".DS."conf.json"
+		dirname(dirname(__DIR__))."/engine/config/conf.json",
+		dirname(dirname(__DIR__))."/site/config/conf.json"
 	);
 
 	$pids = [];
