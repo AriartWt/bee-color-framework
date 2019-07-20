@@ -78,8 +78,8 @@ class DefaultTestsEnvironment implements ITestsEnvironment {
 			$args["ajaxViewPath"] ?? null,
 			$args["connections"] ?? [],
 			$args["langs"] ?? ["fr" => [
-				dirname(dirname(dirname(__DIR__)))."/engine/config/lang/fr.lang.json",
-				dirname(dirname(dirname(__DIR__)))."/site/config/lang/fr.lang.json"
+				dirname(__DIR__,3)."/engine/config/lang/fr.lang.json",
+				dirname(__DIR__,3)."/site/config/lang/fr.lang.json"
 			]],
 			$args["accessRules"] ?? [
 				RequireAuthentification::class => [
@@ -115,9 +115,9 @@ class DefaultTestsEnvironment implements ITestsEnvironment {
 			$args["diceRules"] ?? [],
 			$globals,
 			$args["confFiles"] ?? [
-				dirname(dirname(dirname(__DIR__)))."/engine/config/conf.json",
-				dirname(dirname(dirname(__DIR__)))."/site/config/conf.json",
-				dirname(dirname(__DIR__))."/tester/config/conf.tests.json"
+				dirname(__DIR__,3)."/engine/config/conf.json",
+				dirname(__DIR__,3)."/site/config/conf.json",
+				dirname(__DIR__,2)."/tester/config/conf.tests.json"
 			],
 			$args["baseUrl"] ?? null
 		];

@@ -9,7 +9,7 @@ use wfw\engine\lib\cli\argv\ArgvOptMap;
 use wfw\engine\lib\cli\argv\ArgvParser;
 use wfw\engine\lib\cli\argv\ArgvReader;
 
-require_once dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR."init.environment.php";
+require_once dirname(__FILE__,2)."/init.environment.php";
 
 $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 	new ArgvOpt('-check',"Obtient la liste des mises à jour à installer",
@@ -27,8 +27,8 @@ $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 try{
 	throw new Exception("For now this functionnality is deprecated and should not be used anymore !");
 	$confs = new UpdatorConf(
-		dirname(dirname(__DIR__))."/engine/config/conf.json",
-		dirname(dirname(__DIR__))."/site/config/conf.json"
+		dirname(__DIR__,2)."/engine/config/conf.json",
+		dirname(__DIR__,2)."/site/config/conf.json"
 	);
 	$updator = new Updator($confs);
 	$check = false; $download = false; $install = false;

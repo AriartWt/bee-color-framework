@@ -536,8 +536,8 @@ class DefaultContext implements IWebAppContext {
 	 */
 	protected function getDomainEventListeners():array{
 		$listeners = $this->getCacheSystem()->get(self::CACHE_KEYS[self::DOMAIN_EVENT_LISTENERS]);
-		$site = dirname(dirname(dirname(dirname(__DIR__)))).'/site';
-		$engine = dirname(dirname(dirname(__DIR__)));
+		$site = dirname(__DIR__,4).'/site';
+		$engine = dirname(__DIR__,3);
 		if(is_null($listeners)){
 			if(file_exists("$site/config/load/domain_events.listeners.php"))
 				$listeners = require("$site/config/load/domain_events.listeners.php");

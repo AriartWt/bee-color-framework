@@ -32,7 +32,7 @@ class Autoloader{
 		}
 		$expl=explode("\\",$className);
 		array_splice($expl,0,1);//on enlève le premier qui est le namespace général
-		$file = dirname(dirname(__DIR__)).'/'.implode('/',$expl).".php";
+		$file = dirname(__DIR__,2).'/'.implode('/',$expl).".php";
 		if(file_exists($file)) require_once($file);
 	}
 }

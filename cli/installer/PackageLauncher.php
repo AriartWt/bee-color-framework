@@ -6,7 +6,7 @@ use wfw\engine\lib\cli\argv\ArgvOptMap;
 use wfw\engine\lib\cli\argv\ArgvParser;
 use wfw\engine\lib\cli\argv\ArgvReader;
 
-require_once dirname(dirname(__FILE__))."/init.environment.php";
+require_once dirname(__FILE__,2)."/init.environment.php";
 
 $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 	new ArgvOpt('-install','Installe un package pour le projet courant',null,null,true),
@@ -23,8 +23,8 @@ try{
 		);
 	};
 
-	$site = dirname(dirname(__DIR__))."/site";
-	$engine = dirname(dirname(__DIR__))."/engine";
+	$site = dirname(__DIR__,2)."/site";
+	$engine = dirname(__DIR__,2)."/engine";
 
 	if($argvReader->exists('-install')){
 		$args = $argvReader->get('-install');

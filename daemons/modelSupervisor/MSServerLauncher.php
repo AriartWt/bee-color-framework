@@ -1,7 +1,7 @@
 #!/usr/bin/php -q
 <?php
 
-require_once dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR."init.environment.php";
+require_once dirname(__FILE__,2)."/init.environment.php";
 
 use wfw\daemons\modelSupervisor\server\conf\MSServerPoolConfs;
 use wfw\daemons\modelSupervisor\server\environment\MSServerEnvironment;
@@ -35,8 +35,8 @@ try{
 
 	//On récupère les configurations.
 	$confs = new MSServerPoolConfs(
-		dirname(dirname(__DIR__))."/engine/config/conf.json",
-		dirname(dirname(__DIR__))."/site/config/conf.json"
+		dirname(__DIR__,2)."/engine/config/conf.json",
+		dirname(__DIR__,2)."/site/config/conf.json"
 	);
 
 	$pids = [];

@@ -404,9 +404,9 @@ try{
 		fwrite(STDOUT,"Creating and configuring KVS containers...\n");
 		//start with KVS (global framework file):
 		$kvs = (new KVSConfs(
-			dirname(dirname(__DIR__))."/engine/config/conf.json",
+			dirname(__DIR__,2)."/engine/config/conf.json",
 				null,
-				dirname(dirname(__DIR__))."/daemons",
+				dirname(__DIR__,2)."/daemons",
 				true)
 			)->getConfFile();
 		$users = $kvs->getArray("users");
@@ -428,9 +428,9 @@ try{
 		fwrite(STDOUT,"Creating and configuring MSServer instance...\n");
 		//next MSServer (global framework file):
 		$mss = ($msConf = new MSServerPoolConfs(
-				dirname(dirname(__DIR__))."/engine/config/conf.json",
+				dirname(__DIR__,2)."/engine/config/conf.json",
 				null,
-				dirname(dirname(__DIR__))."/daemons",
+				dirname(__DIR__,2)."/daemons",
 				true
 		))->getConfFile();
 		$mss->set("admin_mail",$adminMail);
@@ -450,9 +450,9 @@ try{
 
 		fwrite(STDOUT, "Creating and configuring RTS instance...\n");
 		$rts = ($rtsConf = new RTSPoolConfs(
-			dirname(dirname(__DIR__))."/engine/config/conf.json",
+			dirname(__DIR__,2)."/engine/config/conf.json",
 			null,
-			dirname(dirname(__DIR__))."/daemons",
+			dirname(__DIR__,2)."/daemons",
 			true
 		))->getConfFile();
 		$rts->set("admin_mail",$adminMail);
@@ -592,9 +592,9 @@ try{
 		$kvsUser = $project."_msserver";
 		$kvsContainer = $project."_db";
 		$kvs = (new KVSConfs(
-			dirname(dirname(__DIR__))."/engine/config/conf.json",
+			dirname(__DIR__,2)."/engine/config/conf.json",
 				null,
-			dirname(dirname(__DIR__))."/daemons",
+			dirname(__DIR__,2)."/daemons",
 				true)
 			)->getConfFile();
 		$toSave = false;
@@ -616,9 +616,9 @@ try{
 		fwrite(STDOUT,"Removing MSserver instances...\n");
 		//MSServer conf cleaning (global framework file):
 		$mss = ($msConf = new MSServerPoolConfs(
-			dirname(dirname(__DIR__))."/engine/config/conf.json",
+			dirname(__DIR__,2)."/engine/config/conf.json",
 			null,
-			dirname(dirname(__DIR__))."/daemons",
+			dirname(__DIR__,2)."/daemons",
 			true
 		))->getConfFile();
 		if(!is_null($mss->getArray("instances/$project"))){
@@ -631,9 +631,9 @@ try{
 
 		fwrite(STDOUT,"Removing RTS instances...\n");
 		$rts = ($rtsConf = new RTSPoolConfs(
-			dirname(dirname(__DIR__))."/engine/config/conf.json",
+			dirname(__DIR__,2)."/engine/config/conf.json",
 			null,
-			dirname(dirname(__DIR__))."/daemons",
+			dirname(__DIR__,2)."/daemons",
 			true
 		))->getConfFile();
 		if(!is_null($rts->getArray("instances/$project"))){

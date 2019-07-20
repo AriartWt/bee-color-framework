@@ -10,7 +10,7 @@ use wfw\engine\lib\cli\argv\ArgvOptMap;
 use wfw\engine\lib\cli\argv\ArgvParser;
 use wfw\engine\lib\cli\argv\ArgvReader;
 
-require_once dirname(dirname(__FILE__))."/init.environment.php";
+require_once dirname(__FILE__,2)."/init.environment.php";
 
 $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 	new ArgvOpt("-conf","Chemin(s) d'accès au(x) fichier(s) de configurations (par défaut, le fichier cli/tester/config/conf.json est utilisé)",

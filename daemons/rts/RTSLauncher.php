@@ -1,7 +1,7 @@
 #!/usr/bin/php -q
 <?php
 
-require_once dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR."init.environment.php";
+require_once dirname(__FILE__,2)."/init.environment.php";
 
 use wfw\daemons\rts\server\conf\RTSPoolConfs;
 use wfw\daemons\rts\server\environment\RTSEnvironment;
@@ -27,8 +27,8 @@ try{
 	cli_set_process_title("WFW RTS server");
 	//On récupère les configurations.
 	$confs = new RTSPoolConfs(
-		dirname(dirname(__DIR__))."/engine/config/conf.json",
-		dirname(dirname(__DIR__))."/site/config/conf.json"
+		dirname(__DIR__,2)."/engine/config/conf.json",
+		dirname(__DIR__,2)."/site/config/conf.json"
 	);
 
 	$pids = [];
