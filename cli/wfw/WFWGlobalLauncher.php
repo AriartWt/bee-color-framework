@@ -760,7 +760,7 @@ try{
 		//clear all caches to be sure all will reloaded.
 		(new HTTPRequest("http://127.0.0.1/wfw/clear_caches.php",[],["method" =>  "GET"]))
 			->send();
-		fwrite(STDOUT,"Cahes cleaned\n");
+		fwrite(STDOUT,"Caches cleaned\n");
 		fwrite(STDOUT,"Restarting daemons...\n");
 		//restart all daemons to take conf changes in consideration
 		$exec("wfw self service restart -all");

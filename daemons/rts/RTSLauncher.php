@@ -3,6 +3,7 @@
 
 require_once dirname(__FILE__,2)."/init.environment.php";
 
+use wfw\Autoloader;
 use wfw\daemons\rts\server\conf\RTSPoolConfs;
 use wfw\daemons\rts\server\environment\RTSEnvironment;
 use wfw\daemons\rts\server\RTS;
@@ -33,14 +34,18 @@ try{
 
 	$pids = [];
 	foreach($confs->getInstances() as $name){
-		$pid = pcntl_fork();
-		if($pid === 0 ){
-			//clean previous servers before restart.
-			$servWorkingDir = $confs->getWorkingDir($name);
-			$pidFile = $servWorkingDir."/rts.pid";
-			if(file_exists($pidFile))
-				posix_kill(file_get_contents($pidFile),PCNTLSignalsHelper::SIGALRM);
-			if($confs->enabled($name)){
+		if($confs->enabled($name)){
+			$pid = pcntl_fork();
+			if($pid === 0 ){
+				//clean previous servers before restart.
+				$servWorkingDir = $confs->getWorkingDir($name);
+				$pidFile = $servWorkingDir."/rts.pid";
+				if(file_exists($pidFile))
+					posix_kill(file_get_contents($pidFile),PCNTLSignalsHelper::SIGALRM);
+
+				if(!is_null($pPath = $confs->getProjectPath($name)))
+					(new Autoloader([],$pPath))->register(false,true);
+
 				$server = new RTS(
 					$name,
 					$confs->getSocketPath($name),
@@ -74,13 +79,13 @@ try{
 
 				$pcntlHelper = new PCNTLSignalsHelper(true);
 				$pcntlHelper->handleAll([
-						PCNTLSignalsHelper::SIGINT,
-						PCNTLSignalsHelper::SIGHUP,
-						PCNTLSignalsHelper::SIGTERM,
-						PCNTLSignalsHelper::SIGUSR1,
-						PCNTLSignalsHelper::SIGUSR2,
-						PCNTLSignalsHelper::SIGALRM
-					],function()use($server){
+					PCNTLSignalsHelper::SIGINT,
+					PCNTLSignalsHelper::SIGHUP,
+					PCNTLSignalsHelper::SIGTERM,
+					PCNTLSignalsHelper::SIGUSR1,
+					PCNTLSignalsHelper::SIGUSR2,
+					PCNTLSignalsHelper::SIGALRM
+				],function()use($server){
 					$server->shutdown();
 				});
 
@@ -88,12 +93,9 @@ try{
 				//If something goes wrong, break the loop for not spawning some out of controls army
 				//of machiavellian childs
 				exit(0);
-			}
-			break;
-		}else if($pid < 0 ){
-			throw new Exception("Unable to fork");
+			}else if($pid < 0 ) throw new Exception("Unable to fork");
+			else $pids[]=$pid;
 		}
-		else $pids[]=$pid;
 	}
 
 	cli_set_process_title("WFW RTSPool server");

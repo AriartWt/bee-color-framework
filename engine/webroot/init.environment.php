@@ -10,7 +10,7 @@
 
 	require dirname(__DIR__).'/core/Autoloader.php';
 	use wfw\Autoloader;
-	Autoloader::register();
+	(new Autoloader())->register();
 
 	use wfw\engine\lib\debug\Debuger;
 

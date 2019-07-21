@@ -153,6 +153,17 @@ final class RTSPoolConfs {
 	}
 
 	/**
+	 * @param null|string $instance
+	 * @return null|string
+	 * @throws \InvalidArgumentException
+	 */
+	public function getProjectPath(string $instance):?string{
+		if(!$this->_conf->existsKey("instances/$instance"))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return $this->_conf->getString("instances/$instance/project_path") ?? null;
+	}
+
+	/**
 	 * @return FileBasedConf
 	 */
 	public function getConfFile():FileBasedConf{
