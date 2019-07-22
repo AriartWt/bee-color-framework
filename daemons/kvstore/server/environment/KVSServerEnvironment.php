@@ -121,7 +121,8 @@ final class KVSServerEnvironment implements IKVSServerEnvironment {
 				$this->_groupDefs,
 				$defaultStorage,
 				$containerInfos->path ?? $dbPath,
-				$containerInfos->logger
+				$containerInfos->logger,
+				$containerInfos->enabled ?? true
 			);
 		}
 		$this->_sessions = [];

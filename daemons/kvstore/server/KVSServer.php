@@ -184,24 +184,26 @@ final class KVSServer {
 			posix_kill(file_get_contents($pidFile),9);
 			unlink($pidFile);
 		}
-		$worker = new ContainerWorker(
-			$this->_socketAddr,
-			$this->_protocol,
-			$this->_serializer,
-			$this->_dataParser,
-			new ContainerWorkerParams(
-				$container,
-				$this->_serverKey,
-				$this->_dbPath,
-				dirname($this->_socketAddr)
-			),
-			new ContainerWorkerClientParams(
-				$container,
-				dirname($this->_socketAddr)
-			)
-		);
-		$this->_workers[$container->getName()] = $worker;
-		$worker->start();
+		if($container->enabled()){
+			$worker = new ContainerWorker(
+				$this->_socketAddr,
+				$this->_protocol,
+				$this->_serializer,
+				$this->_dataParser,
+				new ContainerWorkerParams(
+					$container,
+					$this->_serverKey,
+					$this->_dbPath,
+					dirname($this->_socketAddr)
+				),
+				new ContainerWorkerClientParams(
+					$container,
+					dirname($this->_socketAddr)
+				)
+			);
+			$this->_workers[$container->getName()] = $worker;
+			$worker->start();
+		}
 	}
 
 	/**

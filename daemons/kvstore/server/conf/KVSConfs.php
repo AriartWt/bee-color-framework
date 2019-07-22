@@ -99,16 +99,16 @@ final class KVSConfs {
 			foreach($this->getContainers(false) as $containerName=>$data){
 				try{
 					$path = $this->_conf->getString("containers/$containerName/project_path");
-					if(file_exists("$path/site/config/conf.json")){
-						$tmpConf = new FileBasedConf($path,new JSONConfIOAdapter());
-						$customConf = $tmpConf->getObject("server/daemons/custom_config/kvs");
-						if(!is_null($customConf)){
-							$currentConf = new StdClassOperator($this->_conf->getObject("containers/$containerName"));
-							$currentConf->mergeStdClass($customConf);
-							$this->_conf->set("containers/$containerName",$currentConf->getStdClass());
-						}
+					$tmpConf = new FileBasedConf("$path/site/config/conf.json",new JSONConfIOAdapter());
+					$customConf = $tmpConf->getObject("server/daemons/custom_config/kvs");
+					if(!is_null($customConf)){
+						$currentConf = new StdClassOperator($this->_conf->getObject("containers/$containerName"));
+						$currentConf->mergeStdClass($customConf);
+						$this->_conf->set("containers/$containerName",$currentConf->getStdClass());
 					}
-				}catch(\Exception $e){}
+				}catch(\Exception $e){
+					$this->_logger->log("Unable to read $containerName configurations : $e",ILogger::ERR);
+				}
 				$this->_instanceLoggers[$containerName] = (new FileLogger(new SimpleLogFormater(),...[
 					$this->getLogPath($containerName,"log"),
 					$this->getLogPath($containerName,"err"),
@@ -169,6 +169,17 @@ final class KVSConfs {
 		}else{
 			return $path;
 		}
+	}
+
+	/**
+	 * @param string $instance
+	 * @return bool
+	 * @throws \InvalidArgumentException
+	 */
+	public function enabled(string $instance):bool{
+		if (!$this->_conf->existsKey("containers/$instance"))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return $this->_conf->getBoolean("containers/$instance/enabled") ?? true;
 	}
 
 	/**

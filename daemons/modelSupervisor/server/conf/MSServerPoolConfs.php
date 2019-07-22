@@ -97,13 +97,14 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 			$tmp->mergeStdClass($instanceConf);
 			try{
 				$path = $tmp->find("project_path");
-				if(file_exists("$path/site/config/conf.json")){
-					$tmpConf = new FileBasedConf($path,new JSONConfIOAdapter());
-					$custom_conf = $tmpConf->getObject("server/daemons/custom_config/msserver");
-					if(!is_null($custom_conf)) $tmp->mergeStdClass($custom_conf);
-				}
-			}catch(\Exception $e){}
+				$tmpConf = new FileBasedConf("$path/site/config/conf.json",new JSONConfIOAdapter());
+				$custom_conf = $tmpConf->getObject("server/daemons/custom_config/msserver");
+				if(!is_null($custom_conf)) $tmp->mergeStdClass($custom_conf);
+			}catch(\Error | \Exception $e){
+				$this->_logger->log("Unable to read $instanceName configurations : $e",ILogger::ERR);
+			}
 			$this->_instancesConfs[$instanceName] = $tmp;
+			$this->_conf->set("instances/$instanceName",$tmp->getStdClass());
 			if(!$noLogger)
 			$this->_instanceLoggers[$instanceName] = (new FileLogger(new SimpleLogFormater(),...[
 				$this->getLogPath($instanceName,"log"),
@@ -125,6 +126,28 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 	 */
 	public function getConfFile():FileBasedConf{
 		return $this->_conf;
+	}
+
+	/**
+	 * @param null|string $instance
+	 * @return null|string
+	 * @throws \InvalidArgumentException
+	 */
+	public function getProjectPath(string $instance):?string{
+		if(!$this->_conf->existsKey("instances/$instance"))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return $this->_conf->getString("instances/$instance/project_path") ?? null;
+	}
+
+	/**
+	 * @param string $instance
+	 * @return bool
+	 * @throws \InvalidArgumentException
+	 */
+	public function enabled(string $instance):bool{
+		if (!$this->_conf->existsKey("instances/$instance"))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return $this->_conf->getBoolean("instances/$instance/enabled") ?? true;
 	}
 
 	/**
