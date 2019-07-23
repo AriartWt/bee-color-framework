@@ -95,7 +95,7 @@ final class RTSPoolConfs {
 				FileLogger::DEBUG,
 				$this->isCopyLogModeEnabled(null)
 			)->autoConfByLevel($this->_conf->getInt("logs/level") ?? ILogger::ERR);
-			$this->_logger = new CombinedLogger(
+			if($this->_conf->getBoolean("logs/console")) $this->_logger = new CombinedLogger(
 				new StandardLogger(new ConsoleLogFormater(new SimpleLogFormater())),
 				$this->_logger
 			);
@@ -144,10 +144,14 @@ final class RTSPoolConfs {
 				)->autoConfByLevel($this->_conf->getInt("instances/$instanceName/logs/level")
 				                   ?? $this->_conf->getInt("logs/level") ?? ILogger::ERR
 				);
-				$this->_instanceLoggers[$instanceName] = new CombinedLogger(
-					new StandardLogger(new ConsoleLogFormater(new SimpleLogFormater())),
-					$this->_instanceLoggers[$instanceName]
-				);
+				if($this->_conf->getBoolean("instances/$instanceName/logs/console")
+					?? $this->_conf->getBoolean("logs/console"))
+				{
+					$this->_instanceLoggers[$instanceName] = new CombinedLogger(
+						new StandardLogger(new ConsoleLogFormater(new SimpleLogFormater())),
+						$this->_instanceLoggers[$instanceName]
+					);
+				}
 			}
 		}
 	}

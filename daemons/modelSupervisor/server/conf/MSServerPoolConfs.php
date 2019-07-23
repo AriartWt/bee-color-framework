@@ -6,9 +6,12 @@ use wfw\daemons\kvstore\server\conf\KVSConfs;
 use wfw\daemons\modelSupervisor\server\IMSServerPoolConf;
 use wfw\engine\core\conf\FileBasedConf;
 use wfw\engine\core\conf\io\adapters\JSONConfIOAdapter;
+use wfw\engine\lib\logger\CombinedLogger;
+use wfw\engine\lib\logger\ConsoleLogFormater;
 use wfw\engine\lib\logger\SimpleLogFormater;
 use wfw\engine\lib\logger\FileLogger;
 use wfw\engine\lib\logger\ILogger;
+use wfw\engine\lib\logger\StandardLogger;
 use wfw\engine\lib\PHP\objects\StdClassOperator;
 use wfw\engine\lib\PHP\types\PHPString;
 
@@ -78,16 +81,22 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 		$workingDir = $this->getWorkingDir();
 		if(!is_dir($workingDir)) mkdir($workingDir,0700,true);
 
-		if(!$noLogger) $this->_logger = (new FileLogger(new SimpleLogFormater(),...[
-			$this->getLogPath(null,"log"),
-			$this->getLogPath(null,"err"),
-			$this->getLogPath(null,"warn"),
-			$this->getLogPath(null,"debug")
-		]))->autoConfFileByLevel(
-			FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
-			FileLogger::DEBUG,
-			$this->isCopyLogModeEnabled()
-		)->autoConfByLevel($this->_conf->getInt("logs/level") ?? ILogger::ERR);
+		if(!$noLogger){
+			$this->_logger = (new FileLogger(new SimpleLogFormater(),...[
+				$this->getLogPath(null,"log"),
+				$this->getLogPath(null,"err"),
+				$this->getLogPath(null,"warn"),
+				$this->getLogPath(null,"debug")
+			]))->autoConfFileByLevel(
+				FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
+				FileLogger::DEBUG,
+				$this->isCopyLogModeEnabled()
+			)->autoConfByLevel($this->_conf->getInt("logs/level") ?? ILogger::ERR);
+			if($this->_conf->getBoolean("logs/console")) $this->_logger = new CombinedLogger(
+				new StandardLogger(new ConsoleLogFormater(new SimpleLogFormater())),
+				$this->_logger
+			);
+		}
 
 		//On détermine les configurations de chaque instance à créer
 		$defInstance = $this->_conf->getObject(self::DEFAULT_INSTANCE);
@@ -105,19 +114,28 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 			}
 			$this->_instancesConfs[$instanceName] = $tmp;
 			$this->_conf->set("instances/$instanceName",$tmp->getStdClass());
-			if(!$noLogger)
-			$this->_instanceLoggers[$instanceName] = (new FileLogger(new SimpleLogFormater(),...[
-				$this->getLogPath($instanceName,"log"),
-				$this->getLogPath($instanceName,"err"),
-				$this->getLogPath($instanceName,"warn"),
-				$this->getLogPath($instanceName,"debug")
-			]))->autoConfFileByLevel(
-				FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
-				FileLogger::DEBUG,
-				$this->isCopyLogModeEnabled($instanceName)
-			)->autoConfByLevel($this->_conf->getInt("instances/$instanceName/logs/level")
-				?? $this->_conf->getInt("logs/level") ?? ILogger::ERR
-			);
+			if(!$noLogger){
+				$this->_instanceLoggers[$instanceName] = (new FileLogger(new SimpleLogFormater(),...[
+					$this->getLogPath($instanceName,"log"),
+					$this->getLogPath($instanceName,"err"),
+					$this->getLogPath($instanceName,"warn"),
+					$this->getLogPath($instanceName,"debug")
+				]))->autoConfFileByLevel(
+					FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
+					FileLogger::DEBUG,
+					$this->isCopyLogModeEnabled($instanceName)
+				)->autoConfByLevel($this->_conf->getInt("instances/$instanceName/logs/level")
+				                   ?? $this->_conf->getInt("logs/level") ?? ILogger::ERR
+				);
+				if($this->_conf->getBoolean("instances/$instanceName/logs/console")
+					?? $this->_conf->getBoolean("logs/console"))
+				{
+					$this->_instanceLoggers[$instanceName] = new CombinedLogger(
+						new StandardLogger(new ConsoleLogFormater(new SimpleLogFormater())),
+						$this->_instanceLoggers[$instanceName]
+					);
+				}
+			}
 		}
 	}
 

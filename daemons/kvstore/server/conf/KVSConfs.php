@@ -4,9 +4,12 @@ namespace wfw\daemons\kvstore\server\conf;
 use stdClass;
 use wfw\engine\core\conf\FileBasedConf;
 use wfw\engine\core\conf\io\adapters\JSONConfIOAdapter;
+use wfw\engine\lib\logger\CombinedLogger;
+use wfw\engine\lib\logger\ConsoleLogFormater;
 use wfw\engine\lib\logger\SimpleLogFormater;
 use wfw\engine\lib\logger\FileLogger;
 use wfw\engine\lib\logger\ILogger;
+use wfw\engine\lib\logger\StandardLogger;
 use wfw\engine\lib\PHP\objects\StdClassOperator;
 use wfw\engine\lib\PHP\types\PHPString;
 
@@ -96,6 +99,11 @@ final class KVSConfs {
 				$this->isCopyLogModeEnabled(null)
 			)->autoConfByLevel($this->_conf->getInt("logs/level") ?? ILogger::ERR);
 
+			if($this->_conf->getBoolean("logs/console")) $this->_logger = new CombinedLogger(
+				new StandardLogger(new ConsoleLogFormater(new SimpleLogFormater())),
+				$this->_logger
+			);
+
 			foreach($this->getContainers(false) as $containerName=>$data){
 				try{
 					$path = $this->_conf->getString("containers/$containerName/project_path");
@@ -121,6 +129,14 @@ final class KVSConfs {
 				)->autoConfByLevel($this->_conf->getInt("containers/$containerName/logs/level")
 				                   ?? $this->_conf->getInt("logs/level") ?? ILogger::ERR
 				);
+				if($this->_conf->getBoolean("containers/$containerName/logs/console")
+					?? $this->_conf->getBoolean("logs/console"))
+				{
+					$this->_instanceLoggers[$containerName] = new CombinedLogger(
+						new StandardLogger(new ConsoleLogFormater(new SimpleLogFormater())),
+						$this->_instanceLoggers[$containerName]
+					);
+				}
 			}
 		}
 	}
