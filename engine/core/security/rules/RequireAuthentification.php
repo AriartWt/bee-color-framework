@@ -32,8 +32,6 @@ final class RequireAuthentification implements IAccessRule {
 	private $_notifier;
 	/** @var ISession $_session */
 	private $_session;
-	/** @var null|string $_sessionKey */
-	private $_sessionKey;
 	/** @var null|string $_redirUrl */
 	private $_redirUrl;
 	/** @var null|IMessage $_message */
@@ -48,7 +46,6 @@ final class RequireAuthentification implements IAccessRule {
 	 * @param INotifier   $notifier
 	 * @param ITranslator $translator
 	 * @param string[]    ...$pathsToProtect Chemins à protéger.
-	 * @param string      $sessionKey
 	 * @param null|string $redirUrl
 	 * @param null|string $translationKey
 	 * @param bool        $treeBased         (optionnal) MUST BE TRUE if you want a tree based rule set !
@@ -58,7 +55,6 @@ final class RequireAuthentification implements IAccessRule {
 		INotifier $notifier,
 		ITranslator $translator,
 		array $pathsToProtect = [],
-		?string $sessionKey = null,
 		?string $redirUrl = null,
 		?string $translationKey = null,
 		bool $treeBased = false
@@ -68,13 +64,13 @@ final class RequireAuthentification implements IAccessRule {
 			return $paths;
 		})(...$pathsToProtect);
 
-		$this->_sessionKey = $sessionKey ?? "user";
 		$this->_paths = $pathsToProtect;
 		$this->_notifier = $notifier;
 		$this->_session = $session;
 		$this->_redirUrl = $redirUrl ?? "users/login";
 		$this->_message = new Message(
-			$translator->getAndTranslate(
+			$translator->getAndTranslate("server/engine/core/app/ACCESS_DENIED")." : "
+			.$translator->getAndTranslate(
 				$translationKey ?? "server/engine/core/app/MUST_BE_LOGGED"
 			),
 			MessageTypes::ERROR
@@ -142,7 +138,7 @@ final class RequireAuthentification implements IAccessRule {
 	 * @return AccessPermission
 	 */
 	private function denyPublicAccess(IAction $action):AccessPermission{
-		if(!$this->_session->exists($this->_sessionKey)){
+		if(!$this->_session->isLogged()){
 			if(!$action->getRequest()->isAjax())
 				$this->_notifier->addMessage($this->_message);
 			return new AccessPermission(

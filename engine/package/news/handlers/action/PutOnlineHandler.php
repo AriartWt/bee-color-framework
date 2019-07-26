@@ -49,7 +49,7 @@ final class PutOnlineHandler extends DefaultArticleActionHandler implements IDom
 		$this->_cache = $cache;
 		$this->_ids = [];
 		$this->_encoder = $encoder;
-		$observer->addEventListener(PutOnlineEvent::class,$this);
+		$observer->addDomainEventListener(PutOnlineEvent::class, $this);
 	}
 
 	/**
@@ -65,7 +65,7 @@ final class PutOnlineHandler extends DefaultArticleActionHandler implements IDom
 	 *
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void{
+	public function recieveDomainEvent(IDomainEvent $e): void{
 		if($e instanceof PutOnlineEvent) $this->_ids[] = (string) $e->getAggregateId();
 	}
 

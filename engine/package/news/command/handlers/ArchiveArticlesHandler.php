@@ -14,7 +14,7 @@ final class ArchiveArticlesHandler extends ArticleCommandHandler {
 	 *
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		/** @var ArchiveArticles $command */
 		foreach($command->getArticleIds() as $id){
 			try{

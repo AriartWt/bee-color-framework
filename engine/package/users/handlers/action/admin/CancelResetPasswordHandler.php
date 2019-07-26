@@ -38,7 +38,7 @@ final class CancelResetPasswordHandler extends DefaultUserActionHandler implemen
 		ITranslator $translator
 	){
 		parent::__construct($bus, $rule, $session, $translator);
-		$observer->addEventListener(
+		$observer->addDomainEventListener(
 			UserPasswordRetrievingCanceledEvent::class,
 			$this
 		);
@@ -48,7 +48,7 @@ final class CancelResetPasswordHandler extends DefaultUserActionHandler implemen
 	 * Méthode appelée lors de la reception d'un événement
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof UserPasswordRetrievingCanceledEvent) $this->_event = $e;
 	}
 

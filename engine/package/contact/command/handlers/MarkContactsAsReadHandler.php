@@ -14,7 +14,7 @@ final class MarkContactsAsReadHandler extends ContactCommandHandler {
 	 *
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		$res=[];
 		/** @var MarkContactsAsRead $command */
 		foreach($command->getIds() as $id){

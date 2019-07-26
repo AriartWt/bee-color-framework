@@ -46,7 +46,7 @@ final class ResendForgottenPasswordMailHandler extends DefaultUserActionHandler 
 	){
 		parent::__construct($bus, $rule, $session, $translator);
 		$this->_access = $access;
-		$observer->addEventListener(
+		$observer->addDomainEventListener(
 			AskedForPasswordRetrievingEvent::class,
 			$this
 		);
@@ -81,7 +81,7 @@ final class ResendForgottenPasswordMailHandler extends DefaultUserActionHandler 
 	 * Méthode appelée lors de la reception d'un événement
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof AskedForPasswordRetrievingEvent) $this->_event = $e;
 	}
 }

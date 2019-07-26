@@ -28,7 +28,7 @@ final class ChangeLoginHandler extends UserCommandHandler{
 	 * Traite la commande
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		/** @var ChangeLogin $command */
 		if(is_null($this->_access->getByLogin($command->getLogin()))){
 			$user = $this->get($command->getUserId());

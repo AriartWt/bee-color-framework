@@ -14,7 +14,7 @@ final class ArchiveContactsHandler extends ContactCommandHandler{
 	 *
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		$res = [];
 		/** @var ArchiveContacts $command */
 		foreach($command->getIds() as $id){

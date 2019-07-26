@@ -72,7 +72,7 @@ class UserModelTest extends TestCase {
 		$model = $this->createModel();
 		$users = $model->find("id");
 		$user = $users[0];
-		$model->recieveEvent($this->createRemovedEvent($user->getId()));
+		$model->recieveDomainEvent($this->createRemovedEvent($user->getId()));
 		$this->assertCount(0,$model->find("id='".$user->getId()."'"));
 
 		$this->assertCount(1,$model->find(UserModel::IS_ENABLED));
@@ -89,7 +89,7 @@ class UserModelTest extends TestCase {
 		$model = $this->createModel();
 		$users = $model->find("id");
 		$user = $users[0];
-		$model->recieveEvent($this->createLoginChangedEvent($user->getId(),"new login @"));
+		$model->recieveDomainEvent($this->createLoginChangedEvent($user->getId(), "new login @"));
 		$res = $model->find((string)new LoginIs("new login @"));
 		$this->assertCount(1,$res);
 		$this->assertEquals($user->getId(),$res[0]->getId());
@@ -100,7 +100,7 @@ class UserModelTest extends TestCase {
 		$users = $model->find("id");
 		/** @var User $user */
 		$user = $users[0];
-		$model->recieveEvent(new UserConfirmedEvent($user->getId(),new EnabledUser(),new UUID()));
+		$model->recieveDomainEvent(new UserConfirmedEvent($user->getId(), new EnabledUser(), new UUID()));
 		/** @var User $u */
 		$u = $model->find("id='".$user->getId()."'")[0];
 		$this->assertInstanceOf(EnabledUser::class,$u->getState());
@@ -111,7 +111,7 @@ class UserModelTest extends TestCase {
 		$users = $model->find("id");
 		/** @var User $user */
 		$user = $users[0];
-		$model->recieveEvent(
+		$model->recieveDomainEvent(
 			new AskedForEmailChangeEvent(
 				$user->getId(),
 				new Email("new@email.com"),
@@ -133,7 +133,7 @@ class UserModelTest extends TestCase {
 		$users = $model->find("id");
 		/** @var User $user */
 		$user = $users[0];
-		$model->recieveEvent(
+		$model->recieveDomainEvent(
 			new AskedForPasswordRetrievingEvent(
 				$user->getId(),
 				new UserConfirmationCode("code"),
@@ -153,7 +153,7 @@ class UserModelTest extends TestCase {
 		$users = $model->find("id");
 		/** @var User $user */
 		$user = $users[0];
-		$model->recieveEvent(
+		$model->recieveDomainEvent(
 			new CanceledUserMailChangeEvent(
 				$user->getId(),
 				new EnabledUser(),
@@ -170,7 +170,7 @@ class UserModelTest extends TestCase {
 		$users = $model->find("id");
 		/** @var User $user */
 		$user = $users[0];
-		$model->recieveEvent(
+		$model->recieveDomainEvent(
 			new UserPasswordRetrievingCanceledEvent(
 				$user->getId(),
 				new EnabledUser(),
@@ -187,7 +187,7 @@ class UserModelTest extends TestCase {
 		$users = $model->find("id");
 		/** @var User $user */
 		$user = $users[0];
-		$model->recieveEvent($this->createMailConfirmedEvent($user->getId(),"newmail@mail.fr"));
+		$model->recieveDomainEvent($this->createMailConfirmedEvent($user->getId(), "newmail@mail.fr"));
 		/** @var User $u */
 		$u = $model->find("id='".$user->getId()."'")[0];
 		$this->assertInstanceOf(EnabledUser::class,$u->getState());
@@ -199,7 +199,7 @@ class UserModelTest extends TestCase {
 		$users = $model->find("id");
 		/** @var User $user */
 		$user = $users[0];
-		$model->recieveEvent(new UserPasswordChangedEvent(
+		$model->recieveDomainEvent(new UserPasswordChangedEvent(
 			$user->getId(),
 			new Password("a new password 78"),
 			new UUID()
@@ -214,7 +214,7 @@ class UserModelTest extends TestCase {
 		$users = $model->find("id");
 		/** @var User $user */
 		$user = $users[0];
-		$model->recieveEvent(new UserPasswordResetedEvent(
+		$model->recieveDomainEvent(new UserPasswordResetedEvent(
 			$user->getId(),
 			new Password("a new password 78"),
 			new EnabledUser(),
@@ -231,7 +231,7 @@ class UserModelTest extends TestCase {
 		$users = $model->find("id");
 		/** @var User $user */
 		$user = $users[0];
-		$model->recieveEvent(new UserSettingsModifiedEvent(
+		$model->recieveDomainEvent(new UserSettingsModifiedEvent(
 			$user->getId(),
 			[
 				"a/new/key" => 156
@@ -248,14 +248,14 @@ class UserModelTest extends TestCase {
 		$users = $model->find("id");
 		/** @var User $user */
 		$user = $users[0];
-		$model->recieveEvent(new UserSettingsModifiedEvent(
+		$model->recieveDomainEvent(new UserSettingsModifiedEvent(
 			$user->getId(),
 			[
 				"a/new/key" => 156
 			],
 			new UUID()
 		));
-		$model->recieveEvent(new UserSettingsRemovedEvent(
+		$model->recieveDomainEvent(new UserSettingsRemovedEvent(
 			$user->getId(),
 			[
 				"a/new/key"
@@ -272,7 +272,7 @@ class UserModelTest extends TestCase {
 		$users = $model->find("id");
 		/** @var User $user */
 		$user = $users[0];
-		$model->recieveEvent(new UserTypeChangedEvent(
+		$model->recieveDomainEvent(new UserTypeChangedEvent(
 			$user->getId(),
 			new Admin(),
 			new UUID()
@@ -293,7 +293,7 @@ class UserModelTest extends TestCase {
 				[$this->createUserRegisteredEvent()]
 			);
 		}
-		foreach($events as $e){$model->recieveEvent($e);}
+		foreach($events as $e){$model->recieveDomainEvent($e);}
 		return $model;
 	}
 	private function createUserRegisteredEvent(?UserState $state=null,?UserType $type=null):UserRegisteredEvent{

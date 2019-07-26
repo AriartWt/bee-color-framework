@@ -16,7 +16,7 @@ final class CreateContactHandler extends ContactCommandHandler {
 	 *
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		/** @var CreateContact $command */
 		$this->repos()->add(new Contact(
 			new UUID(),

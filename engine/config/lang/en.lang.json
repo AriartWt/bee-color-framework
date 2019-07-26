@@ -3,10 +3,13 @@
 		"engine" : {
 			"core" : {
 				"app" : {
-					"ACTION_HANDLER_NOT_FOUND" : "ActionHandler [[$]] doesn't exists !",
+					"ACTION_HANDLER_NOT_FOUND" : "ActionHandler [[$]] doesn't exists",
 					"INTERNAL_ERROR" : "Internal error : [$]",
-					"MUST_BE_LOGGED" : "Access denied : you must be connected !",
-					"404_NOT_FOUND" : "Page '[$]' not found !"
+					"MUST_BE_LOGGED" : "You must be connected.",
+					"ACCESS_DENIED" : "Access denied",
+					"INSUFFICIENT_PRIVILEGIES":"Insufficient user privileges.",
+					"BAD_CSRF_TOKEN" : "Invalid CSRF token.",
+					"404_NOT_FOUND" : "Page '[$]' not found"
 				}
 			},
 			"package" : {

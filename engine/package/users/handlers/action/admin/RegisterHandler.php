@@ -59,7 +59,7 @@ final class RegisterHandler extends DefaultUserActionHandler implements IDomainE
 		parent::__construct($bus, $rule, $session, $translator);
 		$this->_encoder = $encoder;
 		$this->_access = $access;
-		$observer->addEventListener(UserRegisteredEvent::class,$this);
+		$observer->addDomainEventListener(UserRegisteredEvent::class, $this);
 	}
 
 	/**
@@ -104,7 +104,7 @@ final class RegisterHandler extends DefaultUserActionHandler implements IDomainE
 	 * Méthode appelée lors de la reception d'un événement
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof UserRegisteredEvent) $this->_userRegisteredEvent = $e;
 	}
 }

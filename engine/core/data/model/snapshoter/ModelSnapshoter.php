@@ -84,7 +84,7 @@ class ModelSnapshoter implements IModelSnapshoter {
 		$manager = new DomainEventObserver();
 		foreach($models as $model){
 			foreach($model->listenEvents() as $e){
-				$manager->addEventListener($e,$model);
+				$manager->addDomainEventListener($e, $model);
 			}
 		}
 		//on détermine le nombre d'étapes
@@ -105,7 +105,7 @@ class ModelSnapshoter implements IModelSnapshoter {
 				LIMIT $limit OFFSET ".($from + ($i * $limit))."
 			"));
 			foreach($events as $e){
-				$manager->dispatch($this->_serializer->unserialize($e["data"]));
+				$manager->dispatchDomainEvent($this->_serializer->unserialize($e["data"]));
 			}
 
 			$totalEvents += $events->rowCount();;

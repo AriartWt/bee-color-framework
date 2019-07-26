@@ -43,7 +43,7 @@ final class ChangeUserMailHandler extends UserCommandHandler {
 	 * Traite la commande
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		/** @var ChangeUserMail $command */
 		$user = $this->get($command->getUserId());
 		$code = $this->_generator->createUserConfirmationCode();

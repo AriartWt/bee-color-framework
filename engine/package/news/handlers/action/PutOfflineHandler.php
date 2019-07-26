@@ -49,7 +49,7 @@ final class PutOfflineHandler extends DefaultArticleActionHandler implements IDo
 		$this->_cache = $cache;
 		$this->_ids = [];
 		$this->_encoder = $encoder;
-		$observer->addEventListener(PutOfflineEvent::class,$this);
+		$observer->addDomainEventListener(PutOfflineEvent::class, $this);
 	}
 
 	/**
@@ -65,7 +65,7 @@ final class PutOfflineHandler extends DefaultArticleActionHandler implements IDo
 	 *
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void{
+	public function recieveDomainEvent(IDomainEvent $e): void{
 		if($e instanceof PutOfflineEvent) $this->_ids[] = (string) $e->getAggregateId();
 	}
 

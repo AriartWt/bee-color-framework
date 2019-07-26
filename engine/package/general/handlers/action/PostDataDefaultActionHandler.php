@@ -72,9 +72,9 @@ abstract class PostDataDefaultActionHandler implements IActionHandler {
 				$command = $this->createCommand($data);
 				if($command instanceof MultiCommand){
 					foreach($command->commands() as $cmd){
-						$this->_bus->execute($cmd);
+						$this->_bus->executeCommand($cmd);
 					}
-				}else $this->_bus->execute($command);
+				}else $this->_bus->executeCommand($command);
 				return $this->successResponse();
 			}catch(\Exception $e){
 				return $this->handleException($e);

@@ -62,7 +62,7 @@ final class DBBasedEventStore implements IEventStore {
 	 *
 	 * @return IAggregateRoot|null
 	 */
-	public function get(UUID $aggregateId):?IAggregateRoot{
+	public function getAggregateRoot(UUID $aggregateId):?IAggregateRoot{
 		$events = $this->_db->execute((new QueryBuilder())->raw("
 			SELECT e.id as id , a.type as aggregate_type , e.data as data , e.type as event_type , s.data as snapshot
 			FROM events as e
@@ -110,10 +110,10 @@ final class DBBasedEventStore implements IEventStore {
 	 * @param UUID ...$aggregatesId Liste des identifiants d'aggrégats
 	 * @return IAggregateRoot[]
 	 */
-	public function getAll(UUID... $aggregatesId): array {
+	public function getAllAggregateRoot(UUID... $aggregatesId): array {
 		$res = [];
 		foreach($aggregatesId as $id){
-			$r = $this->get($id);
+			$r = $this->getAggregateRoot($id);
 			if(!is_null($r)) $res[] = $r;
 		}
 		return $res;
@@ -127,7 +127,7 @@ final class DBBasedEventStore implements IEventStore {
 	 *
 	 * @throws Exception
 	 */
-	public function save(IAggregateRoot $aggregate, ?ICommand $command = null) {
+	public function saveAggregateRoot(IAggregateRoot $aggregate, ?ICommand $command = null) {
 		if($aggregate->getEventList()->getLength()>0){
 			$this->_db->beginTransaction();
 			$builder = new QueryBuilder();
@@ -218,7 +218,7 @@ final class DBBasedEventStore implements IEventStore {
 			if(!$this->_eventDispatchInTransaction){
 				$this->_msAccess->applyEvents($aggregate->getEventList());
 			}
-			$this->_dispatcher->dispatchAll($aggregate->getEventList());
+			$this->_dispatcher->dispatchAllDomainEvents($aggregate->getEventList());
 			$aggregate->resetEventList();
 		}
 	}
@@ -251,9 +251,9 @@ final class DBBasedEventStore implements IEventStore {
 	 * @param null|ICommand  $command       Commande à l'origine de la mise à jour des aggrégats
 	 * @param IAggregateRoot ...$aggregates Liste des aggrégats
 	 */
-	public function saveAll(?ICommand $command = null, IAggregateRoot... $aggregates) {
+	public function saveAllAggregateRoots(?ICommand $command = null, IAggregateRoot... $aggregates) {
 		foreach($aggregates as $a){
-			$this->save($a,$command);
+			$this->saveAggregateRoot($a, $command);
 		}
 	}
 }

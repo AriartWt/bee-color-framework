@@ -4,13 +4,18 @@ namespace wfw\engine\core\command;
 use wfw\engine\lib\PHP\types\UUID;
 
 /**
- *  Représente une commande pour un CommandHandler
+ * Command
  */
 interface ICommand {
 	/**
 	 * @return UUID
 	 */
 	public function getId():UUID;
+
+	/**
+	 * @return null|string Uner that initates the command (if available)
+	 */
+	public function getUserId():?string;
 
 	/**
 	 * @return float

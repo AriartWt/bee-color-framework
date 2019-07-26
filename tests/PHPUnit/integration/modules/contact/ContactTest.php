@@ -72,10 +72,10 @@ class ContactTest extends TestCase implements IDomainEventListener
 		/** @var ICommandBus $bus */
 		/** @var IDomainEventObserver $observer */
 		$observer = TestEnv::get()->create(IDomainEventObserver::class);
-		$observer->addEventListener(ContactedEvent::class,$this);
+		$observer->addDomainEventListener(ContactedEvent::class, $this);
 		$bus = TestEnv::get()->create(ICommandBus::class);
 		$createContactCommand = new CreateContact($label,$infos);
-		$bus->execute($createContactCommand);
+		$bus->executeCommand($createContactCommand);
 
 		$client = TestEnv::createMSClient();
 		$client->login();
@@ -431,7 +431,7 @@ class ContactTest extends TestCase implements IDomainEventListener
 		/** @var ICommandBus $bus */
 		$bus = TestEnv::get()->create(ICommandBus::class);
 		$createContactCommand = new CreateContact($label,$infos);
-		$bus->execute($createContactCommand);
+		$bus->executeCommand($createContactCommand);
 
 		ob_start();
 		$client = TestEnv::createMSClient();
@@ -507,7 +507,7 @@ class ContactTest extends TestCase implements IDomainEventListener
 	 *
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		$this->_e = $e;
 	}
 }

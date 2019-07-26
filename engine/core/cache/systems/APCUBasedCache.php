@@ -93,9 +93,9 @@ final class APCUBasedCache implements ICacheSystem{
 	 * to APCUIterator::__construct()
 	 * @see https://bugs.php.net/bug.php?id=78002
 	 * @param string[] $keys Clé des valeurs à chercher
-	 * @return \Traversable
+	 * @return iterable
 	 */
-	public function getAll(array $keys): \Traversable {
+	public function getAll(array $keys): iterable {
 		foreach($keys as $k=>$key){
 			$keys[$k]="/".str_replace("/",'\/',"^$this->_namespace::$key")."/";
 		}

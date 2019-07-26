@@ -41,7 +41,7 @@ final class ArchiveHandler extends DefaultContactActionHandler implements IDomai
 		parent::__construct($bus, $rule, $session);
 		$this->_ids = [];
 		$this->_encoder = $encoder;
-		$observer->addEventListener(ArchivedEvent::class,$this);
+		$observer->addDomainEventListener(ArchivedEvent::class, $this);
 	}
 
 	/**
@@ -57,7 +57,7 @@ final class ArchiveHandler extends DefaultContactActionHandler implements IDomai
 	 *
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof ArchivedEvent) $this->_ids[] = (string) $e->getAggregateId();
 	}
 

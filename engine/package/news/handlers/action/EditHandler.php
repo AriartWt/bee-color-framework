@@ -69,9 +69,9 @@ final class EditHandler extends DefaultArticleActionHandler implements IDomainEv
 		$this->_sanitizer = $sanitizer;
 		$this->_encoder = $encoder;
 		$this->_cache = $cacheSystem;
-		$observer->addEventListener(TitleEditedEvent::class,$this);
-		$observer->addEventListener(ContentEditedEvent::class,$this);
-		$observer->addEventListener(VisualLinkEditedEvent::class, $this);
+		$observer->addDomainEventListener(TitleEditedEvent::class, $this);
+		$observer->addDomainEventListener(ContentEditedEvent::class, $this);
+		$observer->addDomainEventListener(VisualLinkEditedEvent::class, $this);
 		$this->_msaccess = $msaccess;
 	}
 
@@ -118,7 +118,7 @@ final class EditHandler extends DefaultArticleActionHandler implements IDomainEv
 	 *
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof TitleEditedEvent) $this->_titleEvent = $e;
 		else if($e instanceof ContentEditedEvent) $this->_contentEvent = $e;
 		else if($e instanceof VisualLinkEditedEvent) $this->_visualEvent = $e;

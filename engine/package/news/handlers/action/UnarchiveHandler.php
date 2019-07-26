@@ -48,7 +48,7 @@ final class UnarchiveHandler extends DefaultArticleActionHandler implements IDom
 		$this->_ids = [];
 		$this->_cache = $cache;
 		$this->_encoder = $encoder;
-		$observer->addEventListener(UnarchivedEvent::class,$this);
+		$observer->addDomainEventListener(UnarchivedEvent::class, $this);
 	}
 
 	/**
@@ -64,7 +64,7 @@ final class UnarchiveHandler extends DefaultArticleActionHandler implements IDom
 	 *
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void{
+	public function recieveDomainEvent(IDomainEvent $e): void{
 		if($e instanceof UnarchivedEvent) $this->_ids[] = (string) $e->getAggregateId();
 	}
 

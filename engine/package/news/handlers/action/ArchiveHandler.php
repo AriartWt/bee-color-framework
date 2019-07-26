@@ -49,7 +49,7 @@ final class ArchiveHandler extends DefaultArticleActionHandler implements IDomai
 		$this->_ids = [];
 		$this->_cache = $cache;
 		$this->_encoder = $encoder;
-		$observer->addEventListener(ArchivedEvent::class,$this);
+		$observer->addDomainEventListener(ArchivedEvent::class, $this);
 	}
 	/**
 	 * @param array $data
@@ -64,7 +64,7 @@ final class ArchiveHandler extends DefaultArticleActionHandler implements IDomai
 	 *
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void{
+	public function recieveDomainEvent(IDomainEvent $e): void{
 		if($e instanceof ArchivedEvent) $this->_ids[] = (string) $e->getAggregateId();
 	}
 

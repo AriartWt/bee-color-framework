@@ -35,7 +35,7 @@ final class NamespaceBasedInflector implements ICommandInflector {
 	 * @return ICommandHandler[]
 	 * @throws NoCommandHandlerFound
 	 */
-	public function resolveHandlers(ICommand $command): array {
+	public function resolveCommandHandlers(ICommand $command): array {
 		$handlers = $this->resolveHandlersFromCommandClass(get_class($command));
 		if(count($handlers)>0){
 			return $handlers;
@@ -59,7 +59,7 @@ final class NamespaceBasedInflector implements ICommandInflector {
 			$className = array_pop($tmp);
 
 			try{
-				$res[] = $this->_factory->build(
+				$res[] = $this->_factory->buildCommandHandler(
 					implode('\\',$tmp).'\\handlers\\'.$className.'Handler'
 				);
 			}catch(\Exception $e){}

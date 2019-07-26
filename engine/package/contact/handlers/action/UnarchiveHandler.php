@@ -41,7 +41,7 @@ final class UnarchiveHandler extends DefaultContactActionHandler implements IDom
 		parent::__construct($bus, $rule, $session);
 		$this->_ids = [];
 		$this->_encoder = $encoder;
-		$observer->addEventListener(UnarchivedEvent::class,$this);
+		$observer->addDomainEventListener(UnarchivedEvent::class, $this);
 	}
 
 	/**
@@ -57,7 +57,7 @@ final class UnarchiveHandler extends DefaultContactActionHandler implements IDom
 	 *
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof UnarchivedEvent) $this->_ids[] = (string) $e->getAggregateId();
 	}
 

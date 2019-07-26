@@ -69,7 +69,7 @@ final class CreateHandler extends DefaultArticleActionHandler implements IDomain
 		$this->_encoder = $encoder;
 		$this->_msclient = $access;
 		$this->_cache = $cache;
-		$observer->addEventListener(ArticleWrittenEvent::class,$this);
+		$observer->addDomainEventListener(ArticleWrittenEvent::class, $this);
 	}
 
 	/**
@@ -107,7 +107,7 @@ final class CreateHandler extends DefaultArticleActionHandler implements IDomain
 	 *
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void{
+	public function recieveDomainEvent(IDomainEvent $e): void{
 		$this->_creationEvent = $e;
 	}
 }

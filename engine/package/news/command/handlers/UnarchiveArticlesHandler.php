@@ -14,7 +14,7 @@ final class UnarchiveArticlesHandler extends ArticleCommandHandler {
 	 *
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		/** @var UnarchiveArticles $command */
 		foreach($command->getArticleIds() as $id){
 			try{

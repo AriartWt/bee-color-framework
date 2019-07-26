@@ -48,7 +48,7 @@ final class RegisterUserHandler extends UserCommandHandler{
 	 *
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		/** @var RegisterUser $command */
 		if(!is_null($this->_access->getByLogin($command->getLogin())))
 			throw new UserAlreadyExists($command->getLogin()." n'est pas un login disponible");

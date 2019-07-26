@@ -30,7 +30,7 @@ final class ArticleRepository implements IArticleRepository {
 	 */
 	public function get(string $id): ?Article {
 		/** @var Article|null $article */
-		$article = $this->_repos->get(new UUID(UUID::V6,$id));
+		$article = $this->_repos->getAggregateRoot(new UUID(UUID::V6, $id));
 		return $article;
 	}
 
@@ -39,7 +39,7 @@ final class ArticleRepository implements IArticleRepository {
 	 * @param ICommand $command Commande ayant entraînée la création
 	 */
 	public function add(Article $article,ICommand $command): void{
-		$this->_repos->add($article,$command);
+		$this->_repos->addAggregateRoot($article, $command);
 	}
 
 	/**
@@ -47,7 +47,7 @@ final class ArticleRepository implements IArticleRepository {
 	 * @param ICommand $command Commande ayant entraîné la modification
 	 */
 	public function edit(Article $article,ICommand $command): void{
-		$this->_repos->modify($article,$command);
+		$this->_repos->modifyAggregateRoot($article, $command);
 	}
 	
 	/**
@@ -59,6 +59,6 @@ final class ArticleRepository implements IArticleRepository {
 	public function getAll(string... $ids): array {
 		$uuids = [];
 		foreach($ids as $id){$uuids[] = new UUID(UUID::V6,$id);}
-		return $this->_repos->getAll(...$uuids);
+		return $this->_repos->getAllAggregateRoots(...$uuids);
 	}
 }

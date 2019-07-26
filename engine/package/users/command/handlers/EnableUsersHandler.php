@@ -14,7 +14,7 @@ final class EnableUsersHandler extends UserCommandHandler{
 	 *
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		/** @var EnableUsers $command */
 		$users = $this->getAll(...$command->getUsers());
 		foreach($users as $user){

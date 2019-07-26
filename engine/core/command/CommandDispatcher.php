@@ -25,11 +25,11 @@ final class CommandDispatcher implements ICommandDispatcher {
 	 * @param ICommand $command Commande à dispatcher
 	 * @throws NoCommandHandlerFound
 	 */
-	public function dispatch(ICommand $command): void {
+	public function dispatchCommand(ICommand $command): void {
 		$success = false;
 		foreach ($this->_dispatchers as $dispatcher){
 			try{
-				$dispatcher->dispatch($command);
+				$dispatcher->dispatchCommand($command);
 				$success = true;
 				break;
 			}catch(NoCommandHandlerFound $e){}

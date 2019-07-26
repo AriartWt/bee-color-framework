@@ -106,7 +106,7 @@ final class ContactModelTest extends TestCase
 	public function testOtherDomainEventIsIgnored(){
 		$model = $this->createModel([],true);
 		$this->assertEquals(0,count($model->find("id")));
-		$model->recieveEvent(new class(new UUID()) extends DomainEvent{});
+		$model->recieveDomainEvent(new class(new UUID()) extends DomainEvent{});
 		$this->assertEquals(0,count($model->find("id")));
 	}
 
@@ -135,7 +135,7 @@ final class ContactModelTest extends TestCase
 				[$this->createContactedEvent()]
 			);
 		}
-		foreach($events as $e){$model->recieveEvent($e);}
+		foreach($events as $e){$model->recieveDomainEvent($e);}
 		return $model;
 	}
 

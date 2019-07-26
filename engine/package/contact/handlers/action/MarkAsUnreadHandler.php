@@ -41,7 +41,7 @@ final class MarkAsUnreadHandler extends DefaultContactActionHandler implements I
 		parent::__construct($bus, $rule, $session);
 		$this->_ids = [];
 		$this->_encoder = $encoder;
-		$observer->addEventListener(MarkedAsUnreadEvent::class,$this);
+		$observer->addDomainEventListener(MarkedAsUnreadEvent::class, $this);
 	}
 
 	/**
@@ -57,7 +57,7 @@ final class MarkAsUnreadHandler extends DefaultContactActionHandler implements I
 	 *
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof MarkedAsUnreadEvent) $this->_ids[] = (string) $e->getAggregateId();
 	}
 

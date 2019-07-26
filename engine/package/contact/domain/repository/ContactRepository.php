@@ -28,7 +28,7 @@ final class ContactRepository implements IContactRepository{
 	 */
 	public function get(string $id): ?Contact {
 		/** @var null|Contact $contact */
-		$contact = $this->_repos->get(new UUID(UUID::V6,$id));
+		$contact = $this->_repos->getAggregateRoot(new UUID(UUID::V6, $id));
 		return $contact;
 	}
 
@@ -41,7 +41,7 @@ final class ContactRepository implements IContactRepository{
 	public function getAll(string... $ids): array {
 		$uuids = [];
 		foreach($ids as $id){$uuids[] = new UUID(UUID::V6,$id);}
-		return $this->_repos->getAll(...$uuids);
+		return $this->_repos->getAllAggregateRoots(...$uuids);
 	}
 
 	/**
@@ -49,7 +49,7 @@ final class ContactRepository implements IContactRepository{
 	 * @param ICommand $command Commande ayant entraîné la création de la prise de contact
 	 */
 	public function add(Contact $contact, ICommand $command): void {
-		$this->_repos->add($contact,$command);
+		$this->_repos->addAggregateRoot($contact, $command);
 	}
 
 	/**
@@ -57,7 +57,7 @@ final class ContactRepository implements IContactRepository{
 	 * @param ICommand $command Commande ayant entraîné la modiofication de la prise de contact
 	 */
 	public function edit(Contact $contact, ICommand $command): void {
-		$this->_repos->modify($contact,$command);
+		$this->_repos->modifyAggregateRoot($contact, $command);
 	}
 
 
@@ -66,6 +66,6 @@ final class ContactRepository implements IContactRepository{
 	 * @param Contact  ...$contacts Liste de contacts à éditer
 	 */
 	public function editAll(ICommand $command, Contact... $contacts): void {
-		$this->_repos->modifyAll($command,...$contacts);
+		$this->_repos->modifyAllAggregateRoots($command,...$contacts);
 	}
 }

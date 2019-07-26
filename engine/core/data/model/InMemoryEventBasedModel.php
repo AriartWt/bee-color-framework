@@ -184,7 +184,7 @@ abstract class InMemoryEventBasedModel implements IEventListenerModel {
 	/**
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public final function recieveEvent(IDomainEvent $e): void {
+	public final function recieveDomainEvent(IDomainEvent $e): void {
 		$report = $this->recieve($e);
 		foreach ($report->getCreated() as $obj){
 			$this->add($obj);

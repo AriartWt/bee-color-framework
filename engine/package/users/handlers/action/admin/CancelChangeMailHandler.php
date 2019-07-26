@@ -38,7 +38,7 @@ final class CancelChangeMailHandler extends DefaultUserActionHandler implements 
 		ITranslator $translator
 	){
 		parent::__construct($bus, $rule, $session, $translator);
-		$observer->addEventListener(CanceledUserMailChangeEvent::class,$this);
+		$observer->addDomainEventListener(CanceledUserMailChangeEvent::class, $this);
 	}
 
 	/**
@@ -67,7 +67,7 @@ final class CancelChangeMailHandler extends DefaultUserActionHandler implements 
 	 * Méthode appelée lors de la reception d'un événement
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof CanceledUserMailChangeEvent) $this->_event = $e;
 	}
 }

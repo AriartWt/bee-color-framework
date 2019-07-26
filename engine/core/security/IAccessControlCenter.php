@@ -11,7 +11,7 @@ interface IAccessControlCenter {
 	 * Ajoute une régle de verification de permissions.
 	 * @param IAccessRule $rule Règle à ajouter
 	 */
-	public function addRule(IAccessRule $rule):void;
+	public function addAccessRule(IAccessRule $rule):void;
 
 	/**
 	 * Vérifie les permissions d'accés à l'action $action en appliquant une a à une toutes les
@@ -21,5 +21,5 @@ interface IAccessControlCenter {
 	 * @param IAction $action Action à tester
 	 * @return IAccessPermission
 	 */
-	public function checkPermissions(IAction $action):IAccessPermission;
+	public function checkAccessPermission(IAction $action):IAccessPermission;
 }

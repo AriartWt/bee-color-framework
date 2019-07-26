@@ -20,6 +20,10 @@ use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\command\ICommandHandlerFactory;
 use wfw\engine\core\command\ICommandInflector;
 use wfw\engine\core\command\inflectors\NamespaceBasedInflector;
+use wfw\engine\core\command\security\CommandAccessRuleFactory;
+use wfw\engine\core\command\security\CommandSecurityCenter;
+use wfw\engine\core\command\security\ICommandSecurityCenter;
+use wfw\engine\core\command\security\rules\CommandAccessAccessRulesCollector;
 use wfw\engine\core\command\SynchroneCommandBus;
 use wfw\engine\core\data\DBAccess\NOSQLDB\msServer\IMSServerAccess;
 use wfw\engine\core\data\DBAccess\NOSQLDB\msServer\MSServerWriterAccess;
@@ -150,7 +154,7 @@ class DefaultContext implements IWebAppContext {
 	 * @param null|String $ajaxViewPath       Chemin d'accés à la vue ajax par défaut
 	 * @param array       $connections        Connexions d'urls
 	 * @param array       $langs              Langues disponibles
-	 * @param array       $accessRules        Liste des régles d'accés
+	 * @param array       $securityRules      3 indxes : access, command, query
 	 * @param array       $hooks              Liste des hooks
 	 * @param array       $diceRules          Regles à ajouter à Dice
 	 * @param array       $globals            Contient la variables globales de php aux index _GET,_POST,_FILES,_SERVER
@@ -164,7 +168,7 @@ class DefaultContext implements IWebAppContext {
 		?string $ajaxViewPath = null,
 		array $connections = [],
 		array $langs = [],
-		array $accessRules = [],
+		array $securityRules = [],
 		array $hooks = [],
 		array $diceRules = [],
 		array $globals = [],
@@ -176,6 +180,10 @@ class DefaultContext implements IWebAppContext {
 		$genericFactory = new DiceBasedFactory($this->_dice = $dice = new Dice());
 		$this->getErrorHandler()->handle();
 
+		//TODO : init if not set for commands and queries
+		$commandRules = $securityRules["command"] ?? [];
+		$accessRules = $securityRules["access"] ?? [];
+		$queryRules = $securityRules["query"] ?? [];
 		if(count($accessRules) === 0) $accessRules = [
 			RequireAuthentification::class => [
 				array_merge(
@@ -250,12 +258,14 @@ class DefaultContext implements IWebAppContext {
 
 		$this->_translator = $translator =  $this->initTranslator($langs,null);
 		$instance = $this;
+		$commandRulesCollector = new CommandAccessAccessRulesCollector(
+			new CommandAccessRuleFactory($genericFactory),$commandRules
+		);
 
 		$this->_dice->addRules([
 			'*' => [
 				'substitutions' => [
 					IConf::class => [ Dice::INSTANCE => function() use ($conf){ return $conf; } ],
-					/*IRouter::class => [ Dice::INSTANCE => function() use($router){return $router;}],*/
 					IMailProvider::class => [
 						Dice::INSTANCE => function() use($instance,$conf){
 							return $this->initMailProvider($conf);
@@ -308,8 +318,12 @@ class DefaultContext implements IWebAppContext {
 			ICommandInflector::class => [
 				'instanceOf' => NamespaceBasedInflector::class, 'shared' => true
 			],
+			ICommandSecurityCenter::class => [
+				'instanceOf' => CommandSecurityCenter::class, 'shared'=>true,
+				'constructParams' => [ $commandRulesCollector->collect() ]
+			],
 			ICommandHandlerFactory::class => [
-				'instanceOf' => CommandHandlerFactory::class,'shared'=>true
+				'instanceOf' => CommandHandlerFactory::class, 'shared'=>true
 			],
 			IEventStore::class => [ 'instanceOf' => DBBasedEventStore::class ],
 			IDBAccess::class => [

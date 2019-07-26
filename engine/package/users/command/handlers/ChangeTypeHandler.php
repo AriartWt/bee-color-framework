@@ -13,7 +13,7 @@ final class ChangeTypeHandler extends UserCommandHandler{
 	 * Traite la commande
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		/** @var ChangeType $command */
 		/** @var User $user */
 		$user = $this->get($command->getUserId());

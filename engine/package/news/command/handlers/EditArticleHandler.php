@@ -13,7 +13,7 @@ final class EditArticleHandler extends ArticleCommandHandler {
 	 *
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		/** @var EditArticle $command */
 		$article = $this->get($command->getArticleId());
 		if(!is_null($command->getTitle()))

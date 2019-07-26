@@ -243,7 +243,7 @@ final class ModelManager implements IModelManager, ICrossModelAccess {
 
 			$this->_models[get_class($model)] = $model;
 			foreach($model->listenEvents() as $listened){
-				$this->_domainEventManager->addEventListener($listened,$model);
+				$this->_domainEventManager->addDomainEventListener($listened, $model);
 			}
 		}
 	}

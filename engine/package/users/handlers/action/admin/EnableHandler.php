@@ -46,7 +46,7 @@ final class EnableHandler extends DefaultUserActionHandler implements IDomainEve
 		parent::__construct($bus, $rule, $session, $translator);
 		$this->_encoder = $encoder;
 		$this->_ids = [];
-		$observer->addEventListener(UserEnabledEvent::class,$this);
+		$observer->addDomainEventListener(UserEnabledEvent::class, $this);
 	}
 
 	/**
@@ -68,7 +68,7 @@ final class EnableHandler extends DefaultUserActionHandler implements IDomainEve
 	 * Méthode appelée lors de la reception d'un événement
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof UserEnabledEvent) $this->_ids[] = (string) $e->getAggregateId();
 	}
 }

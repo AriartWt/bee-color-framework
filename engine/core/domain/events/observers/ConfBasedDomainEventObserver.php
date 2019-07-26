@@ -50,7 +50,7 @@ final class ConfBasedDomainEventObserver implements IDomainEventObserver {
 				}
 
 				$registeredListernerClasses = [];
-				foreach($observer->getEventListeners($eventClass) as $listener){
+				foreach($observer->getDomainEventListeners($eventClass) as $listener){
 					$registeredListernerClasses[] = get_class($listener);
 				}
 				$this->_listeners[$eventClass] = array_diff(
@@ -70,21 +70,21 @@ final class ConfBasedDomainEventObserver implements IDomainEventObserver {
 	 * Dispatche un événement
 	 * @param IDomainEvent $e Evenement à dispatcher
 	 */
-	public function dispatch(IDomainEvent $e): void {
-		$this->dispatchAll(new EventList([$e]));
+	public function dispatchDomainEvent(IDomainEvent $e): void {
+		$this->dispatchAllDomainEvents(new EventList([$e]));
 	}
 
 	/**
 	 * @param EventList $events Evenements à dispatcher
 	 */
-	public function dispatchAll(EventList $events): void {
+	public function dispatchAllDomainEvents(EventList $events): void {
 		//On cherche dans les listeners les listeners à créer
 		if(count($this->_listeners) > 0){
 			foreach($events as $e){
 				$this->initListenersForEvent($e);
 			}
 		}
-		$this->_observer->dispatchAll($events);
+		$this->_observer->dispatchAllDomainEvents($events);
 	}
 
 	/**
@@ -94,9 +94,9 @@ final class ConfBasedDomainEventObserver implements IDomainEventObserver {
 		foreach($this->_listeners as $eventsClass=>$listeners){
 			if($e instanceof $eventsClass){
 				foreach($listeners as $listenerClass){
-					$this->addEventListener(
+					$this->addDomainEventListener(
 						$eventsClass,
-						$this->_listenerFactory->build($listenerClass)
+						$this->_listenerFactory->buildDomainEventListener($listenerClass)
 					);
 				}
 				unset($this->_listeners[$eventsClass]);
@@ -108,8 +108,8 @@ final class ConfBasedDomainEventObserver implements IDomainEventObserver {
 	 * @param string $domainEventClass Evenement écouté
 	 * @return IDomainEventListener[]
 	 */
-	public function getEventListeners(string $domainEventClass): array {
-		return $this->_observer->getEventListeners($domainEventClass);
+	public function getDomainEventListeners(string $domainEventClass): array {
+		return $this->_observer->getDomainEventListeners($domainEventClass);
 	}
 
 	/**
@@ -119,8 +119,8 @@ final class ConfBasedDomainEventObserver implements IDomainEventObserver {
 	 *                                 Tiens compte de l'héritage
 	 * @param IDomainEventListener $listener Listener à appeler
 	 */
-	public function addEventListener(string $domainEventClass, IDomainEventListener $listener) {
-		$this->_observer->addEventListener($domainEventClass,$listener);
+	public function addDomainEventListener(string $domainEventClass, IDomainEventListener $listener) {
+		$this->_observer->addDomainEventListener($domainEventClass, $listener);
 	}
 
 	/**
@@ -132,10 +132,10 @@ final class ConfBasedDomainEventObserver implements IDomainEventObserver {
 	 *                                            supprime tous les listeners de la classe
 	 *                                            d'événement
 	 */
-	public function removeEventListener(
+	public function removeDomainEventListener(
 		string $domainEventClass,
 		?IDomainEventListener $listener = null
 	) {
-		$this->_observer->removeEventListener($domainEventClass,$listener);
+		$this->_observer->removeDomainEventListener($domainEventClass, $listener);
 	}
 }

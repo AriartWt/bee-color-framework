@@ -25,12 +25,12 @@ class DomainEventObserver implements IDomainEventObserver {
 	 *
 	 * @param IDomainEvent $e Evenement à dispatcher
 	 */
-	public function dispatch(IDomainEvent $e): void {
+	public function dispatchDomainEvent(IDomainEvent $e): void {
 		foreach($this->_listeners as $listenedEvent=>$listeners){
 			if($e instanceof $listenedEvent){
 				foreach($listeners as $listener){
 					/** @var IDomainEventListener $listener */
-					$listener->recieveEvent($e);
+					$listener->recieveDomainEvent($e);
 				}
 			}
 		}
@@ -42,7 +42,7 @@ class DomainEventObserver implements IDomainEventObserver {
 	 * @param string               $domainEventClass Classe de l'événement à écouter. Tiens compte de l'héritage
 	 * @param IDomainEventListener $listener         Listener à appeler
 	 */
-	public function addEventListener(string $domainEventClass, IDomainEventListener $listener):void{
+	public function addDomainEventListener(string $domainEventClass, IDomainEventListener $listener):void{
 		if(is_a($domainEventClass,IDomainEvent::class,true)){
 			if(!isset($this->_listeners[$domainEventClass])){
 				$this->_listeners[$domainEventClass] = [];
@@ -59,7 +59,7 @@ class DomainEventObserver implements IDomainEventObserver {
 	 * @param string $domainEventClass Classe d'événement dont on souhaite supprimer les listener
 	 * @param null|IDomainEventListener $listener (optionnel) Listener à supprimer. Si null, supprime tous les lsitener de la classe d'événement
 	 */
-	public function removeEventListener(
+	public function removeDomainEventListener(
 		string $domainEventClass,
 		?IDomainEventListener $listener = null
 	):void {
@@ -92,9 +92,9 @@ class DomainEventObserver implements IDomainEventObserver {
 	/**
 	 * @param EventList $events Evenemnts à dispatcher
 	 */
-	public function dispatchAll(EventList $events): void {
+	public function dispatchAllDomainEvents(EventList $events): void {
 		foreach($events as $e){
-			$this->dispatch($e);
+			$this->dispatchDomainEvent($e);
 		}
 	}
 
@@ -102,7 +102,7 @@ class DomainEventObserver implements IDomainEventObserver {
 	 * @param string $class Classe de l'événement dont on souhaite récupérer les listeners
 	 * @return IDomainEventListener[]
 	 */
-	public function getEventListeners(string $class): array {
+	public function getDomainEventListeners(string $class): array {
 		$res = [];
 		foreach($this->_listeners as $domainEventClass=>$listeners){
 			if(is_a($domainEventClass,$class,true)){

@@ -5,7 +5,10 @@
 				"app" : {
 					"ACTION_HANDLER_NOT_FOUND" : "L'ActionHandler [[$]] n'existe pas !",
 					"INTERNAL_ERROR" : "Erreur interne : [$]",
-					"MUST_BE_LOGGED" : "Accès refusé : vous devez être connecté pour effectuer cette action !",
+					"MUST_BE_LOGGED" : "Vous devez être connecté pour effectuer cette action !",
+					"ACCESS_DENIED" : "Accès refusé",
+					"INSUFFICIENT_PRIVILEGIES":"Privilèges utilisateur insuffisants.",
+					"BAD_CSRF_TOKEN" : "Token CSRF invalide.",
 					"404_NOT_FOUND" : "La page '[$]' n'existe pas !"
 				}
 			},

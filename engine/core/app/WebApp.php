@@ -42,7 +42,7 @@ final class WebApp {
 		) $layout = $cache->get($cacheKey);
 		else{
 			$translator = $this->_context->getTranslator();
-			$permission = $this->_context->getAccessControlCenter()->checkPermissions($action);
+			$permission = $this->_context->getAccessControlCenter()->checkAccessPermission($action);
 			$response = $this->_context->getActionHook()->hook($action,$permission);
 			if(is_null($response)){
 				if($permission->isGranted()){

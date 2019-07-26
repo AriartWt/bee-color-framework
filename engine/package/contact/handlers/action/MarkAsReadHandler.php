@@ -41,7 +41,7 @@ final class MarkAsReadHandler extends DefaultContactActionHandler implements IDo
 		parent::__construct($bus, $rule, $session);
 		$this->_ids = [];
 		$this->_encoder = $encoder;
-		$observer->addEventListener(MarkedAsReadEvent::class,$this);
+		$observer->addDomainEventListener(MarkedAsReadEvent::class, $this);
 	}
 
 	/**
@@ -57,7 +57,7 @@ final class MarkAsReadHandler extends DefaultContactActionHandler implements IDo
 	 *
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof MarkedAsReadEvent) $this->_ids[] = (string) $e->getAggregateId();
 	}
 

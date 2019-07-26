@@ -14,7 +14,7 @@ final class PutArticlesOfflineHandler extends ArticleCommandHandler {
 	 *
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		/** @var PutArticlesOffline $command */
 		foreach($command->getArticleIds() as $id){
 			try{
