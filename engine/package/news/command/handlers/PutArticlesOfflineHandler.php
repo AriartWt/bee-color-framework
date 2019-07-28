@@ -19,7 +19,7 @@ final class PutArticlesOfflineHandler extends ArticleCommandHandler {
 		foreach($command->getArticleIds() as $id){
 			try{
 				$article = $this->get($id);
-				$article->putOffline($command->getUserId());
+				$article->putOffline($command->getInitiatorId());
 				$this->repos()->edit($article,$command);
 			}catch(PutOfflineFailed $e){}
 		}

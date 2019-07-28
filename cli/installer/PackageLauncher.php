@@ -25,6 +25,7 @@ try{
 
 	$site = dirname(__DIR__,2)."/site";
 	$engine = dirname(__DIR__,2)."/engine";
+	$modules = dirname(__DIR__,2)."/modules";
 
 	if($argvReader->exists('-install')){
 		$args = $argvReader->get('-install');
@@ -32,10 +33,21 @@ try{
 			$tmp = explode("/",$package);
 			$location = $site.'/package';
 			$l = 'site';
-			if(count($tmp)===2){
-				$location = ($tmp[0] === 'engine')
-					? $engine."/package/".($p=$tmp[1]) : "$location/".($p=$tmp[1]);
-				$l = $tmp[0];
+			$m = false;
+			if(count($tmp) > 1){
+				$l = array_shift($tmp);
+				$p = implode("/",$tmp);
+				switch($tmp[0]){
+					case 'engine' :
+						$location = "$engine/package/$p";
+						break;
+					case 'modules' :
+						$location = "$modules/$p";
+						$m = true;
+						break;
+					default :
+						$location = "$location/$p";
+				}
 			}
 			else $location = "$location/".($p = $tmp[0]);
 			if(is_dir($location)){
@@ -44,7 +56,8 @@ try{
 					if(!is_dir("$site/webroot/$dir")) mkdir("$site/webroot/$dir");
 					if(is_link("$site/webroot/$dir/$p")) unlink("$site/webroot/$dir/$p");
 					chdir("$site/webroot/$dir");
-					$exec("ln -s \"../../../$l/package/$p/webroot/$dir\" \"$p\"");
+					if(!$m) $exec("ln -s \"../../../$l/package/$p/webroot/$dir\" \"$p\"");
+					else $exec("ln -s \"../../../$l/$p/webroot/$dir\" \"$p\"");
 				}
 			}else fwrite(STDOUT,"\e[33mWFW_installer UNKNOWN_PACKAGE\e[0m : $package\n");
 			fwrite(STDOUT,"$package installed.\n");

@@ -17,8 +17,6 @@ final class CreateArticle extends ArticleCommand {
 	private $_content;
 	/** @var bool $_online */
 	private $_online;
-	/** @var string $_authorId */
-	private $_authorId;
 
 	/**
 	 * CreateArticle constructor.
@@ -36,12 +34,11 @@ final class CreateArticle extends ArticleCommand {
 		string $authorId,
 		bool $online=false
 	){
-		parent::__construct();
+		parent::__construct($authorId);
 		$this->_title = $title;
 		$this->_visual = $link;
 		$this->_content = $content;
 		$this->_online = $online;
-		$this->_authorId = $authorId;
 	}
 
 	/**
@@ -70,12 +67,5 @@ final class CreateArticle extends ArticleCommand {
 	 */
 	public function isOnline(): bool {
 		return $this->_online;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getAuthorId(): string {
-		return $this->_authorId;
 	}
 }

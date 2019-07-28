@@ -17,8 +17,6 @@ final class EditArticle extends ArticleCommand {
 	private $_visual;
 	/** @var null|Content $_content */
 	private $_content;
-	/** @var string $_editor */
-	private $_editor;
 
 	/**
 	 * EditArticle constructor.
@@ -37,7 +35,7 @@ final class EditArticle extends ArticleCommand {
 		?VisualLink $link=null,
 		?Content $content=null
 	){
-		parent::__construct();
+		parent::__construct($editorId);
 		if(is_null($title) && is_null($content) && is_null($link))
 			throw new \InvalidArgumentException(
 				"At least title,content or visual link have to be edited !"
@@ -45,7 +43,6 @@ final class EditArticle extends ArticleCommand {
 
 		$this->_articleId = $articleIds;
 		$this->_content = $content;
-		$this->_editor = $editorId;
 		$this->_title = $title;
 		$this->_visual = $link;
 	}
@@ -76,12 +73,5 @@ final class EditArticle extends ArticleCommand {
 	 */
 	public function getContent(): ?Content {
 		return $this->_content;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getEditor(): string {
-		return $this->_editor;
 	}
 }

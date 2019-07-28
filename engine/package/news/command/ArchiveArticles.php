@@ -7,8 +7,6 @@ namespace wfw\engine\package\news\command;
 final class ArchiveArticles extends ArticleCommand {
 	/** @var string[] $_articleIds */
 	private $_articleIds;
-	/** @var string $_userId */
-	private $_userId;
 
 	/**
 	 * ArchiveArticle constructor.
@@ -17,18 +15,14 @@ final class ArchiveArticles extends ArticleCommand {
 	 * @param string[] $articleIds Identifiant de l'article
 	 */
 	public function __construct(string $userIds, string... $articleIds) {
-		parent::__construct();
+		parent::__construct($userIds);
 		$this->_articleIds = $articleIds;
-		$this->_userId = $userIds;
 	}
 
 	/**
 	 * @return string[]
 	 */
-	public function getArticleIds(): array { return $this->_articleIds; }
-
-	/**
-	 * @return string
-	 */
-	public function getUserId(): string{ return $this->_userId; }
+	public function getArticleIds(): array {
+		return $this->_articleIds;
+	}
 }

@@ -12,7 +12,6 @@ use wfw\engine\core\action\IAction;
 use wfw\engine\core\action\IActionHook;
 use wfw\engine\core\action\IActionHookFactory;
 use wfw\engine\core\action\MultiHook;
-use wfw\engine\core\action\NotFoundHook;
 use wfw\engine\core\app\factory\DiceBasedFactory;
 use wfw\engine\core\app\factory\IGenericAppFactory;
 use wfw\engine\core\command\CommandHandlerFactory;
@@ -76,8 +75,7 @@ use wfw\engine\core\security\data\sanitizer\HTMLPurifierBasedSanitizer;
 use wfw\engine\core\security\data\sanitizer\IHTMLSanitizer;
 use wfw\engine\core\security\IAccessControlCenter;
 use wfw\engine\core\security\IAccessRuleFactory;
-use wfw\engine\core\security\rules\RequireAuthentification;
-use wfw\engine\core\security\rules\ValidToken;
+use wfw\engine\core\security\WFWDefaultSecurityPolicy;
 use wfw\engine\core\session\handlers\PHPSessionHandler;
 use wfw\engine\core\session\ISession;
 use wfw\engine\core\session\Session;
@@ -106,17 +104,12 @@ use wfw\engine\package\contact\data\model\ContactModelAccess;
 use wfw\engine\package\contact\data\model\IContactModelAccess;
 use wfw\engine\package\contact\domain\repository\ContactRepository;
 use wfw\engine\package\contact\domain\repository\IContactRepository;
-use wfw\engine\package\contact\security\ContactAccessControlPolicies;
 use wfw\engine\package\general\handlers\response\AjaxHandler;
 use wfw\engine\package\general\handlers\response\ErrorHandler;
-use wfw\engine\package\general\security\GeneralAccessControlPolicies;
-use wfw\engine\package\miel\security\MielAccessControlPolicies;
 use wfw\engine\package\news\data\model\ArticleModelAccess;
 use wfw\engine\package\news\data\model\IArticleModelAccess;
 use wfw\engine\package\news\domain\repository\ArticleRepository;
 use wfw\engine\package\news\domain\repository\IArticleRepository;
-use wfw\engine\package\news\security\NewsAccessControlPolicies;
-use wfw\engine\package\uploader\security\UploaderAccessControlPolicies;
 use wfw\engine\package\users\data\model\IUserModelAccess;
 use wfw\engine\package\users\data\model\UserModelAccess;
 use wfw\engine\package\users\domain\repository\IUserRepository;
@@ -129,7 +122,6 @@ use wfw\engine\package\users\lib\mail\IUserResetPasswordMail;
 use wfw\engine\package\users\lib\mail\UserMailChangedMail;
 use wfw\engine\package\users\lib\mail\UserRegisteredMail;
 use wfw\engine\package\users\lib\mail\UserResetPasswordMail;
-use wfw\engine\package\users\security\UsersAccessControlPolicies;
 
 /**
  * Contexte de production
@@ -175,6 +167,7 @@ class DefaultContext implements IWebAppContext {
 		?array $confFiles = null,
 		?string $projectName = null
 	){
+		//pass installed packages to layout/action/response resolver
 		if(is_null($projectName))
 			$projectName = dirname(__DIR__,4);
 		$genericFactory = new DiceBasedFactory($this->_dice = $dice = new Dice());
@@ -182,29 +175,13 @@ class DefaultContext implements IWebAppContext {
 
 		//TODO : init if not set for commands and queries
 		$commandRules = $securityRules["command"] ?? [];
-		$accessRules = $securityRules["access"] ?? [];
 		$queryRules = $securityRules["query"] ?? [];
-		if(count($accessRules) === 0) $accessRules = [
-			RequireAuthentification::class => [
-				array_merge(
-					ContactAccessControlPolicies::REQUIRE_AUTH,
-					MielAccessControlPolicies::REQUIRE_AUTH,
-					NewsAccessControlPolicies::REQUIRE_AUTH,
-					UploaderAccessControlPolicies::REQUIRE_AUTH,
-					UsersAccessControlPolicies::REQUIRE_AUTH
-				),
-				true
-			],
-			ValidToken::class => []
-		];
-		if(count($hooks) === 0) $hooks = [
-			NotFoundHook::class => [
-				array_merge(
-					UsersAccessControlPolicies::RESTRICT_MODE,
-					GeneralAccessControlPolicies::DISABLE_ZIP_CODES
-				)
-			]
-		];
+		$accessRules = $securityRules["access"] ?? [];
+		if(count($accessRules) === 0) $accessRules = WFWDefaultSecurityPolicy::accessPolicy();
+		if(count($hooks) === 0) $hooks = WFWDefaultSecurityPolicy::hooksPolicy();
+		if(count($commandRules) === 0) $commandRules = WFWDefaultSecurityPolicy::commandsPolicy();
+		if(count($queryRules) === 0) $queryRules = WFWDefaultSecurityPolicy::queriesPolicy();
+
 		$this->_dice->addRules([
 			ICacheSystem::class => [
 				'instanceOf' => APCUBasedCache::class,

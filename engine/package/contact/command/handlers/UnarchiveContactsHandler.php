@@ -20,7 +20,7 @@ final class UnarchiveContactsHandler extends ContactCommandHandler{
 		foreach($command->getIds() as $id){
 			try{
 				$contact = $this->get($id);
-				$contact->unarchive($command->getUserId());
+				$contact->unarchive($command->getInitiatorId());
 				$res[] = $contact;
 			}catch(ArchivingFailure $e){}
 		}

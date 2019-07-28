@@ -26,7 +26,7 @@ class KVStoreBasedModelLoader implements IModelLoader {
 		foreach($allowedToLoad as $model){
 			if(!is_string($model) || !class_exists($model)
 				|| !is_a($model,InMemoryEventBasedModel::class,true)){
-				throw new \InvalidArgumentException("$model is not a valide model name !");
+				throw new \InvalidArgumentException("$model is not a compatible Model !");
 			}
 		}
 		$this->_allowedToLoad = $allowedToLoad;

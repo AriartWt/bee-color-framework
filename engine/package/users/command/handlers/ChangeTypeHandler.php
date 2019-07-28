@@ -17,7 +17,7 @@ final class ChangeTypeHandler extends UserCommandHandler{
 		/** @var ChangeType $command */
 		/** @var User $user */
 		$user = $this->get($command->getUserId());
-		$user->changeType($command->getType(),$command->getModifierId());
+		$user->changeType($command->getType(),$command->getInitiatorId());
 		$this->repos()->modify($user,$command);
 	}
 }

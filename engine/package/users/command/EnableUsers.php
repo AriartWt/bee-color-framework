@@ -5,8 +5,6 @@ namespace wfw\engine\package\users\command;
  * Active une liste d'utilisateur
  */
 final class EnableUsers extends UserCommand{
-	/** @var string $_enabler */
-	private $_enabler;
 	/** @var string[] $_users */
 	private $_users;
 	
@@ -17,16 +15,8 @@ final class EnableUsers extends UserCommand{
 	 * @param string[] $users Liste des utilisateurs à activer
 	 */
 	public function __construct(string $enabler, string... $users) {
-		parent::__construct();
-		$this->_enabler = $enabler;
+		parent::__construct($enabler);
 		$this->_users = $users;
-	}
-	
-	/**
-	 * @return string
-	 */
-	public function getEnabler(): string {
-		return $this->_enabler;
 	}
 	
 	/**

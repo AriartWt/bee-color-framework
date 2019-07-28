@@ -12,21 +12,18 @@ final class CreateContact extends ContactCommand {
 	private $_label;
 	/** @var IContactInfos $_infos */
 	private $_infos;
-	/** @var string $_userId */
-	private $_userId;
 
 	/**
 	 * CreateContact constructor.
 	 *
 	 * @param ContactLabel  $label
 	 * @param IContactInfos $infos
-	 * @param string        $userId Identifiant de l'utilisateur à l'o
+	 * @param string        $userId Identifiant de l'utilisateur à l'origi
 	 */
 	public function __construct(ContactLabel $label, IContactInfos $infos, ?string $userId=null) {
-		parent::__construct();
+		parent::__construct($userId);
 		$this->_label = $label;
 		$this->_infos = $infos;
-		$this->_userId = $userId;
 	}
 
 	/**
@@ -41,12 +38,5 @@ final class CreateContact extends ContactCommand {
 	 */
 	public function getInfos(): IContactInfos {
 		return $this->_infos;
-	}
-
-	/**
-	 * @return null|string
-	 */
-	public function getUserId(): ?string {
-		return $this->_userId;
 	}
 }

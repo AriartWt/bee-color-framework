@@ -19,7 +19,7 @@ final class UnarchiveArticlesHandler extends ArticleCommandHandler {
 		foreach($command->getArticleIds() as $id){
 			try{
 				$article = $this->get($id);
-				$article->unarchive($command->getUserId());
+				$article->unarchive($command->getInitiatorId());
 				$this->repos()->edit($article,$command);
 			}catch(ArchivingFailed $e){}
 		}

@@ -18,7 +18,7 @@ final class EnableUsersHandler extends UserCommandHandler{
 		/** @var EnableUsers $command */
 		$users = $this->getAll(...$command->getUsers());
 		foreach($users as $user){
-			$user->enable($command->getEnabler());
+			$user->enable($command->getInitiatorId());
 		}
 		$this->repos()->modifyAll($command,...$users);
 	}

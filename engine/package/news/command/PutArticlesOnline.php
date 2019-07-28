@@ -9,8 +9,6 @@ namespace wfw\engine\package\news\command;
 final class PutArticlesOnline extends ArticleCommand {
 	/** @var string[] $_articleIds */
 	private $_articleIds;
-	/** @var string $_userId */
-	private $_userId;
 
 	/**
 	 * PutArticleOnline constructor.
@@ -19,18 +17,14 @@ final class PutArticlesOnline extends ArticleCommand {
 	 * @param string[] $ids     Identifiants des articles à mettre en ligne
 	 */
 	public function __construct(string $userIds, string ...$ids) {
-		parent::__construct();
+		parent::__construct($userIds);
 		$this->_articleIds = $ids;
-		$this->_userId = $userIds;
 	}
 
 	/**
 	 * @return string[]
 	 */
-	public function getArticleIds(): array { return $this->_articleIds; }
-
-	/**
-	 * @return string
-	 */
-	public function getUserId(): string { return $this->_userId; }
+	public function getArticleIds(): array {
+		return $this->_articleIds;
+	}
 }

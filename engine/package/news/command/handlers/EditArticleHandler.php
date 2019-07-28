@@ -17,11 +17,11 @@ final class EditArticleHandler extends ArticleCommandHandler {
 		/** @var EditArticle $command */
 		$article = $this->get($command->getArticleId());
 		if(!is_null($command->getTitle()))
-			$article->editTitle($command->getTitle(),$command->getEditor());
+			$article->editTitle($command->getTitle(),$command->getInitiatorId());
 		if(!is_null($command->getContent()))
-			$article->editContent($command->getContent(),$command->getEditor());
+			$article->editContent($command->getContent(),$command->getInitiatorId());
 		if(!is_null($command->getVisualLink()))
-			$article->editVisual($command->getVisualLink(),$command->getEditor());
+			$article->editVisual($command->getVisualLink(),$command->getInitiatorId());
 		$this->repos()->edit($article,$command);
 	}
 }

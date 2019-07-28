@@ -7,8 +7,6 @@ namespace wfw\engine\package\users\command;
 final class DisableUsers extends UserCommand{
 	/** @var string[] $_users */
 	private $_users;
-	/** @var string $_disabler */
-	private $_disabler;
 	
 	/**
 	 * DisableUsers constructor.
@@ -17,9 +15,8 @@ final class DisableUsers extends UserCommand{
 	 * @param string[] $users    Utilisateurs à désactiver
 	 */
 	public function __construct(string $disabler, string... $users) {
-		parent::__construct();
+		parent::__construct($disabler);
 		$this->_users = $users;
-		$this->_disabler = $disabler;
 	}
 	
 	/**
@@ -27,12 +24,5 @@ final class DisableUsers extends UserCommand{
 	 */
 	public function getUsers(): array {
 		return $this->_users;
-	}
-	
-	/**
-	 * @return string
-	 */
-	public function getDisabler(): string {
-		return $this->_disabler;
 	}
 }

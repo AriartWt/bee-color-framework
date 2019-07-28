@@ -10,17 +10,17 @@ abstract class Command implements ICommand {
 	/** @var UUID */
 	private $_uuid;
 	/** @var null|string $_userId */
-	private $_userId;
+	private $_initiatorId;
 	/** @var float */
 	private $_generationDate;
 
 	/**
 	 *  Command constructor.
 	 *
-	 * @param null|string $userId
+	 * @param null|string $initiatorId
 	 */
-	public function __construct(?string $userId=null){
-		$this->_userId = $userId;
+	public function __construct(?string $initiatorId=null){
+		$this->_initiatorId = $initiatorId;
 		$this->_uuid = new UUID();
 		$this->_generationDate = microtime(true);
 	}
@@ -35,8 +35,8 @@ abstract class Command implements ICommand {
 	/**
 	 * @return null|string User ID that try to execute the command
 	 */
-	public function getUserId(): ?string {
-		return $this->_userId;
+	public function getInitiatorId(): ?string {
+		return $this->_initiatorId;
 	}
 
 	/**

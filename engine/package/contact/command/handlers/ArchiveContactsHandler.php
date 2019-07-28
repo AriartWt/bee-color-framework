@@ -20,7 +20,7 @@ final class ArchiveContactsHandler extends ContactCommandHandler{
 		foreach($command->getIds() as $id){
 			try{
 				$contact = $this->get($id);
-				$contact->archive($command->getUserId());
+				$contact->archive($command->getInitiatorId());
 				$res[] = $contact;
 			}catch(ArchivingFailure $e){}
 		}

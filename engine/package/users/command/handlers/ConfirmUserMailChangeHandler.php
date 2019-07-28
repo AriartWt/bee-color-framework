@@ -19,7 +19,7 @@ final class ConfirmUserMailChangeHandler extends UserCommandHandler{
 		$user = $this->get($command->getUserId());
 		$user->confirmEmail(
 			$command->getCode(),
-			$command->getConfirmer(),
+			$command->getInitiatorId(),
 			$command->getState()
 		);
 		$this->repos()->modify($user,$command);

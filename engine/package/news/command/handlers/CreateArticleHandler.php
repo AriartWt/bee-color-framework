@@ -20,7 +20,7 @@ final class CreateArticleHandler extends ArticleCommandHandler {
 			$command->getTitle(),
 			$command->getVisualLink(),
 			$command->getContent(),
-			$command->getAuthorId(),
+			$command->getInitiatorId(),
 			$command->isOnline()
 		);
 		$this->repos()->add($article,$command);

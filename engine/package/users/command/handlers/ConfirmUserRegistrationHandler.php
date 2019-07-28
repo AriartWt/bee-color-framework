@@ -20,8 +20,8 @@ final class ConfirmUserRegistrationHandler extends UserCommandHandler{
 		$user = $this->get($command->getUserId());
 		$user->confirm(
 			$command->getCode(),
-			(strlen($command->getConfirmer())>0)
-				? $command->getConfirmer()
+			(strlen($command->getInitiatorId())>0)
+				? $command->getInitiatorId()
 				: $command->getUserId(),
 			$command->getState()
 		);

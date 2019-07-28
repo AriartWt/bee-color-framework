@@ -17,7 +17,7 @@ final class RemoveUsersHandler extends UserCommandHandler{
 		/** @var RemoveUsers $command */
 		$users = $this->getAll(...$command->getUsers());
 		foreach ($users as $user){
-			$user->remove($command->getRemoverId());
+			$user->remove($command->getInitiatorId());
 		}
 		$this->repos()->modifyAll($command,...$users);
 	}

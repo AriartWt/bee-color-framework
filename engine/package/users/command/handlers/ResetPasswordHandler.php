@@ -18,7 +18,7 @@ final class ResetPasswordHandler extends UserCommandHandler {
 		$user->resetPassword(
 			$command->getPassword(),
 			$command->getCode(),
-			$command->getAskerId()
+			$command->getInitiatorId()
 		);
 		$this->repos()->modify($user,$command);
 	}

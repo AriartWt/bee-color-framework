@@ -9,8 +9,6 @@ use wfw\engine\core\command\Command;
 final class PutArticlesOffline extends Command {
 	/** @var string[] $_articleIds */
 	private $_articleIds;
-	/** @var string $_userId */
-	private $_userId;
 
 	/**
 	 * PutArticleOffline constructor.
@@ -19,18 +17,14 @@ final class PutArticlesOffline extends Command {
 	 * @param string[] $ids     Identifiant des articles à mettre hors-ligne
 	 */
 	public function __construct(string $userIds, string... $ids) {
-		parent::__construct();
+		parent::__construct($userIds);
 		$this->_articleIds = $ids;
-		$this->_userId = $userIds;
 	}
 
 	/**
 	 * @return string[]
 	 */
-	public function getArticleIds(): array { return $this->_articleIds; }
-
-	/**
-	 * @return string
-	 */
-	public function getUserId(): string { return $this->_userId; }
+	public function getArticleIds(): array {
+		return $this->_articleIds;
+	}
 }

@@ -7,8 +7,6 @@ namespace wfw\engine\package\news\command;
 final class UnarchiveArticles extends ArticleCommand {
 	/** @var string[] $_articleId */
 	private $_articleId;
-	/** @var string $_userId */
-	private $_userId;
 
 	/**
 	 * UnarchiveArticle constructor.
@@ -17,18 +15,14 @@ final class UnarchiveArticles extends ArticleCommand {
 	 * @param string[] $articleIds Identifiant de l'article
 	 */
 	public function __construct(string $userId,string... $articleIds) {
-		parent::__construct();
+		parent::__construct($userId);
 		$this->_articleId = $articleIds;
-		$this->_userId = $userId;
 	}
 
 	/**
 	 * @return string[]
 	 */
-	public function getArticleIds(): array { return $this->_articleId; }
-
-	/**
-	 * @return string
-	 */
-	public function getUserId(): string { return $this->_userId; }
+	public function getArticleIds(): array {
+		return $this->_articleId;
+	}
 }

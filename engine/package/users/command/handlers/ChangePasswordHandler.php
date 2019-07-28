@@ -20,7 +20,7 @@ final class ChangePasswordHandler extends UserCommandHandler{
 		$user->changePassword(
 			$command->getOld(),
 			$command->getNew(),
-			$command->getModifier()
+			$command->getInitiatorId()
 		);
 		$this->repos()->modify($user,$command);
 	}

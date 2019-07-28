@@ -20,7 +20,7 @@ final class MarkContactsAsReadHandler extends ContactCommandHandler {
 		foreach($command->getIds() as $id){
 			try{
 				$contact = $this->get($id);
-				$contact->markAsRead($command->getUserId());
+				$contact->markAsRead($command->getInitiatorId());
 				$res[] = $contact;
 			}catch(MarkAsReadFailed $e){}
 		}

@@ -15,7 +15,7 @@ final class CancelMailChangeHandler extends UserCommandHandler{
 	public function handleCommand(ICommand $command) {
 		/** @var CancelMailChange $command */
 		$user = $this->get($command->getUserId());
-		$user->cancelEmailChange($command->getModifierId());
+		$user->cancelEmailChange($command->getInitiatorId());
 		$this->repos()->modify($user,$command);
 	}
 }

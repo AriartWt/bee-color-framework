@@ -15,7 +15,7 @@ interface ICommand {
 	/**
 	 * @return null|string Uner that initates the command (if available)
 	 */
-	public function getUserId():?string;
+	public function getInitiatorId():?string;
 
 	/**
 	 * @return float

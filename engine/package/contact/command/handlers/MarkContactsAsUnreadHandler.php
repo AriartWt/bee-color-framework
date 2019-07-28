@@ -20,7 +20,7 @@ final class MarkContactsAsUnreadHandler extends ContactCommandHandler{
 		foreach($command->getIds() as $id){
 			try{
 				$contact = $this->get($id);
-				$contact->markAsUnread($command->getUserId());
+				$contact->markAsUnread($command->getInitiatorId());
 				$res[] = $contact;
 			}catch(MarkAsUnreadFailed $e){}
 		}

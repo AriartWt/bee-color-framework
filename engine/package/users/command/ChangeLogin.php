@@ -11,8 +11,6 @@ final class ChangeLogin extends UserCommand{
 	private $_userId;
 	/** @var Login $_login */
 	private $_login;
-	/** @var string $_modifierId */
-	private $_modifierId;
 
 	/**
 	 * ChangeLogin constructor.
@@ -21,10 +19,9 @@ final class ChangeLogin extends UserCommand{
 	 * @param string $modifier
 	 */
 	public function __construct(string $userId,Login $login, string $modifier) {
-		parent::__construct();
+		parent::__construct($modifier);
 		$this->_userId = $userId;
 		$this->_login = $login;
-		$this->_modifierId = $modifier;
 	}
 
 	/**
@@ -39,12 +36,5 @@ final class ChangeLogin extends UserCommand{
 	 */
 	public function getLogin(): Login {
 		return $this->_login;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getModifierId(): string {
-		return $this->_modifierId;
 	}
 }

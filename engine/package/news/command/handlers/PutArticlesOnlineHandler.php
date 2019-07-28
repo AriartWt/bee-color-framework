@@ -19,7 +19,7 @@ final class PutArticlesOnlineHandler extends ArticleCommandHandler {
 		foreach($command->getArticleIds() as $id){
 			try{
 				$article = $this->get($id);
-				$article->putOnline($command->getUserId());
+				$article->putOnline($command->getInitiatorId());
 				$this->repos()->edit($article,$command);
 			}catch(PutOnlineFailed $e){}
 		}

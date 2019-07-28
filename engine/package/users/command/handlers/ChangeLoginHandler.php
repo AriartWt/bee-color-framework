@@ -32,7 +32,7 @@ final class ChangeLoginHandler extends UserCommandHandler{
 		/** @var ChangeLogin $command */
 		if(is_null($this->_access->getByLogin($command->getLogin()))){
 			$user = $this->get($command->getUserId());
-			$user->changeLogin($command->getLogin(),$command->getModifierId());
+			$user->changeLogin($command->getLogin(),$command->getInitiatorId());
 			$this->repos()->modify($user,$command);
 		}else{
 			throw new UserAlreadyExists($command->getLogin()." is not available !");

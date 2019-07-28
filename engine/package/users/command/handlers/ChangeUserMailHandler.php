@@ -47,7 +47,7 @@ final class ChangeUserMailHandler extends UserCommandHandler {
 		/** @var ChangeUserMail $command */
 		$user = $this->get($command->getUserId());
 		$code = $this->_generator->createUserConfirmationCode();
-		$user->changeEmail($command->getMail(),$code,$command->getModifier());
+		$user->changeEmail($command->getMail(),$code,$command->getInitiatorId());
 		if($command->sendMail()){
 			$this->_mailProvider->send($this->_mailFactory->create(
 				IUserMailChangedMail::class,
@@ -59,7 +59,7 @@ final class ChangeUserMailHandler extends UserCommandHandler {
 		}else{
 			$user->confirmEmail(
 				$code,
-				$command->getModifier(),
+				$command->getInitiatorId(),
 				$command->getState()
 			);
 		}

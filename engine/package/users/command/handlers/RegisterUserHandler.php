@@ -61,7 +61,7 @@ final class RegisterUserHandler extends UserCommandHandler{
 			$command->getSettings(),
 			$command->getState(),
 			$command->getType(),
-			$command->getCreator()
+			$command->getInitiatorId()
 		),$command);
 		$state = $command->getState();
 		if($state instanceof UserWaitingForRegisteringConfirmation){
@@ -69,7 +69,7 @@ final class RegisterUserHandler extends UserCommandHandler{
 				IUserRegisteredMail::class,
 				[
 					$state->getCode(),
-					$command->getCreator()
+					$command->getInitiatorId()
 				]
 			));
 		}

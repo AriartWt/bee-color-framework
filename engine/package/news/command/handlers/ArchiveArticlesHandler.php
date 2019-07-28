@@ -19,7 +19,7 @@ final class ArchiveArticlesHandler extends ArticleCommandHandler {
 		foreach($command->getArticleIds() as $id){
 			try{
 				$article = $this->get($id);
-				$article->archive($command->getUserId());
+				$article->archive($command->getInitiatorId());
 				$this->repos()->edit($article,$command);
 			}catch(ArchivingFailed $e){}
 		}
