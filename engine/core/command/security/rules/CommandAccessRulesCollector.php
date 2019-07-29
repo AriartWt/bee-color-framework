@@ -7,7 +7,7 @@ use wfw\engine\core\command\security\ICommandAccessRuleFactory;
 /**
  * Try to collect all rules that must be applyed to commands. Rules are collected in constructor.
  */
-final class CommandAccessAccessRulesCollector implements ICommandAccessRulesCollector {
+final class CommandAccessRulesCollector implements ICommandAccessRulesCollector {
 	/** @var OrCommandAccessRule $_rule */
 	private $_rule;
 

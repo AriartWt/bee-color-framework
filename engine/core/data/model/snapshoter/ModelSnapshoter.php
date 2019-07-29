@@ -20,7 +20,7 @@ class ModelSnapshoter implements IModelSnapshoter {
 	private $_models;
 	/** @var array $_modelsClass */
 	private $_modelsClass;
-	/** @var array $_lastEventNumber */
+	/** @var int $_lastEventNumber */
 	private $_lastEventNumber;
 	/** @var string $_snapshotDir */
 	private $_snapshotDir;
@@ -48,7 +48,7 @@ class ModelSnapshoter implements IModelSnapshoter {
 		$this->_serializer = $serializer;
 		$this->_modelBuilder = $builder;
 		$this->_db = $access;
-		$this->_modelsClass = (function(string... $models){return $models;})(...$models);
+		$this->_modelsClass = $models;
 		$this->_models = [];
 		if(!is_dir($snapshotDirectory)){
 			throw new \InvalidArgumentException("$snapshotDirectory is not a valide directory ");
@@ -138,12 +138,13 @@ class ModelSnapshoter implements IModelSnapshoter {
 
 		//Si de nouveaux models ont été ajoutés, on les mets à jour
 		$additionnalModels = [];
-		foreach($this->_modelsClass as $model){
+		foreach($this->_modelsClass as $model=>$params){
 			if(!class_exists($model) || !is_a($model,IModel::class,true)){
 				throw new \InvalidArgumentException("$model doesn't implements ".IModel::class);
-			}else{
-				$additionnalModels[$model] = $this->_modelBuilder->buildModel($model);
-			}
+			}else $additionnalModels[$model] = $this->_modelBuilder->buildModel(
+				$model,
+				$params
+			);
 		}
 		$this->updateModels($additionnalModels, 0, $this->_lastEventNumber );
 

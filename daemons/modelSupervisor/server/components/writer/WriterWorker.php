@@ -279,7 +279,8 @@ final class WriterWorker extends Worker {
 								new RequestError($e)
 							));
 							$this->_environment->getLogger()->log(
-								"$tags Report successfully sent to client",
+								"$tags Report successfully sent to client. Error summary : "
+								.$e->getMessage()." in ".$e->getFile()." at ".$e->getLine(),
 								ILogger::LOG
 							);
 						}catch(\Exception | \Error $e){

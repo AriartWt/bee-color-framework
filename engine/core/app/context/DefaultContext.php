@@ -22,8 +22,9 @@ use wfw\engine\core\command\inflectors\NamespaceBasedInflector;
 use wfw\engine\core\command\security\CommandAccessRuleFactory;
 use wfw\engine\core\command\security\CommandSecurityCenter;
 use wfw\engine\core\command\security\ICommandSecurityCenter;
-use wfw\engine\core\command\security\rules\CommandAccessAccessRulesCollector;
+use wfw\engine\core\command\security\rules\CommandAccessRulesCollector;
 use wfw\engine\core\command\SynchroneCommandBus;
+use wfw\engine\core\conf\WFWModulesCollector;
 use wfw\engine\core\data\DBAccess\NOSQLDB\msServer\IMSServerAccess;
 use wfw\engine\core\data\DBAccess\NOSQLDB\msServer\MSServerWriterAccess;
 use wfw\engine\core\data\DBAccess\SQLDB\IDBAccess;
@@ -159,7 +160,7 @@ class DefaultContext implements IWebAppContext {
 		?string $errorViewPath = null,
 		?string $ajaxViewPath = null,
 		array $connections = [],
-		array $langs = [],
+		?array $langs = [],
 		array $securityRules = [],
 		array $hooks = [],
 		array $diceRules = [],
@@ -173,6 +174,23 @@ class DefaultContext implements IWebAppContext {
 		$genericFactory = new DiceBasedFactory($this->_dice = $dice = new Dice());
 		$this->getErrorHandler()->handle();
 
+		$this->_dice->addRules([
+			ICacheSystem::class => [
+				'instanceOf' => APCUBasedCache::class,
+				'shared' => true ,
+				'constructParams'=>[ $projectName ]
+			]
+		]);
+
+		$modules = $this->getCacheSystem()->get(self::CACHE_KEYS[self::MODULES]);
+		if(is_null($modules)){
+			WFWModulesCollector::collectModules();
+			$this->getCacheSystem()->set(
+				self::CACHE_KEYS[self::MODULES],
+				WFWModulesCollector::modules()
+			);
+		}
+
 		//TODO : init if not set for commands and queries
 		$commandRules = $securityRules["command"] ?? [];
 		$queryRules = $securityRules["query"] ?? [];
@@ -182,13 +200,11 @@ class DefaultContext implements IWebAppContext {
 		if(count($commandRules) === 0) $commandRules = WFWDefaultSecurityPolicy::commandsPolicy();
 		if(count($queryRules) === 0) $queryRules = WFWDefaultSecurityPolicy::queriesPolicy();
 
-		$this->_dice->addRules([
-			ICacheSystem::class => [
-				'instanceOf' => APCUBasedCache::class,
-				'shared' => true ,
-				'constructParams'=>[$projectName]
-			]
-		]);
+		$lc = $this->getCacheSystem()->get(self::CACHE_KEYS[self::LANGS]);
+		if(is_null($lc)){
+			$langs = WFWModulesCollector::langs($langs);
+			$this->getCacheSystem()->set(self::CACHE_KEYS[self::LANGS],$langs);
+		}else $langs = $lc;
 
 		$this->_conf = $conf = $this->initConfs($confFiles ?? [
 			dirname(__DIR__,3)."/config/conf.json",
@@ -235,7 +251,7 @@ class DefaultContext implements IWebAppContext {
 
 		$this->_translator = $translator =  $this->initTranslator($langs,null);
 		$instance = $this;
-		$commandRulesCollector = new CommandAccessAccessRulesCollector(
+		$commandRulesCollector = new CommandAccessRulesCollector(
 			new CommandAccessRuleFactory($genericFactory),$commandRules
 		);
 
@@ -293,7 +309,8 @@ class DefaultContext implements IWebAppContext {
 			],
 			ICommandBus::class => [ 'instanceOf' => SynchroneCommandBus::class, 'shared' => true ],
 			ICommandInflector::class => [
-				'instanceOf' => NamespaceBasedInflector::class, 'shared' => true
+				'instanceOf' => NamespaceBasedInflector::class, 'shared' => true,
+				'constructParams' => [ $this->getCommandHandlers() ]
 			],
 			ICommandSecurityCenter::class => [
 				'instanceOf' => CommandSecurityCenter::class, 'shared'=>true,
@@ -536,6 +553,38 @@ class DefaultContext implements IWebAppContext {
 			$this->getCacheSystem()->set(self::CACHE_KEYS[self::DOMAIN_EVENT_LISTENERS],$listeners);
 		}
 		return $listeners;
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getCommandHandlers():array{
+		$handlers = $this->getCacheSystem()->get(self::CACHE_KEYS[self::COMMAND_HANDLERS]);
+		$site = dirname(__DIR__,4).'/site';
+		$engine = dirname(__DIR__,3);
+		if(is_null($handlers)){
+			if(file_exists("$site/config/load/command.handlers.php"))
+				$handlers = require("$site/config/load/command.handlers.php");
+			else $handlers = require("$engine/config/default.command.handlers.php");
+			$this->getCacheSystem()->set(self::CACHE_KEYS[self::DOMAIN_EVENT_LISTENERS],$handlers);
+		}
+		return $handlers;
+	}
+
+	protected function getAccessRules():array{
+		//TODO : implements
+	}
+
+	protected function getCommandRules():array{
+		//TODO : implements
+	}
+
+	protected function getQueryRules():array{
+		//TODO : implements
+	}
+
+	protected function getHooks():array{
+		//TODO : implements
 	}
 
 	/**

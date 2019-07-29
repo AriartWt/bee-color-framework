@@ -23,15 +23,21 @@ interface IWebAppContext {
 	public const CONF="CONF";
 	public const TRANSLATOR = "TRANSLATOR";
 	public const DOMAIN_EVENT_LISTENERS = "DOMAIN_EVENT_LISTENERS";
+	public const COMMAND_HANDLERS = "COMMAND_HANDLERS";
 	public const ROUTER="ROUTER";
 	public const VIEWS="VIEWS";
+	public const LANGS="LANGS";
+	public const MODULES="MODULES";
 
 	public const CACHE_KEYS = [
 		self::CONF => "WFW/WebApp/Confs",
 		self::ROUTER => "WFW/WebApp/Router",
 		self::TRANSLATOR => "WFW/WebApp/Translator",
 		self::DOMAIN_EVENT_LISTENERS => "WFW/WebApp/DomainEventListeners",
-		self::VIEWS => "WFW/WebApp/Views"
+		self::VIEWS => "WFW/WebApp/Views",
+		self::LANGS => "WFW/WebApp/Langs",
+		self::COMMAND_HANDLERS => "WFW/WebApp/CommandHandlers",
+		self::MODULES => "WFW/WebApp/Modules"
 	];
 
 	/**

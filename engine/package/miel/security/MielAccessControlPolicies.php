@@ -16,7 +16,7 @@ class MielAccessControlPolicies extends SecurityPolicy {
 	 */
 	public static function accessPolicy(): array {
 		return [
-			RequireAuthentification::class => [ "miel" ]
+			RequireAuthentification::class => [ ["miel" ], true ]
 		];
 	}
 }

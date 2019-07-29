@@ -59,7 +59,7 @@ final class RequireAuthentification implements IAccessRule {
 		?string $translationKey = null,
 		bool $treeBased = false
 	){
-		$this->_treeBased = !!$treeBased;
+		$this->_treeBased = $treeBased;
 		if(!$this->_treeBased) $pathsToProtect = (function(string ...$paths){
 			return $paths;
 		})(...$pathsToProtect);

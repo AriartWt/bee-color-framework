@@ -102,7 +102,7 @@ try{
 								$confs->getKVSContainer($name),
 								$confs->getKVSDefaultStorage($name) ?? null
 							),
-							array_unique(require $confs->getModelsToLoadPath($name))
+							require $confs->getModelsToLoadPath($name)
 						),
 						$confs->getUsers($name),
 						$confs->getGroups($name),

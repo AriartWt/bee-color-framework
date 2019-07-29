@@ -61,6 +61,20 @@ final class Router implements IRouter {
 	}
 
 	/**
+	 * @param string $l
+	 * @return null|string
+	 */
+	private function realLang(string $l):?string{
+		if(in_array($l,$this->_langs)) return $l;
+		foreach($this->_langs as $lang){
+			try{
+				if(strpos($lang,$l) === 0) return $lang;
+			}catch(\Error | \Exception $e){ break; }
+		}
+		return null;
+	}
+
+	/**
 	 * Obtient une URL formattée en fonction du paramètrage du Router.
 	 *
 	 * @param string $url url réelle relative
@@ -70,7 +84,11 @@ final class Router implements IRouter {
 		trim($url,'/');
 		$tmp = explode("/",$url);
 		$tmpLang = null;
-		if(in_array($tmp[0]??'',$this->_langs)) $tmpLang = array_shift($tmp);
+		$realLang = $this->realLang($tmp[0] ?? '');
+		if(in_array($realLang ?? '',$this->_langs)){
+			$tmpLang = $realLang;
+			array_shift($tmp);
+		}
 		$url = implode("/",$tmp);
 
 		if($tmpLang && isset($this->_langRoutes[$tmpLang])) $routes = array_merge(
@@ -139,10 +157,11 @@ final class Router implements IRouter {
 			$match = false;
 			$tab = explode('/',$url);
 			$lang = null;
-			if(in_array($tab[0],$this->_langs)){
-				$lang = array_shift($tab);
-				$this->_lang = $lang;
+			if(!is_null(($realLang = $this->realLang($tab[0])))){
+				array_shift($tab);
+				$this->_lang = $lang = $realLang;
 			}
+
 			$url = implode('/',$tab);
 
 			if($this->_lang && isset($this->_langRoutes[$this->_lang]))
@@ -188,7 +207,9 @@ final class Router implements IRouter {
 	 * @param string $lang Ajoute une langue au router afin qu'elle soit reconnue
 	 */
 	public function addLang(string $lang): void {
-		$this->_langs[] = strtolower($lang);
+		$tmp = explode('_',$lang);
+		if(count($tmp) > 1) $this->_langs[] = strtolower($tmp[0])."_".strtoupper($tmp[1]);
+		else $this->_langs[] = strtolower($lang);
 	}
 
 	/**

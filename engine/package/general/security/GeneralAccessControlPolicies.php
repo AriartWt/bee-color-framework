@@ -17,7 +17,7 @@ class GeneralAccessControlPolicies extends SecurityPolicy {
 	 */
 	public static function accessPolicy(): array {
 		return [
-			RequireAuthentification::class => [ "general" => [ "heartBeat" ] ]
+			RequireAuthentification::class => [ ["general" => [ "heartBeat" ]], true ]
 		];
 	}
 
@@ -27,7 +27,7 @@ class GeneralAccessControlPolicies extends SecurityPolicy {
 	 */
 	public static function hooksPolicy(bool $restrictMode = true): array {
 		if($restrictMode) return [
-			NotFoundHook::class => [ "^general/zipCodes(/.*|)$" ]
+			NotFoundHook::class => [ ["^general/zipCodes(/.*|)$"] ]
 		];
 		else return [];
 	}

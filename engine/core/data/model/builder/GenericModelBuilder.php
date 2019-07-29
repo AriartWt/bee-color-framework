@@ -15,9 +15,13 @@ class GenericModelBuilder implements IModelBuilder {
 	/**
 	 * @param string $model
 	 *
+	 * @param array  $params
 	 * @return IModel
 	 */
-	public function buildModel(string $model): IModel {
-		return new $model(new ArithmeticSearcher(new ArithmeticSolver(new ArithmeticParser())));
+	public function buildModel(string $model, array $params = []): IModel {
+		if(count($params) > 0) return new $model(...$params);
+		else return new $model(
+			new ArithmeticSearcher(new ArithmeticSolver(new ArithmeticParser()))
+		);
 	}
 }

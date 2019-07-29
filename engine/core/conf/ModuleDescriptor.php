@@ -6,7 +6,7 @@ namespace wfw\engine\core\conf;
  * Base module descriptor. All module descript may extends this in order to prevent incompatibilities
  * if new methods are added to the interface.
  */
- abstract class ModuleDescriptor implements IModuleDescriptor{
+abstract class ModuleDescriptor implements IModuleDescriptor{
 
 	 /**
 	  * @return array Dependency injection rules to add to the general DI
@@ -52,4 +52,18 @@ namespace wfw\engine\core\conf;
 	 	$reflected = new \ReflectionClass(static::class);
 	 	return dirname($reflected->getFileName());
 	 }
+
+	  /**
+	   * @return string[] List of classes that implements IDomainEventListener
+	   */
+	  public static function domainEventListeners(): array {
+		  return [];
+	  }
+
+	  /**
+	   * @return string[] List of classes that implements ICommandHandlers
+	   */
+	  public static function commandHandlers(): array {
+		  return [];
+	  }
  }

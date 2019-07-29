@@ -23,7 +23,8 @@ interface IModuleDescriptor {
 	public static function confs():array;
 
 	/**
-	 * @return string[] List of translation files.
+	 * @return string[] List of translation files indexed by lang
+	 *                  ["en"=>[files], "fr"=>[files]]
 	 */
 	public static function langs():array;
 
@@ -31,6 +32,16 @@ interface IModuleDescriptor {
 	 * @return string[] List of model class that must be registered in site/config/site.models.php
 	 */
 	public static function models():array;
+
+	/**
+	 * @return array List of classes that implements IDomainEventListener => [constructParams]
+	 */
+	public static function domainEventListeners():array;
+
+	/**
+	 * @return array List of classes that implements ICommandHandlers => [constructParams]
+	 */
+	public static function commandHandlers():array;
 
 	/**
 	 * @return string[] List of class that implements ISecurityPolicy and that must be applyed.

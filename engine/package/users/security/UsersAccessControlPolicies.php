@@ -21,12 +21,14 @@ class UsersAccessControlPolicies extends SecurityPolicy{
 	public static function accessPolicy(): array {
 		return [
 			RequireAuthentification::class => [
-				"users"=>[
-					"admin",
-					"changeMail",
-					"changePassword",
-					"logout"
-				]
+				[
+					"users"=>[
+						"admin",
+						"changeMail",
+						"changePassword",
+						"logout"
+					]
+				], true
 			]
 		];
 	}
@@ -38,7 +40,7 @@ class UsersAccessControlPolicies extends SecurityPolicy{
 	public static function hooksPolicy(bool $restrictMode = true): array {
 		if($restrictMode) return [
 			NotFoundHook::class => [
-				"^users/(change|confirm|cancel|forgotten|register|resend|reset).*$"
+				["^users/(change|confirm|cancel|forgotten|register|resend|reset).*$"]
 			]
 		];
 		else return [];

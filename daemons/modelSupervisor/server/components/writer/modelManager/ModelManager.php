@@ -53,7 +53,7 @@ final class ModelManager implements IModelManager, ICrossModelAccess {
 	 */
 	public function dispatch(EventList $eventList): void {
 		foreach($eventList->toArray() as $e){
-			$this->_domainEventManager->dispatch($e);
+			$this->_domainEventManager->dispatchDomainEvent($e);
 		}
 	}
 
@@ -234,7 +234,7 @@ final class ModelManager implements IModelManager, ICrossModelAccess {
 			$this->_domainEventManager->removeEventListenerByClassName($class);
 		}
 		//On Cherche les models à gérer
-		foreach($this->_loader->getModelList() as $modelName){
+		foreach($this->_loader->getModelList() as $modelName=>$modelParams){
 			/** @var IEventListenerModel $model */
 			$model = $this->_loader->load($modelName);
 			if(is_null($model)) throw new \InvalidArgumentException(
