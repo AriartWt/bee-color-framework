@@ -12,6 +12,7 @@ use wfw\daemons\modelSupervisor\server\MSServerPool;
 use wfw\daemons\modelSupervisor\server\requestHandler\MSServerRequestHandlerManager;
 use wfw\daemons\modelSupervisor\socket\protocol\MSServerSocketProtocol;
 
+use wfw\engine\core\conf\WFWModulesCollector;
 use wfw\engine\core\data\DBAccess\NOSQLDB\kvs\KVSAccess;
 use wfw\engine\core\data\model\loaders\KVStoreBasedModelLoader;
 use wfw\engine\lib\cli\argv\ArgvOpt;
@@ -65,6 +66,8 @@ try{
 				if(!is_null($pPath = $confs->getProjectPath($name)))
 					(new Autoloader([],$pPath))->register(false,true);
 
+				WFWModulesCollector::collectModules();
+
 				if($oldPID){
 					sleep(10);//ugly but let the time for childs to die;...
 					if(!isset($restarts[$name])) $restarts[$name]=[];
@@ -102,7 +105,7 @@ try{
 								$confs->getKVSContainer($name),
 								$confs->getKVSDefaultStorage($name) ?? null
 							),
-							require $confs->getModelsToLoadPath($name)
+							WFWModulesCollector::models()
 						),
 						$confs->getUsers($name),
 						$confs->getGroups($name),

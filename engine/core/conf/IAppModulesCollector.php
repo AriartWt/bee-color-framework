@@ -21,4 +21,11 @@ interface IAppModulesCollector {
 	 * @param string ...$modules List of class that implements IModuleDescriptor interface.
 	 */
 	public static function registerModules(string ...$modules):void;
+
+	/**
+	 * @param string[] $modules List of class modules saved in cache. Must prevent the collectModules
+	 *                          method to perform a slow task to retrieve all modules.
+	 *                          [Class => dirname]
+	 */
+	public static function restoreModulesFromCache(array $modules):void;
 }
