@@ -6,6 +6,7 @@ use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\response\IResponse;
 use wfw\engine\core\response\responses\Response;
 use wfw\engine\core\session\ISession;
@@ -22,23 +23,26 @@ final class ArchiveHandler extends DefaultContactActionHandler implements IDomai
 	private $_encoder;
 	/** @var array $_ids */
 	private $_ids;
+
 	/**
 	 * ArchiveHandler constructor.
 	 *
-	 * @param ICommandBus          $bus     Bus de commandes
-	 * @param ISession             $session Session
-	 * @param ContactIdListRule    $rule    Régle de validation des données
+	 * @param ICommandBus          $bus      Bus de commandes
+	 * @param ITranslator          $translator
+	 * @param ISession             $session  Session
+	 * @param ContactIdListRule    $rule     Régle de validation des données
 	 * @param IDomainEventObserver $observer Observeur de DomainEventListeners
 	 * @param IJSONEncoder         $encoder  Encodeur JSON
 	 */
 	public function __construct(
 		ICommandBus $bus,
+		ITranslator $translator,
 		ISession $session,
 		ContactIdListRule $rule,
 		IDomainEventObserver $observer,
 		IJSONEncoder $encoder
 	) {
-		parent::__construct($bus, $rule, $session);
+		parent::__construct($bus, $rule, $session, $translator);
 		$this->_ids = [];
 		$this->_encoder = $encoder;
 		$observer->addDomainEventListener(ArchivedEvent::class, $this);

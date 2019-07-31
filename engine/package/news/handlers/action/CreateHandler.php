@@ -37,6 +37,7 @@ final class CreateHandler extends DefaultArticleActionHandler implements IDomain
 	private $_msclient;
 	/** @var ICacheSystem $_cache */
 	private $_cache;
+	/** @var ITranslator $_translator */
 	private $_translator;
 
 	/**
@@ -63,7 +64,7 @@ final class CreateHandler extends DefaultArticleActionHandler implements IDomain
 		ICacheSystem $cache,
 		ITranslator $translator
 	) {
-		parent::__construct($commandBus,$rule,$session);
+		parent::__construct($commandBus,$rule,$session,$translator);
 		$this->_translator = $translator;
 		$this->_sanitizer = $sanitizer;
 		$this->_encoder = $encoder;

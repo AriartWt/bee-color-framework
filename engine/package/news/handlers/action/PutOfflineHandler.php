@@ -7,6 +7,7 @@ use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\response\IResponse;
 use wfw\engine\core\response\responses\Response;
 use wfw\engine\core\session\ISession;
@@ -36,6 +37,7 @@ final class PutOfflineHandler extends DefaultArticleActionHandler implements IDo
 	 * @param IDomainEventObserver $observer
 	 * @param IJSONEncoder         $encoder
 	 * @param ICacheSystem         $cache
+	 * @param ITranslator          $translator
 	 */
 	public function __construct(
 		ICommandBus $bus,
@@ -43,9 +45,10 @@ final class PutOfflineHandler extends DefaultArticleActionHandler implements IDo
 		ArticleIdListRule $rule,
 		IDomainEventObserver $observer,
 		IJSONEncoder $encoder,
-		ICacheSystem $cache
+		ICacheSystem $cache,
+		ITranslator $translator
 	){
-		parent::__construct($bus, $rule, $session);
+		parent::__construct($bus, $rule, $session,$translator);
 		$this->_cache = $cache;
 		$this->_ids = [];
 		$this->_encoder = $encoder;

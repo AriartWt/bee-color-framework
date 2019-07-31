@@ -17,7 +17,7 @@ class GeneralAccessControlPolicies extends SecurityPolicy {
 	 */
 	public static function accessPolicy(): array {
 		return [
-			RequireAuthentification::class => [ ["general" => [ "heartBeat" ]], true ]
+			RequireAuthentification::class => [ ["general" => [ "heartBeat" ]] ]
 		];
 	}
 

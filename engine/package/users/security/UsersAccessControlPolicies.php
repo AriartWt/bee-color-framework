@@ -28,7 +28,7 @@ class UsersAccessControlPolicies extends SecurityPolicy{
 						"changePassword",
 						"logout"
 					]
-				], true
+				]
 			]
 		];
 	}

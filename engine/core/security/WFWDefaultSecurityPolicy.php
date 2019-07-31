@@ -33,7 +33,7 @@ final class WFWDefaultSecurityPolicy extends SecurityPolicy {
 		]
 	): array {
 		$base = [];
-		if($includeBase) $base = array_merge_recursive(
+		if($includeBase) $base = array_merge(
 			ContactAccessControlPolicies::accessPolicy(),
 			MielAccessControlPolicies::accessPolicy(),
 			NewsAccessControlPolicies::accessPolicy(),
@@ -42,7 +42,7 @@ final class WFWDefaultSecurityPolicy extends SecurityPolicy {
 			GeneralAccessControlPolicies::accessPolicy(),
 			[ ValidToken::class => [] ]
 		);
-		return array_merge_recursive($templateArray,$base,$policies);
+		return array_merge($templateArray,$base,$policies);
 	}
 
 	/**
@@ -59,7 +59,7 @@ final class WFWDefaultSecurityPolicy extends SecurityPolicy {
 		]
 	): array {
 		$base = [];
-		if($includeBase) $base = array_merge_recursive(
+		if($includeBase) $base = array_merge(
 			UsersAccessControlPolicies::hooksPolicy(),
 			GeneralAccessControlPolicies::hooksPolicy()
 		);

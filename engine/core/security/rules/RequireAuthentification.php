@@ -36,8 +36,6 @@ final class RequireAuthentification implements IAccessRule {
 	private $_redirUrl;
 	/** @var null|IMessage $_message */
 	private $_message;
-	/** @var bool $_treeBased */
-	private $_treeBased;
 
 	/**
 	 * RequireAuthentification constructor.
@@ -48,7 +46,6 @@ final class RequireAuthentification implements IAccessRule {
 	 * @param string[]    ...$pathsToProtect Chemins à protéger.
 	 * @param null|string $redirUrl
 	 * @param null|string $translationKey
-	 * @param bool        $treeBased         (optionnal) MUST BE TRUE if you want a tree based rule set !
 	 */
 	public function __construct(
 		ISession $session,
@@ -56,14 +53,8 @@ final class RequireAuthentification implements IAccessRule {
 		ITranslator $translator,
 		array $pathsToProtect = [],
 		?string $redirUrl = null,
-		?string $translationKey = null,
-		bool $treeBased = false
+		?string $translationKey = null
 	){
-		$this->_treeBased = $treeBased;
-		if(!$this->_treeBased) $pathsToProtect = (function(string ...$paths){
-			return $paths;
-		})(...$pathsToProtect);
-
 		$this->_paths = $pathsToProtect;
 		$this->_notifier = $notifier;
 		$this->_session = $session;
@@ -83,8 +74,7 @@ final class RequireAuthentification implements IAccessRule {
 	 *                        vérifications.
 	 */
 	public function check(IAction $action): ?IAccessPermission {
-		if($this->_treeBased) return $this->treeCheck($action);
-		else return $this->linearCheck($action);
+		return $this->treeCheck($action);
 	}
 
 	/**
@@ -104,30 +94,17 @@ final class RequireAuthentification implements IAccessRule {
 		foreach($internalPath as $pathPart){
 			$continue = false;
 			foreach($array as $k=>$path){
-				if(is_int($k)){
-					if($path === lcfirst($pathPart)) return $this->denyPublicAccess($action);
-				}else if($k === lcfirst($pathPart)){
+				if($k === lcfirst($pathPart)){
 					if(is_array($path)){
 						$array = $array[$k];
 						$continue = true;
 						break;
 					} else if($path === lcfirst($pathPart)) return $this->denyPublicAccess($action);
+				}else if(is_int($k)){
+					if($path === lcfirst($pathPart)) return $this->denyPublicAccess($action);
 				}
 			}
 			if(!$continue) break;
-		}
-		return null;
-	}
-
-	/**
-	 * Linear check (non tree based regexp set)
-	 * @param IAction $action
-	 * @return null|AccessPermission
-	 */
-	private function linearCheck(IAction $action): ?AccessPermission{
-		foreach($this->_paths as $path){
-			if(preg_match("#".$path."#",$action->getInternalPath()))
-				return $this->denyPublicAccess($action);
 		}
 		return null;
 	}

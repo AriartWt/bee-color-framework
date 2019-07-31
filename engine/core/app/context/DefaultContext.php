@@ -76,7 +76,6 @@ use wfw\engine\core\security\data\sanitizer\HTMLPurifierBasedSanitizer;
 use wfw\engine\core\security\data\sanitizer\IHTMLSanitizer;
 use wfw\engine\core\security\IAccessControlCenter;
 use wfw\engine\core\security\IAccessRuleFactory;
-use wfw\engine\core\security\WFWDefaultSecurityPolicy;
 use wfw\engine\core\session\handlers\PHPSessionHandler;
 use wfw\engine\core\session\ISession;
 use wfw\engine\core\session\Session;
@@ -151,7 +150,6 @@ class DefaultContext implements IWebAppContext {
 	 * @param array       $hooks              Liste des hooks
 	 * @param array       $diceRules          Regles à ajouter à Dice
 	 * @param array       $globals            Contient la variables globales de php aux index _GET,_POST,_FILES,_SERVER
-	 * @param array       $confFiles          Liste des fichiers de configuration à charger
 	 * @param null|string $projectName        Nom du projet. Sert de namespace pour les clés du cache.
 	 * @throws \InvalidArgumentException
 	 */
@@ -162,10 +160,9 @@ class DefaultContext implements IWebAppContext {
 		array $connections = [],
 		?array $langs = [],
 		array $securityRules = [],
-		array $hooks = [],
+		?array $hooks = null,
 		array $diceRules = [],
 		array $globals = [],
-		?array $confFiles = null,
 		?string $projectName = null
 	){
 		//pass installed packages to layout/action/response resolver
@@ -182,34 +179,14 @@ class DefaultContext implements IWebAppContext {
 			]
 		]);
 
-		$modules = $this->getCacheSystem()->get(self::CACHE_KEYS[self::MODULES]);
-		if(is_null($modules)){
-			WFWModulesCollector::collectModules();
-			$this->getCacheSystem()->set(
-				self::CACHE_KEYS[self::MODULES],
-				WFWModulesCollector::modules()
-			);
-		}
+		$this->loadModules();
+		$commandRules = $this->getCommandRules($securityRules["command"] ?? null);
+		$queryRules = $this->getQueryRules($securityRules["query"] ?? null);
+		$accessRules = $this->getAccessRules($securityRules["access"] ?? null);
+		$hooks =$this->getHooks($hooks);
+		$langs = $this->getLangs($langs);
 
-		//TODO : init if not set for commands and queries
-		$commandRules = $securityRules["command"] ?? [];
-		$queryRules = $securityRules["query"] ?? [];
-		$accessRules = $securityRules["access"] ?? [];
-		if(count($accessRules) === 0) $accessRules = WFWDefaultSecurityPolicy::accessPolicy();
-		if(count($hooks) === 0) $hooks = WFWDefaultSecurityPolicy::hooksPolicy();
-		if(count($commandRules) === 0) $commandRules = WFWDefaultSecurityPolicy::commandsPolicy();
-		if(count($queryRules) === 0) $queryRules = WFWDefaultSecurityPolicy::queriesPolicy();
-
-		$lc = $this->getCacheSystem()->get(self::CACHE_KEYS[self::LANGS]);
-		if(is_null($lc)){
-			$langs = WFWModulesCollector::langs($langs);
-			$this->getCacheSystem()->set(self::CACHE_KEYS[self::LANGS],$langs);
-		}else $langs = $lc;
-
-		$this->_conf = $conf = $this->initConfs($confFiles ?? [
-			dirname(__DIR__,3)."/config/conf.json",
-			dirname(__DIR__,4)."/site/config/conf.json"
-		]);
+		$this->_conf = $conf = $this->initConfs($this->getConfs());
 
 		//Trying to dynamicaly resolve the msserver socket addr. If MSServerPool is unavailable,
 		//we maked the assumption that the sockets are in their default locations.
@@ -422,6 +399,7 @@ class DefaultContext implements IWebAppContext {
 			]
 		]);
 		$this->_translator->changeCurrentLanguage($action->getLang());
+		$this->_dice->addRules($this->getDi());
 		$this->_dice->addRules($diceRules);
 	}
 
@@ -539,17 +517,31 @@ class DefaultContext implements IWebAppContext {
 		}
 	}
 
+	protected function loadModules():void{
+		$modules = $this->getCacheSystem()->get(self::CACHE_KEYS[self::MODULES]);
+		if(is_null($modules)){
+			WFWModulesCollector::collectModules();
+			$this->getCacheSystem()->set(
+				self::CACHE_KEYS[self::MODULES],
+				WFWModulesCollector::modules()
+			);
+		}else WFWModulesCollector::restoreModulesFromCache($modules);
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getDi():array{
+		return WFWModulesCollector::di();
+	}
+
 	/**
 	 * @return array
 	 */
 	protected function getDomainEventListeners():array{
 		$listeners = $this->getCacheSystem()->get(self::CACHE_KEYS[self::DOMAIN_EVENT_LISTENERS]);
-		$site = dirname(__DIR__,4).'/site';
-		$engine = dirname(__DIR__,3);
 		if(is_null($listeners)){
-			if(file_exists("$site/config/load/domain_events.listeners.php"))
-				$listeners = require("$site/config/load/domain_events.listeners.php");
-			else $listeners = require("$engine/config/default.domain_events.listeners.php");
+			$listeners = WFWModulesCollector::domainEventListeners();
 			$this->getCacheSystem()->set(self::CACHE_KEYS[self::DOMAIN_EVENT_LISTENERS],$listeners);
 		}
 		return $listeners;
@@ -560,34 +552,89 @@ class DefaultContext implements IWebAppContext {
 	 */
 	protected function getCommandHandlers():array{
 		$handlers = $this->getCacheSystem()->get(self::CACHE_KEYS[self::COMMAND_HANDLERS]);
-		$site = dirname(__DIR__,4).'/site';
-		$engine = dirname(__DIR__,3);
 		if(is_null($handlers)){
-			if(file_exists("$site/config/load/command.handlers.php"))
-				$handlers = require("$site/config/load/command.handlers.php");
-			else $handlers = require("$engine/config/default.command.handlers.php");
+			$handlers = WFWModulesCollector::commandHandlers();
 			$this->getCacheSystem()->set(self::CACHE_KEYS[self::DOMAIN_EVENT_LISTENERS],$handlers);
 		}
 		return $handlers;
 	}
 
-	protected function getAccessRules():array{
-		//TODO : implements
+	/**
+	 * @return array Confs files
+	 */
+	protected function getConfs():array{
+		$confFiles = $this->getCacheSystem()->get(self::CACHE_KEYS[self::CONF_FILES]);
+		if(is_null($confFiles)){
+			$confFiles = WFWModulesCollector::confs();
+			$this->getCacheSystem()->set(self::CACHE_KEYS[self::CONF_FILES],$confFiles);
+		}
+		return $confFiles;
 	}
 
-	protected function getCommandRules():array{
-		//TODO : implements
+	/**
+	 * @param array|null $access
+	 * @return array
+	 */
+	protected function getAccessRules(?array $access=null):array{
+		$rules = $this->getCacheSystem()->get(self::CACHE_KEYS[self::ACCESS_RULES]);
+		if(is_null($rules)){
+			$rules = WFWModulesCollector::accessPolicy(!empty($access) ? $access : null);
+			$this->getCacheSystem()->set(self::CACHE_KEYS[self::ACCESS_RULES],$rules);
+		}
+		return $rules;
 	}
 
-	protected function getQueryRules():array{
-		//TODO : implements
+	/**
+	 * @param array|null $commands
+	 * @return array
+	 */
+	protected function getCommandRules(?array $commands=null):array{
+		$rules = $this->getCacheSystem()->get(self::CACHE_KEYS[self::COMMAND_RULES]);
+		if(is_null($rules)){
+			$rules = WFWModulesCollector::commandsPolicy(!empty($commands) ? $commands : null);
+			$this->getCacheSystem()->set(self::CACHE_KEYS[self::COMMAND_RULES],$rules);
+		}
+		return $rules;
 	}
 
-	protected function getHooks():array{
-		//TODO : implements
+	/**
+	 * @param array|null $queries
+	 * @return array
+	 */
+	protected function getQueryRules(?array $queries=null):array{
+		$rules = $this->getCacheSystem()->get(self::CACHE_KEYS[self::QUERY_RULES]);
+		if(is_null($rules)){
+			$rules =  WFWModulesCollector::queriesPolicy(!empty($queries) ? $queries : null);
+			$this->getCacheSystem()->set(self::CACHE_KEYS[self::QUERY_RULES],$rules);
+		}
+		return $rules;
 	}
 
+	/**
+	 * @param array|null $hooks
+	 * @return array
+	 */
+	protected function getHooks(?array $hooks=null):array{
+		$hooksPolicy = $this->getCacheSystem()->get(self::CACHE_KEYS[self::HOOKS]);
+		if(is_null($hooksPolicy)){
+			$hooksPolicy = WFWModulesCollector::hooksPolicy(!empty($hooks) ? $hooks : null);
+			$this->getCacheSystem()->set(self::CACHE_KEYS[self::HOOKS],$hooksPolicy);
+		}
+		return $hooksPolicy;
+	}
 
+	/**
+	 * @param array $langs
+	 * @return array
+	 */
+	protected function getLangs(array $langs):array{
+		$lc = $this->getCacheSystem()->get(self::CACHE_KEYS[self::LANGS]);
+		if(is_null($lc)){
+			$langs = WFWModulesCollector::langs($langs);
+			$this->getCacheSystem()->set(self::CACHE_KEYS[self::LANGS],$langs);
+		}else $langs = $lc;
+		return $langs;
+	}
 
 	/**
 	 * @return IErrorHandler Gestionnaire d'erreurs.

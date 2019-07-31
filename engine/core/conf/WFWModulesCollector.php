@@ -2,12 +2,13 @@
 
 namespace wfw\engine\core\conf;
 
+use wfw\engine\core\security\ISecurityPolicy;
 use wfw\engine\core\security\WFWDefaultSecurityPolicy;
 
 /**
  * Base descriptor
  */
-final class WFWModulesCollector extends ModuleDescriptor implements IAppModulesCollector {
+final class WFWModulesCollector extends ModuleDescriptor implements IAppModulesCollector, ISecurityPolicy {
 	private static $_modules = [];
 	private static $_collected = false;
 
@@ -77,13 +78,7 @@ final class WFWModulesCollector extends ModuleDescriptor implements IAppModulesC
 	public static function securityPolicies(): array {
 		return array_merge(
 			[ WFWDefaultSecurityPolicy::class ],
-			...array_map(
-				function($module){
-					/** @var IModuleDescriptor $module */
-					return $module::securityPolicies();
-				},
-				self::$_modules
-			)
+			self::getSecurityPolicies()
 		);
 	}
 
@@ -91,10 +86,12 @@ final class WFWModulesCollector extends ModuleDescriptor implements IAppModulesC
 	 * @return array
 	 */
 	public static function di(): array {
-		return array_merge_recursive(...array_map(function($module){
+		$di = array_map(function($module){
 			/** @var IModuleDescriptor $module */
 			return $module::di();
-		},self::$_modules));
+		},self::$_modules);
+		if(count($di) > 1) return array_merge(...$di);
+		else return $di;
 	}
 
 	/**
@@ -108,15 +105,15 @@ final class WFWModulesCollector extends ModuleDescriptor implements IAppModulesC
 		$engine = [];
 		if(file_exists($siteFile)) $site = require $siteFile;
 		if(file_exists($engineFile)) $engine = require $engineFile;
-		return array_merge_recursive(
-			array_merge_recursive(
-				$engine,
-				...array_map(function($module){
-				/** @var IModuleDescriptor $module */
-				return $module::domainEventListeners();
-			},self::$_modules)),
-			$site
-		);
+		return self::mergeConstructors(...array_merge(
+			array_merge(
+				[$engine],
+				array_map(function($module){
+					/** @var IModuleDescriptor $module */
+					return $module::commandHandlers();
+				},self::$_modules)),
+			[$site]
+		));
 	}
 
 	/**
@@ -130,15 +127,18 @@ final class WFWModulesCollector extends ModuleDescriptor implements IAppModulesC
 		$engine = [];
 		if(file_exists($siteFile)) $site = require $siteFile;
 		if(file_exists($engineFile)) $engine = require $engineFile;
-		return array_merge_recursive(
-			array_merge_recursive(
-				$engine,
-				...array_map(function($module){
-				/** @var IModuleDescriptor $module */
-				return $module::domainEventListeners();
-			},self::$_modules)),
-			$site
-		);
+		return self::mergeConstructors(...array_merge(
+			array_merge(
+				[$engine],
+				array_map(function($module){
+					/** @var IModuleDescriptor $module */
+					return $module::domainEventListeners();
+					},
+					self::$_modules
+				)
+			),
+			[$site]
+		));
 	}
 
 	/**
@@ -152,15 +152,18 @@ final class WFWModulesCollector extends ModuleDescriptor implements IAppModulesC
 		$engine = [];
 		if(file_exists($siteFile)) $site = require $siteFile;
 		if(file_exists($engineFile)) $engine = require $engineFile;
-		return array_merge(
+		return self::mergeConstructors(...array_merge(
 			array_merge(
-				$engine,
-				...array_map(function($module){
-				/** @var IModuleDescriptor $module */
-				return $module::models();
-			},self::$_modules)),
-			$site
-		);
+				[$engine],
+				array_map(function($module){
+					/** @var IModuleDescriptor $module */
+					return $module::models();
+				},
+					self::$_modules
+				)
+			),
+			[$site]
+		));
 	}
 
 	/**
@@ -205,5 +208,107 @@ final class WFWModulesCollector extends ModuleDescriptor implements IAppModulesC
 	public static function restoreModulesFromCache(array $modules): void {
 		self::$_modules = $modules;
 		self::$_collected = true;
+	}
+
+	/**
+	 * @param array ...$init
+	 * @return array
+	 */
+	private static function mergeConstructors(array ...$init):array{
+		$res = [];
+		foreach($init as $initArray){
+			foreach($initArray as $key => $constructor){
+				if(!isset($res[$key])) $res[$key] = $constructor;
+				else{
+					foreach($constructor as $index => $param){
+						if(isset($res[$key][$index]) && is_array($res[$key][$index]) && is_array($param)){
+							$res[$key][$index] = array_merge_recursive(
+								$res[$key][$index],
+								$param
+							);
+						}else $res[$key][$index] = $param;
+					}
+				}
+			}
+		}
+		return $res;
+	}
+
+	/**
+	 * @param array|null $accessRules Access rules to replace the default security policy
+	 * @return array [AccessRuleClass => params]
+	 */
+	public static function accessPolicy(?array $accessRules=null): array {
+		return self::mergeConstructors(
+			$accessRules ?? WFWDefaultSecurityPolicy::accessPolicy(),
+			...array_map(
+				function($securityPolicy){
+					/** @var ISecurityPolicy $securityPolicy */
+					return $securityPolicy::accessPolicy();
+				}, self::getSecurityPolicies())
+		);
+	}
+
+	/**
+	 * @return array
+	 */
+	private static function getSecurityPolicies():array{
+		$policies = array_map(function($module){
+			/** @var IModuleDescriptor $module */
+			return $module::securityPolicies();
+		},self::$_modules);
+		if(count($policies) > 1) return array_unique(array_merge(...$policies));
+		else return [];
+	}
+
+	/**
+	 * @param array|null $commands Command rules to replace the default security policy
+	 * @return array [CommandAccessRuleClass => params]
+	 */
+	public static function commandsPolicy(?array $commands = null): array {
+		return self::mergeConstructors(
+			$commands ?? WFWDefaultSecurityPolicy::commandsPolicy(),
+			 ...array_map(
+				function($securityPolicy){
+					/** @var ISecurityPolicy $securityPolicy */
+					return $securityPolicy::commandsPolicy();
+				},
+				self::getSecurityPolicies()
+			)
+		);
+	}
+
+	/**
+	 * @param array|null $queries Queries rules to replace the default security policy
+	 * @return array [QueryAccessRuleClass => params]
+	 */
+	public static function queriesPolicy(?array $queries = null): array {
+		return self::mergeConstructors(
+			$queries ?? WFWDefaultSecurityPolicy::queriesPolicy(),
+			...array_map(
+				function($securityPolicy){
+					/** @var ISecurityPolicy $securityPolicy */
+					return $securityPolicy::queriesPolicy();
+				},
+				self::getSecurityPolicies()
+			)
+		);
+	}
+
+	/**
+	 * @param array|null $hooks
+	 * @return array [HookClass => params ]
+	 */
+	public static function hooksPolicy(?array $hooks = null): array {
+		return self::mergeConstructors(
+			$hooks ?? WFWDefaultSecurityPolicy::hooksPolicy(),
+			...array_map(
+				function($securityPolicy){
+					/** @var ISecurityPolicy $securityPolicy */
+					return $securityPolicy::hooksPolicy();
+				},
+				self::getSecurityPolicies()
+			)
+		);
 	}
 }

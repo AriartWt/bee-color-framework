@@ -16,9 +16,7 @@ class ContactAccessControlPolicies extends SecurityPolicy {
 	 */
 	public static function accessPolicy(): array {
 		return [
-			RequireAuthentification::class => [
-				[ "contact" ], true
-			]
+			RequireAuthentification::class => [ ["contact"] ]
 		];
 	}
 }

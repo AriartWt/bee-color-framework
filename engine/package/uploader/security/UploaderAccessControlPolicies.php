@@ -16,7 +16,7 @@ class UploaderAccessControlPolicies extends SecurityPolicy {
 	 */
 	public static function accessPolicy(): array {
 		return [
-			RequireAuthentification::class => [ ["uploader"], true ]
+			RequireAuthentification::class => [ ["uploader"] ]
 		];
 	}
 }

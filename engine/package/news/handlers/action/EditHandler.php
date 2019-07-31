@@ -8,6 +8,7 @@ use wfw\engine\core\data\DBAccess\NOSQLDB\msServer\IMSServerAccess;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\response\IResponse;
 use wfw\engine\core\response\responses\Response;
 use wfw\engine\core\security\data\sanitizer\IHTMLSanitizer;
@@ -54,6 +55,7 @@ final class EditHandler extends DefaultArticleActionHandler implements IDomainEv
 	 * @param IJSONEncoder         $encoder
 	 * @param IMSServerAccess      $msaccess
 	 * @param ICacheSystem         $cacheSystem
+	 * @param ITranslator          $translator
 	 */
 	public function __construct(
 		ICommandBus $bus,
@@ -63,9 +65,10 @@ final class EditHandler extends DefaultArticleActionHandler implements IDomainEv
 		IDomainEventObserver $observer,
 		IJSONEncoder $encoder,
 		IMSServerAccess $msaccess,
-		ICacheSystem $cacheSystem
+		ICacheSystem $cacheSystem,
+		ITranslator $translator
 	) {
-		parent::__construct($bus,$rule,$session);
+		parent::__construct($bus,$rule,$session,$translator);
 		$this->_sanitizer = $sanitizer;
 		$this->_encoder = $encoder;
 		$this->_cache = $cacheSystem;

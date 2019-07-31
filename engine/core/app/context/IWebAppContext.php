@@ -21,6 +21,7 @@ use wfw\engine\core\view\ILayoutResolver;
  */
 interface IWebAppContext {
 	public const CONF="CONF";
+	public const CONF_FILES="CONF_FILES";
 	public const TRANSLATOR = "TRANSLATOR";
 	public const DOMAIN_EVENT_LISTENERS = "DOMAIN_EVENT_LISTENERS";
 	public const COMMAND_HANDLERS = "COMMAND_HANDLERS";
@@ -28,6 +29,10 @@ interface IWebAppContext {
 	public const VIEWS="VIEWS";
 	public const LANGS="LANGS";
 	public const MODULES="MODULES";
+	public const ACCESS_RULES="ACCESS_RULES";
+	public const COMMAND_RULES="COMMAND_RULES";
+	public const QUERY_RULES="QUERY_RULES";
+	public const HOOKS = "HOOKS";
 
 	public const CACHE_KEYS = [
 		self::CONF => "WFW/WebApp/Confs",
@@ -37,7 +42,12 @@ interface IWebAppContext {
 		self::VIEWS => "WFW/WebApp/Views",
 		self::LANGS => "WFW/WebApp/Langs",
 		self::COMMAND_HANDLERS => "WFW/WebApp/CommandHandlers",
-		self::MODULES => "WFW/WebApp/Modules"
+		self::MODULES => "WFW/WebApp/Modules",
+		self::ACCESS_RULES => "WFW/WebApp/AccessRules",
+		self::COMMAND_RULES => "WFW/WebApp/CommandRules",
+		self::QUERY_RULES => "WFW/WebApp/QueryRules",
+		self::HOOKS => "WFW/WebApp/Hooks",
+		self::CONF_FILES => "WFW/WebApp/ConfFiles"
 	];
 
 	/**
