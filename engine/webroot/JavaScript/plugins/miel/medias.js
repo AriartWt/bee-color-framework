@@ -48,7 +48,7 @@ wfw.define("plugins/miel/medias",function($params){
 		['title','description'].forEach($e=>{
 			if(!($e in $params.editable)) $params.editable[$e] = false;
 		});
-
+		let $uniques = {};
 		wfw.dom.appendTo($window,
 			wfw.dom.appendTo(wfw.dom.create("div",{className:"head"}),
 				wfw.dom.appendTo(wfw.dom.create("div",{className:"title"}),
@@ -71,9 +71,15 @@ wfw.define("plugins/miel/medias",function($params){
 					wfw.dom.create("button",{innerHTML:$lstr('SAVE'),on:{click:()=>{
 						$update(
 							$node.getAttribute('data-miel_key'),
-							Array.from($o.list.querySelectorAll(".item")).map($n=>$compileListNode($n)),
+							Array.from($o.list.querySelectorAll(".item")).map($n=>$compileListNode($n)).filter($i=>{
+								if(!($i.file in $uniques)){
+									$uniques[$i.file]=true;
+									return true;
+								} else return false;
+							}),
 							$window
 						);
+						$uniques = {};
 						$window.parentNode.removeChild($window)
 					}}}),
 					wfw.dom.create("button",{innerHTML:$lstr('CANCEL'),on:{
@@ -236,6 +242,7 @@ wfw.define("plugins/miel/medias",function($params){
 		);
 	};
 	let $update = ($k,$arr,$window)=>{
+		console.log($arr);
 		let $loader = $displayLoader($lstr("WAIT_UPDATE"),$window.querySelector(".body"));
 		wfw.network.wfwAPI(wfw.webroot+"miel/update",{
 			type : "POST",

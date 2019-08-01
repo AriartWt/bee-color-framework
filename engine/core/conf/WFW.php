@@ -8,7 +8,7 @@ use wfw\engine\core\security\WFWDefaultSecurityPolicy;
 /**
  * Base descriptor
  */
-final class WFWModulesCollector extends ModuleDescriptor implements IAppModulesCollector, ISecurityPolicy {
+final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecurityPolicy {
 	private static $_modules = [];
 	private static $_collected = false;
 

@@ -4,6 +4,7 @@
 			"core" : {
 				"app" : {
 					"ACTION_HANDLER_NOT_FOUND" : "ActionHandler [[$]] doesn't exists",
+					"DISABLED_MODULE" : "Trying to access to a disabled module/package.",
 					"INTERNAL_ERROR" : "Internal error : [$]",
 					"MUST_BE_LOGGED" : "You must be connected.",
 					"ACCESS_DENIED" : "Access denied",

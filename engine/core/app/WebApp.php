@@ -1,6 +1,7 @@
 <?php
 namespace wfw\engine\core\app;
 
+use wfw\engine\core\action\errors\ActionHandlerNotEnabled;
 use wfw\engine\core\action\errors\ActionResolutionFailure;
 use wfw\engine\core\notifier\Message;
 use wfw\engine\core\response\responses\ErrorResponse;
@@ -50,26 +51,25 @@ final class WebApp {
 						$actionRouter = $this->_context->getActionRouter();
 						$handler = $actionRouter->findActionHandler($action);
 						$response = $handler->handle($action);
+					}catch(ActionHandlerNotEnabled $e){
+						$response = new ErrorResponse(
+							HTTPStatus::FORBIDDEN,
+							$translator->get("server/engine/core/app/DISABLED_MODULE")
+						);
 					}catch(ActionResolutionFailure $e){
-						if($action->getRequest()->isAjax()){
-							$response = new ErrorResponse(
-								500,
-								$translator->getTranslateAndReplace(
-									"server/engine/core/app/ACTION_HANDLER_NOT_FOUND",
-									null,
-									$action->getInternalPath()
-								)
-							);
-						}else{
-							$response = new StaticResponse($action);
-						}
+						if($action->getRequest()->isAjax()) $response = new ErrorResponse(
+							HTTPStatus::INTERNAL_SERVER_ERROR,
+							$translator->getAndReplace(
+								"server/engine/core/app/ACTION_HANDLER_NOT_FOUND",
+								$action->getInternalPath()
+							)
+						);
+						else $response = new StaticResponse($action);
 					}catch(\Error $e){
 						$response = new ErrorResponse(
-							500,
-							$translator->getTranslateAndReplace(
-								"server/engine/core/app/INTERNAL_ERROR",
-								null,
-								$e
+							HTTPStatus::INTERNAL_SERVER_ERROR,
+							$translator->getAndReplace(
+								"server/engine/core/app/INTERNAL_ERROR",$e
 							)
 						);
 					}
@@ -77,7 +77,7 @@ final class WebApp {
 					if(is_null($permission->getResponse())){
 						if($action->getRequest()->isAjax()){
 							$response = new ErrorResponse(
-								100,
+								HTTPStatus::FORBIDDEN,
 								$translator->getAndTranslate(
 									"server/engine/core/app/MUST_BE_LOGGED"
 								)
@@ -109,10 +109,9 @@ final class WebApp {
 				$handler = $responseRouter->findResponseHandler($action,$response);
 			}catch(ResponseResolutionFailure $e){
 				$response = new ErrorResponse(
-					404,
-					$translator->getTranslateAndReplace(
+					HTTPStatus::NOT_FOUND,
+					$translator->getAndReplace(
 						"server/engine/core/app/404_NOT_FOUND",
-						null,
 						$action->getInternalPath()
 					)
 				);

@@ -24,7 +24,7 @@ use wfw\engine\core\command\security\CommandSecurityCenter;
 use wfw\engine\core\command\security\ICommandSecurityCenter;
 use wfw\engine\core\command\security\rules\CommandAccessRulesCollector;
 use wfw\engine\core\command\SynchroneCommandBus;
-use wfw\engine\core\conf\WFWModulesCollector;
+use wfw\engine\core\conf\WFW;
 use wfw\engine\core\data\DBAccess\NOSQLDB\msServer\IMSServerAccess;
 use wfw\engine\core\data\DBAccess\NOSQLDB\msServer\MSServerWriterAccess;
 use wfw\engine\core\data\DBAccess\SQLDB\IDBAccess;
@@ -520,19 +520,19 @@ class DefaultContext implements IWebAppContext {
 	protected function loadModules():void{
 		$modules = $this->getCacheSystem()->get(self::CACHE_KEYS[self::MODULES]);
 		if(is_null($modules)){
-			WFWModulesCollector::collectModules();
+			WFW::collectModules();
 			$this->getCacheSystem()->set(
 				self::CACHE_KEYS[self::MODULES],
-				WFWModulesCollector::modules()
+				WFW::modules()
 			);
-		}else WFWModulesCollector::restoreModulesFromCache($modules);
+		}else WFW::restoreModulesFromCache($modules);
 	}
 
 	/**
 	 * @return array
 	 */
 	protected function getDi():array{
-		return WFWModulesCollector::di();
+		return WFW::di();
 	}
 
 	/**
@@ -541,7 +541,7 @@ class DefaultContext implements IWebAppContext {
 	protected function getDomainEventListeners():array{
 		$listeners = $this->getCacheSystem()->get(self::CACHE_KEYS[self::DOMAIN_EVENT_LISTENERS]);
 		if(is_null($listeners)){
-			$listeners = WFWModulesCollector::domainEventListeners();
+			$listeners = WFW::domainEventListeners();
 			$this->getCacheSystem()->set(self::CACHE_KEYS[self::DOMAIN_EVENT_LISTENERS],$listeners);
 		}
 		return $listeners;
@@ -553,7 +553,7 @@ class DefaultContext implements IWebAppContext {
 	protected function getCommandHandlers():array{
 		$handlers = $this->getCacheSystem()->get(self::CACHE_KEYS[self::COMMAND_HANDLERS]);
 		if(is_null($handlers)){
-			$handlers = WFWModulesCollector::commandHandlers();
+			$handlers = WFW::commandHandlers();
 			$this->getCacheSystem()->set(self::CACHE_KEYS[self::DOMAIN_EVENT_LISTENERS],$handlers);
 		}
 		return $handlers;
@@ -565,7 +565,7 @@ class DefaultContext implements IWebAppContext {
 	protected function getConfs():array{
 		$confFiles = $this->getCacheSystem()->get(self::CACHE_KEYS[self::CONF_FILES]);
 		if(is_null($confFiles)){
-			$confFiles = WFWModulesCollector::confs();
+			$confFiles = WFW::confs();
 			$this->getCacheSystem()->set(self::CACHE_KEYS[self::CONF_FILES],$confFiles);
 		}
 		return $confFiles;
@@ -578,7 +578,7 @@ class DefaultContext implements IWebAppContext {
 	protected function getAccessRules(?array $access=null):array{
 		$rules = $this->getCacheSystem()->get(self::CACHE_KEYS[self::ACCESS_RULES]);
 		if(is_null($rules)){
-			$rules = WFWModulesCollector::accessPolicy(!empty($access) ? $access : null);
+			$rules = WFW::accessPolicy(!empty($access) ? $access : null);
 			$this->getCacheSystem()->set(self::CACHE_KEYS[self::ACCESS_RULES],$rules);
 		}
 		return $rules;
@@ -591,7 +591,7 @@ class DefaultContext implements IWebAppContext {
 	protected function getCommandRules(?array $commands=null):array{
 		$rules = $this->getCacheSystem()->get(self::CACHE_KEYS[self::COMMAND_RULES]);
 		if(is_null($rules)){
-			$rules = WFWModulesCollector::commandsPolicy(!empty($commands) ? $commands : null);
+			$rules = WFW::commandsPolicy(!empty($commands) ? $commands : null);
 			$this->getCacheSystem()->set(self::CACHE_KEYS[self::COMMAND_RULES],$rules);
 		}
 		return $rules;
@@ -604,7 +604,7 @@ class DefaultContext implements IWebAppContext {
 	protected function getQueryRules(?array $queries=null):array{
 		$rules = $this->getCacheSystem()->get(self::CACHE_KEYS[self::QUERY_RULES]);
 		if(is_null($rules)){
-			$rules =  WFWModulesCollector::queriesPolicy(!empty($queries) ? $queries : null);
+			$rules =  WFW::queriesPolicy(!empty($queries) ? $queries : null);
 			$this->getCacheSystem()->set(self::CACHE_KEYS[self::QUERY_RULES],$rules);
 		}
 		return $rules;
@@ -617,7 +617,7 @@ class DefaultContext implements IWebAppContext {
 	protected function getHooks(?array $hooks=null):array{
 		$hooksPolicy = $this->getCacheSystem()->get(self::CACHE_KEYS[self::HOOKS]);
 		if(is_null($hooksPolicy)){
-			$hooksPolicy = WFWModulesCollector::hooksPolicy(!empty($hooks) ? $hooks : null);
+			$hooksPolicy = WFW::hooksPolicy(!empty($hooks) ? $hooks : null);
 			$this->getCacheSystem()->set(self::CACHE_KEYS[self::HOOKS],$hooksPolicy);
 		}
 		return $hooksPolicy;
@@ -630,7 +630,7 @@ class DefaultContext implements IWebAppContext {
 	protected function getLangs(array $langs):array{
 		$lc = $this->getCacheSystem()->get(self::CACHE_KEYS[self::LANGS]);
 		if(is_null($lc)){
-			$langs = WFWModulesCollector::langs($langs);
+			$langs = WFW::langs($langs);
 			$this->getCacheSystem()->set(self::CACHE_KEYS[self::LANGS],$langs);
 		}else $langs = $lc;
 		return $langs;
