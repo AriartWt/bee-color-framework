@@ -242,7 +242,6 @@ wfw.define("plugins/miel/medias",function($params){
 		);
 	};
 	let $update = ($k,$arr,$window)=>{
-		console.log($arr);
 		let $loader = $displayLoader($lstr("WAIT_UPDATE"),$window.querySelector(".body"));
 		wfw.network.wfwAPI(wfw.webroot+"miel/update",{
 			type : "POST",

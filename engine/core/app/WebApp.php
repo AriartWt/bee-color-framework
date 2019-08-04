@@ -4,6 +4,7 @@ namespace wfw\engine\core\app;
 use wfw\engine\core\action\errors\ActionHandlerNotEnabled;
 use wfw\engine\core\action\errors\ActionResolutionFailure;
 use wfw\engine\core\notifier\Message;
+use wfw\engine\core\response\errors\ResponseHandlerNotEnabled;
 use wfw\engine\core\response\responses\ErrorResponse;
 use wfw\engine\core\response\errors\ResponseResolutionFailure;
 use wfw\engine\core\response\responses\StaticResponse;
@@ -34,8 +35,7 @@ final class WebApp {
 		$session = $this->_context->getSession();
 		$session->start();
 		$cache = $this->_context->getCacheSystem();
-		$cacheKey = $this->_context::CACHE_KEYS[$this->_context::VIEWS]
-					."/".$action->getLang()."::".$action->getRequest()->getURI();
+		$cacheKey = $this->_context::VIEWS."/".$action->getLang()."::".$action->getRequest()->getURI();
 
 		if( !$session->isLogged()
 			&& $action->getRequest()->getMethod() === "GET"
@@ -106,6 +106,12 @@ final class WebApp {
 
 			$responseRouter = $this->_context->getResponseRouter();
 			try{
+				$handler = $responseRouter->findResponseHandler($action,$response);
+			}catch(ResponseHandlerNotEnabled $e){
+				$response = new ErrorResponse(
+					HTTPStatus::FORBIDDEN,
+					$translator->get("server/engine/core/app/DISABLED_MODULE")
+				);
 				$handler = $responseRouter->findResponseHandler($action,$response);
 			}catch(ResponseResolutionFailure $e){
 				$response = new ErrorResponse(

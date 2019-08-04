@@ -19,41 +19,11 @@ use wfw\engine\core\view\ILayoutResolver;
 /**
  * Contexte de l'application web.
  */
-interface IWebAppContext {
-	public const CONF="CONF";
-	public const CONF_FILES="CONF_FILES";
-	public const TRANSLATOR = "TRANSLATOR";
-	public const DOMAIN_EVENT_LISTENERS = "DOMAIN_EVENT_LISTENERS";
-	public const COMMAND_HANDLERS = "COMMAND_HANDLERS";
-	public const ROUTER="ROUTER";
-	public const VIEWS="VIEWS";
-	public const LANGS="LANGS";
-	public const MODULES="MODULES";
-	public const ACCESS_RULES="ACCESS_RULES";
-	public const COMMAND_RULES="COMMAND_RULES";
-	public const QUERY_RULES="QUERY_RULES";
-	public const HOOKS = "HOOKS";
-
-	public const CACHE_KEYS = [
-		self::CONF => "WFW/WebApp/Confs",
-		self::ROUTER => "WFW/WebApp/Router",
-		self::TRANSLATOR => "WFW/WebApp/Translator",
-		self::DOMAIN_EVENT_LISTENERS => "WFW/WebApp/DomainEventListeners",
-		self::VIEWS => "WFW/WebApp/Views",
-		self::LANGS => "WFW/WebApp/Langs",
-		self::COMMAND_HANDLERS => "WFW/WebApp/CommandHandlers",
-		self::MODULES => "WFW/WebApp/Modules",
-		self::ACCESS_RULES => "WFW/WebApp/AccessRules",
-		self::COMMAND_RULES => "WFW/WebApp/CommandRules",
-		self::QUERY_RULES => "WFW/WebApp/QueryRules",
-		self::HOOKS => "WFW/WebApp/Hooks",
-		self::CONF_FILES => "WFW/WebApp/ConfFiles"
-	];
-
-	/**
-	 * @return ICacheSystem Système de cache de l'application.
-	 */
-	public function getCacheSystem():ICacheSystem;
+interface IWebAppContext extends IAppContext {
+	public const HOOKS="WFW/WebApp/Hooks";
+	public const VIEWS="WFW/WebApp/Views";
+	public const ACCESS_RULES="WFW/WebApp/AccessRules";
+	public const ROUTER = "WFW/WebApp/Router";
 
 	/**
 	 * @return ISession Session associée à l'utilisateur courant.
@@ -77,11 +47,6 @@ interface IWebAppContext {
 	public function getResponseRouter():IResponseRouter;
 
 	/**
-	 * @return IConf Configuration de l'application.
-	 */
-	public function getConf():IConf;
-
-	/**
 	 * @return IRequest Requête courante
 	 */
 	public function getRequest():IRequest;
@@ -102,16 +67,6 @@ interface IWebAppContext {
 	public function getAccessControlCenter():IAccessControlCenter;
 
 	/**
-	 * @return INotifier Notifier
-	 */
-	public function getNotifier():INotifier;
-
-	/**
-	 * @return ITranslator Gestionnaire de langues.
-	 */
-	public function getTranslator():ITranslator;
-
-	/**
 	 * @return IAction Action correspondant à la requête courante.
 	 */
 	public function getAction():IAction;
@@ -120,9 +75,4 @@ interface IWebAppContext {
 	 * @return IActionHook Hook.
 	 */
 	public function getActionHook():IActionHook;
-
-	/**
-	 * Called by the app just before closing
-	 */
-	public function close();
 }

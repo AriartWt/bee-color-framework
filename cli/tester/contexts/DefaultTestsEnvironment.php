@@ -3,7 +3,7 @@
 namespace wfw\cli\tester\contexts;
 
 use Dice\Dice;
-use wfw\engine\core\app\context\DefaultContext;
+use wfw\engine\core\app\context\WebAppContext;
 use wfw\engine\core\app\context\IWebAppContext;
 use wfw\engine\core\app\WebApp;
 use wfw\engine\core\security\rules\RequireAuthentification;
@@ -20,7 +20,7 @@ use wfw\engine\package\users\domain\types\Client;
  * propriété _dice dans laquelle une instance de Dice est présente avec une méthode create(string class,array $args)
  */
 class DefaultTestsEnvironment implements ITestsEnvironment {
-	/** @var null|DefaultContext $_context */
+	/** @var null|WebAppContext $_context */
 	private $_context;
 	/** @var Dice $_dice */
 	private $_dice;
@@ -49,11 +49,12 @@ class DefaultTestsEnvironment implements ITestsEnvironment {
 
 	/**
 	 * Crée un IWebAppContext
+	 *
 	 * @param array  $args
-	 * @return DefaultContext
+	 * @return WebAppContext
 	 */
 	private function createWebAppContext(array $args = []):IWebAppContext{
-		$class = $args["context"] ?? DefaultContext::class;
+		$class = $args["context"] ?? WebAppContext::class;
 		if(!is_a($class,IWebAppContext::class,true))
 			throw new \InvalidArgumentException("$class doesn't implements ".IWebAppContext::class);
 		return new $class(...$this->initContextArgs($args));
