@@ -534,10 +534,6 @@ try{
 		$backup->set("mysql",$mysqlPath);
 		$backup->set("mysqldump",$wfwConf->getString("mysqldump_path")??"mysqldump");
 		$backup->save();
-		//updator's confs :
-		$updator = new FileBasedConf("$path/cli/updator/config/conf.json");
-		$updator->set('project',$pName);
-		$updator->save();
 		//tester's confs :
 		$tester = new FileBasedConf("$path/cli/tester/config/conf.tests.json");
 		$tester->set("msserver/addr",$msConf->getSocketPath());
