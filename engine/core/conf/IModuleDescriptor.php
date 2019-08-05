@@ -47,4 +47,9 @@ interface IModuleDescriptor {
 	 * @return string[] List of class that implements ISecurityPolicy and that must be applyed.
 	 */
 	public static function securityPolicies():array;
+
+	/**
+	 * @return string[] List of paths that are cleanable while importing project.
+	 */
+	public static function cleanablePaths():array;
 }

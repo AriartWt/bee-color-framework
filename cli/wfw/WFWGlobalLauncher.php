@@ -45,7 +45,7 @@ $argvReader=$argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 	new ArgvOpt(
 			'update','Met à jour les fichiers wfw du projet ciblé avec les fichiers contenus dans le dossier spécifié '
 			.'(update [-self(global) | -all(tous) | -projet,projet2,...(projets spécifiés)] [sources path]',
-			2,null,true
+			null,null,true
 	),
 	new ArgvOpt(
 			'maintenance',"Permet de mettre en maintenance un ou plusieurs projets."
@@ -152,6 +152,8 @@ try{
 		$args = $argvReader->get('update');
 		$projects = $args[0];
 		$path = $args[1];
+		$args = array_flip(array_slice($args,2));
+		$prompt = !isset($args["-no-prompt"]);
 		$projects = strpos($projects,"-") === 0 ? substr($projects,1):$projects;
 		$projects = explode(",",$projects);
 		$pMap = []; $valids = array_merge(["self","all"],array_keys($data));
@@ -180,6 +182,29 @@ try{
 		//next create a working dir in tmp folder
 		if(!is_dir($tmp = "$tmpDir/wfw"))mkdir($tmp,700);
 		foreach($pMap as $n=>$p){
+			if($prompt){
+				fwrite(STDOUT,"Do you really want to update $n (location : $p) ? (y/n) : ");
+				if(!filter_var(preg_replace(["/^y$/","/^n$/"],["yes","no"],fgets(STDIN)), FILTER_VALIDATE_BOOLEAN)){
+					fwrite(STDOUT,"$n will not be updated.\n");
+					continue;
+				}
+			}
+			fwrite(STDOUT,"$n will be updated...\n");
+			if(file_exists("$p/cli/wfw/WFWCleanerLauncher.php")){
+				fwrite(STDOUT,"Searching for $n directories to clean before import...\n");
+				$res = [];
+				exec("$p/cli/wfw/WFWCleanerLauncher.php -update -list",$res);
+				fwrite(STDOUT,"The following files and directories will be removed : \n");
+				foreach($res as $line) fwrite(STDOUT,"\t$line\n");
+				if($prompt){
+					fwrite(STDOUT,"Do you really want to continue ? (y/n) : ");
+					if(!filter_var(preg_replace(["/^y$/","/^n$/"],["yes","no"],fgets(STDIN)), FILTER_VALIDATE_BOOLEAN)){
+						fwrite(STDOUT,"$n will not be updated.\n");
+						continue;
+					}
+				}
+			}
+
 			fwrite(STDOUT,"Starting $n update (working dir : $tmp/$n)...\n");
 			if(!is_dir("$tmp/$n")) mkdir("$tmp/$n",700);
 			//this is the list of all confs file that exists in the framework and that may be
@@ -191,7 +216,6 @@ try{
 				"mss" => "daemons/modelSupervisor/server/config/conf.json",
 				"sctl" => "daemons/sctl/config/conf.json",
 				"wfw" => "cli/wfw/config/conf.json",
-				"updator" => "cli/updator/config/conf.json",
 				"tester" => "cli/tester/config/conf.json",
 				"backup" => "cli/backup/config/conf.json"
 			];
@@ -200,9 +224,13 @@ try{
 			foreach($confs as $c=>$v){
 				touch("$tmp/$n/$c",700);
 				file_put_contents("$tmp/$n/$c",'{}');
-				$fconf = new FileBasedConf("$tmp/$n/$c",new JSONConfIOAdapter());
-				$fconf->merge(new FileBasedConf("$path/$v"));
-				$fconf->merge(new FileBasedConf("$p/$v"));
+				try{
+					$fconf = new FileBasedConf("$tmp/$n/$c",$io = new JSONConfIOAdapter());
+					$fconf->merge(new FileBasedConf("$path/$v",$io));
+					$fconf->merge(new FileBasedConf("$p/$v",$io));
+				}catch(\Error | \Exception $e){
+					fwrite(STDOUT,"\e[33m$e\e[0m");
+				}
 				file_put_contents(
 					"$tmp/$n/$c",
 					json_encode($fconf->getRawConf(),JSON_PRETTY_PRINT)
@@ -214,6 +242,12 @@ try{
 			//shutdown daemons while updating folders
 			$exec("wfw self service stop -all");
 			fwrite(STDOUT,"Daemons stoped.\n");
+
+			//removing files and folder
+			fwrite(STDOUT,"Removing files and folders that must be cleaned up...\n");
+			exec("$p/cli/wfw/WFWCleanerLauncher.php -update",$res,$state);
+			if($state > 0) fwrite(STDOUT,"An error occured while trying to cleanup $n.\n");
+			else fwrite(STDOUT,"$n successfully cleaned up.\n");
 
 			$exec("cp -R \"$path/.\" \"$p\"");
 			fwrite(STDOUT,"Updated files imported.\n");
@@ -243,11 +277,11 @@ try{
 			$exec("wfw self service start -all");
 			$exec("wfw self service restart sctl");
 			fwrite(STDOUT,"Daemons restarted.\n");
-			rmdir("$tmp/$n");
+			exec("rm -rf $tmp/$n");
 			fwrite(STDOUT,"Working dir $tmp/$n removed.\n");
 			fwrite(STDOUT,"$n successfully updated.\n\n");
 		}
-		rmdir($tmp);
+		exec("rm -rf \"$tmp\"");
 		fwrite(STDOUT,"$tmp removed.\n");
 		fwrite(STDOUT,"Done.\n");
 	}else if($argvReader->exists('add')){
@@ -574,6 +608,7 @@ try{
 		$args = $argvReader->get('remove');
 		$project = $args[0];
 		array_shift($args);
+		$args = array_flip($args);
 		$prompt = !isset($args["-no-prompt"]);
 		if(!isset($data[$project]))
 			throw new InvalidArgumentException("$project is not a registered project !");
@@ -709,6 +744,20 @@ try{
 			}
 		}
 		fwrite(STDOUT,"$path will be imported into $pPath...\n");
+		if(file_exists("$pPath/cli/wfw/WFWCleanerLauncher.php")){
+			fwrite(STDOUT,"Searching for $pName files and directories to clean before import...\n");
+			$res = [];
+			exec("$pPath/cli/wfw/WFWCleanerLauncher.php -list",$res);
+			fwrite(STDOUT,"The following files and directories will be removed : \n");
+			foreach($res as $line) fwrite(STDOUT,"\t$line\n");
+			if($prompt){
+				fwrite(STDOUT,"Do you really want to continue ?\n");
+				if(!filter_var(preg_replace(["/^y$/","/^n$/"],["yes","no"],fgets(STDIN)), FILTER_VALIDATE_BOOLEAN)){
+					fwrite(STDOUT,"$path will not be imported.\n");
+					exit(0);
+				}
+			}
+		}
 		$siteConfChanged = false;
 		if(!$keepConf && file_exists("$path/site/config/conf.json")){
 			$siteConfChanged = true;
@@ -719,6 +768,12 @@ try{
 			$conf->save();
 			fwrite(STDOUT,"Project conf updated.\n");
 		}
+
+		fwrite(STDOUT,"Removing files and folders that must be cleaned up...\n");
+		exec("$pPath/cli/wfw/WFWCleanerLauncher.php",$res,$state);
+		if($state > 0) fwrite(STDOUT,"An error occured while trying to cleanup $pName.\n");
+		else fwrite(STDOUT,"$pName successfully cleaned up.\n");
+
 		fwrite(STDOUT,"Copying $path files and folder into $pPath...\n");
 		$exec("cp -R \"$path/.\" \"$pPath\"");
 		fwrite(STDOUT,"Files and folders copied.\n");
@@ -766,9 +821,9 @@ try{
 		$exec("wfw self service restart -all");
 		fwrite(STDOUT,"Daemons restarted.\n");
 		fwrite(STDOUT,"$path successfully imported into $pPath.\n");
-		fwrite(STDOUT,"\e[33m[WARN] If some files have been removed in this project,"
+		/*fwrite(STDOUT,"\e[33m[WARN] If some files have been removed in this project,"
 			." they havn't been removed by the import command. You must do it manually.\n"
-		);
+		);*/
 	} else if($argvReader->exists('locate')){
 		$args = $argvReader->get('locate');
 		if(count($args) === 0) fwrite(STDOUT,dirname(__DIR__,2).PHP_EOL);

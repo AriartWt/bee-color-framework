@@ -16,7 +16,7 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 	 * @return array
 	 */
 	public static function confs(): array {
-		$projectFolder = dirname(__DIR__,3);
+		$projectFolder = self::root();
 		$engineFile = ["$projectFolder/engine/config/conf.json"];
 		$siteFile = ["$projectFolder/site/config/conf.json"];
 		return array_merge(
@@ -34,13 +34,20 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 	}
 
 	/**
+	 * @return string
+	 */
+	public static function root(): string {
+		return dirname(__DIR__,3);
+	}
+
+	/**
 	 * @param array $langs
 	 * @return array
 	 */
 	public static function langs(?array $langs=null): array {
 		$langs = is_array($langs) ? array_flip($langs) : null;
 		$files = [];
-		$projectFolder = dirname(__DIR__,3);
+		$projectFolder = self::root();
 		foreach(["engine","site"] as $folder){
 			$files[$folder] = [];
 			exec(
@@ -98,7 +105,7 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 	 * @return array
 	 */
 	public static function commandHandlers(): array {
-		$projectFolder = dirname(__DIR__,3);
+		$projectFolder = self::root();
 		$siteFile = "$projectFolder/site/config/site.command.handlers.php";
 		$engineFile = "$projectFolder/engine/config/default.command.handlers.php";
 		$site = [];
@@ -120,7 +127,7 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 	 * @return array
 	 */
 	public static function domainEventListeners(): array {
-		$projectFolder = dirname(__DIR__,3);
+		$projectFolder = self::root();
 		$siteFile = "$projectFolder/site/config/site.domain_events.listeners.php";
 		$engineFile = "$projectFolder/engine/config/default.domain_events.listeners.php";
 		$site = [];
@@ -145,7 +152,7 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 	 * @return array
 	 */
 	public static function models(): array {
-		$projectFolder = dirname(__DIR__,3);
+		$projectFolder = self::root();
 		$siteFile = "$projectFolder/site/config/site.models.php";
 		$engineFile = "$projectFolder/engine/config/default.models.php";
 		$site = [];
@@ -186,7 +193,7 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 	 */
 	public static function collectModules(string $fileName = "module.registration.php"): void {
 		if(!self::$_collected){
-			$dir = dirname(__DIR__,3);
+			$dir = self::root();
 			$out = [];
 			exec("find \"$dir\" -type f -name \"*$fileName\" | sort",$out);
 			foreach($out as $file) require_once $file;
@@ -309,6 +316,47 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 				},
 				self::getSecurityPolicies()
 			)
+		);
+	}
+
+	/**
+	 * @param string|null $from source to resolve from
+	 * @return string[] List of paths that must be cleaned
+	 * @throws \ReflectionException
+	 */
+	public static function cleanablePathsForUpdate(string $from=null): array{
+		return array_merge(
+			self::subdirectories("cli/backup",["config"],$from),
+			self::subdirectories("cli/installer",[],$from),
+			self::subdirectories("cli/tester",["config"],$from),
+			self::subdirectories("cli/webroot",[],$from),
+			self::subdirectories("cli/wfw",["global.db.json","config"],$from),
+			self::subdirectories("cli/zipCode",[],$from),
+			self::subdirectories("daemons/kvstore",["data","server"],$from),
+			self::subdirectories("daemons/kvstore/server",["config"],$from),
+			self::subdirectories("daemons/modelSupervisor",["data","server"],$from),
+			self::subdirectories("daemons/modelSupervisor/server",["config"],$from),
+			self::subdirectories("daemons/sctl",["data","config"],$from),
+			self::subdirectories("daemons/rts",["data","server"],$from),
+			self::subdirectories("daemons/rts/server",["config"],$from),
+			self::subdirectories("daemons/multiProcWorker",[],$from),
+			self::subdirectories("engine",["config"],$from),
+			self::subdirectories("engine/config",["conf.json"],$from),
+			self::subdirectories("docs",[],$from),
+			self::subdirectories("tests",[],$from)
+		);
+	}
+
+	/**
+	 * @return array
+	 */
+	public static function cleanablePaths(): array {
+		return array_merge(
+			[],
+			...array_map(function($module){
+				/** @var IModuleDescriptor $module */
+				return $module::cleanablePaths();
+			},self::$_modules)
 		);
 	}
 }

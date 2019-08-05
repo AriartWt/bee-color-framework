@@ -76,4 +76,34 @@ abstract class ModuleDescriptor implements IModuleDescriptor{
 	  public static function commandHandlers(): array {
 		  return [];
 	  }
- }
+
+	/**
+	 * @return string[] List of paths that are cleanable while importing project.
+	 */
+	  public static function cleanablePaths(): array {
+		  return [];
+	  }
+
+	/**
+	 * Return non-recursive list of all direct subdirectories of one directory
+	 *
+	 * @param string      $folder  Directory (automaticaly resolved relatively to $from or root)
+	 * @param array       $excepts List of directory (relative to $folder) to not include into the result list
+	 * @param null|string $from
+	 * @return string[] Full path list.
+	 * @throws \ReflectionException
+	 */
+	protected static function subdirectories(string $folder, array $excepts=[], ?string $from=null):array{
+		$root = $from ?? static::root();
+		if(is_dir("$root/$folder")) return array_map(
+			function($path)use($root,$folder){
+				return "$root/$folder/$path";
+			},
+			array_diff(
+				scandir("$root/$folder"),
+				array_merge([".",".."],$excepts)
+			)
+		);
+		else return [];
+	}
+}
