@@ -97,7 +97,8 @@ abstract class ModuleDescriptor implements IModuleDescriptor{
 		$root = $from ?? static::root();
 		if(is_dir("$root/$folder")) return array_map(
 			function($path)use($root,$folder){
-				return "$root/$folder/$path";
+				if(empty($folder)) return "$root/$path";
+				else return "$root/$folder/$path";
 			},
 			array_diff(
 				scandir("$root/$folder"),

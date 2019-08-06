@@ -57,7 +57,8 @@ final class UpdateHandler implements IActionHandler {
 			if($report->satisfied()){
 				$this->_mielPot->set($data['miel_key'],$data['miel_data']);
 				$this->_mielPot->save();
-				$this->_cache->deleteAll([IWebAppContext::CACHE_KEYS[IWebAppContext::VIEWS]]);
+				$this->_cache->deleteAll([IWebAppContext::VIEWS]);
+				$this->_cache->delete(IMielModel::CACHE_KEY);
 				return new Response();
 			}else return new ErrorResponse("201",$this->_translator->get(
 				"server/engine/package/miel/ERROR"),$report->errors()

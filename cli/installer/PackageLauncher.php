@@ -37,7 +37,7 @@ try{
 			if(count($tmp) > 1){
 				$l = array_shift($tmp);
 				$p = implode("/",$tmp);
-				switch($tmp[0]){
+				switch($l){
 					case 'engine' :
 						$location = "$engine/package/$p";
 						break;
@@ -48,19 +48,20 @@ try{
 					default :
 						$location = "$location/$p";
 				}
-			}
-			else $location = "$location/".($p = $tmp[0]);
-			if(is_dir($location)){
-				$webroot = array_diff(scandir("$location/webroot"),['..','.']);
-				foreach($webroot as $dir){
-					if(!is_dir("$site/webroot/$dir")) mkdir("$site/webroot/$dir");
-					if(is_link("$site/webroot/$dir/$p")) unlink("$site/webroot/$dir/$p");
-					chdir("$site/webroot/$dir");
-					if(!$m) $exec("ln -s \"../../../$l/package/$p/webroot/$dir\" \"$p\"");
-					else $exec("ln -s \"../../../$l/$p/webroot/$dir\" \"$p\"");
-				}
-			}else fwrite(STDOUT,"\e[33mWFW_installer UNKNOWN_PACKAGE\e[0m : $package\n");
-			fwrite(STDOUT,"$package installed.\n");
+			} else $location = "$location/".($p = $tmp[0]);
+			if(is_dir("$location")){
+				if(is_dir("$location/webroot")){
+					$webroot = array_diff(scandir("$location/webroot"),['..','.']);
+					foreach($webroot as $dir){
+						if(!is_dir("$site/webroot/$dir")) mkdir("$site/webroot/$dir");
+						if(is_link("$site/webroot/$dir/$p")) unlink("$site/webroot/$dir/$p");
+						chdir("$site/webroot/$dir");
+						if(!$m) $exec("ln -s \"../../../$l/package/$p/webroot/$dir\" \"$p\"");
+						else $exec("ln -s \"../../../$l/$p/webroot/$dir\" \"$p\"");
+					}
+					fwrite(STDOUT,"$package installed.\n");
+				}else fwrite(STDOUT,"$package : nothing to do (no webroot folder found).\n");
+			}else fwrite(STDOUT,"\e[33mWFW_installer UNKNOWN_PACKAGE\e[0m : $package : $location doesn't exists\n");
 		}
 	}else if($argvReader->exists('-uninstall')){
 		$args = $argvReader->get('-uninstall');
@@ -74,12 +75,12 @@ try{
 				$l = $tmp[0];
 			}
 			else $location = "$location/".($p = $tmp[0]);
-			if(is_dir($location)){
+			if(is_dir("$location/webroot")){
 				$webroot = array_diff(scandir("$location/webroot"),['..','.']);
 				foreach($webroot as $dir){
 					unlink("$site/webroot/$dir/$p");
 				}
-			}else fwrite(STDOUT,"\e[33mWFW_installer UNKNOWN_PACKAGE\e[0m : $package\n");
+			}else fwrite(STDOUT,"\e[33mWFW_installer UNKNOWN_PACKAGE\e[0m : $package : $location/webroot doesn't exists\n");
 		}
 	}else throw new InvalidArgumentException("Unknown command $argv[1]");
 }catch(\InvalidArgumentException $e){

@@ -171,6 +171,7 @@ abstract class AbstractConf implements IConf {
 			if(isset($current->$v)){
 				$current=$current->$v;
 			}else{
+				//if(!($current instanceof stdClass)) $current=new stdClass();
 				$current->$v=new stdClass();
 				$current=$current->$v;
 			}

@@ -190,19 +190,23 @@ try{
 				}
 			}
 			fwrite(STDOUT,"$n will be updated...\n");
+			$clean = false;
 			if(file_exists("$p/cli/wfw/WFWCleanerLauncher.php")){
 				fwrite(STDOUT,"Searching for $n directories to clean before import...\n");
 				$res = [];
 				exec("$p/cli/wfw/WFWCleanerLauncher.php -update -list",$res);
-				fwrite(STDOUT,"The following files and directories will be removed : \n");
-				foreach($res as $line) fwrite(STDOUT,"\t$line\n");
-				if($prompt){
-					fwrite(STDOUT,"Do you really want to continue ? (y/n) : ");
-					if(!filter_var(preg_replace(["/^y$/","/^n$/"],["yes","no"],fgets(STDIN)), FILTER_VALIDATE_BOOLEAN)){
-						fwrite(STDOUT,"$n will not be updated.\n");
-						continue;
+				if(count($res) > 0){
+					$clean = true;
+					fwrite(STDOUT,"The following files and directories will be removed : \n");
+					foreach($res as $line) fwrite(STDOUT,"\t$line\n");
+					if($prompt){
+						fwrite(STDOUT,"Do you really want to continue ? (y/n) : ");
+						if(!filter_var(preg_replace(["/^y$/","/^n$/"],["yes","no"],fgets(STDIN)), FILTER_VALIDATE_BOOLEAN)){
+							fwrite(STDOUT,"$n will not be updated.\n");
+							continue;
+						}
 					}
-				}
+				}else fwrite(STDOUT,"No file or directory to clean up.\n");
 			}
 
 			fwrite(STDOUT,"Starting $n update (working dir : $tmp/$n)...\n");
@@ -243,11 +247,13 @@ try{
 			$exec("wfw self service stop -all");
 			fwrite(STDOUT,"Daemons stoped.\n");
 
-			//removing files and folder
-			fwrite(STDOUT,"Removing files and folders that must be cleaned up...\n");
-			exec("$p/cli/wfw/WFWCleanerLauncher.php -update",$res,$state);
-			if($state > 0) fwrite(STDOUT,"An error occured while trying to cleanup $n.\n");
-			else fwrite(STDOUT,"$n successfully cleaned up.\n");
+			if($clean){
+				//removing files and folder
+				fwrite(STDOUT,"Removing files and folders that must be cleaned up...\n");
+				exec("$p/cli/wfw/WFWCleanerLauncher.php -update",$res,$state);
+				if($state > 0) fwrite(STDOUT,"An error occured while trying to cleanup $n.\n");
+				else fwrite(STDOUT,"$n successfully cleaned up.\n");
+			}
 
 			$exec("cp -R \"$path/.\" \"$p\"");
 			fwrite(STDOUT,"Updated files imported.\n");
@@ -318,7 +324,7 @@ try{
 				fwrite(STDOUT,"Old file $a2confPath removed.\n");
 			}
 			fwrite(STDOUT,"Generating apache2 conf file $a2confPath...\n");
-			$exec("cat \"".dirname(__DIR__)."/wfw/templates/a2-site.conf.template\" | sed -e \"s+@ROOTPATH+$path+g\" >> \"$a2confPath\"");
+			$exec("cat \"".dirname(__DIR__)."/wfw/templates/a2-site.conf.template\" | sed -e \"s+@ROOTPATH+$args[1]+g\" >> \"$a2confPath\"");
 
 			//write the project root path in DB
 			$data[$args[0]] = $path;
@@ -371,7 +377,7 @@ try{
 			unlink($a2confPath);
 			fwrite(STDOUT,"Old file $a2confPath removed.\n");
 		}
-		fwrite(STDOUT,"Generating apache2 conf file $a2confPath...\n");
+		fwrite(STDOUT,"Generating apache2 conf file $a2confPath with document root at $path...\n");
 		$exec("cat \"".dirname(__DIR__)."/wfw/templates/a2-site.conf.template\" | sed -e \"s+@ROOTPATH+$path+g\" >> \"$a2confPath\"");
 
 		$exec("wfw add $pName $path");
@@ -739,20 +745,24 @@ try{
 				exit(0);
 			}
 		}
+		$clean = false;
 		fwrite(STDOUT,"$path will be imported into $pPath...\n");
 		if(file_exists("$pPath/cli/wfw/WFWCleanerLauncher.php")){
 			fwrite(STDOUT,"Searching for $pName files and directories to clean before import...\n");
 			$res = [];
 			exec("$pPath/cli/wfw/WFWCleanerLauncher.php -list",$res);
-			fwrite(STDOUT,"The following files and directories will be removed : \n");
-			foreach($res as $line) fwrite(STDOUT,"\t$line\n");
-			if($prompt){
-				fwrite(STDOUT,"Do you really want to continue ?\n");
-				if(!filter_var(preg_replace(["/^y$/","/^n$/"],["yes","no"],fgets(STDIN)), FILTER_VALIDATE_BOOLEAN)){
-					fwrite(STDOUT,"$path will not be imported.\n");
-					exit(0);
+			if(count($res) > 0){
+				$clean = true;
+				fwrite(STDOUT,"The following files and directories will be removed : \n");
+				foreach($res as $line) fwrite(STDOUT,"\t$line\n");
+				if($prompt){
+					fwrite(STDOUT,"Do you really want to continue ? (y/n) : ");
+					if(!filter_var(preg_replace(["/^y$/","/^n$/"],["yes","no"],fgets(STDIN)), FILTER_VALIDATE_BOOLEAN)){
+						fwrite(STDOUT,"$path will not be imported.\n");
+						exit(0);
+					}
 				}
-			}
+			}else fwrite(STDOUT,"No file or directory to clean up.\n");
 		}
 		$siteConfChanged = false;
 		if(!$keepConf && file_exists("$path/site/config/conf.json")){
@@ -765,10 +775,12 @@ try{
 			fwrite(STDOUT,"Project conf updated.\n");
 		}
 
-		fwrite(STDOUT,"Removing files and folders that must be cleaned up...\n");
-		exec("$pPath/cli/wfw/WFWCleanerLauncher.php",$res,$state);
-		if($state > 0) fwrite(STDOUT,"An error occured while trying to cleanup $pName.\n");
-		else fwrite(STDOUT,"$pName successfully cleaned up.\n");
+		if($clean){
+			fwrite(STDOUT,"Removing files and folders that must be cleaned up...\n");
+			exec("$pPath/cli/wfw/WFWCleanerLauncher.php",$res,$state);
+			if($state > 0) fwrite(STDOUT,"An error occured while trying to cleanup $pName.\n");
+			else fwrite(STDOUT,"$pName successfully cleaned up.\n");
+		}
 
 		fwrite(STDOUT,"Copying $path files and folder into $pPath...\n");
 		$exec("cp -R \"$path/.\" \"$pPath\"");
@@ -784,7 +796,9 @@ try{
 		//install packages (will create appropriated symlinks)
 		$packages = $conf->getArray("server/packages");
 		if(is_array($packages) && count($packages)>0){
-			$exec("wfw $pName package -install \"".implode("\" \"",$packages)."\"");
+			$res = [];
+			exec("wfw $pName package -install \"".implode("\" \"",$packages)."\"",$res);
+			if(count($res) > 0) fwrite(STDOUT,implode("\n",$res)."\n");
 		}
 		fwrite(STDOUT,"Project packages installed.\n");
 
@@ -797,7 +811,7 @@ try{
 
 		$a2confPath = dirname(__DIR__)."/wfw/a2.d/$pName.conf";
 		if(!file_exists($a2confPath)){
-			fwrite(STDOUT,"Apache2 conf file $a2confPath not found for this project. Generating a new one...\n");
+			fwrite(STDOUT,"Apache2 conf file $a2confPath not found for this project. Generating a new one with document root at $pPath...\n");
 			$exec("cat \"".dirname(__DIR__)."/wfw/templates/a2-site.conf.template\" | sed -e \"s+@ROOTPATH+$pPath+g\" >> \"$a2confPath\"");
 			fwrite(STDOUT,"Apache2 conf file created.\n");
 		}

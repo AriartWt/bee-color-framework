@@ -78,7 +78,7 @@ final class PictureViewerOptions implements IPictureViewerOptions {
 		}
 		$this->_autoplay = $options['autoplay'] ?? true;
 		(function(string... $vals){})(...array_values($icons));
-		$engine = dirname(__DIR__,3);
+		$engine = dirname(__DIR__,2);
 		$this->_arrowLeftIcon = $icons['arrow_left'] ?? $engine.'/webroot/Image/svg/icons/left-arrow.svg';
 		$this->_arrowRightIcon = $icons['arrow_right'] ?? $engine.'/webroot/Image/svg/icons/right-arrow.svg';
 		$this->_fullscreenOnIcon = $icons['fullscreen_on'] ?? $engine.'/webroot/Image/svg/icons/expand.svg';

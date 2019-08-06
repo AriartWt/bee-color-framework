@@ -5,6 +5,7 @@ namespace wfw\engine\package\miel\model;
  * Liste de valeurs associées à des clés.
  */
 interface IMielModel extends \ArrayAccess,\Iterator {
+	public const CACHE_KEY = "WFW/WebApp/packages/miel/model";
 	/**
 	 * @param string $key Clé à tester.
 	 * @return bool True si la clé existe, false sinon

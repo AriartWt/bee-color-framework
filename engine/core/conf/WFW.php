@@ -178,9 +178,8 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 	 */
 	public static function registerModules(string ...$modules): void {
 		foreach($modules as $module){
-			if(is_a($module,IModuleDescriptor::class)){
-				/** @var IModuleDescriptor $module */
-				self::$_modules[(string)$module] = $module::root();
+			if(is_a($module,IModuleDescriptor::class,true)){
+				self::$_modules[] = $module;
 			}else throw new \InvalidArgumentException(
 				"$module doesn't implements ".IModuleDescriptor::class
 			);
@@ -188,6 +187,9 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 	}
 
 	/**
+	 * The default site descriptor is automaticaly appened to the module list if no
+	 * wfw\\site\\config\\SiteDescriptor class exists.
+	 *
 	 * @param string $fileName  Name of register files for modules
 	 *                          modules.
 	 */
@@ -197,6 +199,10 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 			$out = [];
 			exec("find \"$dir\" -type f -name \"*$fileName\" | sort",$out);
 			foreach($out as $file) require_once $file;
+			self::$_modules = array_merge(
+				self::$_modules,
+				[ class_exists($c = "wfw\\site\\config\\SiteDescriptor") ? $c : DefaultSiteDescriptor::class ]
+			);
 		}
 	}
 
@@ -330,7 +336,7 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 			self::subdirectories("cli/installer",[],$from),
 			self::subdirectories("cli/tester",["config"],$from),
 			self::subdirectories("cli/webroot",[],$from),
-			self::subdirectories("cli/wfw",["global.db.json","config"],$from),
+			self::subdirectories("cli/wfw",["global.db.json","config","a2.d"],$from),
 			self::subdirectories("cli/zipCode",[],$from),
 			self::subdirectories("daemons/kvstore",["data","server"],$from),
 			self::subdirectories("daemons/kvstore/server",["config"],$from),
