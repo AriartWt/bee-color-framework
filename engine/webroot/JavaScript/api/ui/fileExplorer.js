@@ -293,7 +293,8 @@ wfw.define("ui/fileExplorer",function($params){
 							for(let $i =0; $i<$files.files.length; $i++){
 								if(!$files.files[$i].type.match(/^(video\/mp4|audio\/(mpeg|mp3)|image\/.*)$/)){
 									alert($lstr("WARN_MEDIA_TYPE_ACCEPTED"));
-									$filesForm.reset(); return;
+									$filesForm.reset();
+									return;
 								}
 							}
 							let $loader = $displayLoader($lstr("WAITING_SEND_FILE"),true);
@@ -310,6 +311,7 @@ wfw.define("ui/fileExplorer",function($params){
 								})},
 								"001" : ($names)=>{
 									$loader.remove();
+									$names = JSON.parse($names);
 									$names.forEach(($name,$i)=>{
 										let $d = $getData($displayed); let $f={
 											name : $name.split('/').pop(),
@@ -325,7 +327,7 @@ wfw.define("ui/fileExplorer",function($params){
 									$filesForm.reset();
 									$updateQuotas();
 								},
-								error : ()=>{ $loader.remove();alert($lstr("ERR_SERVER_REFUSES_FILE")); }
+								error : ($data)=>{ $loader.remove();alert($data);$filesForm.reset(); }
 							});
 						}
 						},name:"file"})),

@@ -112,6 +112,8 @@
 						"INVALID_FILE_NAME" : "Ce nom de fichier n'est pas valide.\nUn nom de fichier doit contenir moins de [$] caractères et aucun /"
 					},
 					"STORAGE_QUOTA_EXCEED" : "Vous n'avez plus assez d'espace disque disponible !",
+					"UNKNOWN_FOLDER" : "Le dossier spécifié n'existe pas !",
+					"FILE_ALREADY_EXISTS" : "Le(s) fichier(s) ci-dessous existe(nt) déjà dans ce dossier. Renommez le(s) puis réessayez : \n[$]",
 					"RENAME_LIST_ERROR" : "La liste d'éléments à renommer ne correspond pas à la liste des nouveaux noms !"
 				}
 			}

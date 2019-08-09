@@ -29,7 +29,8 @@
 		"uploader" : {
 			"dir" : "site/webroot/uploads",
 			"quotas" : "1Go",
-			"max_size" : "300Mo",
+			"max_size_by_file" : "300Mo",
+			"max_size_at_once" : "300Mo",
 			"accepted_mimes" : ["/^image\\/.*$/","/^video\\/mp4$/","/^audio\\/mp3$/","/^audio\\/mpeg$/"]
 		},
 	  	"modules" : {

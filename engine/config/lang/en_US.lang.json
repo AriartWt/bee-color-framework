@@ -112,6 +112,8 @@
 						"INVALID_FILE_NAME" : "Invalid file name.\nA valid file name must contain less thant [$] characters and no /"
 					},
 					"STORAGE_QUOTA_EXCEED" : "Insufficient storage : quota exceeded !",
+					"UNKNOWN_FOLDER" : "The specified folder doesn't exists !",
+					"FILE_ALREADY_EXISTS" : "One of the below files already exists in this directory. Please rename it and try again : \n[$]",
 					"RENAME_LIST_ERROR" : "Elems to rename list doesn't match new name list !"
 				}
 			}

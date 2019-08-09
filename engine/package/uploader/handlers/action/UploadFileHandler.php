@@ -44,8 +44,8 @@ final class UploadFileHandler extends UploadHandler {
 			$res = $this->_rule->applyTo($data);
 			if($res->satisfied()){
 				$totalSize = 0;
-				foreach($data["files"] as $file){
-					$totalSize += filesize($file["tmp_name"]);
+				foreach($data["files"]["size"] as $size){
+					$totalSize += $size;
 				}
 				$quotas = (new Byte($this->_conf->getString("server/uploader/quotas") ?? -1))->toInt();
 				$dirSize = $this->getUploadDirectorySize();
@@ -58,18 +58,32 @@ final class UploadFileHandler extends UploadHandler {
 				}
 				try{
 					$res = [];
-					foreach($data["names"] as $name){
+					$alreadyExists = [];
+					foreach($data["names"] as $k=>$name){
 						$fname = $this->sanitize($name);
 						$name = $this->realPath($fname);
 						if(!is_dir(dirname($name)))
 							throw new \InvalidArgumentException("Unknown folder $name");
-						move_uploaded_file($data["file"]["tmp_name"],$name);
-						$res[] = $this->getUploadFolderName().$fname;
-						return new Response($this->getUploadFolderName().$fname);
+						if(is_file($name)) $alreadyExists[] = $fname;
+						else $res[$data["files"]["tmp_name"][$k]] = [
+							"new_name" => $name,
+							"return_value" => $this->getUploadFolderName().$fname,
+							"tmp_name" => $data["files"]["tmp_name"][$k]
+						];
 					}
-					return new Response($res);
+					if(count($alreadyExists) > 0) throw new \InvalidArgumentException(
+						$this->_translator->getAndReplace(
+							"server/engine/package/uploader/FILE_ALREADY_EXISTS",
+							implode("\n",$alreadyExists)
+						)
+					);
+					$toSend = [];
+					foreach($res as $k=>$v){
+						move_uploaded_file($v["tmp_name"],$v["new_name"]);
+						$toSend[] = $v["return_value"];
+					}
+					return new Response($toSend);
 				}catch (\Error | \Exception $e){
-					foreach($res as $file) if(file_exists($file)) unlink($file);
 					return new ErrorResponse(201,$e->getMessage());
 				}
 			}else return new ErrorResponse(201,$res->message(),$res->errors());
