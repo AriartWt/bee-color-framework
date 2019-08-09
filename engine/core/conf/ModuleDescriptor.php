@@ -25,7 +25,7 @@ abstract class ModuleDescriptor implements IModuleDescriptor{
 	 public static function confs(): array {
 	 	$confs = [];
 	 	$root = static::root();
-	 	exec("find \"$root\" -name \"".static::$_confTemplate."\" -type f | sort");
+	 	exec("find \"$root\" -name \"".static::$_confTemplate."\" -type f | sort",$confs);
 		 return $confs;
 	 }
 
@@ -50,7 +50,7 @@ abstract class ModuleDescriptor implements IModuleDescriptor{
 	 public static function langs(): array {
 		 $langs = [];
 		 $root = static::root();
-		 exec("find \"$root\" -name \"".static::$_langTemplate."\" -type f | sort");
+		 exec("find \"$root\" -name \"".static::$_langTemplate."\" -type f | sort",$langs);
 		 return $langs;
 	 }
 

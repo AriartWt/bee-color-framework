@@ -159,6 +159,9 @@ final class MSServer {
 							'streams_to_close' => [ $this->_acquiredLockFile ]
 						]
 					);
+					$this->_logger->log(
+						"[MSServer] ".$component->getName()." initialized.",ILogger::LOG
+					);
 					$component->start();
 					$this->_logger->log(
 						"[MSServer] ".$component->getName()." started.",ILogger::LOG

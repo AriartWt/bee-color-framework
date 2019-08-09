@@ -14,12 +14,6 @@
 				}
 			},
 			"package" : {
-				"contact" : {
-					"forms" : {
-						"INVALID_ID_IN_LIST" : "L'un des identifiants n'est pas valide !",
-						"INVALID_ID" : "Cet identifiant est invalide !"
-					}
-				},
 				"lang" : {
 					"forms" : {
 						"GENERAL_ERROR" : "Les données sont invalides !",
@@ -35,43 +29,6 @@
 						"REQUIRED" : "Ce champ est requis !",
 						"INVALID_ZIP_CODE" : "Ce code postal est invalide !",
 						"INVALID_COUNTRY_NAME" : "Ce nom de pays n'est pas valide !"
-					}
-				},
-				"miel" : {
-					"forms" : {
-						"GENERAL_ERROR" : "Certains champs sont invalides !",
-						"REQUIRED" : "Ce champ est requis !",
-						"TOO_LARGE_KEY" : "La clé ne peut pas excéder [$] caractères de long !",
-						"TOO_LARGE_STRING" : "Ce champ ne peut excéder les [$] caractères de long !",
-						"NOT_EMPTY" : "Ce champ ne peut pas être vide !"
-					},
-					"ERROR" : "Données invalides !"
-				},
-				"news" : {
-					"forms" : {
-						"GENERAL_ERROR" : "Les données sont invalides !",
-						"REQUIRED" : "L'identifiant de l'article est requis !",
-						"INVALID_ID_IN_LIST" : "L'un des identifiants n'est pas valide !",
-						"INVALID_ID" : "Cet identifiant est invalide !",
-						"INVALID_STRING" : "Ceci n'est pas une chaîne de caractères valide !",
-						"NOT_EMPTY" : "Ce champ ne peut pas être vide !",
-						"MAX_TITLE_LENGTH" : "Le titre d'un article ne peut pas éxcéder les [$] caractères !",
-						"MAX_CONTENT_LENGTH" : "Le contenu d'un article ne peut pas éxcéder les [$] caractères !",
-						"MAX_VISUAL_LENGTH" : "Le chemin vers le visuel d'un article ne peut pas éxcéder les [$] caractères !",
-						"EMPTY_OR_BOOLEAN" : "Ce champ doit être vide ou booléen.",
-						"INVALID_FIELD" : "Ce champ n'est pas valide !",
-						"MUST_BE_EMPTY" : "Ce champ doit être vide !",
-						"INVALID_TITLE" : "Ce titre n'est pas valide !",
-						"INVALID_CONTENT" : "Ce contenu n'est pas valide !",
-						"INVALID_VISUAL" : "Le chemin vers ce visuel n'est pas valide !"
-					},
-					"ERROR_WRITTEN_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la création de l'article. Merci de contacter l'administrateur (WrittentEvent not recieved)",
-					"NOT_FOUND" : "Cet article n'existe pas !",
-					"OFFLINE" : "Cet article n'est plus en ligne !",
-					"REMOVED" : "Cet article a été supprimé !",
-					"service_unavailable" : {
-						"LIST" : "Impossible de récupérer les articles : service momentanément indisponible. Merci de réessayer ultérieurement.",
-						"ARTICLE" : "Impossible de récupérer l'article : service momentanément indisponible. Merci de réessayer ultérieurement."
 					}
 				},
 				"users" : {
@@ -179,7 +136,7 @@
 				"ERR_RENAME_MOVE" : "L'élement n'a pas pu être renommé ou déplacé !",
 				"CREATE_FOLDER" : "Créer un dossier",
 				"WARN_MEDIA_TYPE_ACCEPTED" : "Seuls les fichiers audio mp3, video mp4 et images sont admis !",
-				"WAITING_SEND_FILE" : "Envoi du fichier en cours, veuillez patienter...",
+				"WAITING_SEND_FILE" : "Envoi du/des fichier(s) en cours, veuillez patienter...",
 				"ERR_SERVER_REFUSES_FILE" : "Le serveur n'a pas pu enregistrer votre fichier.\nSeuls les fichiers images, mp3 et mp4 de moins de 300Mo sont acceptés !\nSi votre fichier est valide, c'est que votre espace de stockage est plein, pensez à supprimer les fichiers intuiles.",
 				"ADD_FILE" : "Ajouter un fichier",
 				"REMOVE_SELECTED" : "Supprimer le(s) élément(s) séléctionné(s)",
@@ -208,74 +165,6 @@
 			}
 		},
 		"packages" : {
-			"news" : {
-				"CREATE_NEW" : "Créer un article",
-				"EDIT_NEW" : "Éditer un article",
-				"TITLE_NEW" : "Titre de l'article",
-				"VISUAL" : "Visuel de l'article",
-				"EDIT" : "Éditer",
-				"CREATE" : "Créer",
-				"CANCEL" : "Annuler",
-				"ARCHIVE" : "Supprimer",
-				"WAITING_CREATE" : "Création de l'article en cours, veuillez patienter...",
-				"WAITING_EDIT" : "Édition de l'article en cours, veuillez patienter...",
-				"ERR_EDIT" : "Impossible d'éditer l'article !",
-				"ERR_CREATE" : "Impossible de créer l'article !",
-				"WARN_MUST_SELECT_ONE" : "Vous devez séléctionner au moins un article !",
-				"CONFIRM_ARCHIVING" : "Voulez-vous vraiment supprimer cet article ?",
-				"WAIT_ARCHIVING" : "Les articles séléctionnés vont être supprimés, veuillez patienter...",
-				"ERR_ARCHIVING" : "Impossible de supprimer les articles séléctionnés !",
-				"WAIT_PUT_ONLINE" : "Les articles vont être mis en ligne, veuillez patienter...",
-				"ONLINE" : "En ligne",
-				"EDATE" : "Modification",
-				"CDATE" : "Création",
-				"TITLE" : "Titre",
-				"YES" : "Oui",
-				"NO" : "Non",
-				"ERR_PUT_ONLINE" : "Impossible de mettre en ligne les articles séléctionnés !",
-				"WAIT_PUT_OFFLINE" : "Les articles vont être mis hors ligne, veuillez patienter...",
-				"ERR_PUT_OFFLINE" : "Impossible de mettre hors ligne les articles séléctionnés !",
-				"BTN_WRITE" : "Écrire un nouvel article",
-				"BTN_ARCHIVE" : "Supprimer les articles séléctionnés",
-				"BTN_PUT_ONLINE" : "Mettre en ligne les articles séléctionnés",
-				"BTN_PUT_OFFLINE" : "Mettre hors ligne les articles séléctionnés",
-				"WAIT_LOADING_NEWS" : "Chargement des articles en cours, veuillez patienter...",
-				"ERR_LOADING_NEWS" : "Impossible de charger la liste des articles !",
-				"CHOOSE_PICTURE" : "Choisir une image",
-				"CHOOSE" : "Choisir",
-				"WARN_ONLY_CHOOSE_ONE" : "Vous ne pouvez choisir qu'une seule image !",
-				"WARN_MUST_SELECT_PICTURE" : "Vous devez selectionner une image ! "
-			},
-			"contact" : {
-				"EDIT_CONTACT" : "Consulter une prise de contact",
-				"LABEL" : "Provenance",
-				"READ" : "Consultation d'une prise de contact",
-				"CANCEL" : "Annuler",
-				"ARCHIVE" : "Supprimer",
-				"WARN_MUST_SELECT_ONE" : "Vous devez séléctionner au moins une prise de contact !",
-				"CONFIRM_ARCHIVING" : "Voulez-vous vraiment supprimer ces prises de contact ?",
-				"WAIT_ARCHIVING" : "Les prises de contact séléctionnées vont être supprimées, veuillez patienter...",
-				"ERR_ARCHIVING" : "Impossible de supprimer les prises de contact séléctionnées !",
-				"WAIT_MARK_AS_READ" : "Les prises de contact vont être marquées comme lues, veuillez patienter...",
-				"STATE_DESC" : "État",
-				"STATE" : "Lu",
-				"NOT_READ" : "Non lu",
-				"CLOSE" : "Fermer",
-				"RDATE" : "Lecture",
-				"CDATE" : "Création",
-				"CDATE_DESC" : "Date de réception",
-				"CONTENT" : "Message",
-				"YES" : "Oui",
-				"NO" : "Non",
-				"ERR_MARK_AS_READ" : "Impossible de marquer comme lues les prises de contact séléctionnées !",
-				"WAIT_MARK_AS_UNREAD" : "Les prises de contact vont être marquées non lues, veuillez patienter...",
-				"ERR_MARK_AS_UNREAD" : "Impossible de marquer comme non lues les prises de contact séléctionnées !",
-				"BTN_ARCHIVE" : "Supprimer les prises de contact séléctionnées",
-				"BTN_MARK_AS_READ" : "Marquer les prises de contact séléctionnées comme lues",
-				"BTN_MARK_AS_UNREAD" : "Marquer les prises de contact séléctionnées comme non lues",
-				"WAIT_LOADING_CONTACTS" : "Chargement des prises de contact en cours, veuillez patienter...",
-				"ERR_LOADING_CONTACTS" : "Impossible de charger la liste des prises de contact !"
-			},
 			"users" : {
 				"CREATE_USER" : "Créer un utilisateur",
 				"EDIT_USER" : "Modifier un utilisateur",
@@ -404,29 +293,6 @@
 					"WARN_ONLY_ONE_ALLOWED" : "Vous ne pouvez importer qu'un seul média à la fois !",
 					"WARN_MUST_CHOOSE_ONE" : "Vous devez choisir un fichier !",
 					"WARN_MUST_SELECT_MEDIA" : "Vous devez selectionner un média !"
-				}
-			},
-			"miel" : {
-				"default" : {
-					"ERROR" : "Vos données n'ont pas pu être enregistrées. </br>Merci de vérifier que vous êtes bien connecté !",
-					"SAVE_DONE" : "Vos modifications ont bien été enregistrées !"
-				},
-				"medias" : {
-					"SAVE" : "Enregistrer",
-					"CANCEL" : "Annuler",
-					"MANAGE" : "Gestion des médias",
-					"WAIT_UPDATE" : "Modification en cours, veuillez patienter...</br>(Une fois terminé, la page se rechargera automatiquement)",
-					"ERROR" : "Impossible de modifier la liste des médias.",
-					"BTN_ADD" : "Ajouter un ou plusieurs média(s)",
-					"BTN_REMOVE" : "Supprimer",
-					"CHOOSE" : "Choisir",
-					"CHOOSE_MEDIAS" : "Liste des médias",
-					"WARN_MUST_SELECT_MEDIA" : "Vous devez séléctionner au moins un média !\n(Médias autorisé : [$])",
-					"IMAGE" : "Images",
-					"VIDEO" : "Vidéos",
-					"AUDIO" : "Fichiers audio",
-					"CONFIRM_REMOVE" : "Voulez-vous vraiment supprimer le(s) média(s) séléctionné(s) ?",
-					"WARN_MUST_SELECT_ONE" : "Vous devez séléctionner au moins un éléments à supprimer !"
 				}
 			}
 		}

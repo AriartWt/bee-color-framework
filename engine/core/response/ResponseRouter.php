@@ -44,6 +44,7 @@ final class ResponseRouter implements IResponseRouter {
 	 * @return bool
 	 */
 	private function enabledPackage(string $package, ?string $location = null):bool{
+		$package = str_replace("\\","/",$package);
 		if(is_null($location)) return isset($this->_enabledPackages["site/$package"])
 			|| isset($this->_enabledPackages["modules/$package"])
 			|| isset($this->_enabledPackages["engine/$package"]);
@@ -84,8 +85,8 @@ final class ResponseRouter implements IResponseRouter {
 							$handlerClass = "wfw\\site\\package\\$package\\".$handlerClass.$tmpName;
 							$handlerFound = true;
 							break;
-						}else if(class_exists("wfw\\modules\\$modulePackage\\".$moduleHandlerClass.$tmpName)){
-							$handlerClass = "wfw\\modules\\$modulePackage\\".$moduleHandlerClass.$tmpName;
+						}else if(class_exists("wfw\\modules\\$modulePackage\\".$moduleHandlerClass."\\".$tmpName)){
+							$handlerClass = "wfw\\modules\\$modulePackage\\".$moduleHandlerClass."\\".$tmpName;
 							$handlerFound = true;
 							break;
 						}else if(class_exists("wfw\\engine\\package\\$package\\".$handlerClass.$tmpName)){

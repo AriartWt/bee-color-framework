@@ -43,24 +43,33 @@ final class UploadFileHandler extends UploadHandler {
 			);
 			$res = $this->_rule->applyTo($data);
 			if($res->satisfied()){
-				$filesize = filesize($data["file"]["tmp_name"]);
+				$totalSize = 0;
+				foreach($data["files"] as $file){
+					$totalSize += filesize($file["tmp_name"]);
+				}
 				$quotas = (new Byte($this->_conf->getString("server/uploader/quotas") ?? -1))->toInt();
 				$dirSize = $this->getUploadDirectorySize();
 				if($quotas >= 0){ // si un quotas est défini
 					$maxFileSize = $quotas - $dirSize; // si pas de limite fichier, la taille max est l'espace disponible
-					if($maxFileSize < $filesize) return new ErrorResponse(
+					if($maxFileSize < $totalSize) return new ErrorResponse(
 						"201",
-						""
+						$this->_translator->getAndReplace("server/engine/package/uploader/STORAGE_QUOTA_EXCEED")
 					);
 				}
 				try{
-					$fname = $this->sanitize($data["name"]);
-					$name = $this->realPath($fname);
-					if(!is_dir(dirname($name)))
-						throw new \InvalidArgumentException("Unknown folder $name");
-					move_uploaded_file($data["file"]["tmp_name"],$name);
-					return new Response($this->getUploadFolderName().$fname);
-				}catch (\InvalidArgumentException $e){
+					$res = [];
+					foreach($data["names"] as $name){
+						$fname = $this->sanitize($name);
+						$name = $this->realPath($fname);
+						if(!is_dir(dirname($name)))
+							throw new \InvalidArgumentException("Unknown folder $name");
+						move_uploaded_file($data["file"]["tmp_name"],$name);
+						$res[] = $this->getUploadFolderName().$fname;
+						return new Response($this->getUploadFolderName().$fname);
+					}
+					return new Response($res);
+				}catch (\Error | \Exception $e){
+					foreach($res as $file) if(file_exists($file)) unlink($file);
 					return new ErrorResponse(201,$e->getMessage());
 				}
 			}else return new ErrorResponse(201,$res->message(),$res->errors());

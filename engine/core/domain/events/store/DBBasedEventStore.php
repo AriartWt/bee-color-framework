@@ -6,8 +6,10 @@ use wfw\engine\core\command\ICommand;
 use wfw\engine\core\data\DBAccess\NOSQLDB\msServer\IMSServerAccess;
 use wfw\engine\core\data\DBAccess\SQLDB\IDBAccess;
 use wfw\engine\core\domain\aggregate\IAggregateRoot;
+use wfw\engine\core\domain\events\IAggregateRootGeneratedEvent;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventDispatcher;
+use wfw\engine\core\domain\events\store\errors\CorruptedData;
 use wfw\engine\core\domain\events\store\errors\Inconsistency;
 use wfw\engine\core\data\query\QueryBuilder;
 use wfw\engine\lib\data\string\serializer\ISerializer;
@@ -77,25 +79,39 @@ final class DBBasedEventStore implements IEventStore {
 			/** @var IAggregateRoot $res */
 			$res = $events[0]["snapshot"];
 			$skipFirst = false;
-			if(is_null($res)){
+			if(!is_null($res)){
+				//Sinon, on déserialise le snapshot
+				$res = $this->_serializer->unserialize($res);
+			}
+			if(is_null($res) || $res instanceof \__PHP_Incomplete_Class){
 				//s'il n'existe pas de snapshot, alors on prend le premier événement qui, par convention,
 				// contient la liste des arguments du constructeur de l'aggrégat au moment de sa première
 				//génération
 				/** @var IAggregateRoot $aggregateClass */
 				$aggregateClass = $events[0]["aggregate_type"];
-				$res = $aggregateClass::restoreAggregateFromEvent(
-					$this->_serializer->unserialize($events[0]["data"])
+				$event = $this->_serializer->unserialize($events[0]["data"]);
+				if($event instanceof IAggregateRootGeneratedEvent){
+					$res = $aggregateClass::restoreAggregateFromEvent(
+						$this->_serializer->unserialize($events[0]["data"])
+					);
+					$skipFirst = true;
+				}else throw new CorruptedData(
+					"First event must be an instanceof ".IAggregateRootGeneratedEvent::class
+					.". ".get_class($event)." given."
 				);
-				$skipFirst = true;
-			}else{
-				//Sinon, on déserialise le snapshot
-				$res = $this->_serializer->unserialize($res);
 			}
 			foreach($events as $k=>$event){
 				//On ne réapplique pas l'événement de création.
 				if($skipFirst && $k ===0){ continue; }
 				//On applique un à un tous les événements retournés
 				//(depuis la création de l'aggrégat ou du dernier snapshot s'il existe)
+				$event = $this->_serializer->unserialize($event["data"]);
+				if($event instanceof \__PHP_Incomplete_Class) throw new CorruptedData(
+					"An event can't be loaded due to a class resolution failure (__PHP_Icomplete_Class),"
+					." making the aggregate $aggregateId (".get_class($res).") unusuable.\n"
+					." Please import the needed class or fixe this event.\n"
+					." Event data : ".json_encode($event)
+				);
 				$res->apply($this->_serializer->unserialize($event["data"]));
 			}
 			return $res;

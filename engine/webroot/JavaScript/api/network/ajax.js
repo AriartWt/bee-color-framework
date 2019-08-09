@@ -16,7 +16,8 @@ wfw.define("network/ajax",(function(){
 			.forEach(($k) => {
 				if($d[$k] instanceof File) $formData.append($k,$d[$k]);
 				else if(Array.isArray($d[$k])) $d[$k].forEach(($elem) => {
-					$formData.append($k,typeof $elem === "object" ? JSON.stringify($elem) : $elem);
+					if($elem instanceof File) $formData.append($k,$elem);
+					else $formData.append($k,typeof $elem === "object" ? JSON.stringify($elem) : $elem);
 				});
 				else if(typeof $d[$k] === "object") $formData.append($k,JSON.stringify($d[$k]));
 				else $formData.append($k,$d[$k]);

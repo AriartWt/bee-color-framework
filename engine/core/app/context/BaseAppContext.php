@@ -66,14 +66,6 @@ use wfw\engine\lib\network\mail\IMailFactory;
 use wfw\engine\lib\network\mail\IMailProvider;
 use wfw\engine\lib\network\mail\MailFactory;
 use wfw\engine\lib\network\mail\providers\PHPMailerProvider;
-use wfw\engine\package\contact\data\model\ContactModelAccess;
-use wfw\engine\package\contact\data\model\IContactModelAccess;
-use wfw\engine\package\contact\domain\repository\ContactRepository;
-use wfw\engine\package\contact\domain\repository\IContactRepository;
-use wfw\engine\package\news\data\model\ArticleModelAccess;
-use wfw\engine\package\news\data\model\IArticleModelAccess;
-use wfw\engine\package\news\domain\repository\ArticleRepository;
-use wfw\engine\package\news\domain\repository\IArticleRepository;
 use wfw\engine\package\users\data\model\IUserModelAccess;
 use wfw\engine\package\users\data\model\UserModelAccess;
 use wfw\engine\package\users\domain\repository\IUserRepository;
@@ -238,21 +230,17 @@ class BaseAppContext implements IAppContext {
 			INotifier::class => [ 'instanceOf' => FlashNotifier::class, 'shared' => true ],
 			IPrinter::class => [ 'instanceOf' => JSONPrinter::class, 'shared' => true ],
 			IUserModelAccess::class => [ 'instanceOf' => UserModelAccess::class, 'shared' => true ],
-			IArticleRepository::class => [ 'instanceOf' => ArticleRepository::class, 'shared' => true],
 			IAggregateRootRepository::class => ['instanceOf' => AggregateRootRepository::class, 'shared'=>true],
 			LightSerializer::class => ['substitutions' => [ ISerializer::class => PHPSerializer::class ]],
 			ISerializer::class => ['instanceOf'=>LightSerializer::class, 'shared'=>true],
 			IStringCompressor::class => ['instanceOf'=>GZCompressor::class, 'shared'=>true],
 			IJSONEncoder::class => ["instanceOf"=>JSONEncoder::class, 'shared'=>true],
-			IArticleModelAccess::class => ['instanceOf'=>ArticleModelAccess::class, 'shared'=>true],
 			IHTMLSanitizer::class => ['instanceOf'=>HTMLPurifierBasedSanitizer::class, 'shared'=>true],
 			IUserConfirmationCodeGenerator::class => [ 'instanceOf'=>UUIDBasedUserConfirmationCodeGenerator::class,'shared'=>true],
 			IUserRegisteredMail::class => [ 'instanceOf'=>UserRegisteredMail::class],
 			IUserMailChangedMail::class => [ 'instanceOf'=>UserMailChangedMail::class],
 			IUserResetPasswordMail::class => [ 'instanceOf'=>UserResetPasswordMail::class],
-			IUserRepository::class => [ 'instanceOf'=>UserRepository::class,'shared'=>true],
-			IContactRepository::class => ['instanceOf'=>ContactRepository::class,'shared'=>true],
-			IContactModelAccess::class => ['instanceOf'=>ContactModelAccess::class,'shared'=>true]
+			IUserRepository::class => [ 'instanceOf'=>UserRepository::class,'shared'=>true]
 		]);
 		$this->_dice->addRules($this->getDi());
 		$this->_dice->addRules($diceRules);

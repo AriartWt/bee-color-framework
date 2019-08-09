@@ -90,7 +90,6 @@ try{
 						);
 					}
 				}
-
 				$server = new MSServer(
 					$confs->getSocketPath($name),
 					new MSServerSocketProtocol(),

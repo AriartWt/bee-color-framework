@@ -5,10 +5,7 @@ namespace wfw\engine\core\security;
 use wfw\engine\core\action\NotFoundHook;
 use wfw\engine\core\security\rules\RequireAuthentification;
 use wfw\engine\core\security\rules\ValidToken;
-use wfw\engine\package\contact\security\ContactAccessControlPolicies;
 use wfw\engine\package\general\security\GeneralAccessControlPolicies;
-use wfw\engine\package\miel\security\MielAccessControlPolicies;
-use wfw\engine\package\news\security\NewsAccessControlPolicies;
 use wfw\engine\package\uploader\security\UploaderAccessControlPolicies;
 use wfw\engine\package\users\security\UsersAccessControlPolicies;
 
@@ -34,9 +31,6 @@ final class WFWDefaultSecurityPolicy extends SecurityPolicy {
 	): array {
 		$base = [];
 		if($includeBase) $base = array_merge(
-			ContactAccessControlPolicies::accessPolicy(),
-			MielAccessControlPolicies::accessPolicy(),
-			NewsAccessControlPolicies::accessPolicy(),
 			UploaderAccessControlPolicies::accessPolicy(),
 			UsersAccessControlPolicies::accessPolicy(),
 			GeneralAccessControlPolicies::accessPolicy(),

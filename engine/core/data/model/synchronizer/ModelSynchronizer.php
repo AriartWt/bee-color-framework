@@ -47,7 +47,10 @@ final class ModelSynchronizer implements IModelSynchronizer {
 		//Si des erreurs sont survenues lors de la dernière execution,
 		//elles sont effacées et le model repart sur une base saine
 		foreach($this->_snapshoter->getModels() as $k=>$model){
-			$this->_storage->set(get_class($model),$model);
+			if(!($model instanceof \__PHP_Incomplete_Class)) $this->_storage->set(
+				get_class($model),
+				$model
+			);
 		}
 	}
 }

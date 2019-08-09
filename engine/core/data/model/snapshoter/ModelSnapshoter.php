@@ -2,6 +2,7 @@
 namespace wfw\engine\core\data\model\snapshoter;
 
 use wfw\engine\core\data\DBAccess\SQLDB\PDOBasedDBAccess;
+use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\observers\DomainEventObserver;
 use wfw\engine\core\data\model\builder\IModelBuilder;
 use wfw\engine\core\data\model\InMemoryEventBasedModel;
@@ -82,9 +83,11 @@ class ModelSnapshoter implements IModelSnapshoter {
 	 */
 	private function updateModels(array $models,int $from = 0,int $to = 0):int{
 		$manager = new DomainEventObserver();
-		foreach($models as $model){
-			foreach($model->listenEvents() as $e){
-				$manager->addDomainEventListener($e, $model);
+		foreach($models as $k=>$model){
+			if(! ($model instanceof \__PHP_Incomplete_Class)){
+				foreach($model->listenEvents() as $e){
+					$manager->addDomainEventListener($e, $model);
+				}
 			}
 		}
 		//on détermine le nombre d'étapes
@@ -105,7 +108,11 @@ class ModelSnapshoter implements IModelSnapshoter {
 				LIMIT $limit OFFSET ".($from + ($i * $limit))."
 			"));
 			foreach($events as $e){
-				$manager->dispatchDomainEvent($this->_serializer->unserialize($e["data"]));
+				$event = $this->_serializer->unserialize($e["data"]);
+				//If some events turned into __PHP_Incomplete_Class, will skip them.
+				if($event instanceof IDomainEvent) $manager->dispatchDomainEvent(
+					$this->_serializer->unserialize($e["data"])
+				);
 			}
 
 			$totalEvents += $events->rowCount();;
@@ -121,11 +128,12 @@ class ModelSnapshoter implements IModelSnapshoter {
 	 * @throws \InvalidArgumentException
 	 */
 	public function updateSnapshot(string... $modelsToRebuild):void{
-		//On obtient le snapshot précédent s'il existe
-		/*$models = $this->_models;*/
 		$previous = $this->getSnapshot();
 		if(!is_null($previous)){
 			$this->_models = $previous->getModels();
+			foreach($this->_models as $k=>$model){
+				if(!($model instanceof \__PHP_Incomplete_Class)) unset($this->_models[$k]);
+			}
 			$this->_lastEventNumber = $previous->getLastEventNumber();
 			foreach($modelsToRebuild as $m){
 				if(is_string($m) && isset($this->_models[$m])){

@@ -33,6 +33,7 @@ abstract class UploadHandler implements IActionHandler {
 		$this->_conf = $conf;
 		$this->_translator = $translator;
 		$this->_path = dirname(__DIR__,5)."/".$conf->getString($uploadsConfKey ?? "server/uploader/dir");
+		if(!is_dir($this->_path)) mkdir($this->_path,0770,true);
 		$this->_folder = str_replace(dirname(__DIR__,5)."/site/webroot/",'',$this->_path);
 	}
 

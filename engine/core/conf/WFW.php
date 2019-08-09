@@ -179,7 +179,7 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 	public static function registerModules(string ...$modules): void {
 		foreach($modules as $module){
 			if(is_a($module,IModuleDescriptor::class,true)){
-				self::$_modules[] = $module;
+				if(!in_array($module,self::$_modules)) self::$_modules[] = $module;
 			}else throw new \InvalidArgumentException(
 				"$module doesn't implements ".IModuleDescriptor::class
 			);
@@ -233,7 +233,7 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 			foreach($initArray as $key => $constructor){
 				if(!isset($res[$key])) $res[$key] = $constructor;
 				else{
-					foreach($constructor as $index => $param){
+					if(is_array($constructor)) foreach($constructor as $index => $param){
 						if(isset($res[$key][$index]) && is_array($res[$key][$index]) && is_array($param)){
 							$res[$key][$index] = array_merge_recursive(
 								$res[$key][$index],

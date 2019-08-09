@@ -56,8 +56,11 @@ try{
 						if(!is_dir("$site/webroot/$dir")) mkdir("$site/webroot/$dir");
 						if(is_link("$site/webroot/$dir/$p")) unlink("$site/webroot/$dir/$p");
 						chdir("$site/webroot/$dir");
-						if(!$m) $exec("ln -s \"../../../$l/package/$p/webroot/$dir\" \"$p\"");
-						else $exec("ln -s \"../../../$l/$p/webroot/$dir\" \"$p\"");
+						if(!is_dir(dirname($p))) mkdir(dirname($p),0777,true);
+						$relativeAdapt = str_repeat("../",count(explode("/",$p))+2);
+						$relativeAdapt = substr($relativeAdapt,0,-1);
+						if(!$m) $exec("ln -s \"$relativeAdapt/$l/package/$p/webroot/$dir\" \"$p\"");
+						else $exec("ln -s \"$relativeAdapt/$l/$p/webroot/$dir\" \"$p\"");
 					}
 					fwrite(STDOUT,"$package installed.\n");
 				}else fwrite(STDOUT,"$package : nothing to do (no webroot folder found).\n");

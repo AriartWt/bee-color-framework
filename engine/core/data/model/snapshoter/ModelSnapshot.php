@@ -23,9 +23,10 @@ class ModelSnapshot {
 	public function __construct(array $models,int $lastEventNumber) {
 		$this->_lastEventNumber = $lastEventNumber;
 		foreach($models as $k=>$model){
-			if(!($model instanceof IModel)) throw new \InvalidArgumentException(
-				"Invalide model at offset $k : all items have to be instanceof ".IModel::class
-			);
+			if(!($model instanceof IModel) && !($model instanceof \__PHP_Incomplete_Class))
+				throw new \InvalidArgumentException(
+					"Invalid model at offset $k : all items have to be instanceof ".IModel::class
+				);
 			else $this->_models[get_class($model)] = $model;
 		}
 	}

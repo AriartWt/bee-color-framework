@@ -41,9 +41,9 @@ wfw.define("ui/fileExplorer",function($params){
 	if('list' in $params) $list = { url : $params.list.url };
 	else throw new Error("$params.list have to be defined !");
 	if("upload" in $params){
-		$upload = { url : $params.upload.url, paramName : {file:'file',name:'name'} };
+		$upload = { url : $params.upload.url, paramName : {files:'files',names:'names'} };
 		if(typeof $params.upload.paramName === "object")
-			['file','name'].forEach(($k)=> $upload.paramName[$k]=$params.upload.paramName[$k] );
+			['files','names'].forEach(($k)=> $upload.paramName[$k]=$params.upload.paramName[$k] );
 	}
 	if("delete" in $params){
 		$delete = { url : $params.delete.url, paramName : {paths:'paths'} };
@@ -288,7 +288,7 @@ wfw.define("ui/fileExplorer",function($params){
 						$files.click();
 					}}}),
 					$filesForm = wfw.dom.appendTo(wfw.dom.create("form"),
-						$files = wfw.dom.create("input",{type:"file",className:"hidden-input",on:{
+						$files = wfw.dom.create("input",{type:"file",multiple : "multiple",className:"hidden-input",on:{
 						change : ()=>{
 							for(let $i =0; $i<$files.files.length; $i++){
 								if(!$files.files[$i].type.match(/^(video\/mp4|audio\/(mpeg|mp3)|image\/.*)$/)){
@@ -300,24 +300,28 @@ wfw.define("ui/fileExplorer",function($params){
 							wfw.network.wfwAPI($upload.url,{
 								type : "POST",
 								postData : {
-									[$upload.paramName.file] : $files.files[0],
-									[$upload.paramName.name] : $displayed+"/"+$files.files[0].name.split('/').pop()
+									[$upload.paramName.files+'[]'] : Array.from($files.files),
+									[$upload.paramName.names+'[]'] : Array.from($files.files).map(
+										$f=>$displayed+"/"+$f.name.split('/').pop()
+									)
 								},
 								beforeSend:($xhr)=>{$xhr.upload.addEventListener("progress",($e)=>{
 									$loader.progress.innerHTML='<span>'+Math.round(($e.loaded*100)/$e.total)+'%</span>';
 								})},
-								"001" : ($name)=>{
+								"001" : ($names)=>{
 									$loader.remove();
-									let $d = $getData($displayed); let $f={
-										name : $name.split('/').pop(),
-										mime : $files.files[0].type,
-										ctime : Date.now(), mtime : Date.now(),
-										size : $files.files[0].size, type : "file",
-										path : $name
-									};
-									if($d["items"]) $d["items"][$f.name] = $f;
-									else $d[$f.name]=$f;
-									$display($displayed);
+									$names.forEach(($name,$i)=>{
+										let $d = $getData($displayed); let $f={
+											name : $name.split('/').pop(),
+											mime : $files.files[$i].type,
+											ctime : Date.now(), mtime : Date.now(),
+											size : $files.files[$i].size, type : "file",
+											path : $name
+										};
+										if($d["items"]) $d["items"][$f.name] = $f;
+										else $d[$f.name]=$f;
+										$display($displayed);
+									});
 									$filesForm.reset();
 									$updateQuotas();
 								},

@@ -14,12 +14,6 @@
 				}
 			},
 			"package" : {
-				"contact" : {
-					"forms" : {
-						"INVALID_ID_IN_LIST" : "One of the given ID is invalid !",
-						"INVALID_ID" : "This ID is invalid !"
-					}
-				},
 				"lang" : {
 					"forms" : {
 						"GENERAl_ERROR" : "Invalid data !",
@@ -35,43 +29,6 @@
 						"REQUIRED" : "This field is required !",
 						"INVALID_ZIP_CODE" : "This is not a valid zip code !",
 						"INVALID_COUNTRY_NAME" : "This country name is invalid !"
-					}
-				},
-				"miel" : {
-					"forms" : {
-						"GENERAL_ERROR" : "Some fields are invalid !",
-						"REQUIRED" : "This field is required !",
-						"TOO_LARGE_KEY" : "The key length can't exceed [$] chars !",
-						"TOO_LARGE_STRING" : "This field length can't exceed [$] chars !",
-						"NOT_EMPTY" : "This field can't be empty !"
-					},
-					"ERROR" : "Invalid data !"
-				},
-				"news" : {
-					"forms" : {
-						"GENERAL_ERROR" : "Invalid data !",
-						"REQUIRED" : "The article ID is required !",
-						"INVALID_ID_IN_LIST" : "One of the given IDS is invalid !",
-						"INVALID_ID" : "Invalid ID !",
-						"INVALID_STRING" : "This isn't a valid string !",
-						"NOT_EMPTY" : "This field can't be empty !",
-						"MAX_TITLE_LENGTH" : "The title length can't exceed [$] chars !",
-						"MAX_CONTENT_LENGTH" : "The content length can't exceed [$] chars !",
-						"MAX_VISUAL_LENGTH" : "The path to the visual can't exceed [$] chars !",
-						"EMPTY_OR_BOOLEAN" : "This field must be empty or boolean.",
-						"INVALID_FIELD" : "This field isn't valid !",
-						"MUST_BE_EMPTY" : "This field must be empty !",
-						"INVALID_TITLE" : "Invalid title !",
-						"INVALID_CONTENT" : "Invalid content !",
-						"INVALID_VISUAL" : "Invalid visual path !"
-					},
-					"ERROR_WRITTEN_EVENT_NOT_RECIEVED" : "An error occured while truing to create the article, please contact the administrator (WrittentEvent not recieved)",
-					"NOT_FOUND" : "Article not found !",
-					"OFFLINE" : "This article is offline !",
-					"REMOVED" : "This article have been removed !",
-					"service_unavailable" : {
-						"LIST" : "Unable to fetch articles : service temporarily unavailable. Please try again later.",
-						"ARTICLE" : "Unable to fetch article : service temporarily unavailable. Please try again later."
 					}
 				},
 				"users" : {
@@ -154,7 +111,7 @@
 						"INVALID_FILE" : "This file is invalid or too large !",
 						"INVALID_FILE_NAME" : "Invalid file name.\nA valid file name must contain less thant [$] characters and no /"
 					},
-					"STORAGE_QUOTA_EXCEED" : "Insufficient storage quota exceed !",
+					"STORAGE_QUOTA_EXCEED" : "Insufficient storage : quota exceeded !",
 					"RENAME_LIST_ERROR" : "Elems to rename list doesn't match new name list !"
 				}
 			}
@@ -208,74 +165,6 @@
 			}
 		},
 		"packages" : {
-			"news" : {
-				"CREATE_NEW" : "Create an article",
-				"EDIT_NEW" : "Edit an article",
-				"TITLE_NEW" : "Article title",
-				"VISUAL" : "Article illustration",
-				"EDIT" : "Edit",
-				"CREATE" : "Create",
-				"CANCEL" : "Cancel",
-				"ARCHIVE" : "Delete",
-				"WAITING_CREATE" : "Creating article in progress, please wait...",
-				"WAITING_EDIT" : "Editing article in progress, please wait...",
-				"ERR_EDIT" : "Can't edit this article !",
-				"ERR_CREATE" : "Can't create this article !",
-				"WARN_MUST_SELECT_ONE" : "You must select at least one article !",
-				"CONFIRM_ARCHIVING" : "Do you really want to delete this article ?",
-				"WAIT_ARCHIVING" : "Selected articles will be removed, please wait...",
-				"ERR_ARCHIVING" : "Can't remove selected articles !",
-				"WAIT_PUT_ONLINE" : "Selected articles will be put online, please wait...",
-				"ONLINE" : "Online",
-				"EDATE" : "Edit date",
-				"CDATE" : "Creation date",
-				"TITLE" : "Title",
-				"YES" : "Yes",
-				"NO" : "No",
-				"ERR_PUT_ONLINE" : "Can't put online selected articles !",
-				"WAIT_PUT_OFFLINE" : "Selected articles will be put offline, please wait...",
-				"ERR_PUT_OFFLINE" : "Can't put offline selected articles !",
-				"BTN_WRITE" : "Writting a new article",
-				"BTN_ARCHIVE" : "Delete selected articles",
-				"BTN_PUT_ONLINE" : "Put online selected articles",
-				"BTN_PUT_OFFLINE" : "Put offline selected articles",
-				"WAIT_LOADING_NEWS" : "Loading articles in progress, please wait...",
-				"ERR_LOADING_NEWS" : "Can't load article list !",
-				"CHOOSE_PICTURE" : "Choose a picture",
-				"CHOOSE" : "Choose",
-				"WARN_ONLY_CHOOSE_ONE" : "You can't select more than one picture !",
-				"WARN_MUST_SELECT_PICTURE" : "You must select a picture !"
-			},
-			"contact" : {
-				"EDIT_CONTACT" : "See a message",
-				"LABEL" : "Origin",
-				"READ" : "Message detail",
-				"CANCEL" : "Cancel",
-				"ARCHIVE" : "Delete",
-				"WARN_MUST_SELECT_ONE" : "You must select at least one message !",
-				"CONFIRM_ARCHIVING" : "Do you really want to delete those messages ?",
-				"WAIT_ARCHIVING" : "Selected messages will be deleted, please wait...",
-				"ERR_ARCHIVING" : "Can't remove selected messages !",
-				"WAIT_MARK_AS_READ" : "Selected messages will be marked as read, please wait...",
-				"STATE_DESC" : "State",
-				"STATE" : "Read",
-				"NOT_READ" : "Unread",
-				"CLOSE" : "Close",
-				"RDATE" : "Read",
-				"CDATE" : "Recieved",
-				"CDATE_DESC" : "Receipt date",
-				"CONTENT" : "Message",
-				"YES" : "Yes",
-				"NO" : "No",
-				"ERR_MARK_AS_READ" : "Can't mark selected messages as read !",
-				"WAIT_MARK_AS_UNREAD" : "Selected messages will be marked as read, please wait...",
-				"ERR_MARK_AS_UNREAD" : "Can't mark selected messages as unread !",
-				"BTN_ARCHIVE" : "Delete selected messages",
-				"BTN_MARK_AS_READ" : "Mark all selected messages as read",
-				"BTN_MARK_AS_UNREAD" : "Mark all selected messages as unread",
-				"WAIT_LOADING_CONTACTS" : "Loading messages list, please wait...",
-				"ERR_LOADING_CONTACTS" : "Can't load messages list !"
-			},
 			"users" : {
 				"CREATE_USER" : "Create a new user",
 				"EDIT_USER" : "Edit an user",
@@ -374,29 +263,6 @@
 					"WARN_ONLY_ONE_ALLOWED" : "You can't import more than one media !",
 					"WARN_MUST_CHOOSE_ONE" : "You must choose a file !",
 					"WARN_MUST_SELECT_MEDIA" : "You must choose a media !"
-				}
-			},
-			"miel" : {
-				"default" : {
-					"ERROR" : "Can't save your data. </br>Please check you're logged !",
-					"SAVE_DONE" : "Changes successfully saved !"
-				},
-				"medias" : {
-					"SAVE" : "Save",
-					"CANCEL" : "Cancel",
-					"MANAGE" : "Media management",
-					"WAIT_UPDATE" : "Saving change, please wait...</br>(Once saved, this page will be automatically refreshed)",
-					"ERROR" : "Can't edit media list !",
-					"BTN_ADD" : "Add one or more media",
-					"BTN_REMOVE" : "Delete",
-					"CHOOSE" : "Choose",
-					"CHOOSE_MEDIAS" : "Media list",
-					"WARN_MUST_SELECT_MEDIA" : "You must select at least one media !\n(Allowed medias : [$])",
-					"IMAGE" : "Pictures",
-					"VIDEO" : "Videos",
-					"AUDIO" : "Audios",
-					"CONFIRM_REMOVE" : "Do you really want to remove selected medias ?",
-					"WARN_MUST_SELECT_ONE" : "You must select at least one item !"
 				}
 			}
 		}
