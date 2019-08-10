@@ -1,14 +1,17 @@
 :root{
 	--adminPanel-color:#FF9900;
 	--adminPanel-color-lighter:#FFBB00;
-	--adminPanel-height:90%;
-	--adminPanel-width:90%;
-	--adminPanel-top:5%;
-	--adminPanel-left:5%;
-	--adminPanel-workSpace-scale : 0.935;
-	--adminPanel-leftBar : 6.5%;
-	--adminPanel-bottomBar : 6.5%;
-	--adminPanel-leftIcon-height : 70px;
+	--adminPanel-height:95%;
+	--adminPanel-width:95%;
+	--adminPanel-top:2.5%;
+	--adminPanel-left:2.5%;
+	--adminPanel-workSpace-scale : 0.95;
+	--adminPanel-leftBar : 5%;
+	--adminPanel-bottomBar : 5%;
+	--adminPanel-leftIcon-height : 60px;
+	--adminPanel-bottomIcon-width : 60px;
+	--adminPanel-settingsIcon-height : 40px;
+	--adminPanel-settingsIcon-width : 40px;
 }
 html{
 	height:100%;
@@ -60,7 +63,7 @@ iframe{
 	box-sizing: border-box;
 	height:100%;
 	transition:all 0.35s;
-	width:80px;
+	width:var(--adminPanel-bottomIcon-width);
 	display:block;
 	margin:0;
 }
@@ -83,7 +86,7 @@ iframe{
 .panel-bottom > .panel-item > * > svg{
 	height:100%;
 	box-sizing: border-box;
-	width:80px;
+	width:var(--adminPanel-bottomIcon-width);
 }
 .panel > .panel-item > * > svg polygon,
 .panel > .panel-item > * > svg path{
@@ -184,7 +187,7 @@ iframe{
 .panel-bottom{
 	left:var(--adminPanel-leftBar);
 	bottom:-100%;
-	width:90%;
+	width:calc(100% - var(--adminPanel-leftBar));
 	height:var(--adminPanel-bottomBar);
 }
 #panel-command:checked ~ .panel-left{
@@ -198,8 +201,8 @@ iframe{
 	bottom:20px;
 	left:20px;
 	cursor:pointer;
-	height:50px;
-	width:50px;
+	height:var(--adminPanel-settingsIcon-height);
+	width:var(--adminPanel-settingsIcon-width);
 	transition: all 0.35s;
 }
 .panel-main-button path{

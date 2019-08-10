@@ -46,7 +46,8 @@ wfw.define("plugins/adminPanel/default", function ($params,$loadOrder,$hbTimeout
 						if ($sk in $defBtnParams) $mParams.btn = $defBtnParams[$sk];
 						else throw new Error("No btn field given for module " + $sk);
 					}
-					wfw.ui.adminPanel.get($k).appendChild($res = wfw.ui.adminPanel.createButton($sk,
+					wfw.ui.adminPanel.get($k).appendChild($res = wfw.ui.adminPanel.createButton(
+						$sk.replace(/\//g,"-"),
 						$mParams.btn.title,
 						$mParams.btn.icon,
 						$mParams.btn.panelTitle
@@ -65,14 +66,14 @@ wfw.define("plugins/adminPanel/default", function ($params,$loadOrder,$hbTimeout
 		let $inputs = Array.from(document.querySelectorAll(".main-panel-display"));
 		$inputs.forEach(($i) => {
 			$i.addEventListener("change", () => {
-				let $m = $modules[$i.id.replace('-panel','')];
+				let $m = $modules[$i.id.replace('-panel','').replace(/-/g,"/")];
 				if ($i.checked){
 					if(typeof $m.show === 'function') $m.show();
 					$inputs.filter(($e) => {
 						return $i !== $e
 					}).forEach(($e) =>{
 						$e.checked = false;
-						let $m = $modules[$e.id.replace('-panel','')];
+						let $m = $modules[$e.id.replace('-panel','').replace(/-/g,"/")];
 						if(typeof $m.hide === 'function') $m.hide();
 					});
 				}else if(typeof $m.hide === 'function') $m.hide();
@@ -84,7 +85,9 @@ wfw.define("plugins/adminPanel/default", function ($params,$loadOrder,$hbTimeout
 		});
 		$ready.forEach($fn=>$fn());
 		$loaded = true;
-		if($hbTimeout > 0) setInterval(()=>wfw.network.wfwAPI(wfw.webroot+"general/heartBeat"),$hbTimeout);
+		if($hbTimeout > 0) setInterval(()=>wfw.network.wfwAPI(wfw.webroot+"general/heartBeat",{
+			"403" : ($data)=>{alert($lstr('DISCONNECTED')); window.location.reload(true); }
+		}),$hbTimeout);
 	};
 	let $defBtnParams = {
 		users : {

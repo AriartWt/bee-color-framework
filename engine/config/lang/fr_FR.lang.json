@@ -140,7 +140,7 @@
 				"WARN_MEDIA_TYPE_ACCEPTED" : "Seuls les fichiers audio mp3, video mp4 et images sont admis !",
 				"WAITING_SEND_FILE" : "Envoi du/des fichier(s) en cours, veuillez patienter...",
 				"ERR_SERVER_REFUSES_FILE" : "Le serveur n'a pas pu enregistrer votre fichier.\nSeuls les fichiers images, mp3 et mp4 de moins de 300Mo sont acceptés !\nSi votre fichier est valide, c'est que votre espace de stockage est plein, pensez à supprimer les fichiers intuiles.",
-				"ADD_FILE" : "Ajouter un fichier",
+				"ADD_FILE" : "Ajouter un ou plusieurs fichiers",
 				"REMOVE_SELECTED" : "Supprimer le(s) élément(s) séléctionné(s)",
 			 	"LOADING" : "Chargement en cours, veuillez patienter..."
 			},
@@ -219,34 +219,6 @@
 				"WAITING_MAIL" : "&#9203; Confirmation e-mail",
 				"PWD_RESET" : "Récupération du mot de passe",
 				"WAITING_REGISTRATION" : "&#9203; Confirmation d'inscription"
-			},
-			"management" : {
-				"settings" : {
-					"CHOOSE_PICTURE" : "Choisissez une image",
-					"CHOOSE" : "Choisir",
-					"WARN_ONLY_CHOOSE_ONE" : "Vous ne pouvez choisir qu'une seule image !",
-					"WARN_MUST_SELECT_PICTURE" : "Vous devez séléctionner une image !",
-					"CANCEL" : "Annuler",
-					"CHOOSE_LOGO" : "Choisissez un logo"
-				},
-				"legals" : {
-					"DESC" : "Mention",
-					"AUTO_CHK" : "Activé"
-				},
-				"SETTINGS" : "Entreprise",
-				"CLIENTS" : "Clients",
-				"PRODUCTS" : "Produits",
-				"SERVICES" : "Services",
-				"QUOTATIONS" : "Devis",
-				"INVOICES" : "Factures",
-				"ACCOUNTING" : "Comptabilité",
-				"SETTINGS_PANEL_TITLE" : "Gestion des paramètres de votre entreprise",
-				"CLIENTS_PANEL_TITLE" : "Gestion de vos clients",
-				"PRODUCTS_PANEL_TITLE" : "Gestion de vos produits",
-				"SERVICES_PANEL_TITLE" : "Gestion de vos services",
-				"QUOTATIONS_PANEL_TITLE" : "Gestion de vos devis",
-				"INVOICES_PANEL_TITLE" : "Gestion de vos factures",
-				"ACCOUNTING_PANEL_TITLE" : "Comptabilité"
 			}
 		},
 		"plugins" : {
@@ -261,6 +233,7 @@
 					"CONTACT_PANEL_TITLE" : "Gestion de vos prises de contact",
 					"CONTACT_PANEL_HINT" : "Gérez vos prises de contact",
 					"LOGOUT" : "Se déconnecter",
+					"DISCONNECTED" : "Vous avez été deconnecté",
 					"CONFIRM_LOGOUT" : "Voulez-vous vraiment vous déconnecter ?",
 					"YES" : "Oui",
 					"NO" : "Non"

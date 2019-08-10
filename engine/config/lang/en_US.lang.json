@@ -140,7 +140,7 @@
 				"WARN_MEDIA_TYPE_ACCEPTED" : "Only audio mp3, video mp4 and picture files are allowed !",
 				"WAITING_SEND_FILE" : "Sending file in progress, please wait...",
 				"ERR_SERVER_REFUSES_FILE" : "The server can't save your file.\nOnly pictures, mp4 and mp3 files are allowed (max 300Mo) \nIf you sent a valid file, maybe your storage space is full, please remove useless files.",
-				"ADD_FILE" : "Add a file",
+				"ADD_FILE" : "Add files",
 				"REMOVE_SELECTED" : "Delete selected items",
 				"LOADING" : "Loading in progress, please wait..."
 			},
@@ -231,6 +231,7 @@
 					"CONTACT_PANEL_TITLE" : "Message management",
 					"CONTACT_PANEL_HINT" : "Manage your messages",
 					"LOGOUT" : "Logout",
+					"DISCONNECTED" : "You've been disconnected",
 					"CONFIRM_LOGOUT" : "Do you really want to logout ?",
 					"YES" : "Yes",
 					"NO" : "No"
