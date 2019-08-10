@@ -1,4 +1,7 @@
-Ce document est également disponible en [français](README.md)
+# Documentation update
+
+**Since a major update is about to be released, the current documentation website is outdated and will
+be entierly rewritten to be clearer and takes new functionnalities into consideration.**
 
 # Foreword
 
