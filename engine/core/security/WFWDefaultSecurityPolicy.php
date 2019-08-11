@@ -3,9 +3,11 @@
 namespace wfw\engine\core\security;
 
 use wfw\engine\core\action\NotFoundHook;
+use wfw\engine\core\command\security\rules\UserTypeBasedCommandAccessRule;
 use wfw\engine\core\security\rules\RequireAuthentification;
 use wfw\engine\core\security\rules\ValidToken;
 use wfw\engine\package\general\security\GeneralAccessControlPolicies;
+use wfw\engine\package\lang\security\LangAccessControlPolicies;
 use wfw\engine\package\uploader\security\UploaderAccessControlPolicies;
 use wfw\engine\package\users\security\UsersAccessControlPolicies;
 
@@ -14,6 +16,52 @@ use wfw\engine\package\users\security\UsersAccessControlPolicies;
  * if no security have been defined for a project.
  */
 final class WFWDefaultSecurityPolicy extends SecurityPolicy {
+	/**
+	 * @param array $policies
+	 * @param bool  $includeBase   If true, will include default's WFW policies
+	 * @param array $templateArray Template array to specify the query policy order
+	 * @return array
+	 */
+	public static function queriesPolicy(
+		array $policies = [],
+		bool $includeBase=true,
+		array $templateArray=[
+			UserTypeBasedCommandAccessRule::class => []
+		]
+	): array {
+		$base = [];
+		if($includeBase) $base = array_merge(
+			UploaderAccessControlPolicies::queriesPolicy(),
+			UsersAccessControlPolicies::queriesPolicy(),
+			GeneralAccessControlPolicies::queriesPolicy(),
+			LangAccessControlPolicies::queriesPolicy()
+		);
+		return array_merge($templateArray,$base,$policies);
+	}
+
+	/**
+	 * @param array $policies      [(string|UserType::class)target => [ICommand:class]]
+	 * @param bool  $includeBase   If true, will include default's WFW policies
+	 * @param array $templateArray Template array to specify the command policies order
+	 * @return array
+	 */
+	public static function commandsPolicy(
+		array $policies = [],
+		bool $includeBase=true,
+		array $templateArray=[
+			UserTypeBasedCommandAccessRule::class => []
+		]
+	): array {
+		$base = [];
+		if($includeBase) $base = array_merge(
+			UploaderAccessControlPolicies::commandsPolicy(),
+			UsersAccessControlPolicies::commandsPolicy(),
+			GeneralAccessControlPolicies::commandsPolicy(),
+			LangAccessControlPolicies::commandsPolicy()
+		);
+		return array_merge($templateArray,$base,$policies);
+	}
+
 	/**
 	 * @param array $policies    [AccessRuleClass=>params]
 	 * @param bool  $includeBase If true, will include default's WFW policies.
@@ -34,6 +82,7 @@ final class WFWDefaultSecurityPolicy extends SecurityPolicy {
 			UploaderAccessControlPolicies::accessPolicy(),
 			UsersAccessControlPolicies::accessPolicy(),
 			GeneralAccessControlPolicies::accessPolicy(),
+			LangAccessControlPolicies::accessPolicy(),
 			[ ValidToken::class => [] ]
 		);
 		return array_merge($templateArray,$base,$policies);
@@ -54,8 +103,10 @@ final class WFWDefaultSecurityPolicy extends SecurityPolicy {
 	): array {
 		$base = [];
 		if($includeBase) $base = array_merge(
+			UploaderAccessControlPolicies::hooksPolicy(),
 			UsersAccessControlPolicies::hooksPolicy(),
-			GeneralAccessControlPolicies::hooksPolicy()
+			GeneralAccessControlPolicies::hooksPolicy(),
+			LangAccessControlPolicies::hooksPolicy()
 		);
 		return array_merge($template,$base,$policies);
 	}
