@@ -1,7 +1,7 @@
 <?php
 namespace wfw\engine\package\users\handlers\action;
 
-use wfw\engine\core\command\ICommandBus;
+use wfw\engine\core\command\IQueryProcessor;
 use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\security\data\IRule;
 use wfw\engine\core\session\ISession;
@@ -19,14 +19,14 @@ abstract class DefaultUserActionHandler extends PostDataDefaultActionHandler{
 	/**
 	 * DefaultUserActionHandler constructor.
 	 *
-	 * @param ICommandBus $bus     Bus de commande
-	 * @param IRule       $rule    Régle de validation des données
-	 * @param ISession    $session Session
-	 * @param ITranslator $translator
-	 * @param bool        $withGet
+	 * @param IQueryProcessor $bus     Bus de commande
+	 * @param IRule           $rule    Régle de validation des données
+	 * @param ISession        $session Session
+	 * @param ITranslator     $translator
+	 * @param bool            $withGet
 	 */
 	public function __construct(
-		ICommandBus $bus,
+		IQueryProcessor $bus,
 		IRule $rule,
 		ISession $session,
 		ITranslator $translator,

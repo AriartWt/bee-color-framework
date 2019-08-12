@@ -12,7 +12,7 @@ use wfw\engine\core\app\factory\IGenericAppFactory;
 use wfw\engine\core\cache\ICacheSystem;
 use wfw\engine\core\cache\systems\APCUBasedCache;
 use wfw\engine\core\command\CommandHandlerFactory;
-use wfw\engine\core\command\ICommandBus;
+use wfw\engine\core\command\IQueryProcessor;
 use wfw\engine\core\command\ICommandHandlerFactory;
 use wfw\engine\core\command\ICommandInflector;
 use wfw\engine\core\command\inflectors\NamespaceBasedInflector;
@@ -173,7 +173,7 @@ class BaseAppContext implements IAppContext {
 				'instanceOf' => MailFactory::class,
 				'shared' => true
 			],
-			ICommandBus::class => [ 'instanceOf' => SynchroneCommandBus::class, 'shared' => true ],
+			IQueryProcessor::class => [ 'instanceOf' => SynchroneCommandBus::class, 'shared' => true ],
 			ICommandInflector::class => [
 				'instanceOf' => NamespaceBasedInflector::class, 'shared' => true,
 				'constructParams' => [ $this->getCommandHandlers() ]

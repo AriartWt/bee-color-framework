@@ -2,7 +2,7 @@
 namespace wfw\engine\package\users\handlers\action\admin;
 
 use wfw\engine\core\command\ICommand;
-use wfw\engine\core\command\ICommandBus;
+use wfw\engine\core\command\IQueryProcessor;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
@@ -39,7 +39,7 @@ final class RegisterHandler extends DefaultUserActionHandler implements IDomainE
 	/**
 	 * RegisterHandler constructor.
 	 *
-	 * @param ICommandBus          $bus
+	 * @param IQueryProcessor      $bus
 	 * @param RegisterUserRule     $rule
 	 * @param ISession             $session
 	 * @param IJSONEncoder         $encoder
@@ -48,7 +48,7 @@ final class RegisterHandler extends DefaultUserActionHandler implements IDomainE
 	 * @param ITranslator          $translator
 	 */
 	public function __construct(
-		ICommandBus $bus,
+		IQueryProcessor $bus,
 		RegisterUserRule $rule,
 		ISession $session,
 		IJSONEncoder $encoder,

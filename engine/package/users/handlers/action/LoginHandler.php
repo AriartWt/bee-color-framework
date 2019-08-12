@@ -3,7 +3,7 @@ namespace wfw\engine\package\users\handlers\action;
 
 use wfw\engine\core\action\IAction;
 use wfw\engine\core\action\IActionHandler;
-use wfw\engine\core\command\ICommandBus;
+use wfw\engine\core\command\IQueryProcessor;
 use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\notifier\INotifier;
 use wfw\engine\core\notifier\Message;
@@ -39,7 +39,7 @@ final class LoginHandler implements IActionHandler {
 	private $_session;
 	/** @var LoginForm $_form */
 	private $_form;
-	/** @var ICommandBus $_bus */
+	/** @var IQueryProcessor $_bus */
 	private $_bus;
 	/** @var ITranslator $_translator */
 	private $_translator;
@@ -51,7 +51,7 @@ final class LoginHandler implements IActionHandler {
 	 * @param ISession         $session
 	 * @param IRouter          $router
 	 * @param IUserModelAccess $userModel
-	 * @param ICommandBus      $bus
+	 * @param IQueryProcessor  $bus
 	 * @param ITranslator      $translator
 	 */
 	public function __construct(
@@ -59,7 +59,7 @@ final class LoginHandler implements IActionHandler {
 		ISession $session,
 		IRouter $router,
 		IUserModelAccess $userModel,
-		ICommandBus $bus,
+		IQueryProcessor $bus,
 		ITranslator $translator
 	){
 		$this->_translator = $translator;

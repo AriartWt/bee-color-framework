@@ -3,7 +3,7 @@ namespace wfw\engine\package\users\handlers\action;
 
 
 use wfw\engine\core\command\ICommand;
-use wfw\engine\core\command\ICommandBus;
+use wfw\engine\core\command\IQueryProcessor;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
@@ -28,14 +28,14 @@ final class ResendChangeMailHandler extends DefaultUserActionHandler implements 
 	/**
 	 * ResendChangeMailMailHandler constructor.
 	 *
-	 * @param ICommandBus          $bus
+	 * @param IQueryProcessor      $bus
 	 * @param ChangeMailRule       $rule
 	 * @param ISession             $session
 	 * @param IDomainEventObserver $observer
 	 * @param ITranslator          $translator
 	 */
 	public function __construct(
-		ICommandBus $bus,
+		IQueryProcessor $bus,
 		ChangeMailRule $rule,
 		ISession $session,
 		IDomainEventObserver $observer,

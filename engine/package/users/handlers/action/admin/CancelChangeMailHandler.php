@@ -2,7 +2,7 @@
 namespace wfw\engine\package\users\handlers\action\admin;
 
 use wfw\engine\core\command\ICommand;
-use wfw\engine\core\command\ICommandBus;
+use wfw\engine\core\command\IQueryProcessor;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
@@ -24,14 +24,14 @@ final class CancelChangeMailHandler extends DefaultUserActionHandler implements 
 	/**
 	 * CancelChangeMailHandler constructor.
 	 *
-	 * @param ICommandBus          $bus
+	 * @param IQueryProcessor      $bus
 	 * @param UserIdRule           $rule
 	 * @param ISession             $session
 	 * @param IDomainEventObserver $observer
 	 * @param ITranslator          $translator
 	 */
 	public function __construct(
-		ICommandBus $bus,
+		IQueryProcessor $bus,
 		UserIdRule $rule,
 		ISession $session,
 		IDomainEventObserver $observer,

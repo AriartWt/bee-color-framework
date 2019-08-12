@@ -2,7 +2,7 @@
 namespace wfw\engine\package\users\handlers\action;
 
 use wfw\engine\core\command\ICommand;
-use wfw\engine\core\command\ICommandBus;
+use wfw\engine\core\command\IQueryProcessor;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
@@ -24,14 +24,14 @@ final class ChangePasswordHandler extends DefaultUserActionHandler implements ID
 	/**
 	 * ChangePasswordHandler constructor.
 	 *
-	 * @param ICommandBus          $bus
+	 * @param IQueryProcessor      $bus
 	 * @param ChangePasswordRule   $rule
 	 * @param ISession             $session
 	 * @param IDomainEventObserver $observer
 	 * @param ITranslator          $translator
 	 */
 	public function __construct(
-		ICommandBus $bus,
+		IQueryProcessor $bus,
 		ChangePasswordRule $rule,
 		ISession $session,
 		IDomainEventObserver $observer,

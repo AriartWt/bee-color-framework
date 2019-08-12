@@ -76,12 +76,17 @@ final class NamespaceBasedInflector implements ICommandInflector {
 			$res[] = $this->_handlers[$command];
 		}else{
 			$r = [];
-			$tmp = explode("\\",$command);
-			$className = array_pop($tmp);
-
+			if ($pos = strrpos($command, $search = "\\commands\\") !== false) {
+				$handlerClass = substr_replace(
+					$command,
+					"\\commands\\handlers\\",
+					$pos,
+					strlen($search)
+				);
+			}
 			try{
 				$r[] = $this->_factory->buildCommandHandler(
-					implode('\\',$tmp).'\\handlers\\'.$className.'Handler'
+					($handlerClass ?? $command)."Handler"
 				);
 			}catch(\Exception $e){}
 

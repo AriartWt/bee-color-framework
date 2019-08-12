@@ -2,7 +2,7 @@
 namespace wfw\engine\package\users\handlers\action;
 
 use wfw\engine\core\command\ICommand;
-use wfw\engine\core\command\ICommandBus;
+use wfw\engine\core\command\IQueryProcessor;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
@@ -29,7 +29,7 @@ final class ResendForgottenPasswordMailHandler extends DefaultUserActionHandler 
 	/**
 	 * ResendForgottenPasswordMailHandler constructor.
 	 *
-	 * @param ICommandBus          $bus
+	 * @param IQueryProcessor      $bus
 	 * @param RetrievePasswordRule $rule
 	 * @param ISession             $session
 	 * @param IUserModelAccess     $access
@@ -37,7 +37,7 @@ final class ResendForgottenPasswordMailHandler extends DefaultUserActionHandler 
 	 * @param ITranslator          $translator
 	 */
 	public function __construct(
-		ICommandBus $bus,
+		IQueryProcessor $bus,
 		RetrievePasswordRule $rule,
 		ISession $session,
 		IUserModelAccess $access,

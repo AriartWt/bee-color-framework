@@ -2,7 +2,7 @@
 namespace wfw\engine\package\users\handlers\action\admin;
 
 use wfw\engine\core\command\ICommand;
-use wfw\engine\core\command\ICommandBus;
+use wfw\engine\core\command\IQueryProcessor;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
@@ -28,7 +28,7 @@ final class ResetPasswordHandler extends DefaultUserActionHandler implements IDo
 	/**
 	 * ResetPassword constructor.
 	 *
-	 * @param ICommandBus          $bus
+	 * @param IQueryProcessor      $bus
 	 * @param ResetPasswordRule    $rule
 	 * @param ISession             $session
 	 * @param IDomainEventObserver $observer
@@ -36,7 +36,7 @@ final class ResetPasswordHandler extends DefaultUserActionHandler implements IDo
 	 * @param ITranslator          $translator
 	 */
 	public function __construct(
-		ICommandBus $bus,
+		IQueryProcessor $bus,
 		ResetPasswordRule $rule,
 		ISession $session,
 		IDomainEventObserver $observer,

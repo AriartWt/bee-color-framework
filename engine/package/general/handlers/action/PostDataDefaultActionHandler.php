@@ -4,7 +4,7 @@ namespace wfw\engine\package\general\handlers\action;
 use wfw\engine\core\action\IAction;
 use wfw\engine\core\action\IActionHandler;
 use wfw\engine\core\command\ICommand;
-use wfw\engine\core\command\ICommandBus;
+use wfw\engine\core\command\IQueryProcessor;
 use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\request\IRequest;
 use wfw\engine\core\request\IRequestData;
@@ -23,7 +23,7 @@ use wfw\engine\package\general\handlers\action\errors\NotFound;
  * POST. Execute la commande retournée par createCommand()
  */
 abstract class PostDataDefaultActionHandler implements IActionHandler {
-	/** @var ICommandBus $_bus */
+	/** @var IQueryProcessor $_bus */
 	private $_bus;
 	/** @var IRule $_rule */
 	private $_rule;
@@ -36,16 +36,16 @@ abstract class PostDataDefaultActionHandler implements IActionHandler {
 	/**
 	 * PutArticleOnlineHandler constructor.
 	 *
-	 * @param ICommandBus $bus         Bus de commande.
-	 * @param ITranslator $translator
-	 * @param IRule       $rule        Regle de valdiation
-	 * @param bool        $withFiles   Si true, inclue le tableau _FILES dans la liste des résultats
+	 * @param IQueryProcessor $bus         Bus de commande.
+	 * @param ITranslator     $translator
+	 * @param IRule           $rule        Regle de valdiation
+	 * @param bool            $withFiles   Si true, inclue le tableau _FILES dans la liste des résultats
 	 *                                 passé à createCommand
-	 * @param bool        $requireAjax Rejette la requête si elle n'est pas ajax
-	 * @param bool        $withGet
+	 * @param bool            $requireAjax Rejette la requête si elle n'est pas ajax
+	 * @param bool            $withGet
 	 */
 	public function __construct(
-		ICommandBus $bus,
+		IQueryProcessor $bus,
 		ITranslator $translator,
 		IRule $rule,
 		bool $withFiles=false,

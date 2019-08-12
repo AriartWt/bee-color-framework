@@ -3,7 +3,7 @@ namespace wfw\engine\package\users\handlers\action;
 
 use wfw\engine\core\action\IAction;
 use wfw\engine\core\action\IActionHandler;
-use wfw\engine\core\command\ICommandBus;
+use wfw\engine\core\command\IQueryProcessor;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
@@ -30,7 +30,7 @@ use wfw\engine\package\users\security\data\ConfirmRule;
 final class ChangeMailConfirmationHandler implements IActionHandler,IDomainEventListener{
 	/** @var null|UserMailConfirmedEvent $_event */
 	private $_event;
-	/** @var ICommandBus $_bus */
+	/** @var IQueryProcessor $_bus */
 	private $_bus;
 	/** @var ConfirmRule $_rule */
 	private $_rule;
@@ -44,7 +44,7 @@ final class ChangeMailConfirmationHandler implements IActionHandler,IDomainEvent
 	/**
 	 * ChangeMailConfirmationHandler constructor.
 	 *
-	 * @param ICommandBus          $bus
+	 * @param IQueryProcessor      $bus
 	 * @param IDomainEventObserver $observer
 	 * @param INotifier            $notifier
 	 * @param IUserModelAccess     $access
@@ -52,7 +52,7 @@ final class ChangeMailConfirmationHandler implements IActionHandler,IDomainEvent
 	 * @param ConfirmRule          $rule
 	 */
 	public function __construct(
-		ICommandBus $bus,
+		IQueryProcessor $bus,
 		IDomainEventObserver $observer,
 		INotifier $notifier,
 		IUserModelAccess $access,
