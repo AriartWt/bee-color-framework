@@ -539,11 +539,6 @@ try{
 		$backup->set("mysql",$mysqlPath);
 		$backup->set("mysqldump",$wfwConf->getString("mysqldump_path")??"mysqldump");
 		$backup->save();
-		//tester's confs :
-		$tester = new FileBasedConf("$path/cli/tester/config/conf.tests.json");
-		$tester->set("msserver/addr",$msConf->getSocketPath());
-		$tester->save();
-		fwrite(STDOUT,"Project configured.\n");
 
 		//then, set the unix owner for the new project and give-it to the given user (apache,ngnix..)
 		$exec("chmod -R $unixPerm $path");

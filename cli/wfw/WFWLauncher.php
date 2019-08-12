@@ -23,11 +23,6 @@ $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 		'service',
 		"Gestion des services wfw : service -help pour plus d'informations.",
 		null,null,true
-	),
-	new ArgvOpt(
-		'test',
-		"Lancement de tests wfw : test -help pour plus d'informations.",
-		null,null,true
 	)
 ])),$argv);
 
@@ -63,9 +58,6 @@ try{
 			break;
 		case 'service' :
 			$path = dirname(__DIR__,2).'/daemons/sctl/SCTLClientLauncher.php';
-			break;
-		case 'test' :
-			$path = dirname(__DIR__).'/tester/testsLauncher.php';
 			break;
 		default :
 			throw new InvalidArgumentException("Unknown command $argv[1]. --help to display the command list.");

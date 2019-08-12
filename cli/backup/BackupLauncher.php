@@ -1,7 +1,6 @@
 #!/usr/bin/php -q
 <?php
 
-
 use wfw\cli\backup\Backup;
 use wfw\cli\backup\BackupManager;
 use wfw\cli\backup\conf\BackupManagerConf;
