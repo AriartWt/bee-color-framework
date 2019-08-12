@@ -22,20 +22,20 @@ final class QueryDispatcher implements IQueryDispatcher {
 	}
 
 	/**
-	 * @param IQuery $command Commande à dispatcher
+	 * @param IQuery $query Querye à dispatcher
 	 * @throws NoQueryHandlerFound
 	 */
-	public function dispatchCommand(IQuery $command): void {
+	public function dispatchQuery(IQuery $query): void {
 		$success = false;
 		foreach ($this->_dispatchers as $dispatcher){
 			try{
-				$dispatcher->dispatchCommand($command);
+				$dispatcher->dispatchQuery($query);
 				$success = true;
 				break;
 			}catch(NoQueryHandlerFound $e){}
 		}
 		if(!$success){
-			throw new NoQueryHandlerFound("No handler found for command ".get_class($command));
+			throw new NoQueryHandlerFound("No handler found for query ".get_class($query));
 		}
 	}
 }

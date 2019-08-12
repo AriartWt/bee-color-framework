@@ -18,8 +18,10 @@ use wfw\engine\core\command\ICommandInflector;
 use wfw\engine\core\command\inflectors\NamespaceBasedInflector;
 use wfw\engine\core\command\security\CommandAccessRuleFactory;
 use wfw\engine\core\command\security\CommandSecurityCenter;
+use wfw\engine\core\command\security\ICommandAccessRuleFactory;
 use wfw\engine\core\command\security\ICommandSecurityCenter;
 use wfw\engine\core\command\security\rules\CommandAccessRulesCollector;
+use wfw\engine\core\command\security\rules\ICommandAccessRulesCollector;
 use wfw\engine\core\command\SynchroneCommandBus;
 use wfw\engine\core\conf\FileBasedConf;
 use wfw\engine\core\conf\IConf;
@@ -146,9 +148,6 @@ class BaseAppContext implements IAppContext {
 
 		$this->_translator = $translator =  $this->initTranslator($langs,null);
 		$instance = $this;
-		$commandRulesCollector = new CommandAccessRulesCollector(
-			new CommandAccessRuleFactory($genericFactory),$commandRules
-		);
 
 		$this->_dice->addRules([
 			'*' => [
@@ -179,11 +178,17 @@ class BaseAppContext implements IAppContext {
 				'constructParams' => [ $this->getCommandHandlers() ]
 			],
 			ICommandSecurityCenter::class => [
-				'instanceOf' => CommandSecurityCenter::class, 'shared'=>true,
-				'constructParams' => [ $commandRulesCollector->collect() ]
+				'instanceOf' => CommandSecurityCenter::class, 'shared'=>true
 			],
 			ICommandHandlerFactory::class => [
 				'instanceOf' => CommandHandlerFactory::class, 'shared'=>true
+			],
+			ICommandAccessRuleFactory::class => [
+				'instanceOf' => CommandAccessRuleFactory::class, 'shared'=>true
+			],
+			ICommandAccessRulesCollector::class => [
+				'instanceOf' => CommandAccessRulesCollector::class, 'shared'=>true,
+				'constructParams' => [ $commandRules ]
 			],
 			IEventStore::class => [ 'instanceOf' => DBBasedEventStore::class ],
 			IDBAccess::class => [

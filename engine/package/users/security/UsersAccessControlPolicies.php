@@ -47,7 +47,7 @@ class UsersAccessControlPolicies extends SecurityPolicy{
 	 */
 	public static function commandsPolicy(): array {
 		return [
-			UserTypeBasedCommandAccessRule::class => [
+			/*UserTypeBasedCommandAccessRule::class => [
 				UserTypeBasedCommandAccessRule::PUBLIC => [
 					RegisterUser::class,
 					ResetPassword::class,
@@ -59,7 +59,7 @@ class UsersAccessControlPolicies extends SecurityPolicy{
 					ConfirmUserMailChange::class,
 					ChangePassword::class
 				]
-			]
+			]*/
 		];
 	}
 

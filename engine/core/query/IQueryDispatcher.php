@@ -4,12 +4,12 @@ namespace wfw\engine\core\query;
 use wfw\engine\core\query\errors\NoQueryHandlerFound;
 
 /**
- * Dispatcher de commandes
+ * Dispatcher de queryes
  */
 interface IQueryDispatcher {
 	/**
-	 * @param IQuery $command Commande à dispatcher
+	 * @param IQuery $query Querye à dispatcher
 	 * @throws NoQueryHandlerFound
 	 */
-	public function dispatchCommand(IQuery $command):void;
+	public function dispatchQuery(IQuery $query):void;
 }

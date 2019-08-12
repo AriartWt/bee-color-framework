@@ -2,6 +2,6 @@
 namespace wfw\engine\core\query\errors;
 
 /**
- * Une commande a échoué
+ * Une querye a échoué
  */
 class QueryFailure extends \Exception {}

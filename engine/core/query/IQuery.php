@@ -4,7 +4,7 @@ namespace wfw\engine\core\query;
 use wfw\engine\lib\PHP\types\UUID;
 
 /**
- * Command
+ * Query
  */
 interface IQuery {
 	/**

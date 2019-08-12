@@ -5,7 +5,7 @@ namespace wfw\engine\core\query\security\rules;
 use wfw\engine\core\query\security\IQueryAccessRuleFactory;
 
 /**
- * Try to collect all rules that must be applyed to commands. Rules are collected in constructor.
+ * Try to collect all rules that must be applyed to querys. Rules are collected in constructor.
  */
 final class QueryAccessRulesCollector implements IQueryAccessRulesCollector {
 	/** @var OrQueryAccessRule $_rule */

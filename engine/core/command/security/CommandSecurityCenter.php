@@ -4,6 +4,7 @@ namespace wfw\engine\core\command\security;
 
 use wfw\engine\core\command\ICommand;
 use wfw\engine\core\command\security\rules\ICommandAccessRule;
+use wfw\engine\core\command\security\rules\ICommandAccessRulesCollector;
 
 /**
  * Default security center. Will check if a command is allowed checking a CommandAccessRule.
@@ -17,11 +18,11 @@ final class CommandSecurityCenter implements ICommandSecurityCenter {
 	/**
 	 * CommandSecurityCenter constructor.
 	 *
-	 * @param ICommandAccessRule $rule
-	 * @param bool               $ignoredAsTrue
+	 * @param ICommandAccessRulesCollector $collector
+	 * @param bool                         $ignoredAsTrue
 	 */
-	public function __construct(ICommandAccessRule $rule, bool $ignoredAsTrue = false) {
-		$this->_rule = $rule;
+	public function __construct(ICommandAccessRulesCollector $collector, bool $ignoredAsTrue = false) {
+		$this->_rule = $collector->collect();
 		$this->_ignoredAsTrue = $ignoredAsTrue;
 	}
 

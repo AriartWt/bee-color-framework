@@ -220,7 +220,6 @@ try{
 				"mss" => "daemons/modelSupervisor/server/config/conf.json",
 				"sctl" => "daemons/sctl/config/conf.json",
 				"wfw" => "cli/wfw/config/conf.json",
-				"tester" => "cli/tester/config/conf.json",
 				"backup" => "cli/backup/config/conf.json"
 			];
 			//we get all previous confs, and merge it with new confs from the update, to set

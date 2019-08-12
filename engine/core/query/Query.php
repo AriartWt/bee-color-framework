@@ -4,7 +4,7 @@ namespace wfw\engine\core\query;
 use wfw\engine\lib\PHP\types\UUID;
 
 /**
- *  Commande de base
+ *  Querye de base
  */
 abstract class Query implements IQuery {
 	/** @var UUID */
@@ -15,7 +15,7 @@ abstract class Query implements IQuery {
 	private $_generationDate;
 
 	/**
-	 *  Command constructor.
+	 *  Query constructor.
 	 *
 	 * @param null|string $initiatorId
 	 */
@@ -26,14 +26,14 @@ abstract class Query implements IQuery {
 	}
 
 	/**
-	 * @return UUID Command ID
+	 * @return UUID Query ID
 	 */
 	public function getId():UUID{
 		return $this->_uuid;
 	}
 
 	/**
-	 * @return null|string User ID that try to execute the command
+	 * @return null|string User ID that try to execute the query
 	 */
 	public function getInitiatorId(): ?string {
 		return $this->_initiatorId;

@@ -2,30 +2,30 @@
 namespace wfw\engine\core\query;
 
 /**
- * Utilise un inflecteur pour déterminer le command handler à charger, évite les configurations
+ * Utilise un inflecteur pour déterminer le query handler à charger, évite les configurations
  * manuelles.
  */
 final class InflectorBasedQueryDispatcher implements IQueryDispatcher {
-	/** @var ICommandInflector $_inflector */
+	/** @var IQueryInflector $_inflector */
 	private $_inflector;
 
 	/**
-	 * InflectorBasedCommandObserver constructor.
+	 * InflectorBasedQueryObserver constructor.
 	 *
-	 * @param ICommandInflector $inflector Inflecteur
+	 * @param IQueryInflector $inflector Inflecteur
 	 */
-	public function __construct(ICommandInflector $inflector) {
+	public function __construct(IQueryInflector $inflector) {
 		$this->_inflector = $inflector;
 	}
 
 	/**
-	 * @param ICommand $command Commande à dispatcher
+	 * @param IQuery $query Querye à dispatcher
 	 * @throws NoHandlerFound
 	 */
-	public function dispatchCommand(ICommand $command): void {
-		$handlers = $this->_inflector->resolveCommandHandlers($command);
+	public function dispatchQuery(IQuery $query): void {
+		$handlers = $this->_inflector->resolveQueryHandlers($query);
 		foreach($handlers as $handler){
-			$handler->handleCommand($command);
+			$handler->handleQuery($query);
 		}
 	}
 }

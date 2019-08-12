@@ -2,12 +2,12 @@
 namespace wfw\engine\core\query;
 
 /**
- *  Permet de traiter une commande
+ *  Permet de traiter une querye
  */
 interface IQueryHandler {
 	/**
-	 * Traite la commande
-	 * @param IQuery $command Commande à traiter
+	 * handle a query
+	 * @param IQuery $query Querye à traiter
 	 */
-	public function handleCommand(IQuery $command);
+	public function handleQuery(IQuery $query);
 }

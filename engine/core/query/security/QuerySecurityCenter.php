@@ -6,7 +6,7 @@ use wfw\engine\core\query\IQuery;
 use wfw\engine\core\query\security\rules\IQueryAccessRule;
 
 /**
- * Default security center. Will check if a command is allowed checking a CommandAccessRule.
+ * Default security center. Will check if a query is allowed checking a QueryAccessRule.
  */
 final class QuerySecurityCenter implements IQuerySecurityCenter {
 	/** @var IQueryAccessRule $_rule */
@@ -29,7 +29,7 @@ final class QuerySecurityCenter implements IQuerySecurityCenter {
 	 * @param IQuery    $cmd    Query to run.
 	 * @return bool True, the query is allowed for that user. False otherwise.
 	 */
-	public function allowCommand(IQuery $cmd): bool {
-		return $this->_rule->checkCommand($cmd) ?? $this->_ignoredAsTrue;
+	public function allowQuery(IQuery $cmd): bool {
+		return $this->_rule->checkQuery($cmd) ?? $this->_ignoredAsTrue;
 	}
 }

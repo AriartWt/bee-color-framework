@@ -2,15 +2,13 @@
 namespace wfw\engine\core\query;
 
 /**
- *  Reçois les commandes et les redirige vers leur handler
+ *  Recieve request and send them to their handler
  */
 interface IQueryProcessor {
 	/**
-	 *  Redirige la commande vers son handler
+	 *  Redirect the query to its handler
 	 *
-	 * @param ICommand $command Commande à rediriger
-	 *
-	 * @return mixed
+	 * @param IQuery $query query to redirect
 	 */
-	public function executeCommand(ICommand $command):void;
+	public function processQuery(IQuery $query):void;
 }

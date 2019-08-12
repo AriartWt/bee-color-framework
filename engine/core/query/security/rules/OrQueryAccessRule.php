@@ -22,7 +22,7 @@ class OrQueryAccessRule implements IQueryAccessRule{
 
 	/**
 	 * @param IQuery    $cmd
-	 * @return null|bool True if the command can be run, false otherwise.
+	 * @return null|bool True if the query can be run, false otherwise.
 	 */
 	public function checkQuery(IQuery $cmd): ?bool {
 		if(count($this->_rules) === 0) return null;

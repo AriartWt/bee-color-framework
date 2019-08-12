@@ -3,7 +3,7 @@
 namespace wfw\engine\core\query\security\rules;
 
 /**
- * Check for rules to apply to commands
+ * Check for rules to apply to querys
  */
 interface IQueryAccessRulesCollector {
 	/**
