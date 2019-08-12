@@ -2,7 +2,7 @@
 namespace wfw\engine\package\users\handlers\action\admin;
 
 use wfw\engine\core\command\ICommand;
-use wfw\engine\core\command\IQueryProcessor;
+use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
@@ -27,14 +27,14 @@ final class ChangeTypeHandler extends DefaultUserActionHandler implements IDomai
 	/**
 	 * ChangeTypeHandler constructor.
 	 *
-	 * @param IQueryProcessor      $bus
+	 * @param ICommandBus          $bus
 	 * @param ChangeUserTypeRule   $rule
 	 * @param ISession             $session
 	 * @param IDomainEventObserver $observer
 	 * @param ITranslator          $translator
 	 */
 	public function __construct(
-		IQueryProcessor $bus,
+		ICommandBus $bus,
 		ChangeUserTypeRule $rule,
 		ISession $session,
 		IDomainEventObserver $observer,

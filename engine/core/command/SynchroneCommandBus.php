@@ -7,7 +7,7 @@ use wfw\engine\core\command\security\ICommandSecurityCenter;
 /**
  *  Traite les commandes de manières synchrone
  */
-final class SynchroneCommandBus implements IQueryProcessor {
+final class SynchroneCommandBus implements ICommandBus {
 	/** @var ICommandInflector $_inflector */
 	private $_inflector;
 	/** @var ICommandSecurityCenter $_security */

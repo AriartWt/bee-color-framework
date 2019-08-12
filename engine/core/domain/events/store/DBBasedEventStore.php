@@ -263,7 +263,6 @@ final class DBBasedEventStore implements IEventStore {
 	
 	/**
 	 * Enregistre les séquences d'événements de tous les AggregateRoot
-	 * TODO : OPTIMISATION : une seule requete pour toutes les sauvegardes
 	 * @param null|ICommand  $command       Commande à l'origine de la mise à jour des aggrégats
 	 * @param IAggregateRoot ...$aggregates Liste des aggrégats
 	 */

@@ -2,7 +2,7 @@
 namespace wfw\engine\package\users\handlers\action\admin;
 
 use wfw\engine\core\command\ICommand;
-use wfw\engine\core\command\IQueryProcessor;
+use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
@@ -29,7 +29,7 @@ final class DisableHandler extends DefaultUserActionHandler implements IDomainEv
 	/**
 	 * DisableUsers constructor.
 	 *
-	 * @param IQueryProcessor      $bus
+	 * @param ICommandBus          $bus
 	 * @param UserIdList           $rule
 	 * @param ISession             $session
 	 * @param IJSONEncoder         $encoder
@@ -37,7 +37,7 @@ final class DisableHandler extends DefaultUserActionHandler implements IDomainEv
 	 * @param ITranslator          $translator
 	 */
 	public function __construct(
-		IQueryProcessor $bus,
+		ICommandBus $bus,
 		UserIdList $rule,
 		ISession $session,
 		IJSONEncoder $encoder,

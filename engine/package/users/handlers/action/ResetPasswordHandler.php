@@ -3,7 +3,7 @@ namespace wfw\engine\package\users\handlers\action;
 
 use wfw\engine\core\action\IAction;
 use wfw\engine\core\action\IActionHandler;
-use wfw\engine\core\command\IQueryProcessor;
+use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
@@ -47,7 +47,7 @@ final class ResetPasswordHandler implements IActionHandler,IDomainEventListener{
 	private $_resetPasswordRule;
 	/** @var IRouter $_router */
 	private $_router;
-	/** @var IQueryProcessor $_bus */
+	/** @var ICommandBus $_bus */
 	private $_bus;
 	/** @var ITranslator $_translator */
 	private $_translator;
@@ -60,7 +60,7 @@ final class ResetPasswordHandler implements IActionHandler,IDomainEventListener{
 	 * @param IDomainEventObserver $observer
 	 * @param IUserModelAccess     $access
 	 * @param INotifier            $notifier
-	 * @param IQueryProcessor      $bus
+	 * @param ICommandBus          $bus
 	 * @param ITranslator          $translator
 	 * @param ResetPasswordRule    $rule
 	 */
@@ -70,7 +70,7 @@ final class ResetPasswordHandler implements IActionHandler,IDomainEventListener{
 		IDomainEventObserver $observer,
 		IUserModelAccess $access,
 		INotifier $notifier,
-		IQueryProcessor $bus,
+		ICommandBus $bus,
 		ITranslator $translator,
 		ResetPasswordRule $rule
 	){

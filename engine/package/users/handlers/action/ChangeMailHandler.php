@@ -2,7 +2,7 @@
 namespace wfw\engine\package\users\handlers\action;
 
 use wfw\engine\core\command\ICommand;
-use wfw\engine\core\command\IQueryProcessor;
+use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
@@ -26,14 +26,14 @@ final class ChangeMailHandler extends DefaultUserActionHandler implements IDomai
 	/**
 	 * ChangeMailHandler constructor.
 	 *
-	 * @param IQueryProcessor      $bus
+	 * @param ICommandBus          $bus
 	 * @param ChangeMailRule       $rule
 	 * @param ISession             $session
 	 * @param IDomainEventObserver $observer
 	 * @param ITranslator          $translator
 	 */
 	public function __construct(
-		IQueryProcessor $bus,
+		ICommandBus $bus,
 		ChangeMailRule $rule,
 		ISession $session,
 		IDomainEventObserver $observer,

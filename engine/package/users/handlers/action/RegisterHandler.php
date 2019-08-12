@@ -3,7 +3,7 @@ namespace wfw\engine\package\users\handlers\action;
 
 use wfw\engine\core\action\IAction;
 use wfw\engine\core\action\IActionHandler;
-use wfw\engine\core\command\IQueryProcessor;
+use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\conf\IConf;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
@@ -36,7 +36,7 @@ use wfw\engine\package\users\security\data\SelfRegisterRule;
  * Permet à un utilisateur de créer un compte
  */
 final class RegisterHandler implements IActionHandler, IDomainEventListener{
-	/** @var IQueryProcessor $_bus */
+	/** @var ICommandBus $_bus */
 	private $_bus;
 	/** @var IConf $_conf */
 	private $_conf;
@@ -61,7 +61,7 @@ final class RegisterHandler implements IActionHandler, IDomainEventListener{
 	 * RegisterHandler constructor.
 	 *
 	 * @param IConf                          $conf
-	 * @param IQueryProcessor                $bus
+	 * @param ICommandBus                    $bus
 	 * @param ISession                       $session
 	 * @param IRouter                        $router
 	 * @param INotifier                      $notifier
@@ -72,7 +72,7 @@ final class RegisterHandler implements IActionHandler, IDomainEventListener{
 	 */
 	public function __construct(
 		IConf $conf,
-		IQueryProcessor $bus,
+		ICommandBus $bus,
 		ISession $session,
 		IRouter $router,
 		INotifier $notifier,

@@ -3,7 +3,7 @@ namespace wfw\engine\package\users\handlers\action;
 
 use wfw\engine\core\action\IAction;
 use wfw\engine\core\action\IActionHandler;
-use wfw\engine\core\command\IQueryProcessor;
+use wfw\engine\core\command\ICommandBus;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
@@ -29,7 +29,7 @@ use wfw\engine\package\users\security\data\ConfirmRule;
 final class ConfirmUserRegistrationHandler implements IActionHandler,IDomainEventListener{
 	/** @var null|UserConfirmedEvent $_event */
 	private $_event;
-	/** @var IQueryProcessor $_bus */
+	/** @var ICommandBus $_bus */
 	private $_bus;
 	/** @var INotifier $_notifier */
 	private $_notifier;
@@ -45,7 +45,7 @@ final class ConfirmUserRegistrationHandler implements IActionHandler,IDomainEven
 	/**
 	 * ConfirmUserRegistrationHandler constructor.
 	 *
-	 * @param IQueryProcessor      $bus
+	 * @param ICommandBus          $bus
 	 * @param INotifier            $notifier
 	 * @param IUserModelAccess     $access
 	 * @param IDomainEventObserver $observer
@@ -54,7 +54,7 @@ final class ConfirmUserRegistrationHandler implements IActionHandler,IDomainEven
 	 * @param ConfirmRule          $rule
 	 */
 	public function __construct(
-		IQueryProcessor $bus,
+		ICommandBus $bus,
 		INotifier $notifier,
 		IUserModelAccess $access,
 		IDomainEventObserver $observer,
