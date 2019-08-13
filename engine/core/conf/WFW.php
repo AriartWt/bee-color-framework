@@ -159,18 +159,16 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 		$engine = [];
 		if(file_exists($siteFile)) $site = require $siteFile;
 		if(file_exists($engineFile)) $engine = require $engineFile;
-		return self::mergeConstructors(...array_merge(
-			array_merge(
-				[$engine],
-				array_map(function($module){
-					/** @var IModuleDescriptor $module */
-					return $module::models();
-				},
-					self::$_modules
-				)
+		return self::mergeConstructors(
+			[$engine],
+			array_map(function($module){
+				/** @var IModuleDescriptor $module */
+				return $module::models();
+			},
+				self::$_modules
 			),
 			[$site]
-		));
+		);
 	}
 
 	/**
@@ -230,16 +228,18 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 	private static function mergeConstructors(array ...$init):array{
 		$res = [];
 		foreach($init as $initArray){
-			foreach($initArray as $key => $constructor){
-				if(!isset($res[$key])) $res[$key] = $constructor;
-				else{
-					if(is_array($constructor)) foreach($constructor as $index => $param){
-						if(isset($res[$key][$index]) && is_array($res[$key][$index]) && is_array($param)){
-							$res[$key][$index] = array_merge_recursive(
-								$res[$key][$index],
-								$param
-							);
-						}else $res[$key][$index] = $param;
+			foreach($initArray as $constructors){
+				foreach($constructors as $key => $constructor){
+					if(!isset($res[$key])) $res[$key] = $constructor;
+					else{
+						if(is_array($constructor)) foreach($constructor as $index => $param){
+							if(isset($res[$key][$index]) && is_array($res[$key][$index]) && is_array($param)){
+								$res[$key][$index] = array_merge_recursive(
+									$res[$key][$index],
+									$param
+								);
+							}else $res[$key][$index] = $param;
+						}
 					}
 				}
 			}
@@ -252,14 +252,15 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 	 * @return array [AccessRuleClass => params]
 	 */
 	public static function accessPolicy(?array $accessRules=null): array {
-		return self::mergeConstructors(
+		$res = self::mergeConstructors(
 			$accessRules ?? WFWDefaultSecurityPolicy::accessPolicy(),
-			...array_map(
+			array_map(
 				function($securityPolicy){
 					/** @var ISecurityPolicy $securityPolicy */
 					return $securityPolicy::accessPolicy();
 				}, self::getSecurityPolicies())
 		);
+		return $res;
 	}
 
 	/**
@@ -281,7 +282,7 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 	public static function commandsPolicy(?array $commands = null): array {
 		return self::mergeConstructors(
 			$commands ?? WFWDefaultSecurityPolicy::commandsPolicy(),
-			 ...array_map(
+			array_map(
 				function($securityPolicy){
 					/** @var ISecurityPolicy $securityPolicy */
 					return $securityPolicy::commandsPolicy();
@@ -298,7 +299,7 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 	public static function queriesPolicy(?array $queries = null): array {
 		return self::mergeConstructors(
 			$queries ?? WFWDefaultSecurityPolicy::queriesPolicy(),
-			...array_map(
+			array_map(
 				function($securityPolicy){
 					/** @var ISecurityPolicy $securityPolicy */
 					return $securityPolicy::queriesPolicy();
@@ -315,7 +316,7 @@ final class WFW extends ModuleDescriptor implements IAppModulesCollector, ISecur
 	public static function hooksPolicy(?array $hooks = null): array {
 		return self::mergeConstructors(
 			$hooks ?? WFWDefaultSecurityPolicy::hooksPolicy(),
-			...array_map(
+			array_map(
 				function($securityPolicy){
 					/** @var ISecurityPolicy $securityPolicy */
 					return $securityPolicy::hooksPolicy();

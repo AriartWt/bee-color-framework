@@ -110,7 +110,8 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 				$custom_conf = $tmpConf->getObject("server/daemons/custom_config/msserver");
 				if(!is_null($custom_conf)) $tmp->mergeStdClass($custom_conf);
 			}catch(\Error | \Exception $e){
-				$this->_logger->log("Unable to read $instanceName configurations : $e",ILogger::ERR);
+				if($this->_logger)
+					$this->_logger->log("Unable to read $instanceName configurations : $e",ILogger::ERR);
 			}
 			$this->_instancesConfs[$instanceName] = $tmp;
 			$this->_conf->set("instances/$instanceName",$tmp->getStdClass());

@@ -94,7 +94,7 @@ final class RequireAuthentification implements IAccessRule {
 		foreach($internalPath as $pathPart){
 			$continue = false;
 			foreach($array as $k=>$path){
-				if($k === lcfirst($pathPart)){
+				if(lcfirst($k) === lcfirst($pathPart)){
 					if(is_array($path)){
 						$array = $array[$k];
 						$continue = true;

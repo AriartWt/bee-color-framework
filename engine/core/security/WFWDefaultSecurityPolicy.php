@@ -3,6 +3,8 @@
 namespace wfw\engine\core\security;
 
 use wfw\engine\core\action\NotFoundHook;
+use wfw\engine\core\command\ICommand;
+use wfw\engine\core\command\security\rules\AllCommandsAllowed;
 use wfw\engine\core\command\security\rules\UserTypeBasedCommandAccessRule;
 use wfw\engine\core\security\rules\RequireAuthentification;
 use wfw\engine\core\security\rules\ValidToken;
@@ -30,12 +32,12 @@ final class WFWDefaultSecurityPolicy extends SecurityPolicy {
 		]
 	): array {
 		$base = [];
-		if($includeBase) $base = array_merge(
+		if($includeBase) $base = [
 			UploaderAccessControlPolicies::queriesPolicy(),
 			UsersAccessControlPolicies::queriesPolicy(),
 			GeneralAccessControlPolicies::queriesPolicy(),
 			LangAccessControlPolicies::queriesPolicy()
-		);
+		];
 		return array_merge($templateArray,$base,$policies);
 	}
 
@@ -53,12 +55,20 @@ final class WFWDefaultSecurityPolicy extends SecurityPolicy {
 		]
 	): array {
 		$base = [];
-		if($includeBase) $base = array_merge(
+		if($includeBase) $base = [
 			UploaderAccessControlPolicies::commandsPolicy(),
 			UsersAccessControlPolicies::commandsPolicy(),
 			GeneralAccessControlPolicies::commandsPolicy(),
-			LangAccessControlPolicies::commandsPolicy()
-		);
+			LangAccessControlPolicies::commandsPolicy(),
+			[UserTypeBasedCommandAccessRule::class => [[
+				UserTypeBasedCommandAccessRule::ANY => [
+					ICommand::class => true
+				],
+				UserTypeBasedCommandAccessRule::PUBLIC => [
+					ICommand::class => true
+				]
+			]]]
+		];
 		return array_merge($templateArray,$base,$policies);
 	}
 
@@ -78,13 +88,14 @@ final class WFWDefaultSecurityPolicy extends SecurityPolicy {
 		]
 	): array {
 		$base = [];
-		if($includeBase) $base = array_merge(
+		if($includeBase) $base = [
 			UploaderAccessControlPolicies::accessPolicy(),
 			UsersAccessControlPolicies::accessPolicy(),
 			GeneralAccessControlPolicies::accessPolicy(),
 			LangAccessControlPolicies::accessPolicy(),
 			[ ValidToken::class => [] ]
-		);
+		];
+		/*var_dump(array_merge($templateArray,$base,$policies));*/
 		return array_merge($templateArray,$base,$policies);
 	}
 
@@ -102,12 +113,12 @@ final class WFWDefaultSecurityPolicy extends SecurityPolicy {
 		]
 	): array {
 		$base = [];
-		if($includeBase) $base = array_merge(
+		if($includeBase) $base = [
 			UploaderAccessControlPolicies::hooksPolicy(),
 			UsersAccessControlPolicies::hooksPolicy(),
 			GeneralAccessControlPolicies::hooksPolicy(),
 			LangAccessControlPolicies::hooksPolicy()
-		);
+		];
 		return array_merge($template,$base,$policies);
 	}
 }

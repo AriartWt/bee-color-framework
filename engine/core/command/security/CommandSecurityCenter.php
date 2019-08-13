@@ -3,6 +3,7 @@
 namespace wfw\engine\core\command\security;
 
 use wfw\engine\core\command\ICommand;
+use wfw\engine\core\command\security\rules\AllCommandsDenied;
 use wfw\engine\core\command\security\rules\ICommandAccessRule;
 use wfw\engine\core\command\security\rules\ICommandAccessRulesCollector;
 
@@ -22,8 +23,8 @@ final class CommandSecurityCenter implements ICommandSecurityCenter {
 	 * @param bool                         $ignoredAsTrue
 	 */
 	public function __construct(ICommandAccessRulesCollector $collector, bool $ignoredAsTrue = false) {
-		$this->_rule = $collector->collect();
-		$this->_ignoredAsTrue = $ignoredAsTrue;
+		$this->_rule = ($collector) ? $collector->collect() : new AllCommandsDenied();
+		$this->_ignoredAsTrue = $ignoredAsTrue ?? true;
 	}
 
 	/**

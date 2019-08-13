@@ -124,7 +124,7 @@ class BaseAppContext implements IAppContext {
 
 		$this->loadModules();
 		$commandRules = $this->getCommandRules($commandRules);
-		$queryRules = $this->getQueryRules($queryRules);
+		//$queryRules = $this->getQueryRules($queryRules);
 		$langs = $this->getLangs($langs);
 
 		$this->_conf = $conf = $this->initConfs($this->getConfs());
@@ -172,23 +172,24 @@ class BaseAppContext implements IAppContext {
 				'instanceOf' => MailFactory::class,
 				'shared' => true
 			],
-			ICommandBus::class => [ 'instanceOf' => SynchroneCommandBus::class, 'shared' => true ],
-			ICommandInflector::class => [
-				'instanceOf' => NamespaceBasedInflector::class, 'shared' => true,
-				'constructParams' => [ $this->getCommandHandlers() ]
-			],
-			ICommandSecurityCenter::class => [
-				'instanceOf' => CommandSecurityCenter::class, 'shared'=>true
-			],
-			ICommandHandlerFactory::class => [
-				'instanceOf' => CommandHandlerFactory::class, 'shared'=>true
-			],
 			ICommandAccessRuleFactory::class => [
 				'instanceOf' => CommandAccessRuleFactory::class, 'shared'=>true
 			],
 			ICommandAccessRulesCollector::class => [
 				'instanceOf' => CommandAccessRulesCollector::class, 'shared'=>true,
 				'constructParams' => [ $commandRules ]
+			],
+			ICommandBus::class => [ 'instanceOf' => SynchroneCommandBus::class, 'shared' => true ],
+			ICommandInflector::class => [
+				   'instanceOf' => NamespaceBasedInflector::class, 'shared' => true,
+				   'constructParams' => [ $this->getCommandHandlers() ]
+			],
+			ICommandSecurityCenter::class => [
+				'instanceOf' => CommandSecurityCenter::class, 'shared'=>true,
+				'constructParams' => [ true ]
+			],
+			ICommandHandlerFactory::class => [
+				'instanceOf' => CommandHandlerFactory::class, 'shared'=>true
 			],
 			IEventStore::class => [ 'instanceOf' => DBBasedEventStore::class ],
 			IDBAccess::class => [

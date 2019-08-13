@@ -152,6 +152,10 @@ try{
 		$args = $argvReader->get('update');
 		$projects = $args[0];
 		$path = $args[1];
+		if(!file_exists("$path/wfw.folder")){
+			fwrite(STDOUT,"\e[31mYou attempted to use update command with a folder that do not contain wfw.folder file !\nIf your intent was to import your project, please use the wfw import command.\e[0m\n");
+			exit(1);
+		}
 		$args = array_flip(array_slice($args,2));
 		$prompt = !isset($args["-no-prompt"]);
 		$projects = strpos($projects,"-") === 0 ? substr($projects,1):$projects;
@@ -343,8 +347,7 @@ try{
 		$path = "$path/$pName";
 		if(!file_exists($path)) mkdir($path);
 
-		fwrite(STDOUT,"Generating project's template tree from ".dirname(__DIR__,2)."/cli/wfw/templates/site...\n");
-		$exec("cp -Rp ".dirname(__DIR__,2)."/cli/wfw/templates/site $path");
+		if(!is_dir("$path/site")) mkdir("$path/site");
 		if(!is_dir("$path/site/package")) mkdir("$path/site/package");
 		if(!is_dir("$path/site/webroot")) mkdir("$path/site/webroot");
 		foreach(["Audio","Css","Image","JavaScript","Video","uploads"] as $v){
@@ -484,6 +487,9 @@ try{
 				"permissions" => [ "users" => [ $mssUser => [ "write"=>true,"read"=>true,"admin"=>true ] ] ]
 			] ]
 		]);
+		if(!$mss->existsKey("instances/$pName")) throw new Exception(
+				"Unable to set instances/$pName"
+		);
 		$mss->save();
 		fwrite(STDOUT,"MSServer instance ready.\n");
 
@@ -524,6 +530,7 @@ try{
 		$sctlConf->set("auth.pwd_owner",$wfwConf->getString("unix_user"));
 		$sctlConf->save();
 
+		if(!is_dir("$path/site/config")) mkdir("$path/site/config",700,true);
 		//website's confs :
 		file_put_contents("$path/site/config/conf.json",new SiteConfTemplate(
 			"localhost",$dbName,$pName,$dbPwd,
@@ -632,12 +639,14 @@ try{
 		if(!is_null($kvs->get("users/$kvsUser"))){
 			$users = $kvs->getArray("users");
 			unset($users[$kvsUser]);
+			if(empty($instances)) $users = new stdClass();
 			$kvs->set("users",$users);
 			$toSave = true;
 		}
 		if(!is_null($kvs->getArray("containers/$kvsContainer"))){
 			$containers = $kvs->getArray("containers");
 			unset($containers[$kvsContainer]);
+			if(empty($containers)) $containers = new stdClass();
 			$kvs->set("containers",$containers);
 			$toSave=true;
 		}
@@ -655,6 +664,7 @@ try{
 		if(!is_null($mss->getArray("instances/$project"))){
 			$instances = $mss->getArray("instances");
 			unset($instances[$project]);
+			if(empty($instances)) $instances = new stdClass();
 			$mss->set("instances",$instances);
 			$mss->save();
 		}
@@ -732,6 +742,10 @@ try{
 			throw new InvalidArgumentException("Unknown project $pName");
 
 		$pPath = dirname($data[$pName]);
+		if(file_exists("$path/wfw.folder")){
+			fwrite(STDOUT,"\e[31mYou attempted to use import with a wfw source folder !\nIf your intent was to update your project, please use the wfw update command.\e[0m\n");
+			exit(1);
+		}
 		if($prompt){
 			fwrite(STDOUT,"Do you really want to import $path into $pName project's path $pPath ? (y/n) : ");
 			if(!filter_var(preg_replace(["/^y$/","/^n$/"],["yes","no"],fgets(STDIN)), FILTER_VALIDATE_BOOLEAN)){

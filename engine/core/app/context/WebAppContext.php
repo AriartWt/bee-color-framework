@@ -222,7 +222,7 @@ class WebAppContext extends BaseAppContext implements IWebAppContext {
 	protected function getAccessRules(?array $access=null):array{
 		$rules = $this->getCacheSystem()->get(self::ACCESS_RULES);
 		if(is_null($rules)){
-			$rules = WFW::accessPolicy(!empty($access) ? $access : null);
+			$rules = WFW::accessPolicy((is_array($access) && !empty($access)) ? $access : null);
 			$this->getCacheSystem()->set(self::ACCESS_RULES,$rules);
 		}
 		return $rules;

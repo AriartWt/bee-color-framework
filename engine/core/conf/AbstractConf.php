@@ -171,15 +171,13 @@ abstract class AbstractConf implements IConf {
 			if(isset($current->$v)){
 				$current=$current->$v;
 			}else{
-				//if(!($current instanceof stdClass)) $current=new stdClass();
+				if(is_array($current)) $current = (object) $current;
 				$current->$v=new stdClass();
 				$current=$current->$v;
 			}
 		}
 		if($path[count($path)-1]==$parent->key){
-			if(!$parent->obj){
-				$parent->obj=new stdClass();
-			}
+			if(!$parent->obj) $parent->obj=new stdClass();
 			$parent->obj->{$parent->key}=$value;
 		}
 

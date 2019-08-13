@@ -76,10 +76,10 @@ final class NamespaceBasedInflector implements ICommandInflector {
 			$res[] = $this->_handlers[$command];
 		}else{
 			$r = [];
-			if ($pos = strrpos($command, $search = "\\commands\\") !== false) {
+			if (($pos = strrpos($command, $search = "\\command\\")) !== false) {
 				$handlerClass = substr_replace(
 					$command,
-					"\\commands\\handlers\\",
+					"\\command\\handlers\\",
 					$pos,
 					strlen($search)
 				);

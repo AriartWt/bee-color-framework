@@ -27,6 +27,7 @@ final class UserTypeBasedCommandAccessRule implements ICommandAccessRule {
 	public const CACHE_KEY = self::class."/results";
 
 	public const ANY = "any user";
+	public const NO_ID = " @noid@ ";
 	public const PUBLIC = "public command";
 
 	/** @var IUserModelAccess $_model */
@@ -57,7 +58,9 @@ final class UserTypeBasedCommandAccessRule implements ICommandAccessRule {
 	){
 		$this->_model = $model;
 		$this->_factory = $factory;
-		$this->_permissions = $this->checkPermissionsFormat($permissions);
+		try{
+			$this->_permissions = $this->checkPermissionsFormat($permissions);
+		}catch(\Error | \Exception $e){var_dump((string)$e); }
 		$this->_cache = $cache->get(self::CACHE_KEY) ?? [];
 		$this->_cacheSystem = $cache;
 	}
@@ -102,9 +105,6 @@ final class UserTypeBasedCommandAccessRule implements ICommandAccessRule {
 					? new AllCommandsAllowed()
 					: new AllCommandsDenied();
 				else $res[$type][$cmd] = new AllCommandsAllowed();
-				if(!is_array($rules)) throw new \InvalidArgumentException(
-					"$cmd rules must be an array"
-				);
 			}
 		}
 		return $res;
@@ -125,12 +125,17 @@ final class UserTypeBasedCommandAccessRule implements ICommandAccessRule {
 	 */
 	private function checkCommandFrom(ICommand $cmd,array $permissions): ?bool{
 		$cmdClass = get_class($cmd);
+		/** @var ICommandAccessRule $cached */
+		$cached = $this->_cache[$cmd->getInitiatorId() ?? self::NO_ID][$cmdClass] ?? null;
+		if(!is_null($cached)) return $cached->checkCommand($cmd);
 		if(isset($permissions[self::PUBLIC][$cmdClass]))
 			return $permissions[self::PUBLIC][$cmdClass]->checkCommand($cmd);
-		/** @var ICommandAccessRule $cached */
-		$cached = $this->_cache[$cmd->getInitiatorId()][$cmdClass] ?? null;
-		if(!is_null($cached)) return $cached->checkCommand($cmd);
-
+		else foreach($permissions[self::PUBLIC] as $class=>$value){
+			if(is_a($cmdClass,$class,true)) return $this->setCache(
+				$cmd->getInitiatorId(),$cmdClass,new AllCommandsAllowed()
+			)->checkCommand($cmd);
+		}
+		if(is_null($cmd->getInitiatorId())) return false;
 		$user = $this->_model->getById($cmd->getInitiatorId());
 		if(!$user) return false;
 		if($user->getType() instanceof Admin) return $this->setCache(
@@ -175,7 +180,8 @@ final class UserTypeBasedCommandAccessRule implements ICommandAccessRule {
 	 * @param ICommandAccessRule $res      Rule to cache
 	 * @return ICommandAccessRule $res
 	 */
-	private function setCache(string $userId,string $cmdClass, ICommandAccessRule $res):ICommandAccessRule{
+	private function setCache(?string $userId=null,string $cmdClass, ICommandAccessRule $res):ICommandAccessRule{
+		$userId = $userId ?? self::NO_ID;
 		if(!isset($this->_cache[$userId])) $this->_cache[$userId] = [$cmdClass=>$res];
 		else $this->_cache[$userId][$cmdClass]=$res;
 		$this->_cacheSystem->set(self::CACHE_KEY,$this->_cache);
