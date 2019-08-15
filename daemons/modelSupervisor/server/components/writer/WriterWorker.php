@@ -528,9 +528,9 @@ final class WriterWorker extends Worker {
 							...$toRebuild
 						);
 						$this->_environment->getLogger()->log(
-							"[WRITER] [WORKER] Following models have been rebuilt beacause of inconsistent state : "
+							"[WRITER] [WORKER] Following models have been rebuilt because of inconsistent state : "
 							.implode(", ",$toRebuild),
-							ILogger::ERR
+							ILogger::WARN
 						);
 					}
 				}
