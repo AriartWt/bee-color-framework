@@ -1,6 +1,7 @@
 <?php
 namespace wfw\engine\core\data\model;
 
+use wfw\engine\core\data\model\errors\InconsistentModel;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\data\model\DTO\IDTO;
 use wfw\engine\core\data\specification\ISpecification;
@@ -19,6 +20,8 @@ abstract class InMemoryEventBasedModel implements IEventListenerModel {
 	private $_searcher;
 	/** @var int $_length */
 	private $_length;
+	/** @var IDomainEvent[][] $eventHistory */
+	private $_eventHistory = [];
 
 	/**
 	 * Repository constructor.
@@ -186,6 +189,21 @@ abstract class InMemoryEventBasedModel implements IEventListenerModel {
 	 */
 	public final function recieveDomainEvent(IDomainEvent $e): void {
 		$report = $this->recieve($e);
+		if($report->modelChanged()){
+			$id = (string) $e->getAggregateId();
+			if(!isset($this->_eventHistory[$id])) $this->_eventHistory[$id] = [];
+			$eventClass = get_class($e);
+			if(!isset($this->_eventHistory[$id][$eventClass])) $this->_eventHistory[$id][$eventClass] = $e;
+			$lastEvent = $this->_eventHistory[$id][$eventClass];
+			if($lastEvent !== $e && $e->getGenerationDate() < $lastEvent->getGenerationDate()){
+				throw new InconsistentModel(
+					static::class." gone in inconsistent state due to a non chronological event applyance order. This"
+					." may happen because of a race condition.\nAggregate : ".$e->getAggregateId()."\nEvent $eventClass (id "
+					.$e->getUUID().")\nLastEvent date : ".$lastEvent->getGenerationDate()
+					." (id : ".$lastEvent->getUUID().")"
+				);
+			}
+		}
 		foreach ($report->getCreated() as $obj){
 			$this->add($obj);
 		}

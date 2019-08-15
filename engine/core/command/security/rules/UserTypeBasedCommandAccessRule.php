@@ -48,7 +48,6 @@ final class UserTypeBasedCommandAccessRule implements ICommandAccessRule {
 	 * @param ICommandAccessRuleFactory $factory
 	 * @param ICacheSystem              $cache
 	 * @param array                     $permissions
-	 * @throws \InvalidArgumentException
 	 */
 	public function __construct(
 		IUserModelAccess $model,

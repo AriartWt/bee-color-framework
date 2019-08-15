@@ -44,4 +44,13 @@ class EventReceptionReport {
 	public function getRemoved():array{
 		return $this->_removed;
 	}
+
+	/**
+	 * @return bool
+	 */
+	public function modelChanged():bool{
+		return count($this->_modified) > 0
+			|| count($this->_removed) > 0
+			|| count($this->_created) > 0;
+	}
 }

@@ -112,7 +112,7 @@ final class DBBasedEventStore implements IEventStore {
 					." Please import the needed class or fixe this event.\n"
 					." Event data : ".json_encode($event)
 				);
-				$res->apply($this->_serializer->unserialize($event["data"]));
+				$res->apply($event);
 			}
 			return $res;
 		}else{

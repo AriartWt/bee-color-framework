@@ -5,6 +5,8 @@ use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\EventList;
 use wfw\engine\core\domain\events\IDomainEventListener;
 use wfw\engine\core\domain\events\IDomainEventObserver;
+use wfw\engine\core\domain\events\observers\errors\DomainEventListenerErrorReport;
+use wfw\engine\core\domain\events\observers\errors\ListenersFailedToRecieveEvent;
 
 /**
  *  Gestionnaire d'événements métier
@@ -26,14 +28,22 @@ class DomainEventObserver implements IDomainEventObserver {
 	 * @param IDomainEvent $e Evenement à dispatcher
 	 */
 	public function dispatchDomainEvent(IDomainEvent $e): void {
+		$errors = [];
 		foreach($this->_listeners as $listenedEvent=>$listeners){
 			if($e instanceof $listenedEvent){
 				foreach($listeners as $listener){
-					/** @var IDomainEventListener $listener */
-					$listener->recieveDomainEvent($e);
+					try{
+						/** @var IDomainEventListener $listener */
+						$listener->recieveDomainEvent($e);
+					}catch(\Error | \Exception $e){
+						$errors[] = new DomainEventListenerErrorReport($listener,$e);
+					}
 				}
 			}
 		}
+		if(($nb = count($errors)) > 0) throw new ListenersFailedToRecieveEvent(
+			"$nb listeners thrown error while recieving their events.",...$errors
+		);
 	}
 
 	/**

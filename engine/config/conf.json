@@ -2,7 +2,7 @@
 	"server": {
 		"framework": {
 			"name": "wfw",
-			"version": "STABLE-1.3"
+			"version": "2.0"
 		},
 		"daemons": {
 			"kvs": "kvstore\/server\/config\/conf.json",
@@ -15,9 +15,9 @@
 			"updator": "updator\/config\/conf.json"
 		},
 		"language": {
-			"default": "fr",
+			"default": "fr_FR",
 			"availables": [
-				"fr"
+				"fr_FR"
 			]
 		},
 		"router": {

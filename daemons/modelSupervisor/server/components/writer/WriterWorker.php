@@ -33,6 +33,8 @@ use wfw\daemons\modelSupervisor\server\responses\RequestError;
 use wfw\daemons\modelSupervisor\socket\data\MSServerDataParserResult;
 use wfw\daemons\modelSupervisor\socket\protocol\MSServerSocketProtocol;
 use wfw\daemons\multiProcWorker\Worker;
+use wfw\engine\core\data\model\errors\InconsistentModel;
+use wfw\engine\core\domain\events\observers\errors\ListenersFailedToRecieveEvent;
 use wfw\engine\lib\cli\signalHandler\PCNTLSignalsHelper;
 use wfw\engine\lib\data\string\serializer\ISerializer;
 use wfw\engine\lib\logger\ILogger;
@@ -510,7 +512,28 @@ final class WriterWorker extends Worker {
 			if($clientRequest instanceof ApplyEvents){
 				/** @var \wfw\engine\core\domain\events\EventList $events */
 				$events = $this->_serializer->unserialize($request->getData());
-				$this->_workerParams->getModelManager()->dispatch($events);
+				try{
+					$this->_workerParams->getModelManager()->dispatch($events);
+				}catch(ListenersFailedToRecieveEvent $e){
+					$toRebuild = [];
+					foreach($e->getReports() as $report){
+						if($report->getError() instanceof InconsistentModel)
+							$toRebuild[] = get_class($report->getListener());
+						else $this->_environment->getLogger()->log(
+							"[WRITER] [WORKER] $e",ILogger::ERR
+						);
+					}
+					if(count($toRebuild) > 0){
+						$this->_workerParams->getModelSynchronizer()->synchronize(
+							...$toRebuild
+						);
+						$this->_environment->getLogger()->log(
+							"[WRITER] [WORKER] Following models have been rebuilt beacause of inconsistent state : "
+							.implode(", ",$toRebuild),
+							ILogger::ERR
+						);
+					}
+				}
 				$this->sendResponse(new WriterResponse(
 					$request->getQueryId(),
 					new DoneResponse()

@@ -2,6 +2,7 @@
 
 namespace wfw\engine\core;
 
+use wfw\engine\core\app\context\WebAppContext;
 use wfw\engine\core\app\WebApp;
 
 /**
@@ -15,6 +16,7 @@ class Main {
 	 */
 	public function __construct(array $args=[]){
 		$contextInfos = (require dirname(__DIR__,2)."/site/config/site.context.php")($args);
-		new WebApp(new $contextInfos["class"](...($contextInfos["args"] ?? [])));
+		$class = $contextInfos["class"] ?? WebAppContext::class;
+		new WebApp(new $class(...($contextInfos["args"] ?? [])));
 	}
 }

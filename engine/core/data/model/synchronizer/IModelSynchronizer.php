@@ -20,6 +20,8 @@ interface IModelSynchronizer {
 
 	/**
 	 * Lance la synchronisation
+	 *
+	 * @param string[] $modelsToRebuild
 	 */
-	public function synchronize():void;
+	public function synchronize(string... $modelsToRebuild):void;
 }
