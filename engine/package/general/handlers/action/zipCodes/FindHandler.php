@@ -54,7 +54,7 @@ final class FindHandler implements IActionHandler {
 		$res = $this->_rule->applyTo($data);
 		if($res->satisfied()){
 			return new Response($this->_access->getCities(
-				$data["country"]??"france",$data["zipCode"]
+				$data["country"]??"fr",$data["zipCode"]
 			));
 		}else return new ErrorResponse("201",$res->message(),$res->errors());
 	}
