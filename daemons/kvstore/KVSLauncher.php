@@ -1,7 +1,7 @@
 #!/usr/bin/php -q
 <?php
 
-require_once dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR."init.environment.php";
+require_once dirname(__FILE__,2)."/init.environment.php";
 
 use wfw\daemons\kvstore\server\conf\KVSConfs;
 use wfw\daemons\kvstore\server\environment\KVSServerEnvironment;
@@ -31,7 +31,10 @@ try{
 		fwrite(STDOUT,getmypid().PHP_EOL);
 
 	//On récupère les configurations du server
-	$conf = new KVSConfs(ENGINE.DS."config".DS."conf.json", SITE.DS."config".DS."conf.json");
+	$conf = new KVSConfs(
+		dirname(__DIR__,2)."/engine/config/conf.json",
+		dirname(__DIR__,2)."/site/config/conf.json"
+	);
 	cli_set_process_title("WFW KVS server");
 	//On prépare le serveur
 	$KVSServer = new KVSServer(

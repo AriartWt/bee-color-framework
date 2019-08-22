@@ -11,8 +11,6 @@ final class ChangeType extends UserCommand{
 	private $_userId;
 	/** @var UserType $_type */
 	private $_type;
-	/** @var string $_modifierId */
-	private $_modifierId;
 
 	/**
 	 * ChangeType constructor.
@@ -21,10 +19,9 @@ final class ChangeType extends UserCommand{
 	 * @param string $modifierId
 	 */
 	public function __construct(string $userId, UserType $type, string $modifierId) {
-		parent::__construct();
+		parent::__construct($modifierId);
 		$this->_userId = $userId;
 		$this->_type = $type;
-		$this->_modifierId = $modifierId;
 	}
 
 	/**
@@ -39,12 +36,5 @@ final class ChangeType extends UserCommand{
 	 */
 	public function getType(): UserType {
 		return $this->_type;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getModifierId(): string {
-		return $this->_modifierId;
 	}
 }

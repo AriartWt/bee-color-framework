@@ -6,8 +6,10 @@ use wfw\engine\core\command\ICommand;
 use wfw\engine\core\data\DBAccess\NOSQLDB\msServer\IMSServerAccess;
 use wfw\engine\core\data\DBAccess\SQLDB\IDBAccess;
 use wfw\engine\core\domain\aggregate\IAggregateRoot;
+use wfw\engine\core\domain\events\IAggregateRootGeneratedEvent;
 use wfw\engine\core\domain\events\IDomainEvent;
 use wfw\engine\core\domain\events\IDomainEventDispatcher;
+use wfw\engine\core\domain\events\store\errors\CorruptedData;
 use wfw\engine\core\domain\events\store\errors\Inconsistency;
 use wfw\engine\core\data\query\QueryBuilder;
 use wfw\engine\lib\data\string\serializer\ISerializer;
@@ -62,7 +64,7 @@ final class DBBasedEventStore implements IEventStore {
 	 *
 	 * @return IAggregateRoot|null
 	 */
-	public function get(UUID $aggregateId):?IAggregateRoot{
+	public function getAggregateRoot(UUID $aggregateId):?IAggregateRoot{
 		$events = $this->_db->execute((new QueryBuilder())->raw("
 			SELECT e.id as id , a.type as aggregate_type , e.data as data , e.type as event_type , s.data as snapshot
 			FROM events as e
@@ -77,26 +79,40 @@ final class DBBasedEventStore implements IEventStore {
 			/** @var IAggregateRoot $res */
 			$res = $events[0]["snapshot"];
 			$skipFirst = false;
-			if(is_null($res)){
+			if(!is_null($res)){
+				//Sinon, on déserialise le snapshot
+				$res = $this->_serializer->unserialize($res);
+			}
+			if(is_null($res) || $res instanceof \__PHP_Incomplete_Class){
 				//s'il n'existe pas de snapshot, alors on prend le premier événement qui, par convention,
 				// contient la liste des arguments du constructeur de l'aggrégat au moment de sa première
 				//génération
 				/** @var IAggregateRoot $aggregateClass */
 				$aggregateClass = $events[0]["aggregate_type"];
-				$res = $aggregateClass::restoreAggregateFromEvent(
-					$this->_serializer->unserialize($events[0]["data"])
+				$event = $this->_serializer->unserialize($events[0]["data"]);
+				if($event instanceof IAggregateRootGeneratedEvent){
+					$res = $aggregateClass::restoreAggregateFromEvent(
+						$this->_serializer->unserialize($events[0]["data"])
+					);
+					$skipFirst = true;
+				}else throw new CorruptedData(
+					"First event must be an instanceof ".IAggregateRootGeneratedEvent::class
+					.". ".get_class($event)." given."
 				);
-				$skipFirst = true;
-			}else{
-				//Sinon, on déserialise le snapshot
-				$res = $this->_serializer->unserialize($res);
 			}
 			foreach($events as $k=>$event){
 				//On ne réapplique pas l'événement de création.
 				if($skipFirst && $k ===0){ continue; }
 				//On applique un à un tous les événements retournés
 				//(depuis la création de l'aggrégat ou du dernier snapshot s'il existe)
-				$res->apply($this->_serializer->unserialize($event["data"]));
+				$event = $this->_serializer->unserialize($event["data"]);
+				if($event instanceof \__PHP_Incomplete_Class) throw new CorruptedData(
+					"An event can't be loaded due to a class resolution failure (__PHP_Icomplete_Class),"
+					." making the aggregate $aggregateId (".get_class($res).") unusuable.\n"
+					." Please import the needed class or fixe this event.\n"
+					." Event data : ".json_encode($event)
+				);
+				$res->apply($event);
 			}
 			return $res;
 		}else{
@@ -110,10 +126,10 @@ final class DBBasedEventStore implements IEventStore {
 	 * @param UUID ...$aggregatesId Liste des identifiants d'aggrégats
 	 * @return IAggregateRoot[]
 	 */
-	public function getAll(UUID... $aggregatesId): array {
+	public function getAllAggregateRoot(UUID... $aggregatesId): array {
 		$res = [];
 		foreach($aggregatesId as $id){
-			$r = $this->get($id);
+			$r = $this->getAggregateRoot($id);
 			if(!is_null($r)) $res[] = $r;
 		}
 		return $res;
@@ -127,7 +143,7 @@ final class DBBasedEventStore implements IEventStore {
 	 *
 	 * @throws Exception
 	 */
-	public function save(IAggregateRoot $aggregate, ?ICommand $command = null) {
+	public function saveAggregateRoot(IAggregateRoot $aggregate, ?ICommand $command = null) {
 		if($aggregate->getEventList()->getLength()>0){
 			$this->_db->beginTransaction();
 			$builder = new QueryBuilder();
@@ -218,7 +234,7 @@ final class DBBasedEventStore implements IEventStore {
 			if(!$this->_eventDispatchInTransaction){
 				$this->_msAccess->applyEvents($aggregate->getEventList());
 			}
-			$this->_dispatcher->dispatchAll($aggregate->getEventList());
+			$this->_dispatcher->dispatchAllDomainEvents($aggregate->getEventList());
 			$aggregate->resetEventList();
 		}
 	}
@@ -247,13 +263,12 @@ final class DBBasedEventStore implements IEventStore {
 	
 	/**
 	 * Enregistre les séquences d'événements de tous les AggregateRoot
-	 * TODO : OPTIMISATION : une seule requete pour toutes les sauvegardes
 	 * @param null|ICommand  $command       Commande à l'origine de la mise à jour des aggrégats
 	 * @param IAggregateRoot ...$aggregates Liste des aggrégats
 	 */
-	public function saveAll(?ICommand $command = null, IAggregateRoot... $aggregates) {
+	public function saveAllAggregateRoots(?ICommand $command = null, IAggregateRoot... $aggregates) {
 		foreach($aggregates as $a){
-			$this->save($a,$command);
+			$this->saveAggregateRoot($a, $command);
 		}
 	}
 }

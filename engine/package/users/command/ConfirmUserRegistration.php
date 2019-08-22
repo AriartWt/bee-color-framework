@@ -9,8 +9,6 @@ use wfw\engine\package\users\lib\confirmationCode\UserConfirmationCode;
  * Permet à un utilisateur de confirmer son inscription
  */
 final class ConfirmUserRegistration extends UserCommand {
-	/** @var string $_confirmer */
-	private $_confirmer;
 	/** @var string $_userId */
 	private $_userId;
 	/** @var UserConfirmationCode $_code */
@@ -31,18 +29,10 @@ final class ConfirmUserRegistration extends UserCommand {
 		string $confirmer = '',
 		?UserState $state = null
 	){
-		parent::__construct();
+		parent::__construct($confirmer);
 		$this->_userId = $userId;
-		$this->_confirmer = $confirmer;
 		$this->_code = $code;
 		$this->_state = $state;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getConfirmer(): string{
-		return $this->_confirmer;
 	}
 
 	/**

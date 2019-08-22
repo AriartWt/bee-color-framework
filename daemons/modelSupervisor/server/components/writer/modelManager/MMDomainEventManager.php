@@ -15,8 +15,8 @@ final class MMDomainEventManager extends DomainEventObserver {
 	/**
 	 * @param IDomainEvent $e
 	 */
-	public function dispatch(IDomainEvent $e): void {
-		parent::dispatch($e);
+	public function dispatchDomainEvent(IDomainEvent $e): void {
+		parent::dispatchDomainEvent($e);
 		foreach($this->getListeners() as $listened=>$listeners){
 			if($e instanceof $listened){
 				foreach($listeners as $listener){

@@ -76,7 +76,9 @@ final class Request implements IRequest {
 		$res = [];
 		foreach($langs as $lang){
 			$tmp = explode(";",$lang);
-			$l = explode('-',$tmp[0])[0];
+			$l = str_replace('-','_',$tmp[0]);
+			$tmp2 = explode('_',$l);
+			if(count($tmp2) > 1) $l = $tmp2[0].'_'.strtoupper($tmp2[1]);
 			if(!isset($res[$l])){
 				$res[$l] = ((count($tmp)>1) ? floatval(explode("=",$lang)[1]) : 1);
 			}

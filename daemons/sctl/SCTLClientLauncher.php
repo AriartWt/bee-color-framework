@@ -1,6 +1,6 @@
 #!/usr/bin/php -q
 <?php
-use wfw\daemons\multiProcWorker\socket\protocol\DefaultProtocol;
+use wfw\engine\lib\network\socket\protocol\SocketProtocol;
 use wfw\daemons\sctl\conf\SCTLConf;
 use wfw\daemons\sctl\SCTLClient;
 use wfw\engine\lib\cli\argv\ArgvOpt;
@@ -8,7 +8,7 @@ use wfw\engine\lib\cli\argv\ArgvOptMap;
 use wfw\engine\lib\cli\argv\ArgvParser;
 use wfw\engine\lib\cli\argv\ArgvReader;
 
-require_once dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR."init.environment.php";
+require_once dirname(__FILE__,2)."/init.environment.php";
 
 $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 	new ArgvOpt(
@@ -31,13 +31,13 @@ $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 try{
 	$sctlClient = new SCTLClient(
 		new SCTLConf(
-			ENGINE."/config/conf.json",
-			SITE."/config/conf.json",
-			DAEMONS,
+			dirname(__DIR__,2)."/engine/config/conf.json",
+			dirname(__DIR__,2)."/site/config/conf.json",
+			dirname(__DIR__),
 			null,
 			$argvReader->exists('-path') ? $argvReader->get('-path')[0] : null
 		),
-		new DefaultProtocol()
+		new SocketProtocol()
 	);
 	$args = ($argvReader->exists('-cmd'))
 		? $argvReader->get('-cmd')

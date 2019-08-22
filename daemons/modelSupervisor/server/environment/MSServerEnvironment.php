@@ -139,7 +139,7 @@ final class MSServerEnvironment implements IMSServerEnvironment {
 				$loader->getModelList(),
 				new MSServerComponentEnvironment(
 					$componentName,
-					$componentInfos->working_path ?? $workingDir.DS.$componentName,
+					$componentInfos->working_path ?? "$workingDir/$componentName",
 					($componentInfos->permissions ?? new stdClass())->users ?? new stdClass(),
 					($componentInfos->permissions ?? new stdClass())->groups ?? new stdClass(),
 					$this->_groupDefs,

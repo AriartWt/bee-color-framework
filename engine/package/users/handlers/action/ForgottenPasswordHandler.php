@@ -43,7 +43,7 @@ final class ForgottenPasswordHandler extends DefaultUserActionHandler implements
 		ITranslator $translator
 	){
 		parent::__construct($bus, $rule, $session,$translator);
-		$observer->addEventListener(AskedForPasswordRetrievingEvent::class,$this);
+		$observer->addDomainEventListener(AskedForPasswordRetrievingEvent::class, $this);
 		$this->_access = $access;
 	}
 
@@ -51,7 +51,7 @@ final class ForgottenPasswordHandler extends DefaultUserActionHandler implements
 	 * Méthode appelée lors de la reception d'un événement
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof AskedForPasswordRetrievingEvent) $this->_event = $e;
 	}
 

@@ -20,8 +20,6 @@ final class RegisterUser extends UserCommand{
 	private $_password;
 	/** @var Email $_email */
 	private $_email;
-	/** @var string $_creator */
-	private $_creator;
 	/** @var UserType $_type */
 	private $_type;
 	/** @var UserState $_state */
@@ -53,12 +51,11 @@ final class RegisterUser extends UserCommand{
 		?UserState $state = null,
 		bool $sendMail = true
 	){
-		parent::__construct();
+		parent::__construct($creatorId);
 		$this->_login = $login;
 		$this->_password = $password;
 		$this->_email = $email;
 		$this->_type = $type;
-		$this->_creator = $creatorId;
 		$this->_state = $state ?? new EnabledUser();
 		$this->_settings = $settings ?? new InMemoryUserSettings();
 		$this->_sendMail = $sendMail;
@@ -83,13 +80,6 @@ final class RegisterUser extends UserCommand{
 	 */
 	public function getEmail(): Email {
 		return $this->_email;
-	}
-	
-	/**
-	 * @return string
-	 */
-	public function getCreator(): string {
-		return $this->_creator;
 	}
 	
 	/**

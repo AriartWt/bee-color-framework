@@ -41,22 +41,23 @@ final class ConfBasedDomainEventObserver implements IDomainEventObserver {
 
 		foreach ($listeners as $eventClass => $listenerClasses){
 			if(is_a($eventClass,IDomainEvent::class,true)){
-				foreach($listenerClasses as $k=>$listenerClass){
+				foreach($listenerClasses as $listenerClass => $params){
 					if(!is_a($listenerClass,IDomainEventListener::class,true))
 						throw new \InvalidArgumentException(
-							"Invalid domain event listener class at offset $k : ".$listenerClass
+							"Invalid domain event listener class ".$listenerClass
 							." does'nt implements ".IDomainEventListener::class
 						);
 				}
 
 				$registeredListernerClasses = [];
-				foreach($observer->getEventListeners($eventClass) as $listener){
-					$registeredListernerClasses[] = get_class($listener);
+				foreach($observer->getDomainEventListeners($eventClass) as $listener){
+					$registeredListernerClasses[get_class($listener)] = true;
 				}
-				$this->_listeners[$eventClass] = array_diff(
-						$listenerClasses,
-						$registeredListernerClasses
-				);
+				if(!isset($this->_listeners[$eventClass])) $this->_listeners[$eventClass] = [];
+				foreach($listenerClasses as $class=>$params){
+					if(!isset($registeredListernerClasses[$class]))
+						$this->_listeners[$eventClass][$class] = $params;
+				}
 			}else{
 				throw new \InvalidArgumentException(
 					"Invalid domain event class : $eventClass doesn't implements "
@@ -70,21 +71,21 @@ final class ConfBasedDomainEventObserver implements IDomainEventObserver {
 	 * Dispatche un événement
 	 * @param IDomainEvent $e Evenement à dispatcher
 	 */
-	public function dispatch(IDomainEvent $e): void {
-		$this->dispatchAll(new EventList([$e]));
+	public function dispatchDomainEvent(IDomainEvent $e): void {
+		$this->dispatchAllDomainEvents(new EventList([$e]));
 	}
 
 	/**
 	 * @param EventList $events Evenements à dispatcher
 	 */
-	public function dispatchAll(EventList $events): void {
+	public function dispatchAllDomainEvents(EventList $events): void {
 		//On cherche dans les listeners les listeners à créer
 		if(count($this->_listeners) > 0){
 			foreach($events as $e){
 				$this->initListenersForEvent($e);
 			}
 		}
-		$this->_observer->dispatchAll($events);
+		$this->_observer->dispatchAllDomainEvents($events);
 	}
 
 	/**
@@ -93,10 +94,13 @@ final class ConfBasedDomainEventObserver implements IDomainEventObserver {
 	private function initListenersForEvent(IDomainEvent $e){
 		foreach($this->_listeners as $eventsClass=>$listeners){
 			if($e instanceof $eventsClass){
-				foreach($listeners as $listenerClass){
-					$this->addEventListener(
+				foreach($listeners as $listenerClass=>$params){
+					$this->addDomainEventListener(
 						$eventsClass,
-						$this->_listenerFactory->build($listenerClass)
+						$this->_listenerFactory->buildDomainEventListener(
+							$listenerClass,
+							$params
+						)
 					);
 				}
 				unset($this->_listeners[$eventsClass]);
@@ -108,8 +112,8 @@ final class ConfBasedDomainEventObserver implements IDomainEventObserver {
 	 * @param string $domainEventClass Evenement écouté
 	 * @return IDomainEventListener[]
 	 */
-	public function getEventListeners(string $domainEventClass): array {
-		return $this->_observer->getEventListeners($domainEventClass);
+	public function getDomainEventListeners(string $domainEventClass): array {
+		return $this->_observer->getDomainEventListeners($domainEventClass);
 	}
 
 	/**
@@ -119,8 +123,8 @@ final class ConfBasedDomainEventObserver implements IDomainEventObserver {
 	 *                                 Tiens compte de l'héritage
 	 * @param IDomainEventListener $listener Listener à appeler
 	 */
-	public function addEventListener(string $domainEventClass, IDomainEventListener $listener) {
-		$this->_observer->addEventListener($domainEventClass,$listener);
+	public function addDomainEventListener(string $domainEventClass, IDomainEventListener $listener) {
+		$this->_observer->addDomainEventListener($domainEventClass,$listener);
 	}
 
 	/**
@@ -132,10 +136,13 @@ final class ConfBasedDomainEventObserver implements IDomainEventObserver {
 	 *                                            supprime tous les listeners de la classe
 	 *                                            d'événement
 	 */
-	public function removeEventListener(
+	public function removeDomainEventListener(
 		string $domainEventClass,
 		?IDomainEventListener $listener = null
 	) {
-		$this->_observer->removeEventListener($domainEventClass,$listener);
+		$this->_observer->removeDomainEventListener(
+			$domainEventClass,
+			$listener
+		);
 	}
 }

@@ -3,6 +3,9 @@ DocumentRoot @ROOTPATH
 <Directory @ROOTPATH >
 	AllowOverride None
 	Options +FollowSymLinks -Indexes
+	<Files "init.environment.php">
+		Require all denied
+	</Files>
 </Directory>
 
 <IfModule mod_deflate.c>

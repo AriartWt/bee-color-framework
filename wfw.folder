@@ -1,0 +1,5 @@
+The only purpose of this file is to secure the wfw update process by making sure the directory
+choosen is a wfw folder.
+
+Please do not remove this file, and do not copy it into your projects. If you do so, a future error while
+ writing wfw update command arguments will messing up all your projects.

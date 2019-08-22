@@ -6,9 +6,12 @@ use wfw\daemons\kvstore\server\conf\KVSConfs;
 use wfw\daemons\modelSupervisor\server\IMSServerPoolConf;
 use wfw\engine\core\conf\FileBasedConf;
 use wfw\engine\core\conf\io\adapters\JSONConfIOAdapter;
-use wfw\engine\lib\logger\DefaultLogFormater;
+use wfw\engine\lib\logger\CombinedLogger;
+use wfw\engine\lib\logger\ConsoleLogFormater;
+use wfw\engine\lib\logger\SimpleLogFormater;
 use wfw\engine\lib\logger\FileLogger;
 use wfw\engine\lib\logger\ILogger;
+use wfw\engine\lib\logger\StandardLogger;
 use wfw\engine\lib\PHP\objects\StdClassOperator;
 use wfw\engine\lib\PHP\types\PHPString;
 
@@ -50,10 +53,11 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 	public function __construct(
 		string $engineConfs,
 		?string $siteConfs=null,
-		string $basePath = DAEMONS,
+		?string $basePath = null,
 		bool $noLogger = false
 	){
-		$this->_kvsAddr = (new KVSConfs($engineConfs,$siteConfs,DAEMONS,true))->getSocketPath();
+		if(is_null($basePath)) $basePath = dirname(__DIR__,3);
+		$this->_kvsAddr = (new KVSConfs($engineConfs,$siteConfs,$basePath,true))->getSocketPath();
 		$this->_basePath = $basePath;
 		$this->_instancesConfs = [];
 		$confIO = new JSONConfIOAdapter();
@@ -70,26 +74,29 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 		}
 
 		$confPath = new PHPString($confPath);
-		if(!$confPath->startBy("/")){
-			$confPath = $basePath.DS.$confPath;
-		}else{
-			$confPath = (string) $confPath;
-		}
+		if(!$confPath->startBy("/")) $confPath = "$basePath/$confPath";
+		else $confPath = (string) $confPath;
 
 		$this->_conf = new FileBasedConf($confPath,$confIO);
 		$workingDir = $this->getWorkingDir();
 		if(!is_dir($workingDir)) mkdir($workingDir,0700,true);
 
-		if(!$noLogger) $this->_logger = (new FileLogger(new DefaultLogFormater(),...[
-			$this->getLogPath(null,"log"),
-			$this->getLogPath(null,"err"),
-			$this->getLogPath(null,"warn"),
-			$this->getLogPath(null,"debug")
-		]))->autoConfFileByLevel(
-			FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
-			FileLogger::DEBUG,
-			$this->isCopyLogModeEnabled()
-		)->autoConfByLevel($this->_conf->getInt("logs/level") ?? ILogger::ERR);
+		if(!$noLogger){
+			$this->_logger = (new FileLogger(new SimpleLogFormater(),...[
+				$this->getLogPath(null,"log"),
+				$this->getLogPath(null,"err"),
+				$this->getLogPath(null,"warn"),
+				$this->getLogPath(null,"debug")
+			]))->autoConfFileByLevel(
+				FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
+				FileLogger::DEBUG,
+				$this->isCopyLogModeEnabled()
+			)->autoConfByLevel($this->_conf->getInt("logs/level") ?? ILogger::ERR);
+			if($this->_conf->getBoolean("logs/console")) $this->_logger = new CombinedLogger(
+				new StandardLogger(new ConsoleLogFormater(new SimpleLogFormater())),
+				$this->_logger
+			);
+		}
 
 		//On détermine les configurations de chaque instance à créer
 		$defInstance = $this->_conf->getObject(self::DEFAULT_INSTANCE);
@@ -97,20 +104,39 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 			$tmp = new StdClassOperator(new stdClass());
 			$tmp->mergeStdClass($defInstance);
 			$tmp->mergeStdClass($instanceConf);
+			try{
+				$path = $tmp->find("project_path");
+				$tmpConf = new FileBasedConf("$path/site/config/conf.json",new JSONConfIOAdapter());
+				$custom_conf = $tmpConf->getObject("server/daemons/custom_config/msserver");
+				if(!is_null($custom_conf)) $tmp->mergeStdClass($custom_conf);
+			}catch(\Error | \Exception $e){
+				if($this->_logger)
+					$this->_logger->log("Unable to read $instanceName configurations : $e",ILogger::ERR);
+			}
 			$this->_instancesConfs[$instanceName] = $tmp;
-			if(!$noLogger)
-			$this->_instanceLoggers[$instanceName] = (new FileLogger(new DefaultLogFormater(),...[
-				$this->getLogPath($instanceName,"log"),
-				$this->getLogPath($instanceName,"err"),
-				$this->getLogPath($instanceName,"warn"),
-				$this->getLogPath($instanceName,"debug")
-			]))->autoConfFileByLevel(
-				FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
-				FileLogger::DEBUG,
-				$this->isCopyLogModeEnabled($instanceName)
-			)->autoConfByLevel($this->_conf->getInt("instances/$instanceName/logs/level")
-				?? $this->_conf->getInt("logs/level") ?? ILogger::ERR
-			);
+			$this->_conf->set("instances/$instanceName",$tmp->getStdClass());
+			if(!$noLogger){
+				$this->_instanceLoggers[$instanceName] = (new FileLogger(new SimpleLogFormater(),...[
+					$this->getLogPath($instanceName,"log"),
+					$this->getLogPath($instanceName,"err"),
+					$this->getLogPath($instanceName,"warn"),
+					$this->getLogPath($instanceName,"debug")
+				]))->autoConfFileByLevel(
+					FileLogger::ERR | FileLogger::WARN | FileLogger::LOG,
+					FileLogger::DEBUG,
+					$this->isCopyLogModeEnabled($instanceName)
+				)->autoConfByLevel($this->_conf->getInt("instances/$instanceName/logs/level")
+				                   ?? $this->_conf->getInt("logs/level") ?? ILogger::ERR
+				);
+				if($this->_conf->getBoolean("instances/$instanceName/logs/console")
+					?? $this->_conf->getBoolean("logs/console"))
+				{
+					$this->_instanceLoggers[$instanceName] = new CombinedLogger(
+						new StandardLogger(new ConsoleLogFormater(new SimpleLogFormater())),
+						$this->_instanceLoggers[$instanceName]
+					);
+				}
+			}
 		}
 	}
 
@@ -119,6 +145,28 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 	 */
 	public function getConfFile():FileBasedConf{
 		return $this->_conf;
+	}
+
+	/**
+	 * @param null|string $instance
+	 * @return null|string
+	 * @throws \InvalidArgumentException
+	 */
+	public function getProjectPath(string $instance):?string{
+		if(!$this->_conf->existsKey("instances/$instance"))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return $this->_conf->getString("instances/$instance/project_path") ?? null;
+	}
+
+	/**
+	 * @param string $instance
+	 * @return bool
+	 * @throws \InvalidArgumentException
+	 */
+	public function enabled(string $instance):bool{
+		if (!$this->_conf->existsKey("instances/$instance"))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return $this->_conf->getBoolean("instances/$instance/enabled") ?? true;
 	}
 
 	/**
@@ -134,7 +182,7 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 
 		return $this->resolvePath(
 			$this->_conf->getString(self::WORKING_DIR).$instance
-			?? $this->_basePath.DS."modelSupervisor/data$instance",false);
+			?? "$this->_basePath/modelSupervisor/data$instance",false);
 	}
 
 	/**
@@ -151,12 +199,12 @@ final class MSServerPoolConfs implements IMSServerPoolConf {
 		$path = new PHPString($path);
 		if(!$path->startBy("/")){
 			if($path->startBy("{ROOT}")){
-				return $path->replaceAll("{ROOT}",ROOT);
+				return $path->replaceAll("{ROOT}",dirname(__DIR__,4));
 			}else{
 				if($useWorkingPathAsbase){
-					return $this->getWorkingDir().DS.$path;
+					return $this->getWorkingDir().'/'.$path;
 				}else{
-					return $this->_basePath.DS.$path;
+					return $this->_basePath.'/'.$path;
 				}
 			}
 		}else{

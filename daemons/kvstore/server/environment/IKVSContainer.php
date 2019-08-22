@@ -10,6 +10,11 @@ interface IKVSContainer {
 	public function getName():string;
 
 	/**
+	 * @return bool True if the container may start, false otherwise
+	 */
+	public function enabled():bool;
+
+	/**
 	 *  Teste l'accés d'un utilisater sur l'écriture, la lecture ou l'adminsitration du container.
 	 *
 	 * @param string $userName   Nom de l'utilisateur dont on souhaite tester les droits

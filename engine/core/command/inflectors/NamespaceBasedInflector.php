@@ -17,15 +17,35 @@ final class NamespaceBasedInflector implements ICommandInflector {
 	private $_factory;
 	/** @var ICommandHandler[][] $_handlers */
 	private $_handlers;
+	/** @var ICommandHandler $_resolved */
+	private $_resolved;
 
 	/**
 	 * NamespaceBasedInflector constructor.
 	 *
 	 * @param ICommandHandlerFactory $factory Factory de handlers
+	 * @param array                  $handlers
 	 */
-	public function __construct(ICommandHandlerFactory $factory) {
+	public function __construct(ICommandHandlerFactory $factory, array $handlers = []) {
 		$this->_factory = $factory;
 		$this->_handlers = [];
+		$this->_resolved = [];
+		foreach ($handlers as $commandClass => $handlerClasses){
+			if(!is_a($commandClass,ICommand::class,true))
+				throw new \InvalidArgumentException(
+					"$commandClass doesn't implements ".ICommand::class
+				);
+			if(!isset($this->_handlers[$commandClass])) $this->_handlers[$commandClass] = [];
+			foreach($handlerClasses as $class=>$params){
+				if(!is_a($class,ICommandHandler::class,true))
+					throw new \InvalidArgumentException(
+						"$class doesn't implements ".ICommandHandler::class
+					);
+				$this->_handlers[$commandClass][$class] = $factory->buildCommandHandler(
+					$class,$params
+				);
+			}
+		}
 	}
 
 	/**
@@ -35,7 +55,7 @@ final class NamespaceBasedInflector implements ICommandInflector {
 	 * @return ICommandHandler[]
 	 * @throws NoCommandHandlerFound
 	 */
-	public function resolveHandlers(ICommand $command): array {
+	public function resolveCommandHandlers(ICommand $command): array {
 		$handlers = $this->resolveHandlersFromCommandClass(get_class($command));
 		if(count($handlers)>0){
 			return $handlers;
@@ -51,20 +71,34 @@ final class NamespaceBasedInflector implements ICommandInflector {
 	 * @return array
 	 */
 	private function resolveHandlersFromCommandClass(string $command): array {
-		if(isset($this->_handlers[$command])){
-			return $this->_handlers[$command];
+		$res = [];
+		if(isset($this->_resolved[$command])){
+			$res[] = $this->_handlers[$command];
 		}else{
-			$res = [];
-			$tmp = explode("\\",$command);
-			$className = array_pop($tmp);
-
+			$r = [];
+			if (($pos = strrpos($command, $search = "\\command\\")) !== false) {
+				$handlerClass = substr_replace(
+					$command,
+					"\\command\\handlers\\",
+					$pos,
+					strlen($search)
+				);
+			}
 			try{
-				$res[] = $this->_factory->build(
-					implode('\\',$tmp).'\\handlers\\'.$className.'Handler'
+				$r[] = $this->_factory->buildCommandHandler(
+					($handlerClass ?? $command)."Handler"
 				);
 			}catch(\Exception $e){}
 
-			return $res;
+			$this->_handlers[$command] = array_merge(
+				$this->_handlers[$command] ?? [],
+				$r
+			);
+			$res[] = $r;
 		}
+		foreach($this->_handlers as $class=>$handlers){
+			if(is_a($command,$class)) $res[] = $handlers;
+		}
+		return  array_merge(...$res);
 	}
 }

@@ -10,8 +10,6 @@ use wfw\engine\package\users\domain\states\UserState;
 final class ChangeUserMail extends UserCommand{
 	/** @var string $_userId */
 	private $_userId;
-	/** @var string $_modifier */
-	private $_modifier;
 	/** @var bool $_sendmail */
 	private $_sendmail;
 	/** @var Email $_mail */
@@ -34,9 +32,8 @@ final class ChangeUserMail extends UserCommand{
 		bool $sendMail = true,
 		?UserState $state = null
 	) {
-		parent::__construct();
+		parent::__construct($modifier);
 		$this->_userId = $userId;
-		$this->_modifier = $modifier;
 		$this->_sendmail = $sendMail;
 		$this->_mail = $email;
 		$this->_state = $state;
@@ -47,13 +44,6 @@ final class ChangeUserMail extends UserCommand{
 	 */
 	public function getUserId(): string {
 		return $this->_userId;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getModifier(): string {
-		return $this->_modifier;
 	}
 
 	/**

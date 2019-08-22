@@ -12,10 +12,10 @@ final class CancelPasswordRetrievingHandler extends UserCommandHandler{
 	 * Traite la commande
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		/** @var CancelPasswordRetrieving $command */
 		$user = $this->get($command->getUserId());
-		$user->cancelRetrivingPassword($command->getModifierId());
+		$user->cancelRetrivingPassword($command->getInitiatorId());
 		$this->repos()->modify($user,$command);
 	}
 }

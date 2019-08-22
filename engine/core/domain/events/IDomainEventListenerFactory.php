@@ -10,5 +10,5 @@ interface IDomainEventListenerFactory {
 	 * @param array  $params Paramètres de création
 	 * @return IDomainEventListener
 	 */
-	public function build(string $listenerClass,array $params=[]):IDomainEventListener;
+	public function buildDomainEventListener(string $listenerClass, array $params=[]):IDomainEventListener;
 }

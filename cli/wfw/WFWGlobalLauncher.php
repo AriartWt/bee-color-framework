@@ -6,6 +6,7 @@ use wfw\cli\wfw\templates\db\DBTemplate;
 use wfw\daemons\kvstore\server\conf\KVSConfs;
 use wfw\daemons\modelSupervisor\client\MSInstanceAddrResolver;
 use wfw\daemons\modelSupervisor\server\conf\MSServerPoolConfs;
+use wfw\daemons\rts\server\conf\RTSPoolConfs;
 use wfw\engine\core\conf\FileBasedConf;
 use wfw\engine\core\conf\io\adapters\JSONConfIOAdapter;
 use wfw\engine\core\data\DBAccess\NOSQLDB\msServer\MSServerWriterAccess;
@@ -39,10 +40,12 @@ $argvReader=$argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 	new ArgvOpt('create','Crée un nouveau projet et l\'ajoute au gestionnaire (create [nom projet] [chemin]',2,null,true),
 	new ArgvOpt('import','Importe un projet dans un projet existant (import [nom du projet] [chemin des fichiers] [(optionnel)-keepConf]))',null,null,true),
 	new ArgvOpt('self','Applique les commandes sur le wfw global',null,null,true),
+	new ArgvOpt('reinstall','Reinstall wfw and all daemons',null,null,true),
+	new ArgvOpt('uninstall','Uninstall wfw and all daemons',null,null,true),
 	new ArgvOpt(
 			'update','Met à jour les fichiers wfw du projet ciblé avec les fichiers contenus dans le dossier spécifié '
 			.'(update [-self(global) | -all(tous) | -projet,projet2,...(projets spécifiés)] [sources path]',
-			2,null,true
+			null,null,true
 	),
 	new ArgvOpt(
 			'maintenance',"Permet de mettre en maintenance un ou plusieurs projets."
@@ -56,6 +59,8 @@ $argvReader=$argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 	new ArgvOpt('[PROJECT] [cmd](args...)',"Execute une commande sur un projet",null,null,true)
 ])),$argv);
 
+CONST FILE_DB_KEY = "@ TEMPLATE FILES @";
+
 try{
 	if(count($argv) < 2)
 		throw new InvalidArgumentException("At least one arg expected ! --help for command usage");
@@ -64,7 +69,10 @@ try{
 	$data = $db->read(true);
 	$validName = function(string $name):bool{
 		return preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/',$name)
-			&& !in_array($name,["all","self","update","locate","remove","create","import","maintenance","list","restore"]);
+			&& !in_array($name,[
+					"all","self","update","locate","remove","create","import","maintenance","list","restore",
+				'uninstall','reinstall'
+			]);
 	};
 	$exec = function(string $cmd):void{
 		$outputs = []; $res = null;
@@ -75,7 +83,7 @@ try{
 		);
 	};
 	if($argvReader->exists('self')){
-		$cmd = ROOT."/wfw";
+		$cmd = dirname(__DIR__,2)."/wfw";
 		foreach($argvReader->get('self') as $k=>$c){
 			if($c === '-help' && $k<1) $c="-$c";
 			$cmd .= " \"$c\" ";
@@ -96,6 +104,10 @@ try{
 		foreach($data as $path){
 			fwrite(STDOUT,dirname($path)."\n");
 		}
+	}else if($argvReader->exists('reinstall')){
+		system("\"".dirname(__DIR__)."/installer/reinstall.sh\" 2>&1");
+	}else if($argvReader->exists('uninstall')){
+		system("\"".dirname(__DIR__)."/installer/uninstall.sh\" 2>&1");
 	}else if($argvReader->exists('restore')){
 		foreach($data as $project=>$p){
 			$p=dirname($p);
@@ -140,6 +152,12 @@ try{
 		$args = $argvReader->get('update');
 		$projects = $args[0];
 		$path = $args[1];
+		if(!file_exists("$path/wfw.folder")){
+			fwrite(STDOUT,"\e[31mYou attempted to use update command with a folder that do not contain wfw.folder file !\nIf your intent was to import your project, please use the wfw import command.\e[0m\n");
+			exit(1);
+		}
+		$args = array_flip(array_slice($args,2));
+		$prompt = !isset($args["-no-prompt"]);
 		$projects = strpos($projects,"-") === 0 ? substr($projects,1):$projects;
 		$projects = explode(",",$projects);
 		$pMap = []; $valids = array_merge(["self","all"],array_keys($data));
@@ -155,19 +173,46 @@ try{
 			foreach($data as $k=>$v){
 				$pMap[$k] = substr($v,0,-4);
 			}
-			$pMap["self"] = ROOT;
-		}else if(isset($projects["self"])) $pMap["self"] = ROOT;
+			$pMap["self"] = dirname(__DIR__,2);
+		}else if(isset($projects["self"])) $pMap["self"] = dirname(__DIR__,2);
 
 		//now that we have parsed the user request, we can process it
 		//first get current wfw utility confs
-		$wfwConf = new FileBasedConf(CLI."/wfw/config/conf.json");
+		$wfwConf = new FileBasedConf(dirname(__DIR__)."/wfw/config/conf.json");
 		$unixUser = $wfwConf->getString("unix_user") ?? "www-data";
 		$unixPerm = $wfwConf->getString("permissions") ?? 700;
 		$tmpDir = $wfwConf->getString('tmp');
-		if(strpos($tmpDir,"/")!==0) $tmpDir = ROOT."/$tmpDir";
+		if(strpos($tmpDir,"/")!==0) $tmpDir = dirname(__DIR__,2)."/$tmpDir";
 		//next create a working dir in tmp folder
 		if(!is_dir($tmp = "$tmpDir/wfw"))mkdir($tmp,700);
 		foreach($pMap as $n=>$p){
+			if($prompt){
+				fwrite(STDOUT,"Do you really want to update $n (location : $p) ? (y/n) : ");
+				if(!filter_var(preg_replace(["/^y$/","/^n$/"],["yes","no"],fgets(STDIN)), FILTER_VALIDATE_BOOLEAN)){
+					fwrite(STDOUT,"$n will not be updated.\n");
+					continue;
+				}
+			}
+			fwrite(STDOUT,"$n will be updated...\n");
+			$clean = false;
+			if(file_exists("$p/cli/wfw/WFWCleanerLauncher.php")){
+				fwrite(STDOUT,"Searching for $n directories to clean before import...\n");
+				$res = [];
+				exec("$p/cli/wfw/WFWCleanerLauncher.php -update -list",$res);
+				if(count($res) > 0){
+					$clean = true;
+					fwrite(STDOUT,"The following files and directories will be removed : \n");
+					foreach($res as $line) fwrite(STDOUT,"\t$line\n");
+					if($prompt){
+						fwrite(STDOUT,"Do you really want to continue ? (y/n) : ");
+						if(!filter_var(preg_replace(["/^y$/","/^n$/"],["yes","no"],fgets(STDIN)), FILTER_VALIDATE_BOOLEAN)){
+							fwrite(STDOUT,"$n will not be updated.\n");
+							continue;
+						}
+					}
+				}else fwrite(STDOUT,"No file or directory to clean up.\n");
+			}
+
 			fwrite(STDOUT,"Starting $n update (working dir : $tmp/$n)...\n");
 			if(!is_dir("$tmp/$n")) mkdir("$tmp/$n",700);
 			//this is the list of all confs file that exists in the framework and that may be
@@ -175,11 +220,10 @@ try{
 			$confs = [
 				"engine" => "engine/config/conf.json",
 				"kvs" => "daemons/kvstore/server/config/conf.json",
+				"rts" => "daemons/rts/server/config/conf.json",
 				"mss" => "daemons/modelSupervisor/server/config/conf.json",
 				"sctl" => "daemons/sctl/config/conf.json",
 				"wfw" => "cli/wfw/config/conf.json",
-				"updator" => "cli/updator/config/conf.json",
-				"tester" => "cli/tester/config/conf.json",
 				"backup" => "cli/backup/config/conf.json"
 			];
 			//we get all previous confs, and merge it with new confs from the update, to set
@@ -187,9 +231,13 @@ try{
 			foreach($confs as $c=>$v){
 				touch("$tmp/$n/$c",700);
 				file_put_contents("$tmp/$n/$c",'{}');
-				$fconf = new FileBasedConf("$tmp/$n/$c",new JSONConfIOAdapter());
-				$fconf->merge(new FileBasedConf("$path/$v"));
-				$fconf->merge(new FileBasedConf("$p/$v"));
+				try{
+					$fconf = new FileBasedConf("$tmp/$n/$c",$io = new JSONConfIOAdapter());
+					$fconf->merge(new FileBasedConf("$path/$v",$io));
+					$fconf->merge(new FileBasedConf("$p/$v",$io));
+				}catch(\Error | \Exception $e){
+					fwrite(STDOUT,"\e[33m$e\e[0m");
+				}
 				file_put_contents(
 					"$tmp/$n/$c",
 					json_encode($fconf->getRawConf(),JSON_PRETTY_PRINT)
@@ -201,6 +249,14 @@ try{
 			//shutdown daemons while updating folders
 			$exec("wfw self service stop -all");
 			fwrite(STDOUT,"Daemons stoped.\n");
+
+			if($clean){
+				//removing files and folder
+				fwrite(STDOUT,"Removing files and folders that must be cleaned up...\n");
+				exec("$p/cli/wfw/WFWCleanerLauncher.php -update",$res,$state);
+				if($state > 0) fwrite(STDOUT,"An error occured while trying to cleanup $n.\n");
+				else fwrite(STDOUT,"$n successfully cleaned up.\n");
+			}
 
 			$exec("cp -R \"$path/.\" \"$p\"");
 			fwrite(STDOUT,"Updated files imported.\n");
@@ -223,18 +279,18 @@ try{
 			//clear all caches to be sure all will be reloaded
 			(new HTTPRequest("http://127.0.0.1/wfw/clear_caches.php",[],["method" =>  "GET"]))
 				->send();
-			fwrite(STDOUT,"Cache reloaded.\n");
+			fwrite(STDOUT,"Cache cleared.\n");
 
 			fwrite(STDOUT,"Restarting daemons...\n");
 			//start and restart daemons
 			$exec("wfw self service start -all");
 			$exec("wfw self service restart sctl");
 			fwrite(STDOUT,"Daemons restarted.\n");
-			rmdir("$tmp/$n");
+			exec("rm -rf $tmp/$n");
 			fwrite(STDOUT,"Working dir $tmp/$n removed.\n");
 			fwrite(STDOUT,"$n successfully updated.\n\n");
 		}
-		rmdir($tmp);
+		exec("rm -rf \"$tmp\"");
 		fwrite(STDOUT,"$tmp removed.\n");
 		fwrite(STDOUT,"Done.\n");
 	}else if($argvReader->exists('add')){
@@ -257,21 +313,21 @@ try{
 			}
 
 			//unlink an existing symlink with same name in case it's a corrupted link
-			if(is_link(ROOT."/$args[0]")) unlink(ROOT."/$args[0]");
+			if(is_link(dirname(__DIR__,2)."/$args[0]")) unlink(dirname(__DIR__,2)."/$args[0]");
 			//create the symlink to the ROOT folder
-			$exec("ln -s \"$args[1]/$args[0]\" \"".ROOT."/$args[0]\"");
+			$exec("ln -s \"$args[1]/$args[0]\" \"".dirname(__DIR__,2)."/$args[0]\"");
 			//unlink an existing symlink with same name in case it's a corrupted link
 			if(is_link("/etc/wfw/$args[0]")) unlink("/etc/wfw/$args[0]");
 			//create the symlink to site confs into /etc/wfw
 			$exec("ln -s \"$args[1]/$args[0]/config\" \"/etc/wfw/$args[0]\"");
 
-			$a2confPath = CLI."/wfw/a2.d/$args[0].conf";
+			$a2confPath = dirname(__DIR__)."/wfw/a2.d/$args[0].conf";
 			if(file_exists($a2confPath)){
 				unlink($a2confPath);
 				fwrite(STDOUT,"Old file $a2confPath removed.\n");
 			}
 			fwrite(STDOUT,"Generating apache2 conf file $a2confPath...\n");
-			$exec("cat \"".CLI."/wfw/templates/a2-site.conf.template\" | sed -e \"s+@ROOTPATH+$path+g\" >> \"$a2confPath\"");
+			$exec("cat \"".dirname(__DIR__)."/wfw/templates/a2-site.conf.template\" | sed -e \"s+@ROOTPATH+$args[1]+g\" >> \"$a2confPath\"");
 
 			//write the project root path in DB
 			$data[$args[0]] = $path;
@@ -291,8 +347,7 @@ try{
 		$path = "$path/$pName";
 		if(!file_exists($path)) mkdir($path);
 
-		fwrite(STDOUT,"Generating project's template tree from ".ROOT."/cli/wfw/templates/site...\n");
-		$exec("cp -Rp ".ROOT."/cli/wfw/templates/site $path");
+		if(!is_dir("$path/site")) mkdir("$path/site");
 		if(!is_dir("$path/site/package")) mkdir("$path/site/package");
 		if(!is_dir("$path/site/webroot")) mkdir("$path/site/webroot");
 		foreach(["Audio","Css","Image","JavaScript","Video","uploads"] as $v){
@@ -300,32 +355,32 @@ try{
 		}
 		//create base folders and files
 		$dirs = ['engine','cli','wfw'];
-		fwrite(STDOUT,"Cloning files and folders from ".ROOT." into $path...\n");
+		fwrite(STDOUT,"Cloning files and folders from ".dirname(__DIR__,2)." into $path...\n");
 		foreach($dirs as $dir){
-			$exec("cp -Rp ".ROOT."/$dir $path");
-			fwrite(STDOUT,"Files and folders from ".ROOT."/$dir cloned into $path.\n");
+			$exec("cp -Rp ".dirname(__DIR__,2)."/$dir $path");
+			fwrite(STDOUT,"Files and folders from ".dirname(__DIR__,2)."/$dir cloned into $path.\n");
 		}
 
 		if(!file_exists("$path/daemons")) mkdir("$path/daemons");
 		//copy all daemons/* without daemons/*/data
-		$daemons = array_diff(scandir(ROOT."/daemons"),['..','.']);
+		$daemons = array_diff(scandir(dirname(__DIR__,2)."/daemons"),['..','.']);
 		foreach($daemons as $dir){
-			if(is_dir(ROOT."/daemons/$dir")){
+			if(is_dir(dirname(__DIR__,2)."/daemons/$dir")){
 				if(!is_dir("$path/daemons/$dir")) mkdir("$path/daemons/$dir");
-				$dirs = array_diff(scandir(ROOT."/daemons/$dir"),['..','.','data']);
+				$dirs = array_diff(scandir(dirname(__DIR__,2)."/daemons/$dir"),['..','.','data']);
 				foreach($dirs as $d){
-					$exec("cp -Rp ".ROOT."/daemons/$dir/$d $path/daemons/$dir/$d");
+					$exec("cp -Rp ".dirname(__DIR__,2)."/daemons/$dir/$d $path/daemons/$dir/$d");
 				}
-			}else $exec("cp -Rp ".ROOT."/daemons/$dir $path/daemons/$dir");
+			}else $exec("cp -Rp ".dirname(__DIR__,2)."/daemons/$dir $path/daemons/$dir");
 		}
-		fwrite(STDOUT,"Files and folders from ".ROOT."/daemons cloned into $path...\n");
-		$a2confPath = CLI."/wfw/a2.d/$pName.conf";
+		fwrite(STDOUT,"Files and folders from ".dirname(__DIR__,2)."/daemons cloned into $path...\n");
+		$a2confPath = dirname(__DIR__)."/wfw/a2.d/$pName.conf";
 		if(file_exists($a2confPath)){
 			unlink($a2confPath);
 			fwrite(STDOUT,"Old file $a2confPath removed.\n");
 		}
-		fwrite(STDOUT,"Generating apache2 conf file $a2confPath...\n");
-		$exec("cat \"".CLI."/wfw/templates/a2-site.conf.template\" | sed -e \"s+@ROOTPATH+$path+g\" >> \"$a2confPath\"");
+		fwrite(STDOUT,"Generating apache2 conf file $a2confPath with document root at $path...\n");
+		$exec("cat \"".dirname(__DIR__)."/wfw/templates/a2-site.conf.template\" | sed -e \"s+@ROOTPATH+$path+g\" >> \"$a2confPath\"");
 
 		$exec("wfw add $pName $path");
 		// \o/ the project files are ready.
@@ -335,15 +390,17 @@ try{
 		$kvsContainer = $pName."_db";
 		$mssPwd =(string) new UUID(UUID::V4);
 		$mssUser = $pName."_website";
+		$rtsPwd = (string) new UUID(UUID::V4);
+		$rtsUser = $pName;
 		$dbPwd =(string) new UUID(UUID::V4);
 		$dbRootPwd =(string) new UUID(UUID::V4);
 		$dbRootUser = "$pName-root";
 		$dbName = $pName."_EventStore";
 		$firstUser =(string) new UUID(UUID::V4);
 
-		$wfwConf = new FileBasedConf(CLI."/wfw/config/conf.json");
+		$wfwConf = new FileBasedConf(dirname(__DIR__)."/wfw/config/conf.json");
 		$tmpDir = $wfwConf->getString('tmp');
-		if(strpos($tmpDir,"/")!==0) $tmpDir = ROOT."/$tmpDir";
+		if(strpos($tmpDir,"/")!==0) $tmpDir = dirname(__DIR__,2)."/$tmpDir";
 		$adminMail = $wfwConf->getString("admin_mail");
 		$dbFile = "$tmpDir/$pName.sql";
 		$dbCredentials = "$tmpDir/$pName.credentials";
@@ -389,9 +446,9 @@ try{
 		fwrite(STDOUT,"Creating and configuring KVS containers...\n");
 		//start with KVS (global framework file):
 		$kvs = (new KVSConfs(
-				ENGINE."/config/conf.json",
+			dirname(__DIR__,2)."/engine/config/conf.json",
 				null,
-				DAEMONS,
+				dirname(__DIR__,2)."/daemons",
 				true)
 			)->getConfFile();
 		$users = $kvs->getArray("users");
@@ -400,6 +457,7 @@ try{
 		$kvs->set("admin_mail",$adminMail);
 		$containers = $kvs->getArray("containers");
 		$containers[$kvsContainer] = [
+			"project_path" => $path,
 			"permissions" => [
 				"users" => [ $kvsUser => [ "read" => true, "write" => true, "admin" => true ] ],
 				"default_storage" => "IN_MEMORY_PERSISTED_ON_DISK"
@@ -412,10 +470,14 @@ try{
 		fwrite(STDOUT,"Creating and configuring MSServer instance...\n");
 		//next MSServer (global framework file):
 		$mss = ($msConf = new MSServerPoolConfs(
-				ENGINE."/config/conf.json",null,DAEMONS,true)
-			)->getConfFile();
+				dirname(__DIR__,2)."/engine/config/conf.json",
+				null,
+				dirname(__DIR__,2)."/daemons",
+				true
+		))->getConfFile();
 		$mss->set("admin_mail",$adminMail);
 		$mss->set("instances/$pName",[
+			"project_path" => $path,
 			"models_to_load_path" => "{ROOT}/$pName/config/load/models.php",
 			"kvs" => [ "login" => $kvsUser, "password" => $kvsPwd, "container" => $kvsContainer ],
 			"users" => [ $mssUser => [ "password"=>$mssPwd ] ],
@@ -425,20 +487,40 @@ try{
 				"permissions" => [ "users" => [ $mssUser => [ "write"=>true,"read"=>true,"admin"=>true ] ] ]
 			] ]
 		]);
+		if(!$mss->existsKey("instances/$pName")) throw new Exception(
+				"Unable to set instances/$pName"
+		);
 		$mss->save();
 		fwrite(STDOUT,"MSServer instance ready.\n");
 
+		fwrite(STDOUT, "Creating and configuring RTS instance...\n");
+		$rts = ($rtsConf = new RTSPoolConfs(
+			dirname(__DIR__,2)."/engine/config/conf.json",
+			null,
+			dirname(__DIR__,2)."/daemons",
+			true
+		))->getConfFile();
+		$rts->set("admin_mail",$adminMail);
+		$rts->set("instances/$pName",[
+			"project_path" => $path,
+			"modules_to_load_path" => "{ROOT}/$pName/config/load/rts.php",
+			"users" => [ $rtsUser => [ "password" => $rtsPwd ] ]
+		]);
+		$rts->save();
+		fwrite(STDOUT,"RTS instance ready.\n");
+
 		fwrite(STDOUT,"Configuring project...\n");
 		//next project files :
-		$globalConf = new FileBasedConf(ENGINE."/config/conf.json");
+		$globalConf = new FileBasedConf(dirname(__DIR__,2)."/engine/config/conf.json");
 		$sctlPath = $globalConf->getString("server/daemons/sctl");
-		if(strpos($sctlPath,"/")!==0) $sctlPath = DAEMONS."/$sctlPath";
+		if(strpos($sctlPath,"/")!==0) $sctlPath = dirname(__DIR__,2)."/daemons/$sctlPath";
 		//website's engine confs :
 		$engine = new FileBasedConf("$path/engine/config/conf.json");
 		$engine->set("server/daemons",[
 			"kvs"=>$kvs->getConfPath(),
 			"model_supervisor"=>$mss->getConfPath(),
-			"sctl" => $sctlPath
+			"sctl" => $sctlPath,
+			"rts" => $rts->getConfPath()
 		]);
 		$engine->save();
 
@@ -448,6 +530,7 @@ try{
 		$sctlConf->set("auth.pwd_owner",$wfwConf->getString("unix_user"));
 		$sctlConf->save();
 
+		if(!is_dir("$path/site/config")) mkdir("$path/site/config",700,true);
 		//website's confs :
 		file_put_contents("$path/site/config/conf.json",new SiteConfTemplate(
 			"localhost",$dbName,$pName,$dbPwd,
@@ -463,15 +546,6 @@ try{
 		$backup->set("mysql",$mysqlPath);
 		$backup->set("mysqldump",$wfwConf->getString("mysqldump_path")??"mysqldump");
 		$backup->save();
-		//updator's confs :
-		$updator = new FileBasedConf("$path/cli/updator/config/conf.json");
-		$updator->set('project',$pName);
-		$updator->save();
-		//tester's confs :
-		$tester = new FileBasedConf("$path/cli/tester/config/conf.tests.json");
-		$tester->set("msserver/addr",$msConf->getSocketPath());
-		$tester->save();
-		fwrite(STDOUT,"Project configured.\n");
 
 		//then, set the unix owner for the new project and give-it to the given user (apache,ngnix..)
 		$exec("chmod -R $unixPerm $path");
@@ -537,6 +611,7 @@ try{
 		$args = $argvReader->get('remove');
 		$project = $args[0];
 		array_shift($args);
+		$args = array_flip($args);
 		$prompt = !isset($args["-no-prompt"]);
 		if(!isset($data[$project]))
 			throw new InvalidArgumentException("$project is not a registered project !");
@@ -555,21 +630,23 @@ try{
 		$kvsUser = $project."_msserver";
 		$kvsContainer = $project."_db";
 		$kvs = (new KVSConfs(
-				ENGINE."/config/conf.json",
+			dirname(__DIR__,2)."/engine/config/conf.json",
 				null,
-				DAEMONS,
+			dirname(__DIR__,2)."/daemons",
 				true)
 			)->getConfFile();
 		$toSave = false;
 		if(!is_null($kvs->get("users/$kvsUser"))){
 			$users = $kvs->getArray("users");
 			unset($users[$kvsUser]);
+			if(empty($instances)) $users = new stdClass();
 			$kvs->set("users",$users);
 			$toSave = true;
 		}
 		if(!is_null($kvs->getArray("containers/$kvsContainer"))){
 			$containers = $kvs->getArray("containers");
 			unset($containers[$kvsContainer]);
+			if(empty($containers)) $containers = new stdClass();
 			$kvs->set("containers",$containers);
 			$toSave=true;
 		}
@@ -579,26 +656,46 @@ try{
 		fwrite(STDOUT,"Removing MSserver instances...\n");
 		//MSServer conf cleaning (global framework file):
 		$mss = ($msConf = new MSServerPoolConfs(
-				ENGINE."/config/conf.json",null,DAEMONS,true)
-			)->getConfFile();
+			dirname(__DIR__,2)."/engine/config/conf.json",
+			null,
+			dirname(__DIR__,2)."/daemons",
+			true
+		))->getConfFile();
 		if(!is_null($mss->getArray("instances/$project"))){
 			$instances = $mss->getArray("instances");
 			unset($instances[$project]);
+			if(empty($instances)) $instances = new stdClass();
 			$mss->set("instances",$instances);
 			$mss->save();
 		}
 		fwrite(STDOUT,"MSServer instances removed.\n");
+
+		fwrite(STDOUT,"Removing RTS instances...\n");
+		$rts = ($rtsConf = new RTSPoolConfs(
+			dirname(__DIR__,2)."/engine/config/conf.json",
+			null,
+			dirname(__DIR__,2)."/daemons",
+			true
+		))->getConfFile();
+		if(!is_null($rts->getArray("instances/$project"))){
+			$instances = $rts->getArray("instances");
+			unset($instances[$project]);
+			$rts->set("instances",$instances);
+			$rts->save();
+		}
+		fwrite(STDOUT,"RTS instances removed.\n");
+
 		//unlink ROOT
-		if(is_link(ROOT."/$project")){
-			unlink(ROOT."/$project");
-			fwrite(STDOUT,ROOT."/$project link removed.\n");
+		if(is_link(dirname(__DIR__,2)."/$project")){
+			unlink(dirname(__DIR__,2)."/$project");
+			fwrite(STDOUT,dirname(__DIR__,2)."/$project link removed.\n");
 		}
 		//unlink conf link
 		if(is_link("/etc/wfw/$project")) unlink("/etc/wfw/$project");
 		fwrite(STDOUT,"/etc/wfw/$project link removed.\n");
-		if(is_file(CLI."/wfw/a2.d/$project.conf")){
-			unlink(CLI."/wfw/a2.d/$project.conf");
-			fwrite(STDOUT,CLI."/wfw/a2.d/$project.conf removed.\n");
+		if(is_file(dirname(__DIR__)."/wfw/a2.d/$project.conf")){
+			unlink(dirname(__DIR__)."/wfw/a2.d/$project.conf");
+			fwrite(STDOUT,dirname(__DIR__)."/wfw/a2.d/$project.conf removed.\n");
 		}
 		fwrite(STDOUT,"Removing project path from wfw'db...\n");
 		//delete data from projects db
@@ -613,10 +710,11 @@ try{
 		fwrite(STDOUT,"$project have been successfully removed.\n");
 		fwrite(STDOUT,"\e[96m[INFO] $project folder still remains on disk ($pName) for safety concerns.\n"
 				."If your intent was to totaly remove this project, please do it manually following this steps :\n"
-				."\t- remove all logs (defaults : /var/log/wfw/kvs/containers & /var/log/wfw/msserver/instances)\n"
+				."\t- remove all logs (defaults : /var/log/wfw/kvs/containers/$project & /var/log/wfw/msserver/instances/$project & /var/log/wfw/rts/instances/$project)\n"
 				."\t- remove project files (default : /srv/wfw/$project)\n"
 				."\t- remove all kvs data (defaults : /srv/wfw/global/kvstore/data/kvs_db/${project}_db)\n"
 				."\t- remove all msserver data (defaults : /srv/wfw/global/modelSupervisor/data/$project)\n"
+				."\t- remove all rts data (defaults : /srv/wfw/global/rts/data/$project)\n"
 				."\t- delete mysql db (default : ${project}_EventStore)\n"
 				."\t- delete mysql user (default : ${project}_website)\n"
 				."\t- disable site confs in apache2 (depends on your config)\n"
@@ -644,6 +742,10 @@ try{
 			throw new InvalidArgumentException("Unknown project $pName");
 
 		$pPath = dirname($data[$pName]);
+		if(file_exists("$path/wfw.folder")){
+			fwrite(STDOUT,"\e[31mYou attempted to use import with a wfw source folder !\nIf your intent was to update your project, please use the wfw update command.\e[0m\n");
+			exit(1);
+		}
 		if($prompt){
 			fwrite(STDOUT,"Do you really want to import $path into $pName project's path $pPath ? (y/n) : ");
 			if(!filter_var(preg_replace(["/^y$/","/^n$/"],["yes","no"],fgets(STDIN)), FILTER_VALIDATE_BOOLEAN)){
@@ -651,7 +753,25 @@ try{
 				exit(0);
 			}
 		}
+		$clean = false;
 		fwrite(STDOUT,"$path will be imported into $pPath...\n");
+		if(file_exists("$pPath/cli/wfw/WFWCleanerLauncher.php")){
+			fwrite(STDOUT,"Searching for $pName files and directories to clean before import...\n");
+			$res = [];
+			exec("$pPath/cli/wfw/WFWCleanerLauncher.php -list",$res);
+			if(count($res) > 0){
+				$clean = true;
+				fwrite(STDOUT,"The following files and directories will be removed : \n");
+				foreach($res as $line) fwrite(STDOUT,"\t$line\n");
+				if($prompt){
+					fwrite(STDOUT,"Do you really want to continue ? (y/n) : ");
+					if(!filter_var(preg_replace(["/^y$/","/^n$/"],["yes","no"],fgets(STDIN)), FILTER_VALIDATE_BOOLEAN)){
+						fwrite(STDOUT,"$path will not be imported.\n");
+						exit(0);
+					}
+				}
+			}else fwrite(STDOUT,"No file or directory to clean up.\n");
+		}
 		$siteConfChanged = false;
 		if(!$keepConf && file_exists("$path/site/config/conf.json")){
 			$siteConfChanged = true;
@@ -662,6 +782,14 @@ try{
 			$conf->save();
 			fwrite(STDOUT,"Project conf updated.\n");
 		}
+
+		if($clean){
+			fwrite(STDOUT,"Removing files and folders that must be cleaned up...\n");
+			exec("$pPath/cli/wfw/WFWCleanerLauncher.php",$res,$state);
+			if($state > 0) fwrite(STDOUT,"An error occured while trying to cleanup $pName.\n");
+			else fwrite(STDOUT,"$pName successfully cleaned up.\n");
+		}
+
 		fwrite(STDOUT,"Copying $path files and folder into $pPath...\n");
 		$exec("cp -R \"$path/.\" \"$pPath\"");
 		fwrite(STDOUT,"Files and folders copied.\n");
@@ -676,21 +804,23 @@ try{
 		//install packages (will create appropriated symlinks)
 		$packages = $conf->getArray("server/packages");
 		if(is_array($packages) && count($packages)>0){
-			$exec("wfw $pName package -install \"".implode("\" \"",$packages)."\"");
+			$res = [];
+			exec("wfw $pName package -install \"".implode("\" \"",$packages)."\"",$res);
+			if(count($res) > 0) fwrite(STDOUT,implode("\n",$res)."\n");
 		}
 		fwrite(STDOUT,"Project packages installed.\n");
 
-		$wfwConf = new FileBasedConf(CLI."/wfw/config/conf.json");
+		$wfwConf = new FileBasedConf(dirname(__DIR__)."/wfw/config/conf.json");
 		$unixUser = $wfwConf->getString("unix_user") ?? "www-data";
 		$unixPerm = $wfwConf->getString("permissions") ?? 700;
 
 		if(!is_link("/etc/wfw/$pName"))
 			$exec("ln -s \"$pPath/site/config\" \"/etc/wfw/$pName\"");
 
-		$a2confPath = CLI."/wfw/a2.d/$pName.conf";
+		$a2confPath = dirname(__DIR__)."/wfw/a2.d/$pName.conf";
 		if(!file_exists($a2confPath)){
-			fwrite(STDOUT,"Apache2 conf file $a2confPath not found for this project. Generating a new one...\n");
-			$exec("cat \"".CLI."/wfw/templates/a2-site.conf.template\" | sed -e \"s+@ROOTPATH+$pPath+g\" >> \"$a2confPath\"");
+			fwrite(STDOUT,"Apache2 conf file $a2confPath not found for this project. Generating a new one with document root at $pPath...\n");
+			$exec("cat \"".dirname(__DIR__)."/wfw/templates/a2-site.conf.template\" | sed -e \"s+@ROOTPATH+$pPath+g\" >> \"$a2confPath\"");
 			fwrite(STDOUT,"Apache2 conf file created.\n");
 		}
 
@@ -703,18 +833,18 @@ try{
 		//clear all caches to be sure all will reloaded.
 		(new HTTPRequest("http://127.0.0.1/wfw/clear_caches.php",[],["method" =>  "GET"]))
 			->send();
-		fwrite(STDOUT,"Cahes cleaned\n");
+		fwrite(STDOUT,"Caches cleaned\n");
 		fwrite(STDOUT,"Restarting daemons...\n");
 		//restart all daemons to take conf changes in consideration
 		$exec("wfw self service restart -all");
 		fwrite(STDOUT,"Daemons restarted.\n");
 		fwrite(STDOUT,"$path successfully imported into $pPath.\n");
-		fwrite(STDOUT,"\e[33m[WARN] If some files have been removed in this project,"
+		/*fwrite(STDOUT,"\e[33m[WARN] If some files have been removed in this project,"
 			." they havn't been removed by the import command. You must do it manually.\n"
-		);
+		);*/
 	} else if($argvReader->exists('locate')){
 		$args = $argvReader->get('locate');
-		if(count($args) === 0) fwrite(STDOUT,ROOT.PHP_EOL);
+		if(count($args) === 0) fwrite(STDOUT,dirname(__DIR__,2).PHP_EOL);
 		else if(isset($data[$args[0]])) fwrite(STDOUT,dirname($data[$args[0]]).PHP_EOL);
 		else throw new InvalidArgumentException("$args[0] is not a registered project !");
 	}else{

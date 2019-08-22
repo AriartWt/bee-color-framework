@@ -12,5 +12,5 @@ interface ICommandBus {
 	 *
 	 * @return mixed
 	 */
-	public function execute(ICommand $command):void;
+	public function executeCommand(ICommand $command):void;
 }

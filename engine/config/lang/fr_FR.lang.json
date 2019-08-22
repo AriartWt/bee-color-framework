@@ -1,0 +1,275 @@
+{
+	"server" : {
+		"engine" : {
+			"core" : {
+				"app" : {
+					"ACTION_HANDLER_NOT_FOUND" : "L'ActionHandler [[$]] n'existe pas !",
+					"DISABLED_MODULE" : "Le package et/ou module auquel vous tentez d'accéder n'est pas activé.",
+					"INTERNAL_ERROR" : "Erreur interne : [$]",
+					"MUST_BE_LOGGED" : "Vous devez être connecté pour effectuer cette action.",
+					"ACCESS_DENIED" : "Accès refusé",
+					"INSUFFICIENT_PRIVILEGIES":"Privilèges utilisateur insuffisants.",
+					"BAD_CSRF_TOKEN" : "Token CSRF invalide.",
+					"404_NOT_FOUND" : "La page '[$]' n'existe pas !"
+				}
+			},
+			"package" : {
+				"lang" : {
+					"forms" : {
+						"GENERAL_ERROR" : "Les données sont invalides !",
+						"REQUIRED" : "Ce champ est requis !",
+						"INVALID_STRING" : "Ceci n'est pas une chaîne de caractères valide !",
+						"TOO_LARGE_KEY" : "Cette clé ne peut pas éxceder les [$] caractères !"
+					},
+					"EMPTY_PATH" : "La clé de traduction doit avoir une taille supérieure à 0 !"
+				},
+				"general" : {
+					"forms" : {
+						"GENERAL_ERROR" : "Les données sont invalides !",
+						"REQUIRED" : "Ce champ est requis !",
+						"INVALID_ZIP_CODE" : "Ce code postal est invalide !",
+						"INVALID_COUNTRY_NAME" : "Ce nom de pays n'est pas valide !"
+					}
+				},
+				"users" : {
+					"mail" : {
+						"subject" : {
+							"CONFIRM_MAIL_CHANGE" : "Confirmation de votre nouvelle adresse mail",
+							"CONFIRM_REGISTRATION" : "Confirmation de votre inscription",
+							"RESET_PASSWORD" : "Réinitialisation de votre mot de passe"
+						},
+						"INTRO" : "Cher utilisateur [$],\n",
+						"explain" : {
+							"CONFIRM_MAIL_CHANGE" : "Vous recevez ce message automatique parce que vous venez de changer votre adresse mail. Afin que ce changement puisse prendre effet, merci de confirmer votre nouvelle adresse en suivant ce lien : [$]\n",
+							"CONFIRM_REGISTRATION" : "Vous recevez ce message automatique parce que vous venez de vous inscrire sur notre site internet. Afin d'activer votre compte, merci de suivre ce lien : [$]\n",
+							"RESET_PASSWORD" : "Vous recevez ce message automatique parce que vous souhaitez réinitialiser votre mot de passe. Afin de pouvoir en définir un nouveau, merci de suivre ce lien : [$]\n"
+						},
+						"WARN" : "\nCeci est un mail automatique, merci de ne pas y répondre.\n\n",
+						"END" : "Merci pour votre confiance,\nEn vous souhaitant une excellente journée,\nCordialement"
+					},
+					"forms" : {
+						"LOGIN" : "Identifiant",
+						"PASSWORD" : "Mot de passe",
+						"PASSWORD_CONFIRM" : "Confirmation du mot de passe",
+						"MAIL" : "Mail",
+						"PHONE" : "Mobile",
+						"AGREEMENT" : "J'accepte les <a href=\"[$]\" target=\"_blank\">les conditions générales d'utilisation</a>",
+						"VALID_MAIL" : "Adresse mail valide",
+						"MAIL_CONFIRM" : "Confirmation de l'adresse mail",
+						"LOGIN_FORM_ERROR" : "Le login ou le mot de passe est incorrect.",
+						"INVALID" : "Ce champ est incorrect !",
+						"REQUIRED" : "Ce champ est requis !",
+						"INVALID_LOGIN" : "Un identifiant doit contenir de 4 à 128 caractères !",
+						"INVALID_PASSWORD" : "Votre mot de passe doit être composé de chiffres, lettres majuscules et minuscules et au moins un caractère spécial pour une taille maximale de 128 caractères.",
+						"NOT_SAME_PASSWORD" : "Les mots de passe ne sont pas identiques.",
+						"LOGIN_UNAVAILABLE" : "Ce login n'est pas disponible !",
+						"INVALID_MAIL" : "Cette adresse mail n'est pas valide !",
+						"NOT_SAME_MAIL" : "Les adresses mail ne sont pas indentiques !",
+						"OLD_PASSWORD" : "Ancien mot de passe",
+						"NEW_PASSWORD" : "Nouveau mot de passe",
+						"GENERAL_ERROR" : "Certaines informations sont erronées !",
+						"MINTIME_ERROR" : "Ce formulaire a été détéctée comme spam éventuel car il a été soumis trop rapidement.",
+						"SPAM_ERROR" : "Ce formulaire a été détécté comme une tentative de spam.",
+						"INVALID_ID" : "Ceci n'est pas un identifiant valide !",
+						"INVALID_USER_TYPE" : "Seuls les types d'utilisateurs suivants sont valides : [$]",
+						"INVALID_ID_LIST" : "L'un des identifiants est invalide !"
+					},
+					"WRONG_PASSWORD" : "Mot de passe incorrect !",
+					"UNKNOWN_USER" : "Cet utilisateur n'existe pas !",
+					"USER_NOT_FOUND" : "L'utilisateur [$] n'existe pas.",
+					"MAIL_CONFIRMED" : "Votre adresse mail a bien été confirmée.",
+					"RESET_PASSWORSD_CONFIRMED" : "Votre mot de passe a bien été réinitialisé.",
+					"INVALID_USER_STATE" : "L'état de cet utilisateur est invalide.",
+					"BAD_CONFIRM_CODE" : "Votre code de confirmation n'est pas valide.",
+					"LOGOUT" : "Vous avez bien été déconnecté.",
+					"REGISTRATION_MAIL_SENT" : "Votre demande d'inscription a bien été prise en compte. Un email de confirmation vous a été envoyé par e-mail.",
+					"REGISTRATION_SUCCESS" : "Votre compte a bien été validé, vous pouvez maintenant vous connecter.",
+					"USER_CONFIRMED_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la confirmation de votre inscription, merci de contacter l'administrateur  (UserConfirmedEvent not recieved)",
+					"USER_PASSWORD_RESETED_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la réinitialisation de votre mot de passe, merci de contacter l'administrateur  (UserPasswordResetedEvent not recieved)",
+					"CONFIRM_MAIL_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la confirmation de votre adresse mail, merci de contacter l'administrateur (UserMailConfirmedEvent not recieved).",
+					"CANCEL_MAIL_CHANGE_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la tentative d'annulation de changement de votre adresse mail, merci de contacter l'administrateur (CanceledUserMailChangeEvent not recieved).",
+					"CANCEL_PASSWORD_RETRIEVING_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la tentative d'annulation de réinitialisation du mot de passe, merci de contacter l'administrateur (UserPasswordRetrievingCanceledEvent not recieved).",
+					"CANCEL_REGISTRATION_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la tentative d'annulation d'inscription de cet utilisateur, merci de contacter l'administrateur (UserRegistrationProcedureCanceledEvent not recieved).",
+					"USER_TYPE_CHANGED_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors du changement de rôle de cet utilisateur, merci de contacter l'administrateur (UserTypeChangedEvent not recieved).",
+					"USER_REGISTERED_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de l'enreigstrement de cet utilisateur, merci de contacter l'administrateur (UserRegisteredEvent not recieved).",
+					"USER_CANT_DISABLE_HIS_OWN_ACCOUNT" : "Un utilisateur ne peut pas désactiver son propre compte !",
+					"USER_CANT_DELETE_HIS_OWN_ACCOUNT" : "Un utilisateur ne peut pas supprimer son propre compte !",
+					"ASKED_FOR_MAIL_CHANGE_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la modification de votre adresse mail, merci de contacter l'administrateur (AskedForMailChangeEvent not recieved)",
+					"ASKED_FOR_PASSWORD_RETRIEVING_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors du lancement de la procédure de récupération du mot de passe, merci de contacter l'administrateur (AskedForPasswordRetrievingEvent not recieved)",
+					"USER_PASSWORD_CHANGED_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la tentative de modification de votre mot de passe, merci de contacter l'administrateur (UserPasswordChangedEvent not recieved)",
+					"USER_RESETED_PASSWORD_EVENT_NOT_RECIEVED" : "Une erreur est survenue lors de la tentative de réinitialisation de votre mot de passe, merci de contacter l'administrateur (UserPasswordResetedEvent not recieved)",
+					"CONNECTION_FAILED" : "Vos informations ne vous permettent pas de vous identifier.",
+					"CONNECTION_ACCEPTED" : "Vous êtes maintenant connecté.",
+					"SERVICE_UNAVAILABLE" : "Service de connexion indisponible, merci de réessayer ultérieurement."
+				},
+				"uploader" : {
+					"forms" : {
+						"REQUIRED" : "Ce champ est requis !",
+						"GENERAL_ERROR" : "Les données sont invalides !",
+						"INVALID_STRING" : "Ceci n'est pas une chaîne de caractères valide !",
+						"MAX_ARRAY_LENGTH_REACHED" : "Ce tableau ne peut pas contenir plus de [$] éléments",
+						"INVALID_FILE" : "Ce fichier est invalide ou trop volumineux !",
+						"INVALID_FILE_NAME" : "Ce nom de fichier n'est pas valide.\nUn nom de fichier doit contenir moins de [$] caractères et aucun /"
+					},
+					"STORAGE_QUOTA_EXCEED" : "Vous n'avez plus assez d'espace disque disponible !",
+					"UNKNOWN_FOLDER" : "Le dossier spécifié n'existe pas !",
+					"FILE_ALREADY_EXISTS" : "Le(s) fichier(s) ci-dessous existe(nt) déjà dans ce dossier. Renommez le(s) puis réessayez : \n[$]",
+					"RENAME_LIST_ERROR" : "La liste d'éléments à renommer ne correspond pas à la liste des nouveaux noms !"
+				}
+			}
+		}
+	},
+	"client" : {
+		"Default" : {},
+		"ui" : {
+			"fileExplorer" : {
+				"FOLDER_NAME" : "Nom du dossier",
+				"CREATE_BTN" : "Créer",
+				"WAITING_FOLDER_CREATION" : "Création du dossier en cours, veuillez patienter...",
+				"ERR_FOLDER_CREATION" : "Impossible de créer le dossier !",
+				"CANCEL" : "Annuler",
+				"WARN_MUST_CHOOSE_ONE" : "Vous devez choisir au moins un élément !",
+				"CONFIRM_REMOVE_SELECTED" : "Voulez-vous vraiment supprimer le(s) élément(s) séléctionné(s) ?",
+				"REMOVE_BTN" : "Supprimer",
+				"WAITING_REMOVE_SELECTED" : "Suppression du/des éléments en cours, veuillez patienter...",
+				"ERR_REMOVE_SELECTED" : "Une erreur est survenur lors de la suppression ([$])",
+				"WAITING_RENAME" : "Renommage en cours, veuillez patienter...",
+				"WAITING_MOVE" : "Déplacement du/des éléments en cours, veuillez patienter...",
+				"ERR_RENAME_MOVE" : "L'élement n'a pas pu être renommé ou déplacé !",
+				"CREATE_FOLDER" : "Créer un dossier",
+				"WARN_MEDIA_TYPE_ACCEPTED" : "Seuls les fichiers audio mp3, video mp4 et images sont admis !",
+				"WAITING_SEND_FILE" : "Envoi du/des fichier(s) en cours, veuillez patienter...",
+				"ERR_SERVER_REFUSES_FILE" : "Le serveur n'a pas pu enregistrer votre fichier.\nSeuls les fichiers images, mp3 et mp4 de moins de 300Mo sont acceptés !\nSi votre fichier est valide, c'est que votre espace de stockage est plein, pensez à supprimer les fichiers intuiles.",
+				"ADD_FILE" : "Ajouter un ou plusieurs fichiers",
+				"REMOVE_SELECTED" : "Supprimer le(s) élément(s) séléctionné(s)",
+			 	"LOADING" : "Chargement en cours, veuillez patienter..."
+			},
+			"lteditor" : {
+				"BOLD" : "Gras",
+				"ITALIC" : "Italique",
+				"UNDERLINE" : "Souligné",
+				"STRIKE_THROUGH" : "Barré",
+				"O_LIST" : "Liste numérotée",
+				"U_LIST" : "Liste à puces",
+				"JUSTIFY_FULL" : "Justifié",
+				"JUSTIFY_LEFT" : "Aligner à gauche",
+				"JUSTIFY_CENTER" : "Centrer",
+				"JUSTIFY_RIGHT" : "Aligner à droite",
+				"INDENT" : "Augmenter le retrait",
+				"OUTDENT" : "Diminuer le retrait",
+				"INSERT_TITLE" : "Insérer un titre",
+				"TITLE_N" : "Titre [$]",
+				"CLEAN" : "Supprimer tous les styles de la séléction",
+				"LINK" : "Insérer/gérer un lien"
+			},
+			"Notifications" : {
+				"_BUBLE_CLICK_TO_CLOSE" : "Cliquez pour fermer la notification"
+			}
+		},
+		"packages" : {
+			"users" : {
+				"CREATE_USER" : "Créer un utilisateur",
+				"EDIT_USER" : "Modifier un utilisateur",
+				"SAFE_PWD" : "Sécurisé",
+				"PWD_HINT" : "Le mot de passe n'est pas assez sécurisé !\nIl doit contenir au minimum 8 caractéres dont au moins : \n-une lettre minuscule\n-une lettre majuscule\n-un chiffre\n-un caractère qui n'est ni une lettre, ni un chiffre (ex: -/@'.+*$%)",
+				"WARN_PWD_NOT_MATCH" : "Les mots de passe ne correspondent pas !",
+				"WAIT_EDIT_MAIL" : "Changement de l'adresse e-mail en cours, veuillez patienter...",
+				"ERR_EDIT_MAIL" : "Impossible de changer l'adresse e-mail de cet utilisateur !",
+				"CLICK_TO_DISABLE" : "Cliquez pour désactiver cet utilisateur",
+				"CLICK_TO_ENABLE" : "Cliquez pour activer cet utilisateur",
+				"CLICK_TO_CANCEL_MAIL" : "Cliquez pour annuler la demande de changement de mail de cet utilisateur",
+				"CLICK_TO_CANCEL_PWD" : "Cliquez pour annuler la procédure de récupération de mot de passe de cet utilisateur",
+				"CLICK_TO_CANCEL_REGISTRATION" : "Cliquez pour annuler le mail de confirmation d'inscription et placer l'utilisateur dans l'état désactivé.",
+				"WAIT_EDIT_USER_STATE" : "Modification de l'état de l'utilisateur en cours, veuillez patienter...",
+				"USER_NAME" : "Login",
+				"ROLE" : "Rôle",
+				"EMAIL" : "E-mail",
+				"STATE" : "État",
+				"ERR_EDIT_USER_STATE" : "Impossible de modifier l'état de cet utilisateur !",
+				"WAIT_PWD_RESET" : "Réinitialisation du mot de passe en cours, veuillez patienter...",
+				"ERR_PWD_RESET" : "Impossible de réinitialiser le mot de passe de cet utilisateur !",
+				"BTN_RESET_PWD" : "Réinitialiser le mot de passe",
+				"PWD" : "Mot de passe",
+				"PWD_CONFIRM" : "Confirmation du mot de passe",
+				"RESET" : "Réinitialiser",
+				"CANCEL" : "Annuler",
+				"ADMIN" : "Administrateur",
+				"CLIENT" : "Client",
+				"CREATE" : "Créer",
+				"WAIT_CREATE_USER" : "Création de l'utilisateur en cours, veuillez patienter...",
+				"ERR_CREATE_USER" : "Impossible de créer l'utilisateur !",
+				"WARN_MUST_SELECT_ONE" : "Vous devez séléctionner au moins un utilisateur !",
+				"WAIT_ENABLE_USERS" : "Les utilisateurs séléctionnés vont être activés, veuillez patienter...",
+				"ERR_ENABLE_USERS" : "Impossible d'activer les utilisateurs séléctionnés !",
+				"WAIT_DISABLE_USERS" : "Les utilisateurs séléctionnés vont être désactivés, veuillez patienter...",
+				"ERR_DISABLE_USERS" : "Impossible de désactiver les utilisateurs séléctionnés !",
+				"CONFIRM_REMOVE_USERS" : "Voulez-vous vraiment supprimer les utilisateurs séléctionnés ?",
+				"REMOVE" : "Supprimer",
+				"WAIT_REMOVE_USERS" : "Les utilisateurs séléctionnés vont être supprimés, veuillez patienter...",
+				"ERR_REMOVE_USERS" : "Impossible de supprimer les utilisateurs séléctionnés !",
+				"BTN_CREATE" : "Créer un nouvel utilisateur",
+				"BTN_REMOVE" : "Supprimer les utilisateurs séléctionnés",
+				"BTN_ENABLE" : "Activer les utilisateurs séléctionnés",
+				"BTN_DISABLE" : "Désactiver les utilisateurs séléctionnés",
+				"WAIT_LOADING_USERS" : "Chargement de la liste des utilisateurs en cours, veuillez patienter...",
+				"ERR_LOADING_USERS" : "Impossible de charger la liste des utilisateurs !",
+				"EMPLOYEE" : "Employé",
+				"ENABLED" : "Activé",
+				"DISABLED" : "Désactivé",
+				"WAITING_MAIL" : "&#9203; Confirmation e-mail",
+				"PWD_RESET" : "Récupération du mot de passe",
+				"WAITING_REGISTRATION" : "&#9203; Confirmation d'inscription"
+			}
+		},
+		"plugins" : {
+			"adminPanel" : {
+				"default" : {
+					"MANAGEMENT_PANEL_TITLE" : "Gestion de votre entreprise",
+					"MANAGEMENT_PANEL_HINT" : "Gérez votre entreprise",
+					"USER_PANEL_TITLE" : "Gestion de vos utilisateurs",
+					"USER_PANEL_HINT" : "Gérez vos utilisateurs",
+					"NEWS_PANEL_TITLE" : "Gestion de vos articles",
+					"NEWS_PANEL_HINT" : "Gérez vos actualités",
+					"CONTACT_PANEL_TITLE" : "Gestion de vos prises de contact",
+					"CONTACT_PANEL_HINT" : "Gérez vos prises de contact",
+					"LOGOUT" : "Se déconnecter",
+					"DISCONNECTED" : "Vous avez été deconnecté",
+					"CONFIRM_LOGOUT" : "Voulez-vous vraiment vous déconnecter ?",
+					"YES" : "Oui",
+					"NO" : "Non"
+				}
+			},
+			"lteditor" : {
+				"advancedLink" : {
+					"DESCRIPTION" : "Insérer/gérer un lien",
+					"LINK_DESC" : "Description du lien",
+					"LINK_ADDR" : "Adresse du lien",
+					"OPEN_NEW_TAB" : "Ouvrir dans un nouvel onglet",
+					"EDIT" : "Modifier",
+					"CREATE" : "Créer",
+					"CANCEL" : "Annuler",
+					"REMOVE" : "Supprimer",
+					"WARN_LINK_REQUIRED" : "Le lien doit être précisé !",
+					"WARN_DESC_REQUIRED" : "La description du lien doit-être précisée !"
+				},
+				"limitedForeColor" : {
+					"WRITING_COLOR" : "Couleur de l'écriture",
+					"DEFAULT_COLOR" : "Couleur par défaut"
+				},
+				"medias" : {
+					"DESCRIPTION" : "Importer/gérer un média",
+					"CHOOSE_MEDIA_TO_IMPORT" : "Choisir le média à importer",
+					"CHOOSE_MEDIA" : "Choisir un média",
+					"CHOOSE" : "Choisir",
+					"EDIT" : "Modifier",
+					"CREATE" : "Créer",
+					"CANCEL" : "Annuler",
+					"LAYOUT" : "Disposition",
+					"WARN_ONLY_ONE_ALLOWED" : "Vous ne pouvez importer qu'un seul média à la fois !",
+					"WARN_MUST_CHOOSE_ONE" : "Vous devez choisir un fichier !",
+					"WARN_MUST_SELECT_MEDIA" : "Vous devez selectionner un média !"
+				}
+			}
+		}
+	}
+}

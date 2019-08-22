@@ -16,14 +16,14 @@ interface IEventStore {
 	 *
 	 * @return IAggregateRoot|null
 	 */
-	public function get(UUID $aggregateId):?IAggregateRoot;
+	public function getAggregateRoot(UUID $aggregateId):?IAggregateRoot;
 	
 	/**
 	 * Retourne tous les aggrégats correspondant aux identifiants.
 	 * @param UUID[] $aggregatesId Liste des identifiants d'aggrégats
 	 * @return IAggregateRoot[]
 	 */
-	public function getAll(UUID... $aggregatesId):array;
+	public function getAllAggregateRoot(UUID... $aggregatesId):array;
 
 	/**
 	 *  Enregistre une séquence d'événements pour un aggrégat
@@ -33,12 +33,12 @@ interface IEventStore {
 	 *                          l'aggrégat
 	 *
 	 */
-	public function save(IAggregateRoot $aggregate, ?ICommand $command = null);
+	public function saveAggregateRoot(IAggregateRoot $aggregate, ?ICommand $command = null);
 	
 	/**
 	 * Enregistre les séquences d'événements de tous les AggregateRoot
 	 * @param null|ICommand  $command Commande à l'origine de la mise à jour des aggrégats
 	 * @param IAggregateRoot ...$aggregates Liste des aggrégats
 	 */
-	public function saveAll(?ICommand $command = null, IAggregateRoot... $aggregates);
+	public function saveAllAggregateRoots(?ICommand $command = null, IAggregateRoot... $aggregates);
 }

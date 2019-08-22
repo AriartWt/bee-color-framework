@@ -35,7 +35,7 @@ final class AccessControlCenter implements IAccessControlCenter {
 	 *
 	 * @param IAccessRule $rule Règle à ajouter
 	 */
-	public function addRule(IAccessRule $rule): void {
+	public function addAccessRule(IAccessRule $rule): void {
 		$this->_rules[] = $rule;
 	}
 
@@ -48,7 +48,7 @@ final class AccessControlCenter implements IAccessControlCenter {
 	 * @param IAction $action Action à tester
 	 * @return IAccessPermission
 	 */
-	public function checkPermissions(IAction $action): IAccessPermission {
+	public function checkAccessPermission(IAction $action): IAccessPermission {
 		foreach($this->_rules as $rule){
 			$res = $rule->check($action);
 			if(is_null($res)) return new AccessPermission(true);

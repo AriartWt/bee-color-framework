@@ -13,10 +13,10 @@ interface ICacheSystem {
 	public function get(string $key);
 
 	/**
-	 * @param string[] $keys Clé des valeurs à chercher
-	 * @return \Traversable
+	 * @param string[] $keys Clés des valeurs à chercher
+	 * @return iterable
 	 */
-	public function getAll(array $keys):\Traversable;
+	public function getAll(array $keys):iterable;
 
 	/**
 	 * @param string[] $keys Clés des valeurs à supprimer du cache

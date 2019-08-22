@@ -38,7 +38,7 @@ class KVSContainerDataManager implements IKVSContainerDataManager {
 		$this->_serializer = $serializer;
 		$this->_container = $container;
 		$this->_inflector = $inflector;
-		$this->_registeryPath = $container->getSavePath().DS."key_registery.serialized";
+		$this->_registeryPath = $container->getSavePath().'/'."key_registery.serialized";
 
 		if(file_exists($this->_registeryPath)){
 			$registery = file_get_contents($this->_registeryPath);

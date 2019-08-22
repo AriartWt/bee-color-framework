@@ -15,7 +15,8 @@ interface IModelBuilder {
 	 *
 	 * @param string $model Classe du model à instancier
 	 *
+	 * @param array  $params
 	 * @return IModel
 	 */
-	public function buildModel(string $model):IModel;
+	public function buildModel(string $model, array $params = []):IModel;
 }

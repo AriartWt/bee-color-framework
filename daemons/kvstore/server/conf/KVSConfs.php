@@ -4,9 +4,13 @@ namespace wfw\daemons\kvstore\server\conf;
 use stdClass;
 use wfw\engine\core\conf\FileBasedConf;
 use wfw\engine\core\conf\io\adapters\JSONConfIOAdapter;
-use wfw\engine\lib\logger\DefaultLogFormater;
+use wfw\engine\lib\logger\CombinedLogger;
+use wfw\engine\lib\logger\ConsoleLogFormater;
+use wfw\engine\lib\logger\SimpleLogFormater;
 use wfw\engine\lib\logger\FileLogger;
 use wfw\engine\lib\logger\ILogger;
+use wfw\engine\lib\logger\StandardLogger;
+use wfw\engine\lib\PHP\objects\StdClassOperator;
 use wfw\engine\lib\PHP\types\PHPString;
 
 /**
@@ -49,7 +53,13 @@ final class KVSConfs {
 	 * @throws \wfw\engine\lib\errors\InvalidTypeSupplied
 	 * @throws \wfw\engine\lib\errors\PermissionDenied
 	 */
-	public function __construct(string $engineConfs,?string $siteConfs=null,string $basePath = DAEMONS,bool $noLogger=false) {
+	public function __construct(
+		string $engineConfs,
+		?string $siteConfs=null,
+		?string $basePath = null,
+		bool $noLogger=false
+	) {
+		if(is_null($basePath)) $basePath = dirname(__DIR__,3);
 		$this->_basePath = $this->resolvePath($basePath);
 
 		$confIO = new JSONConfIOAdapter();
@@ -67,7 +77,7 @@ final class KVSConfs {
 
 		$confPath = new PHPString($confPath);
 		if(!$confPath->startBy("/")){
-			$confPath = $basePath.DS.$confPath;
+			$confPath = "$basePath/$confPath";
 		}else{
 			$confPath = (string) $confPath;
 		}
@@ -78,7 +88,7 @@ final class KVSConfs {
 		if(!is_dir($workingDir)) mkdir($workingDir,0700,true);
 
 		if(!$noLogger){
-			$this->_logger = (new FileLogger(new DefaultLogFormater(),...[
+			$this->_logger = (new FileLogger(new SimpleLogFormater(),...[
 				$this->getLogPath(null,"log"),
 				$this->getLogPath(null,"err"),
 				$this->getLogPath(null,"warn"),
@@ -89,8 +99,25 @@ final class KVSConfs {
 				$this->isCopyLogModeEnabled(null)
 			)->autoConfByLevel($this->_conf->getInt("logs/level") ?? ILogger::ERR);
 
+			if($this->_conf->getBoolean("logs/console")) $this->_logger = new CombinedLogger(
+				new StandardLogger(new ConsoleLogFormater(new SimpleLogFormater())),
+				$this->_logger
+			);
+
 			foreach($this->getContainers(false) as $containerName=>$data){
-				$this->_instanceLoggers[$containerName] = (new FileLogger(new DefaultLogFormater(),...[
+				try{
+					$path = $this->_conf->getString("containers/$containerName/project_path");
+					$tmpConf = new FileBasedConf("$path/site/config/conf.json",new JSONConfIOAdapter());
+					$customConf = $tmpConf->getObject("server/daemons/custom_config/kvs");
+					if(!is_null($customConf)){
+						$currentConf = new StdClassOperator($this->_conf->getObject("containers/$containerName"));
+						$currentConf->mergeStdClass($customConf);
+						$this->_conf->set("containers/$containerName",$currentConf->getStdClass());
+					}
+				}catch(\Exception $e){
+					$this->_logger->log("Unable to read $containerName configurations : $e",ILogger::ERR);
+				}
+				$this->_instanceLoggers[$containerName] = (new FileLogger(new SimpleLogFormater(),...[
 					$this->getLogPath($containerName,"log"),
 					$this->getLogPath($containerName,"err"),
 					$this->getLogPath($containerName,"warn"),
@@ -102,6 +129,14 @@ final class KVSConfs {
 				)->autoConfByLevel($this->_conf->getInt("containers/$containerName/logs/level")
 				                   ?? $this->_conf->getInt("logs/level") ?? ILogger::ERR
 				);
+				if($this->_conf->getBoolean("containers/$containerName/logs/console")
+					?? $this->_conf->getBoolean("logs/console"))
+				{
+					$this->_instanceLoggers[$containerName] = new CombinedLogger(
+						new StandardLogger(new ConsoleLogFormater(new SimpleLogFormater())),
+						$this->_instanceLoggers[$containerName]
+					);
+				}
 			}
 		}
 	}
@@ -142,17 +177,25 @@ final class KVSConfs {
 		$path = new PHPString($path);
 		if(!$path->startBy("/")){
 			if($path->startBy("{ROOT}")){
-				return $path->replaceAll("{ROOT}",ROOT);
+				return $path->replaceAll("{ROOT}",dirname(__DIR__,4));
 			}else{
-				if($useWorkingPathAsbase){
-					return $this->getWorkingDir().DS.$path;
-				}else{
-					return $this->_basePath.DS.$path;
-				}
+				if($useWorkingPathAsbase) return $this->getWorkingDir()."/$path";
+				else return "$this->_basePath/$path";
 			}
 		}else{
 			return $path;
 		}
+	}
+
+	/**
+	 * @param string $instance
+	 * @return bool
+	 * @throws \InvalidArgumentException
+	 */
+	public function enabled(string $instance):bool{
+		if (!$this->_conf->existsKey("containers/$instance"))
+			throw new \InvalidArgumentException("Unknown instance $instance");
+		return $this->_conf->getBoolean("containers/$instance/enabled") ?? true;
 	}
 
 	/**
@@ -163,7 +206,7 @@ final class KVSConfs {
 			$this->resolvePath($this->_conf->getString(self::SOCKET_PATH))
 		);
 		if(!$socketPath->startBy("/")){
-			return $this->getWorkingDir().DS.$socketPath;
+			return $this->getWorkingDir().'/'.$socketPath;
 		}else{
 			return $socketPath;
 		}
@@ -177,7 +220,7 @@ final class KVSConfs {
 			$this->resolvePath($this->_conf->getString(self::DB_PATH))
 		);
 		if(!$dbPath->startBy("/")){
-			return $this->getWorkingDir().DS.$dbPath;
+			return $this->getWorkingDir().'/'.$dbPath;
 		}else{
 			return $dbPath;
 		}
@@ -259,7 +302,7 @@ final class KVSConfs {
 			$this->resolvePath($this->_conf->getString(self::ERROR_LOGS)??"error_logs.txt")
 		);
 		if(!$errorPath->startBy("/")){
-			return $this->getWorkingDir().DS.$errorPath;
+			return $this->getWorkingDir().'/'.$errorPath;
 		}else{
 			return $errorPath;
 		}
@@ -270,7 +313,7 @@ final class KVSConfs {
 	 * @return bool|null
 	 */
 	public function isCopyLogModeEnabled(?string $container=null):?bool{
-		$res = $this->_conf->getBoolean(($container ? "instances/$container/" : "") ."logs/copy");
+		$res = $this->_conf->getBoolean(($container ? "containers/$container/" : "") ."logs/copy");
 		if(is_null($res)) return true;
 		else return $res;
 	}

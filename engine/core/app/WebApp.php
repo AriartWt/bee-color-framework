@@ -1,8 +1,10 @@
 <?php
 namespace wfw\engine\core\app;
 
+use wfw\engine\core\action\errors\ActionHandlerNotEnabled;
 use wfw\engine\core\action\errors\ActionResolutionFailure;
 use wfw\engine\core\notifier\Message;
+use wfw\engine\core\response\errors\ResponseHandlerNotEnabled;
 use wfw\engine\core\response\responses\ErrorResponse;
 use wfw\engine\core\response\errors\ResponseResolutionFailure;
 use wfw\engine\core\response\responses\StaticResponse;
@@ -31,9 +33,9 @@ final class WebApp {
 	private function run():void{
 		$action = $this->_context->getAction();
 		$session = $this->_context->getSession();
+		$session->start();
 		$cache = $this->_context->getCacheSystem();
-		$cacheKey = $this->_context::CACHE_KEYS[$this->_context::VIEWS]
-					."/".$action->getLang()."::".$action->getRequest()->getURI();
+		$cacheKey = $this->_context::VIEWS."/".$action->getLang()."::".$action->getRequest()->getURI();
 
 		if( !$session->isLogged()
 			&& $action->getRequest()->getMethod() === "GET"
@@ -41,7 +43,7 @@ final class WebApp {
 		) $layout = $cache->get($cacheKey);
 		else{
 			$translator = $this->_context->getTranslator();
-			$permission = $this->_context->getAccessControlCenter()->checkPermissions($action);
+			$permission = $this->_context->getAccessControlCenter()->checkAccessPermission($action);
 			$response = $this->_context->getActionHook()->hook($action,$permission);
 			if(is_null($response)){
 				if($permission->isGranted()){
@@ -49,26 +51,25 @@ final class WebApp {
 						$actionRouter = $this->_context->getActionRouter();
 						$handler = $actionRouter->findActionHandler($action);
 						$response = $handler->handle($action);
+					}catch(ActionHandlerNotEnabled $e){
+						$response = new ErrorResponse(
+							HTTPStatus::FORBIDDEN,
+							$translator->get("server/engine/core/app/DISABLED_MODULE")
+						);
 					}catch(ActionResolutionFailure $e){
-						if($action->getRequest()->isAjax()){
-							$response = new ErrorResponse(
-								500,
-								$translator->getTranslateAndReplace(
-									"server/engine/core/app/ACTION_HANDLER_NOT_FOUND",
-									null,
-									$action->getInternalPath()
-								)
-							);
-						}else{
-							$response = new StaticResponse($action);
-						}
+						if($action->getRequest()->isAjax()) $response = new ErrorResponse(
+							HTTPStatus::INTERNAL_SERVER_ERROR,
+							$translator->getAndReplace(
+								"server/engine/core/app/ACTION_HANDLER_NOT_FOUND",
+								$action->getInternalPath()
+							)
+						);
+						else $response = new StaticResponse($action);
 					}catch(\Error $e){
 						$response = new ErrorResponse(
-							500,
-							$translator->getTranslateAndReplace(
-								"server/engine/core/app/INTERNAL_ERROR",
-								null,
-								$e
+							HTTPStatus::INTERNAL_SERVER_ERROR,
+							$translator->getAndReplace(
+								"server/engine/core/app/INTERNAL_ERROR",$e
 							)
 						);
 					}
@@ -76,7 +77,7 @@ final class WebApp {
 					if(is_null($permission->getResponse())){
 						if($action->getRequest()->isAjax()){
 							$response = new ErrorResponse(
-								100,
+								HTTPStatus::FORBIDDEN,
 								$translator->getAndTranslate(
 									"server/engine/core/app/MUST_BE_LOGGED"
 								)
@@ -106,12 +107,17 @@ final class WebApp {
 			$responseRouter = $this->_context->getResponseRouter();
 			try{
 				$handler = $responseRouter->findResponseHandler($action,$response);
+			}catch(ResponseHandlerNotEnabled $e){
+				$response = new ErrorResponse(
+					HTTPStatus::FORBIDDEN,
+					$translator->get("server/engine/core/app/DISABLED_MODULE")
+				);
+				$handler = $responseRouter->findResponseHandler($action,$response);
 			}catch(ResponseResolutionFailure $e){
 				$response = new ErrorResponse(
-					404,
-					$translator->getTranslateAndReplace(
+					HTTPStatus::NOT_FOUND,
+					$translator->getAndReplace(
 						"server/engine/core/app/404_NOT_FOUND",
-						null,
 						$action->getInternalPath()
 					)
 				);
@@ -131,7 +137,7 @@ final class WebApp {
 		if(!$action->getRequest()->isAjax()
 			&& $this->_context->getConf()->getBoolean("server/display_loading_time")){
 			echo "<div style=\"background-color:red;position:fixed;color:white;text-align:center;"
-				."width:100%;bottom:0;\">Page générée en ".((microtime(1)-START_TIME)*1000)
+				."width:100%;bottom:0;\">Generated in ".((microtime(1)-START_TIME)*1000)
 				."ms</div>";
 		}
 		if(in_array(http_response_code(),[

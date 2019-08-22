@@ -14,14 +14,14 @@ final class ConfirmUserRegistrationHandler extends UserCommandHandler{
 	 * Traite la commande
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		/** @var ConfirmUserRegistration $command */
 		/** @var User $user */
 		$user = $this->get($command->getUserId());
 		$user->confirm(
 			$command->getCode(),
-			(strlen($command->getConfirmer())>0)
-				? $command->getConfirmer()
+			(strlen($command->getInitiatorId())>0)
+				? $command->getInitiatorId()
 				: $command->getUserId(),
 			$command->getState()
 		);

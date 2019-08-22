@@ -82,7 +82,7 @@ final class ResetPasswordHandler implements IActionHandler,IDomainEventListener{
 		$this->_notifier = $notifier;
 		$this->_translator = $translator;
 		$this->_errorIcon = $router->webroot("Image/Icons/delete.png");
-		$observer->addEventListener(UserPasswordResetedEvent::class,$this);
+		$observer->addDomainEventListener(UserPasswordResetedEvent::class, $this);
 		if(!$session->exists("reset_password_form")){
 			$this->_form = $this->createForm();
 			$session->set("reset_password_form",$this->_form);
@@ -129,7 +129,7 @@ final class ResetPasswordHandler implements IActionHandler,IDomainEventListener{
 					));
 				$post = $action->getRequest()->getData()->get(IRequestData::POST,true);
 				if($this->_form->validates($post)){
-					$this->_bus->execute(new ResetPassword(
+					$this->_bus->executeCommand(new ResetPassword(
 						$data["id"],
 						$data["id"],
 						$post["password"],
@@ -152,7 +152,7 @@ final class ResetPasswordHandler implements IActionHandler,IDomainEventListener{
 	 * Méthode appelée lors de la reception d'un événement
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof UserPasswordResetedEvent) $this->_event = $e;
 	}
 }

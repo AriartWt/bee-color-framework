@@ -11,8 +11,6 @@ use wfw\engine\package\users\lib\confirmationCode\UserConfirmationCode;
 final class ResetPassword extends UserCommand{
 	/** @var string $_userId */
 	private $_userId;
-	/** @var string $_askerId */
-	private $_askerId;
 	/** @var Password $_password */
 	private $_password;
 	/** @var UserConfirmationCode $_code */
@@ -35,9 +33,8 @@ final class ResetPassword extends UserCommand{
 		UserConfirmationCode $code,
 		?UserState $state = null
 	) {
-		parent::__construct();
+		parent::__construct($askerId);
 		$this->_userId = $userId;
-		$this->_askerId = $askerId;
 		$this->_password = $password;
 		$this->_code = $code;
 		$this->_state = $state;
@@ -48,13 +45,6 @@ final class ResetPassword extends UserCommand{
 	 */
 	public function getUserId(): string {
 		return $this->_userId;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getAskerId(): string {
-		return $this->_askerId;
 	}
 
 	/**

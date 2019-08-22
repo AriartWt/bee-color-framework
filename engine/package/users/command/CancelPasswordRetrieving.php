@@ -7,8 +7,6 @@ namespace wfw\engine\package\users\command;
 final class CancelPasswordRetrieving extends UserCommand{
 	/** @var string $_userId */
 	private $_userId;
-	/** @var string $_modifierId */
-	private $_modifierId;
 
 	/**
 	 * CancelPasswordRetrieving constructor.
@@ -16,8 +14,7 @@ final class CancelPasswordRetrieving extends UserCommand{
 	 * @param string $modifierId
 	 */
 	public function __construct(string $userId, string $modifierId) {
-		parent::__construct();
-		$this->_modifierId = $modifierId;
+		parent::__construct($modifierId);
 		$this->_userId = $userId;
 	}
 
@@ -26,12 +23,5 @@ final class CancelPasswordRetrieving extends UserCommand{
 	 */
 	public function getUserId(): string {
 		return $this->_userId;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getModifierId(): string {
-		return $this->_modifierId;
 	}
 }

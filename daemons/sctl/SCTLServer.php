@@ -47,6 +47,7 @@ final class SCTLServer implements ISCTLServer {
 	public function __construct(SCTLConf $conf,ISocketProtocol $protocol, ILogger $logger){
 		$this->_conf = $conf;
 		$this->_logger = $logger;
+		if(!is_dir($conf->getWorkingDir())) mkdir($conf->getWorkingDir(),0700,true);
 		$semFile = $conf->getWorkingDir()."/sem_file.semaphore";
 		if(!file_exists($semFile))
 			touch($semFile);

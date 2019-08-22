@@ -36,7 +36,7 @@ fi
 
 echo ""
 
-declare -a services=("sctl" "kvs" "msserver")
+declare -a services=("sctl" "kvs" "rts" "msserver")
 for i in "${services[@]}"; do
 	#Reset the file if exists
 	DAEMONCONF="$INSTALLPATH/config/$i.systemctl"
@@ -64,16 +64,6 @@ done
 
 ln -s "$INSTALLPATH/../wfw/WFWGlobalLauncher.php" "/usr/bin/wfw"
 echo "Created symlink $INSTALLPATH/../wfw/WFWGlobalLauncher.php -> /usr/bin/wfw"
-
-echo ""
-echo "Creating $A2CONF...";
-cat "$INSTALLPATH/config/wfw-global.conf.template" | sed -e "s+@ROOT+$ROOTPATH+g" >> "$A2CONF"
-echo "Moving $A2CONF to $A2CONF_PATH..."
-mv "$A2CONF" "$A2CONF_PATH"
-echo "Enabling wfw-global.conf..."
-a2enconf wfw-global
-echo "Reloading apache2..."
-systemctl reload apache2
 
 echo ""
 echo "Creating $CONFPATH..."
@@ -117,6 +107,16 @@ fi
 echo ""
 ln -s "$A2_SITES_CONFS" "$A2PATH/wfw-sites"
 echo "Created symlink $A2_SITES_CONFS -> $A2PATH/wfw-sites"
+
+echo ""
+echo "Creating $A2CONF...";
+cat "$INSTALLPATH/config/wfw-global.conf.template" | sed -e "s+@ROOT+$ROOTPATH+g" >> "$A2CONF"
+echo "Moving $A2CONF to $A2CONF_PATH..."
+mv "$A2CONF" "$A2CONF_PATH"
+echo "Enabling wfw-global.conf..."
+a2enconf wfw-global
+echo "Reloading apache2..."
+systemctl reload apache2
 
 echo ""
 echo "Done."

@@ -14,36 +14,16 @@ use wfw\engine\core\security\IAccessControlCenter;
 use wfw\engine\core\session\ISession;
 use wfw\engine\core\cache\ICacheSystem;
 use wfw\engine\core\conf\IConf;
-use wfw\engine\core\errors\IErrorHandler;
 use wfw\engine\core\view\ILayoutResolver;
 
 /**
  * Contexte de l'application web.
  */
-interface IWebAppContext {
-	public const CONF="CONF";
-	public const TRANSLATOR = "TRANSLATOR";
-	public const DOMAIN_EVENT_LISTENERS = "DOMAIN_EVENT_LISTENERS";
-	public const ROUTER="ROUTER";
-	public const VIEWS="VIEWS";
-
-	public const CACHE_KEYS = [
-		self::CONF => "WFW/WebApp/Confs",
-		self::ROUTER => "WFW/WebApp/Router",
-		self::TRANSLATOR => "WFW/WebApp/Translator",
-		self::DOMAIN_EVENT_LISTENERS => "WFW/WebApp/DomainEventListeners",
-		self::VIEWS => "WFW/WebApp/Views"
-	];
-
-	/**
-	 * @return IErrorHandler Gestionnaire d'erreurs.
-	 */
-	public function getErrorHandler():IErrorHandler;
-
-	/**
-	 * @return ICacheSystem Système de cache de l'application.
-	 */
-	public function getCacheSystem():ICacheSystem;
+interface IWebAppContext extends IAppContext {
+	public const HOOKS="WFW/WebApp/Hooks";
+	public const VIEWS="WFW/WebApp/Views";
+	public const ACCESS_RULES="WFW/WebApp/AccessRules";
+	public const ROUTER = "WFW/WebApp/Router";
 
 	/**
 	 * @return ISession Session associée à l'utilisateur courant.
@@ -67,11 +47,6 @@ interface IWebAppContext {
 	public function getResponseRouter():IResponseRouter;
 
 	/**
-	 * @return IConf Configuration de l'application.
-	 */
-	public function getConf():IConf;
-
-	/**
 	 * @return IRequest Requête courante
 	 */
 	public function getRequest():IRequest;
@@ -92,16 +67,6 @@ interface IWebAppContext {
 	public function getAccessControlCenter():IAccessControlCenter;
 
 	/**
-	 * @return INotifier Notifier
-	 */
-	public function getNotifier():INotifier;
-
-	/**
-	 * @return ITranslator Gestionnaire de langues.
-	 */
-	public function getTranslator():ITranslator;
-
-	/**
 	 * @return IAction Action correspondant à la requête courante.
 	 */
 	public function getAction():IAction;
@@ -110,9 +75,4 @@ interface IWebAppContext {
 	 * @return IActionHook Hook.
 	 */
 	public function getActionHook():IActionHook;
-
-	/**
-	 * Called by the app just before closing
-	 */
-	public function close();
 }

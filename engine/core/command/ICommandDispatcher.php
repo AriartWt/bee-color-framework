@@ -11,5 +11,5 @@ interface ICommandDispatcher {
 	 * @param ICommand $command Commande à dispatcher
 	 * @throws NoCommandHandlerFound
 	 */
-	public function dispatch(ICommand $command):void;
+	public function dispatchCommand(ICommand $command):void;
 }

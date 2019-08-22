@@ -7,8 +7,6 @@ namespace wfw\engine\package\users\command;
 final class RemoveUsers extends UserCommand {
 	/** @var string[] $_users */
 	private $_users;
-	/** @var string $_removerId */
-	private $_removerId;
 	
 	/**
 	 * RemoveUsers constructor.
@@ -17,9 +15,8 @@ final class RemoveUsers extends UserCommand {
 	 * @param string[] $ids       Liste de sutilisateurs à supprimer
 	 */
 	public function __construct(string $removerId, string... $ids) {
-		parent::__construct();
+		parent::__construct($removerId);
 		$this->_users = $ids;
-		$this->_removerId = $removerId;
 	}
 	
 	/**
@@ -27,12 +24,5 @@ final class RemoveUsers extends UserCommand {
 	 */
 	public function getUsers(): array {
 		return $this->_users;
-	}
-	
-	/**
-	 * @return string
-	 */
-	public function getRemoverId(): string {
-		return $this->_removerId;
 	}
 }

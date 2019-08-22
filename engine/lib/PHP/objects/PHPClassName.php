@@ -57,7 +57,7 @@ class PHPClassName {
 	 * @return string
 	 */
 	public function getFile(bool $withoutExt=false):string{
-		return $this->getClassDirectory().DS.$this->_name.(($withoutExt)?"":".php");
+		return $this->getClassDirectory().'/'.$this->_name.(($withoutExt)?"":".php");
 	}
 
 	/**
@@ -65,7 +65,7 @@ class PHPClassName {
 	 * @return string
 	 */
 	public function getClassDirectory():string{
-		return ROOT.DS.str_replace("\\",DS,$this->_namespace);
+		return dirname(__DIR__,4).'/'.str_replace("\\",'/',$this->_namespace);
 	}
 
 	/**

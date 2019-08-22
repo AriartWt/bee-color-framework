@@ -13,11 +13,11 @@ final class RemoveUsersHandler extends UserCommandHandler{
 	 *
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		/** @var RemoveUsers $command */
 		$users = $this->getAll(...$command->getUsers());
 		foreach ($users as $user){
-			$user->remove($command->getRemoverId());
+			$user->remove($command->getInitiatorId());
 		}
 		$this->repos()->modifyAll($command,...$users);
 	}

@@ -1,7 +1,6 @@
 #!/usr/bin/php -q
 <?php
 
-
 use wfw\cli\backup\Backup;
 use wfw\cli\backup\BackupManager;
 use wfw\cli\backup\conf\BackupManagerConf;
@@ -16,7 +15,7 @@ use wfw\engine\lib\data\string\serializer\LightSerializer;
 use wfw\engine\lib\data\string\serializer\PHPSerializer;
 use wfw\engine\lib\PHP\types\PHPString;
 
-require_once dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR."init.environment.php";
+require_once dirname(__FILE__,2)."/init.environment.php";
 
 $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 	new ArgvOpt("-list","Liste tous les backups du manager",0,null,true),
@@ -29,7 +28,10 @@ $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 ])),$argv);
 
 try{
-	$confs = new BackupManagerConf(ENGINE.'/config/conf.json', SITE.'/config/conf.json');
+	$confs = new BackupManagerConf(
+		dirname(__DIR__,2).'/engine/config/conf.json',
+		dirname(__DIR__,2).'/site/config/conf.json'
+	);
 
 	$saveFile = $confs->getManagerFolder().'/manager.backup';
 	$serializer = new LightSerializer(new GZCompressor(), new PHPSerializer());
@@ -41,7 +43,7 @@ try{
 	else $manager = new BackupManager($confs->getMaxBackups());
 	$args=[];
 	if(count($argv) === 1 || count($argv) === 2 && $argvReader->exists("-make")){
-		$dirs = glob(ROOT."/*",GLOB_ONLYDIR);
+		$dirs = glob(dirname(__DIR__,2)."/*",GLOB_ONLYDIR);
 		foreach($dirs  as &$v){ $v = basename($v); }
 		$args = array_merge(["dbs"],array_diff($dirs,["backups",".",".."]));
 		var_dump($args);
@@ -63,7 +65,7 @@ try{
 			array_shift($args);
 			$path = array_shift($args);
 			if(!(new PHPString($path))->startBy('/'))
-				$path = CLI."/$path";
+				$path = dirname(__DIR__)."/$path";
 			if(!is_dir($path))
 				throw new InvalidArgumentException("$path is not a valide directory");
 			$backupFolder = $path;
@@ -91,11 +93,11 @@ try{
 					);
 				}
 			}else{
-				if(is_dir(ROOT."/$v")){
-					$backups[] = new LocalFilesBackup(ROOT."/$v",$backupFolder);
+				if(is_dir(dirname(__DIR__,2)."/$v")){
+					$backups[] = new LocalFilesBackup(dirname(__DIR__,2)."/$v",$backupFolder);
 				}else{
 					throw new InvalidArgumentException(
-						"Unknown backup type '$v' : Only direct folders under ".ROOT
+						"Unknown backup type '$v' : Only direct folders under ".dirname(__DIR__,2)
 						." or special keyword 'dbs' are accepted !"
 					);
 				}

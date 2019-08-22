@@ -10,8 +10,6 @@ use wfw\engine\package\users\lib\confirmationCode\UserConfirmationCode;
 final class ConfirmUserMailChange extends UserCommand {
 	/** @var string $_userId */
 	private $_userId;
-	/** @var string $_confirmer */
-	private $_confirmer;
 	/** @var UserConfirmationCode $_code */
 	private $_code;
 	/** @var null|UserState $_state */
@@ -30,9 +28,8 @@ final class ConfirmUserMailChange extends UserCommand {
 		string $confirmer,
 		?UserState $state=null
 	){
-		parent::__construct();
+		parent::__construct($confirmer);
 		$this->_userId = $userId;
-		$this->_confirmer = $confirmer;
 		$this->_code = $code;
 		$this->_state = $state;
 	}
@@ -42,13 +39,6 @@ final class ConfirmUserMailChange extends UserCommand {
 	 */
 	public function getUserId(): string {
 		return $this->_userId;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getConfirmer(): string {
-		return $this->_confirmer;
 	}
 
 	/**

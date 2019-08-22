@@ -48,7 +48,7 @@ final class RegisterUserHandler extends UserCommandHandler{
 	 *
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		/** @var RegisterUser $command */
 		if(!is_null($this->_access->getByLogin($command->getLogin())))
 			throw new UserAlreadyExists($command->getLogin()." n'est pas un login disponible");
@@ -61,7 +61,7 @@ final class RegisterUserHandler extends UserCommandHandler{
 			$command->getSettings(),
 			$command->getState(),
 			$command->getType(),
-			$command->getCreator()
+			$command->getInitiatorId()
 		),$command);
 		$state = $command->getState();
 		if($state instanceof UserWaitingForRegisteringConfirmation){
@@ -69,7 +69,7 @@ final class RegisterUserHandler extends UserCommandHandler{
 				IUserRegisteredMail::class,
 				[
 					$state->getCode(),
-					$command->getCreator()
+					$command->getInitiatorId()
 				]
 			));
 		}

@@ -50,7 +50,7 @@ class FileLogger implements ILogger {
 	 * @param string $message Message à écrire
 	 * @param int    ...$type Type de log
 	 */
-	public final function log(string $message, int... $type): void {
+	public function log(string $message, int... $type): void {
 		if(empty($type)) $type=[self::LOG];
 		$alreadyLogged=[];
 		foreach($type as $t){
