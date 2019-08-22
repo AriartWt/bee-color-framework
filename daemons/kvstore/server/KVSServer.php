@@ -177,31 +177,33 @@ final class KVSServer {
 	 * @throws \InvalidArgumentException
 	 */
 	private function startContainer(IKVSContainer $container,bool $restart=false):void{
-		$pidFile = $container->getSavePath().DS."container.pid";
+		$pidFile = $container->getSavePath()."/container.pid";
 		//Si le KVServer a été arrêté soudainement et que les worker sont toujours en cours d'execution,
 		//on les tue
 		if(file_exists($pidFile)){
 			posix_kill(file_get_contents($pidFile),9);
 			unlink($pidFile);
 		}
-		$worker = new ContainerWorker(
-			$this->_socketAddr,
-			$this->_protocol,
-			$this->_serializer,
-			$this->_dataParser,
-			new ContainerWorkerParams(
-				$container,
-				$this->_serverKey,
-				$this->_dbPath,
-				dirname($this->_socketAddr)
-			),
-			new ContainerWorkerClientParams(
-				$container,
-				dirname($this->_socketAddr)
-			)
-		);
-		$this->_workers[$container->getName()] = $worker;
-		$worker->start();
+		if($container->enabled()){
+			$worker = new ContainerWorker(
+				$this->_socketAddr,
+				$this->_protocol,
+				$this->_serializer,
+				$this->_dataParser,
+				new ContainerWorkerParams(
+					$container,
+					$this->_serverKey,
+					$this->_dbPath,
+					dirname($this->_socketAddr)
+				),
+				new ContainerWorkerClientParams(
+					$container,
+					dirname($this->_socketAddr)
+				)
+			);
+			$this->_workers[$container->getName()] = $worker;
+			$worker->start();
+		}
 	}
 
 	/**

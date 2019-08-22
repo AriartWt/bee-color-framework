@@ -48,7 +48,7 @@ final class CancelChangeMailHandler implements IActionHandler, IDomainEventListe
 		$this->_bus = $bus;
 		$this->_session = $session;
 		$this->_translator = $translator;
-		$observer->addEventListener(AskedForEmailChangeEvent::class,$this);
+		$observer->addDomainEventListener(AskedForEmailChangeEvent::class, $this);
 	}
 
 	/**
@@ -59,7 +59,7 @@ final class CancelChangeMailHandler implements IActionHandler, IDomainEventListe
 		/** @var User $user */
 		$user = $this->_session->get('user');
 		try{
-			$this->_bus->execute(new CancelMailChange(
+			$this->_bus->executeCommand(new CancelMailChange(
 				$user->getId(),
 				$user->getId()
 			));
@@ -80,7 +80,7 @@ final class CancelChangeMailHandler implements IActionHandler, IDomainEventListe
 	 * Méthode appelée lors de la reception d'un événement
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof CanceledUserMailChangeEvent) $this->_event = $e;
 	}
 }

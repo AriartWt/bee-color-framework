@@ -62,9 +62,9 @@ class NoCache implements ICacheSystem{
 
 	/**
 	 * @param string[] $keys Clé des valeurs à chercher
-	 * @return \Traversable
+	 * @return iterable
 	 */
-	public function getAll(array $keys): \Traversable {}
+	public function getAll(array $keys): iterable { return []; }
 
 	/**
 	 * @param string[] $keys Clés des valeurs à supprimer du cache

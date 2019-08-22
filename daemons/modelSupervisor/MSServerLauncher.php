@@ -1,8 +1,9 @@
 #!/usr/bin/php -q
 <?php
 
-require_once dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR."init.environment.php";
+require_once dirname(__FILE__,2)."/init.environment.php";
 
+use wfw\Autoloader;
 use wfw\daemons\modelSupervisor\server\conf\MSServerPoolConfs;
 use wfw\daemons\modelSupervisor\server\environment\MSServerEnvironment;
 use wfw\daemons\modelSupervisor\server\errors\ExternalShutdown;
@@ -11,6 +12,7 @@ use wfw\daemons\modelSupervisor\server\MSServerPool;
 use wfw\daemons\modelSupervisor\server\requestHandler\MSServerRequestHandlerManager;
 use wfw\daemons\modelSupervisor\socket\protocol\MSServerSocketProtocol;
 
+use wfw\engine\core\conf\WFW;
 use wfw\engine\core\data\DBAccess\NOSQLDB\kvs\KVSAccess;
 use wfw\engine\core\data\model\loaders\KVStoreBasedModelLoader;
 use wfw\engine\lib\cli\argv\ArgvOpt;
@@ -35,8 +37,8 @@ try{
 
 	//On récupère les configurations.
 	$confs = new MSServerPoolConfs(
-		ENGINE.DS."config".DS."conf.json",
-		SITE.DS."config".DS."conf.json"
+		dirname(__DIR__,2)."/engine/config/conf.json",
+		dirname(__DIR__,2)."/site/config/conf.json"
 	);
 
 	$pids = [];
@@ -46,105 +48,111 @@ try{
 	//if fork parent : true
 	//if fork child : false
 	$startInstance = function(string $name, ?string $oldPID=null) use (&$pids,$confs,&$restarts,&$lastMailSent) : ?bool{
-		$servWorkingDir = $confs->getWorkingDir($name);
-		$pid = pcntl_fork();
-		if($pid === 0 ){
-			cli_set_process_title("WFW MSServer $name instance");
-			//clean previous servers before restart.
-			if(!is_dir($servWorkingDir))
-				mkdir($servWorkingDir,0700,true);
+		if($confs->enabled($name)){
+			$servWorkingDir = $confs->getWorkingDir($name);
+			$pid = pcntl_fork();
+			if($pid === 0 ){
+				cli_set_process_title("WFW MSServer $name instance");
+				//clean previous servers before restart.
+				if(!is_dir($servWorkingDir))
+					mkdir($servWorkingDir,0700,true);
 
-			$out=[];
-			exec("find $servWorkingDir -name *.pid",$out);
-			foreach ($out as $pidf){
-				posix_kill((int)file_get_contents($pidf),PCNTLSignalsHelper::SIGALRM);
-			}
-
-			if($oldPID){
-				sleep(10);//ugly but let the time for childs to die;...
-				if(!isset($restarts[$name])) $restarts[$name]=[];
-				$li = count($restarts[$name])-1;
-				if($li>=0) $last = $restarts[$name][$li];
-				else $last = null;
-				$restarts[$name][]= $new = microtime(true);
-				$mail = $confs->getAdminMailAddr($name);
-				//limit sending mail once every 30min, avoid spamming in case of fail chain,
-				//execpt for the 3 first attempts.
-				if((($last && $new - $lastMailSent > 1800) || count($restarts[$name]) < 4) && $mail){
-					$file = $confs->getLogPath($name,$confs->isCopyLogModeEnabled()?"err":"debug");
-					$lastMailSent=microtime(true);
-					exec("tail -n150 $file | mail -s \"[MSSERVER][ERROR] $name instance have been restarted "
-					     .count($restarts[$name])." times from now.\" $mail"
-					);
-					$confs->getLogger()->log(
-						"[MSServerPool] [AliveChecker] Error notification mail sent to $mail.",
-						ILogger::LOG
-					);
+				$out=[];
+				exec("find $servWorkingDir -name *.pid",$out);
+				foreach ($out as $pidf){
+					posix_kill((int)file_get_contents($pidf),PCNTLSignalsHelper::SIGALRM);
 				}
-			}
 
-			$server = new MSServer(
-				$confs->getSocketPath($name),
-				new MSServerSocketProtocol(),
-				new MSServerEnvironment(
-					$servWorkingDir,
-					require $confs->getInitializersPath($name),
-					new KVStoreBasedModelLoader(
-						new KVSAccess(
-							$confs->getKVSAddr(),
-							$confs->getKVSLogin($name),
-							$confs->getKVSPassword($name),
-							$confs->getKVSContainer($name),
-							$confs->getKVSDefaultStorage($name) ?? null
+				if(!is_null($pPath = $confs->getProjectPath($name)))
+					(new Autoloader([],$pPath))->register(false,true);
+
+				WFW::collectModules();
+
+				if($oldPID){
+					sleep(10);//ugly but let the time for childs to die;...
+					if(!isset($restarts[$name])) $restarts[$name]=[];
+					$li = count($restarts[$name])-1;
+					if($li>=0) $last = $restarts[$name][$li];
+					else $last = null;
+					$restarts[$name][]= $new = microtime(true);
+					$mail = $confs->getAdminMailAddr($name);
+					//limit sending mail once every 30min, avoid spamming in case of fail chain,
+					//execpt for the 3 first attempts.
+					if((($last && $new - $lastMailSent > 1800) || count($restarts[$name]) < 4) && $mail){
+						$file = $confs->getLogPath($name,$confs->isCopyLogModeEnabled()?"err":"debug");
+						$lastMailSent=microtime(true);
+						exec("tail -n150 $file | mail -s \"[MSSERVER][ERROR] $name instance have been restarted "
+						     .count($restarts[$name])." times from now.\" $mail"
+						);
+						$confs->getLogger()->log(
+							"[MSServerPool] [AliveChecker] Error notification mail sent to $mail.",
+							ILogger::LOG
+						);
+					}
+				}
+				$server = new MSServer(
+					$confs->getSocketPath($name),
+					new MSServerSocketProtocol(),
+					new MSServerEnvironment(
+						$servWorkingDir,
+						require $confs->getInitializersPath($name),
+						new KVStoreBasedModelLoader(
+							new KVSAccess(
+								$confs->getKVSAddr(),
+								$confs->getKVSLogin($name),
+								$confs->getKVSPassword($name),
+								$confs->getKVSContainer($name),
+								$confs->getKVSDefaultStorage($name) ?? null
+							),
+							WFW::models()
 						),
-						require $confs->getModelsToLoadPath($name)
+						$confs->getUsers($name),
+						$confs->getGroups($name),
+						$confs->getAdmins($name),
+						$confs->getComponents($name),
+						$confs->getLogger($name),
+						$confs->getSessionTtl($name)
 					),
-					$confs->getUsers($name),
-					$confs->getGroups($name),
-					$confs->getAdmins($name),
-					$confs->getComponents($name),
+					new MSServerRequestHandlerManager(),
 					$confs->getLogger($name),
-					$confs->getSessionTtl($name)
-				),
-				new MSServerRequestHandlerManager(),
-				$confs->getLogger($name),
-				new LightSerializer(
-					new GZCompressor(),
-					new PHPSerializer()
-				),
-				$confs->getRequestTtl($name),
-				$confs->haveToSendErrorToClient($name),
-				$confs->haveToShutdownOnError($name)
-			);
-
-			$pcntlHelper = new PCNTLSignalsHelper(true);
-			$pcntlHelper->handleAll([
-				PCNTLSignalsHelper::SIGINT,
-				PCNTLSignalsHelper::SIGHUP,
-				PCNTLSignalsHelper::SIGTERM,
-				PCNTLSignalsHelper::SIGUSR1,
-				PCNTLSignalsHelper::SIGUSR2,
-				PCNTLSignalsHelper::SIGALRM //socket_accept workaround
-			],function($signo)use($server){
-				$server->shutdown(
-					new ExternalShutdown("PCNTL signal $signo recieved. Server shutdown gracefully.")
+					new LightSerializer(
+						new GZCompressor(),
+						new PHPSerializer()
+					),
+					$confs->getRequestTtl($name),
+					$confs->haveToSendErrorToClient($name),
+					$confs->haveToShutdownOnError($name)
 				);
-			});
 
-			$server->start();
-			return false;
-		}else if($pid < 0 ){
-			$confs->getLogger()->log(
-				"[MSServerPool] Unable to fork to create instance '$name', maybe"
-				." insufficient ressources or max process limit reached.",
-				ILogger::ERR
-			);
-			return null;
-		}else{
-			if(!is_null($oldPID) && isset($pids[$oldPID])) unset($pids[$oldPID]);
-			$pids[$pid]=["name" => $name, "working_dir" => $servWorkingDir ];
-			return true;
-		}
+				$pcntlHelper = new PCNTLSignalsHelper(true);
+				$pcntlHelper->handleAll([
+						PCNTLSignalsHelper::SIGINT,
+						PCNTLSignalsHelper::SIGHUP,
+						PCNTLSignalsHelper::SIGTERM,
+						PCNTLSignalsHelper::SIGUSR1,
+						PCNTLSignalsHelper::SIGUSR2,
+						PCNTLSignalsHelper::SIGALRM //socket_accept workaround
+					],function($signo)use($server){
+					$server->shutdown(
+						new ExternalShutdown("PCNTL signal $signo recieved. Server shutdown gracefully.")
+					);
+				});
+
+				$server->start();
+				return false;
+			}else if($pid < 0 ){
+				$confs->getLogger()->log(
+					"[MSServerPool] Unable to fork to create instance '$name', maybe"
+					." insufficient ressources or max process limit reached.",
+					ILogger::ERR
+				);
+				return null;
+			}else{
+				if(!is_null($oldPID) && isset($pids[$oldPID])) unset($pids[$oldPID]);
+				$pids[$pid]=["name" => $name, "working_dir" => $servWorkingDir ];
+				return true;
+			}
+		}else return null;
 	};
 
 	foreach($confs->getInstances() as $name){

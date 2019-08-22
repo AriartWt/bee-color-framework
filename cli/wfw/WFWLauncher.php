@@ -19,19 +19,9 @@ $argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 		"Gestion de packages : package -help pour plus d'informations.",
 		null, null, true
 	),
-	/*new ArgvOpt(
-		'update',
-		"Gestion de mises à jour : updator -help pour plus d'informations.",
-		null,null,true
-	),*/
 	new ArgvOpt(
 		'service',
 		"Gestion des services wfw : service -help pour plus d'informations.",
-		null,null,true
-	),
-	new ArgvOpt(
-		'test',
-		"Lancement de tests wfw : test -help pour plus d'informations.",
 		null,null,true
 	)
 ])),$argv);
@@ -61,19 +51,13 @@ try{
 	$path = null;
 	switch($argv[1]){
 		case 'backup' :
-			$path = CLI.'/backup/BackupLauncher.php';
+			$path = dirname(__DIR__).'/backup/BackupLauncher.php';
 			break;
-		/*case 'update' :
-			$path = CLI.'/updator/UpdatorLauncher.php';
-			break;*/
 		case 'package' :
-			$path = CLI.'/installer/PackageLauncher.php';
+			$path = dirname(__DIR__).'/installer/PackageLauncher.php';
 			break;
 		case 'service' :
-			$path = DAEMONS.'/sctl/SCTLClientLauncher.php';
-			break;
-		case 'test' :
-			$path = CLI.'/tester/testsLauncher.php';
+			$path = dirname(__DIR__,2).'/daemons/sctl/SCTLClientLauncher.php';
 			break;
 		default :
 			throw new InvalidArgumentException("Unknown command $argv[1]. --help to display the command list.");

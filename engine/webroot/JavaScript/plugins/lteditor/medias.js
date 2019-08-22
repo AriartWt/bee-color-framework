@@ -14,7 +14,7 @@ wfw.ready(()=>{
 			else $mediaWindow.parentNode.removeChild($mediaWindow);
 		};
 		let $fe = new wfw.ui.fileExplorer({
-			upload : {url:wfw.webroot+"uploader/uploadFile", paramName:{ file:'file',name:'name' }},
+			upload : {url:wfw.webroot+"uploader/uploadFile"},
 			delete : {url:wfw.webroot+"uploader/delete", paramName:{ paths:"paths" }},
 			rename : {url:wfw.webroot+"uploader/rename", paramName:{ oldPaths:"oldPaths",newPaths:"newPaths" }},
 			create : {url:wfw.webroot+"uploader/createPath", paramName:{ paths:"paths" }},

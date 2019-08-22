@@ -1,0 +1,46 @@
+{
+	"working_dir" : "rts/data",
+	"socket_path" : "rts.socket",
+	"logs" : {
+		"level" : 2,
+		"copy" : true,
+		"default_path" : "/var/log/wfw/rts"
+	},
+	"default_instance" : {
+		"port" : 8000,
+		"modules_to_load_path" : "{ROOT}/site/config/load/rts.php",
+		"request_ttl" : 900,
+		"session_ttl" : 60,
+		"sleep_interval" : 10000,
+		"send_error_to_client" : true,
+		"logs" : {
+			"level" : 2,
+			"copy" : true,
+			"default_path" : "/var/log/wfw/rts"
+		},
+		"max_websockets_by_worker" : 1,
+		"max_workers" : 4,
+		"spawn_all_workers_at_startup" : true,
+		"max_write_buffer_size" : 49152,
+		"max_read_buffer_size" : 49152,
+		"max_request_handshake_size" : 16384,
+		"max_requests_by_minute_by_client" : 240,
+		"allowed_origins" : null,
+		"allowed_worker_sockets_overflow" : -1,
+		"max_connections_by_ip" : 20,
+		"max_socket_select" : 1000,
+		"enabled" : false,
+		"max_clients" : null
+	},
+	"instances" : {
+		"BeeColor" : {
+			"project_path" : "/var/wfw/BeeColor",
+			"modules_to_load_path" : "{ROOT}/BeeColor/config/load/rts.php",
+			"users" : {
+				"BeeColor" : {
+					"password" : "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"
+				}
+			}
+		}
+	}
+}

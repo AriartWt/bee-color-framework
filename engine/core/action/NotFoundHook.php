@@ -45,9 +45,8 @@ final class NotFoundHook implements IActionHook {
 			if(preg_match("#$rule#",$action->getInternalPath()))
 				return new ErrorResponse(
 					"404",
-					$this->_translator->getTranslateAndReplace(
+					$this->_translator->getAndReplace(
 						$this->_translationKey,
-						null,
 						$action->getInternalPath()
 					)
 				);

@@ -33,6 +33,8 @@ use wfw\daemons\modelSupervisor\server\responses\RequestError;
 use wfw\daemons\modelSupervisor\socket\data\MSServerDataParserResult;
 use wfw\daemons\modelSupervisor\socket\protocol\MSServerSocketProtocol;
 use wfw\daemons\multiProcWorker\Worker;
+use wfw\engine\core\data\model\errors\InconsistentModel;
+use wfw\engine\core\domain\events\observers\errors\ListenersFailedToRecieveEvent;
 use wfw\engine\lib\cli\signalHandler\PCNTLSignalsHelper;
 use wfw\engine\lib\data\string\serializer\ISerializer;
 use wfw\engine\lib\logger\ILogger;
@@ -107,7 +109,7 @@ final class WriterWorker extends Worker {
 			?? "error_logs.txt"
 		);
 		if(!$errorLog->startBy("/")){
-			$errorLog = $environment->getWorkingDir().DS.$errorLog;
+			$errorLog = $environment->getWorkingDir().'/'.$errorLog;
 		}else{
 			$errorLog = (string) $errorLog;
 		}
@@ -279,7 +281,8 @@ final class WriterWorker extends Worker {
 								new RequestError($e)
 							));
 							$this->_environment->getLogger()->log(
-								"$tags Report successfully sent to client",
+								"$tags Report successfully sent to client. Error summary : "
+								.$e->getMessage()." in ".$e->getFile()." at ".$e->getLine(),
 								ILogger::LOG
 							);
 						}catch(\Exception | \Error $e){
@@ -509,7 +512,28 @@ final class WriterWorker extends Worker {
 			if($clientRequest instanceof ApplyEvents){
 				/** @var \wfw\engine\core\domain\events\EventList $events */
 				$events = $this->_serializer->unserialize($request->getData());
-				$this->_workerParams->getModelManager()->dispatch($events);
+				try{
+					$this->_workerParams->getModelManager()->dispatch($events);
+				}catch(ListenersFailedToRecieveEvent $e){
+					$toRebuild = [];
+					foreach($e->getReports() as $report){
+						if($report->getError() instanceof InconsistentModel)
+							$toRebuild[] = get_class($report->getListener());
+						else $this->_environment->getLogger()->log(
+							"[WRITER] [WORKER] $e",ILogger::ERR
+						);
+					}
+					if(count($toRebuild) > 0){
+						$this->_workerParams->getModelSynchronizer()->synchronize(
+							...$toRebuild
+						);
+						$this->_environment->getLogger()->log(
+							"[WRITER] [WORKER] Following models have been rebuilt because of inconsistent state : "
+							.implode(", ",$toRebuild),
+							ILogger::WARN
+						);
+					}
+				}
 				$this->sendResponse(new WriterResponse(
 					$request->getQueryId(),
 					new DoneResponse()
@@ -707,7 +731,7 @@ final class WriterWorker extends Worker {
 	 */
 	private function triggerSave(bool $wait = false):array{
 		if($this->getWorkerMode() === self::WORKER_MODE){
-			$saveLockFile = $this->_environment->getWorkingDir().DS."save.lock";
+			$saveLockFile = $this->_environment->getWorkingDir()."/save.lock";
 			touch($saveLockFile);
 			$fp = fopen($saveLockFile,"r+");
 			if($wait){

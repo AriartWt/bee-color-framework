@@ -12,5 +12,5 @@ interface ICommandHandlerFactory {
 	 * @param array  $params Paramètres de création
 	 * @return ICommandHandler
 	 */
-	public function build(string $handlerClass,array $params=[]):ICommandHandler;
+	public function buildCommandHandler(string $handlerClass, array $params=[]):ICommandHandler;
 }

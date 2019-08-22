@@ -64,7 +64,7 @@ final class ChangeMailConfirmationHandler implements IActionHandler,IDomainEvent
 		$this->_access = $access;
 		$this->_notifier = $notifier;
 		$this->_translator = $translator;
-		$observer->addEventListener(UserMailConfirmedEvent::class,$this);
+		$observer->addDomainEventListener(UserMailConfirmedEvent::class, $this);
 	}
 
 	/**
@@ -87,7 +87,7 @@ final class ChangeMailConfirmationHandler implements IActionHandler,IDomainEvent
 			//Si l'utilisateur avait pour nom d'utilisateur son login, on le met à jour
 			//lors du changement de mail.
 			if($accordLogin && $state instanceof UserWaitingForEmailConfirmation){
-				$this->_bus->execute(new ChangeLogin(
+				$this->_bus->executeCommand(new ChangeLogin(
 					$data["id"],
 					new Login($state->getEmail()),
 					$data["id"]
@@ -95,7 +95,7 @@ final class ChangeMailConfirmationHandler implements IActionHandler,IDomainEvent
 			}
 
 			//On effectue le changement de l'email.
-			$this->_bus->execute(new ConfirmUserMailChange(
+			$this->_bus->executeCommand(new ConfirmUserMailChange(
 				$data["id"],
 				new UserConfirmationCode($data["code"]),
 				$data["id"]
@@ -118,7 +118,7 @@ final class ChangeMailConfirmationHandler implements IActionHandler,IDomainEvent
 	 * Méthode appelée lors de la reception d'un événement
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof UserMailConfirmedEvent) $this->_event = $e;
 	}
 }

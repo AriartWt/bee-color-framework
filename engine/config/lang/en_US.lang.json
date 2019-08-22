@@ -1,0 +1,273 @@
+{
+	"server" : {
+		"engine" : {
+			"core" : {
+				"app" : {
+					"ACTION_HANDLER_NOT_FOUND" : "ActionHandler [[$]] doesn't exists",
+					"DISABLED_MODULE" : "Trying to access to a disabled module/package.",
+					"INTERNAL_ERROR" : "Internal error : [$]",
+					"MUST_BE_LOGGED" : "You must be connected.",
+					"ACCESS_DENIED" : "Access denied",
+					"INSUFFICIENT_PRIVILEGIES":"Insufficient user privileges.",
+					"BAD_CSRF_TOKEN" : "Invalid CSRF token.",
+					"404_NOT_FOUND" : "Page '[$]' not found"
+				}
+			},
+			"package" : {
+				"lang" : {
+					"forms" : {
+						"GENERAl_ERROR" : "Invalid data !",
+						"REQUIRED" : "This field is required !",
+						"INVALID_STRING" : "This is not a valid string !",
+						"TOO_LARGE_KEY" : "This ky length can't exceed [$] chars !"
+					},
+					"EMPTY_PATH" : "The translator key must have a length > 0!"
+				},
+				"general" : {
+					"forms" : {
+						"GENERAL_ERROR" : "Invalid data !",
+						"REQUIRED" : "This field is required !",
+						"INVALID_ZIP_CODE" : "This is not a valid zip code !",
+						"INVALID_COUNTRY_NAME" : "This country name is invalid !"
+					}
+				},
+				"users" : {
+					"mail" : {
+						"subject" : {
+							"CONFIRM_MAIL_CHANGE" : "New email confirmation",
+							"CONFIRM_REGISTRATION" : "Registration confirmation",
+							"RESET_PASSWORD" : "Reset your password"
+						},
+						"INTRO" : "Dear user [$],\n",
+						"explain" : {
+							"CONFIRM_MAIL_CHANGE" : "You receive this automatic email because you changed your email address. In order to this change to take effect, please confirm your new mail address following this link : [$]\n",
+							"CONFIRM_REGISTRATION" : "You receive this automatic email because you registered on our website. In order to enable your account, please confirm your registration following this link : [$]\n",
+							"RESET_PASSWORD" : "You receive this automatic email because you wanted to reset your password. In order to define a new one, please follow this link : [$]\n"
+						},
+						"WARN" : "\nThis message have been automaticaly sent, please do not reply.\n\n",
+						"END" : "Thank you for your confidence,\nHave a nice day !"
+					},
+					"forms" : {
+						"LOGIN" : "Login",
+						"PASSWORD" : "Password",
+						"PASSWORD_CONFIRM" : "Password confirmation",
+						"MAIL" : "Email",
+						"PHONE" : "Mobile",
+						"AGREEMENT" : "I accept the <a href=\"[$]\" target=\"_blank\">terms of use</a>",
+						"VALID_MAIL" : "Valid email address",
+						"MAIL_CONFIRM" : "Email confirmation",
+						"LOGIN_FORM_ERROR" : "Wrong login or password !",
+						"INVALID" : "This field is invalid !",
+						"REQUIRED" : "This field is required !",
+						"INVALID_LOGIN" : "A login length should be between 4 and 128 characters !",
+						"INVALID_PASSWORD" : "Your password must contain digits, uppercase and lowercase letters, and at least one special char for a maximale length of 128 characters.",
+						"NOT_SAME_PASSWORD" : "Passwords must be the same !",
+						"LOGIN_UNAVAILABLE" : "This login name is unavailable !",
+						"INVALID_MAIL" : "This mail adress is invalid !",
+						"NOT_SAME_MAIL" : "Email addresses must be the same !",
+						"OLD_PASSWORD" : "Last password",
+						"NEW_PASSWORD" : "New password",
+						"GENERAL_ERROR" : "Some fields are invalid !",
+						"MINTTIME_ERROR" : "This form have been classified as potential spam subimssion, because have been sent too fast.",
+						"SPAM_ERROR" : "This form have been classified as spam.",
+						"INVALID_ID" : "This is not a valid id !",
+						"INVALID_USER_TYPE" : "Only the following user types are valid : [$]",
+						"INVALID_ID_LIST" : "One of the id in the list is invalid !"
+					},
+					"WRONG_PASSWORD" : "Wrong password !",
+					"UNKNOWN_USER" : "Unknown user !",
+					"USER_NOT_FOUND" : "User [$] not found.",
+					"MAIL_CONFIRMED" : "Your mail have been successfully confirmed.",
+					"RESET_PASSWORD_CONFIRMED" : "Your password have been successfully reseted.",
+					"INVALID_USER_STATE" : "Invalid user state.",
+					"BAD_CONFIRM_CODE" : "Invalid confirmation code.",
+					"LOGOUT" : "You've been successfully logged out",
+					"REGISTRATION_MAIL_SENT" : "You're successfully registered. A confirmation mail have been sent to your mailboxe.",
+					"REGISTRATION_SUCCESS" : "Your account have been successfully confirmed, you can now sign in.",
+					"USER_CONFIRMED_EVENT_NOT_RECIEVED" : "An error occurred while trying to confirm your registration, please contact the administrator (UserConfirmedEvent not recieved).",
+					"USER_PASSWORD_RESETED_EVENT_NOT_RECIEVED" : "An error occurred while trying to reset your password, please contact the administrator (UserPasswordResetedEvent not recieved).",
+					"CONFIRM_MAIL_EVENT_NOT_RECIEVED" : "An error occurred while trying to confirm your mail address, please contact the administrator (UserMailConfirmedEvent not recieved).",
+					"CANCEL_MAIL_CHANGE_EVENT_NOT_RECIEVED" : "An error occurred while trying to cancel your mail address modification, please contact the administrator (CanceledUserMailChangeEvent not recieved).",
+					"CANCEL_PASSWORD_RETRIEVING_EVENT_NOT_RECIEVED" : "An error occurred while trying to cancel password reset process, please contact the administrator (UserPasswordRetrievingCanceledEvent not recieved).",
+					"CANCEL_REGISTRATION_EVENT_NOT_RECIEVED" : "An error occurred while trying cancel this user registration, please contact the administrator (UserRegistrationProcedureCanceledEvent not recieved).",
+					"USER_TYPE_CHANGED_EVENT_NOT_RECIEVED" : "An error occurred while trying to change this user role, please contact the administrator (UserTypeChangedEvent not recieved).",
+					"USER_REGISTERED_EVENT_NOT_RECIEVED" : "An error occurred while trying to register a new user, please contact the administrator (UserRegisteredEvent not recieved).",
+					"USER_CANT_DISABLE_HIS_OWN_ACCOUNT" : "A user can't disable his own account !",
+					"USER_CANT_DELETE_HIS_OWN_ACCOUNT" : "A user can't delete his own account !",
+					"ASKED_FOR_MAIL_CHANGE_EVENT_NOT_RECIEVED" : "An error occurred while trying to change your mail address, please contact the administrator (AskedForMailChangeEvent not recieved)",
+					"ASKED_FOR_PASSWORD_RETRIEVING_EVENT_NOT_RECIEVED" : "An error occurred while trying to start the password retieving procedure, please contact the administrator (AskedForPasswordRetrievingEvent not recieved)",
+					"USER_PASSWORD_CHANGED_EVENT_NOT_RECIEVED" : "An error occurred while trying to change your password, please contact the administrator (UserPasswordChangedEvent not recieved)",
+					"USER_RESETED_PASSWORD_EVENT_NOT_RECIEVED" : "An error occurred while trying to reset your password, please contact the administrator (UserPasswordResetedEvent not recieved)",
+					"CONNECTION_FAILED" : "This informations don't allow you to sign in.",
+					"CONNECTION_ACCEPTED" : "You've been successfully logged.",
+					"SERVICE_UNAVAILABLE" : "Connection service unavailable, please try again later."
+				},
+				"uploader" : {
+					"forms" : {
+						"REQUIRED" : "This field is required !",
+						"GENERAL_ERROR" : "Invalid data !",
+						"INVALID_STRING" : "This is not a valid string !",
+						"MAX_ARRAY_LENGTH_REACHED" : "This array can't contain more than [$] elements",
+						"INVALID_FILE" : "This file is invalid or too large !",
+						"INVALID_FILE_NAME" : "Invalid file name.\nA valid file name must contain less thant [$] characters and no /"
+					},
+					"STORAGE_QUOTA_EXCEED" : "Insufficient storage : quota exceeded !",
+					"UNKNOWN_FOLDER" : "The specified folder doesn't exists !",
+					"FILE_ALREADY_EXISTS" : "One of the below files already exists in this directory. Please rename it and try again : \n[$]",
+					"RENAME_LIST_ERROR" : "Elems to rename list doesn't match new name list !"
+				}
+			}
+		}
+	},
+	"client" : {
+		"Default" : {},
+		"ui" : {
+			"fileExplorer" : {
+				"FOLDER_NAME" : "Directory name",
+				"CREATE_BTN" : "Create",
+				"WAITING_FOLDER_CREATION" : "Creating folder in progress, please wait...",
+				"ERR_FOLDER_CREATION" : "Can't create folder !",
+				"CANCEL" : "Cancel",
+				"WARN_MUST_CHOOSE_ONE" : "You must choose at least one element !",
+				"CONFIRM_REMOVE_SELECTED" : "Do you really want to delete all selected items ?",
+				"REMOVE_BTN" : "Delete",
+				"WAITING_REMOVE_SELECTED" : "Deleting elements in progress, please wait...",
+				"ERR_REMOVE_SELECTED" : "An error occurred while trying to remove selected items ([$])",
+				"WAITING_RENAME" : "Renaming in progress, please wait...",
+				"WAITING_MOVE" : "Moving items in progress, please wait...",
+				"ERR_RENAME_MOVE" : "Can't move or rename this element !",
+				"CREATE_FOLDER" : "Create a directory",
+				"WARN_MEDIA_TYPE_ACCEPTED" : "Only audio mp3, video mp4 and picture files are allowed !",
+				"WAITING_SEND_FILE" : "Sending file in progress, please wait...",
+				"ERR_SERVER_REFUSES_FILE" : "The server can't save your file.\nOnly pictures, mp4 and mp3 files are allowed (max 300Mo) \nIf you sent a valid file, maybe your storage space is full, please remove useless files.",
+				"ADD_FILE" : "Add files",
+				"REMOVE_SELECTED" : "Delete selected items",
+				"LOADING" : "Loading in progress, please wait..."
+			},
+			"lteditor" : {
+				"BOLD" : "Bold",
+				"ITALIC" : "Italic",
+				"UNDERLINE" : "Underline",
+				"STRIKE_THROUGH" : "Strike through",
+				"O_LIST" : "Ordered list",
+				"U_LIST" : "List",
+				"JUSTIFY_FULL" : "Justify",
+				"JUSTIFY_LEFT" : "Left align",
+				"JUSTIFY_CENTER" : "Center",
+				"JUSTIFY_RIGHT" : "Right align",
+				"INDENT" : "Indent",
+				"OUTDENT" : "Outdent",
+				"INSERT_TITLE" : "Insert a title",
+				"TITLE_N" : "Title [$]",
+				"CLEAN" : "Remove all selection styles",
+				"LINK" : "Insert/manage a link"
+			},
+			"Notifications" : {
+				"_BUBLE_CLICK_TO_CLOSE" : "Click to close the notification"
+			}
+		},
+		"packages" : {
+			"users" : {
+				"CREATE_USER" : "Create a new user",
+				"EDIT_USER" : "Edit an user",
+				"SAFE_PWD" : "Secured",
+				"PWD_HINT" : "This password is unsecure !\nIt must contains at least 8 characters with at least : \n-one lowercase letter\n-one uppercase letter\n-one digit\n-one special character (ex: -/@'.+*$%)",
+				"WARN_PWD_NOT_MATCH" : "Passwords doesn't match !",
+				"WAIT_EDIT_MAIL" : "Changing mail address, please wait...",
+				"ERR_EDIT_MAIL" : "Can't change this user's mail address !",
+				"CLICK_TO_DISABLE" : "Click to disable this user",
+				"CLICK_TO_ENABLE" : "Click to enable this user",
+				"CLICK_TO_CANCEL_MAIL" : "Click to discard this user mail update request",
+				"CLICK_TO_CANCEL_PWD" : "Click to discard this user password recovery process",
+				"CLICK_TO_CANCEL_REGISTRATION" : "Click to discard this user mail confirmation (will assign a disabled state)",
+				"WAIT_EDIT_USER_STATE" : "Changing user state, please wait...",
+				"USER_NAME" : "Login",
+				"ROLE" : "Role",
+				"EMAIL" : "Mail",
+				"STATE" : "State",
+				"ERR_EDIT_USER_STATE" : "Can't change user's state !",
+				"WAIT_PWD_RESET" : "Resetting user password, please wait...",
+				"ERR_PWD_RESET" : "Can't reset user password !",
+				"BTN_RESET_PWD" : "Reset user password",
+				"PWD" : "Password",
+				"PWD_CONFIRM" : "Password confirmation",
+				"RESET" : "Reset",
+				"CANCEL" : "Cancel",
+				"ADMIN" : "Administrator",
+				"CLIENT" : "Client",
+				"CREATE" : "Create",
+				"WAIT_CREATE_USER" : "Creating user, please wait...",
+				"ERR_CREATE_USER" : "Can't create a new user !",
+				"WARN_MUST_SELECT_ONE" : "You must select at least one user !",
+				"WAIT_ENABLE_USERS" : "Selected users will be enabled, please wait...",
+				"ERR_ENABLE_USERS" : "Can't enable selected users !",
+				"WAIT_DISABLE_USERS" : "Selected users will be disabled, please wait...",
+				"ERR_DISABLE_USERS" : "Can't disable selected users !",
+				"CONFIRM_REMOVE_USERS" : "Do you really want to delete selected users ?",
+				"REMOVE" : "Delete",
+				"WAIT_REMOVE_USERS" : "Selected users will be deleted, please wait...",
+				"ERR_REMOVE_USERS" : "Can't delete selected users !",
+				"BTN_CREATE" : "Create a new user",
+				"BTN_REMOVE" : "Delete selected users",
+				"BTN_ENABLE" : "Enable selected users",
+				"BTN_DISABLE" : "Disable selected users",
+				"WAIT_LOADING_USERS" : "Loading user list, please wait...",
+				"ERR_LOADING_USERS" : "Can't load user list !",
+				"EMPLOYEE" : "Employee",
+				"ENABLED" : "Enabled",
+				"DISABLED" : "Disabled",
+				"WAITING_MAIL" : "&#9203; mail confirmation",
+				"PWD_RESET" : "Reset password",
+				"WAITING_REGISTRATION" : "&#9203; registering confirmation"
+			}
+		},
+		"plugins" : {
+			"adminPanel" : {
+				"default" : {
+					"USER_PANEL_TITLE" : "User management",
+					"USER_PANEL_HINT" : "Manage your users",
+					"NEWS_PANEL_TITLE" : "Articles management",
+					"NEWS_PANEL_HINT" : "Manage your articles",
+					"CONTACT_PANEL_TITLE" : "Message management",
+					"CONTACT_PANEL_HINT" : "Manage your messages",
+					"LOGOUT" : "Logout",
+					"DISCONNECTED" : "You've been disconnected",
+					"CONFIRM_LOGOUT" : "Do you really want to logout ?",
+					"YES" : "Yes",
+					"NO" : "No"
+				}
+			},
+			"lteditor" : {
+				"advancedLink" : {
+					"DESCRIPTION" : "Insert/manage a link",
+					"LINK_DESC" : "Link description",
+					"LINK_ADDR" : "Link url",
+					"OPEN_NEW_TAB" : "Open in a new tab",
+					"EDIT" : "Edit",
+					"CREATE" : "Create",
+					"CANCEL" : "Cancel",
+					"REMOVE" : "Delete",
+					"WARN_LINK_REQUIRED" : "Url required !",
+					"WARN_DESC_REQUIRED" : "Link description required !"
+				},
+				"limitedForeColor" : {
+					"WRITING_COLOR" : "Text color",
+					"DEFAULT_COLOR" : "Default color"
+				},
+				"medias" : {
+					"DESCRIPTION" : "Import/manage a media",
+					"CHOOSE_MEDIA_TO_IMPORT" : "Choose a media to import",
+					"CHOOSE_MEDIA" : "Choose media",
+					"CHOOSE" : "Choose",
+					"EDIT" : "Edit",
+					"CREATE" : "Create",
+					"CANCEL" : "Cancel",
+					"LAYOUT" : "Layout",
+					"WARN_ONLY_ONE_ALLOWED" : "You can't import more than one media !",
+					"WARN_MUST_CHOOSE_ONE" : "You must choose a file !",
+					"WARN_MUST_SELECT_MEDIA" : "You must choose a media !"
+				}
+			}
+		}
+	}
+}

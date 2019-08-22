@@ -7,8 +7,6 @@ namespace wfw\engine\package\users\command;
 final class CancelUserRegistration extends UserCommand{
 	/** @var string $_userId */
 	private $_userId;
-	/** @var string $_modifierId */
-	private $_modifierId;
 	/** @var bool $_removeUser */
 	private $_removeUser;
 
@@ -19,8 +17,7 @@ final class CancelUserRegistration extends UserCommand{
 	 * @param bool $removeUser
 	 */
 	public function __construct(string $userId, string $modifierId, bool $removeUser = false) {
-		parent::__construct();
-		$this->_modifierId = $modifierId;
+		parent::__construct($modifierId);
 		$this->_removeUser = $removeUser;
 		$this->_userId = $userId;
 	}
@@ -30,13 +27,6 @@ final class CancelUserRegistration extends UserCommand{
 	 */
 	public function getUserId(): string {
 		return $this->_userId;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getModifierId(): string {
-		return $this->_modifierId;
 	}
 
 	/**

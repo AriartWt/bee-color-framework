@@ -78,11 +78,12 @@ final class PictureViewerOptions implements IPictureViewerOptions {
 		}
 		$this->_autoplay = $options['autoplay'] ?? true;
 		(function(string... $vals){})(...array_values($icons));
-		$this->_arrowLeftIcon = $icons['arrow_left'] ?? ENGINE.'/webroot/Image/svg/icons/left-arrow.svg';
-		$this->_arrowRightIcon = $icons['arrow_right'] ?? ENGINE.'/webroot/Image/svg/icons/right-arrow.svg';
-		$this->_fullscreenOnIcon = $icons['fullscreen_on'] ?? ENGINE.'/webroot/Image/svg/icons/expand.svg';
-		$this->_fullscreenOffIcon = $icons['fullscreen_off'] ?? ENGINE.'/webroot/Image/svg/icons/collapse.svg';
-		$this->_autoplayIcon = $icons['autoplay'] ?? ENGINE.'/webroot/Image/svg/icons/play1.svg';
+		$engine = dirname(__DIR__,2);
+		$this->_arrowLeftIcon = $icons['arrow_left'] ?? $engine.'/webroot/Image/svg/icons/left-arrow.svg';
+		$this->_arrowRightIcon = $icons['arrow_right'] ?? $engine.'/webroot/Image/svg/icons/right-arrow.svg';
+		$this->_fullscreenOnIcon = $icons['fullscreen_on'] ?? $engine.'/webroot/Image/svg/icons/expand.svg';
+		$this->_fullscreenOffIcon = $icons['fullscreen_off'] ?? $engine.'/webroot/Image/svg/icons/collapse.svg';
+		$this->_autoplayIcon = $icons['autoplay'] ?? $engine.'/webroot/Image/svg/icons/play1.svg';
 
 		$this->_autoplayScript = $autoplayJS ?? $router->webroot("JavaScript/plugins/pictureViewer/autoplay.script.js");
 		$this->_css = $css ?? $router->webroot("Css/plugins/pictureViewer/default.css");

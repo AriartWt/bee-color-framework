@@ -99,8 +99,8 @@ class Dice {
 		// Create parameter generating function in order to cache reflection on the parameters. This way $reflect->getParameters() only ever gets called once
 		$params = $constructor ? $this->getParams($constructor, $rule) : null;
 		//PHP throws a fatal error rather than an exception when trying to instantiate an interface, detect it and throw an exception instead
-		if ($class->isInterface()) $closure = function() {
-			throw new \InvalidArgumentException('Cannot instantiate interface');
+		if ($class->isInterface()) $closure = function() use ($class) {
+			throw new \InvalidArgumentException("Cannot instantiate interface $class");
 		};
 		// Get a closure based on the type of object being created: Shared, normal or constructorless
 		else if (!empty($rule['shared'])) $closure = function (array $args, array $share) use ($class, $name, $constructor, $params) {

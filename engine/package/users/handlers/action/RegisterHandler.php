@@ -89,7 +89,7 @@ final class RegisterHandler implements IActionHandler, IDomainEventListener{
 		$this->_session = $session;
 		$this->_generator = $generator;
 		$this->_errorIcon = $router->webroot("Image/Icons/delete.png");
-		$observer->addEventListener(UserRegisteredEvent::class,$this);
+		$observer->addDomainEventListener(UserRegisteredEvent::class, $this);
 		if(!$session->exists("register_user_form")){
 			$this->_form = $this->createForm();
 			$session->set("register_user_form",$this->_form);
@@ -127,7 +127,7 @@ final class RegisterHandler implements IActionHandler, IDomainEventListener{
 					default :
 						$type  = new $type(); break;
 				}
-				$this->_bus->execute(new RegisterUser(
+				$this->_bus->executeCommand(new RegisterUser(
 					new Login($data["login"]),
 					new Password($data["password"]),
 					new Email($data["email"]),
@@ -151,7 +151,7 @@ final class RegisterHandler implements IActionHandler, IDomainEventListener{
 	 * Méthode appelée lors de la reception d'un événement
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof UserRegisteredEvent) $this->_event = $e;
 	}
 }

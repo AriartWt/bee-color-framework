@@ -32,7 +32,7 @@ abstract class DefaultUserActionHandler extends PostDataDefaultActionHandler{
 		ITranslator $translator,
 		bool $withGet=false
 	){
-		parent::__construct($bus, $rule,false,false,true);
+		parent::__construct($bus, $translator,$rule,false,false,true);
 		$this->_translator = $translator;
 		$this->_session = $session;
 	}

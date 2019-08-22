@@ -2,6 +2,7 @@
 namespace wfw\engine\core\security\rules;
 
 use wfw\engine\core\action\IAction;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\notifier\IMessage;
 use wfw\engine\core\notifier\INotifier;
 use wfw\engine\core\notifier\Message;
@@ -28,31 +29,37 @@ final class ValidToken implements IAccessRule {
 	private $_notifier;
 	/** @var null|IMessage $_message */
 	private $_message;
+	/** @var ITranslator $_translator */
+	private $_translator;
 
 	/**
 	 * ValidTokenRule constructor.
 	 *
-	 * @param ISession      $session  Session
-	 * @param INotifier     $notifier Notifier
-	 * @param null|string   $redirUrl (optionnel) URL de redirection en cas d'echec
-	 * @param null|IMessage $message  (optionnel) Message à afficher à l'utilisateur pour
-	 *                                information sur la redirection en cas d'erreur. Si null, un
-	 *                                message par défaut est créé.
-	 * @param null|string $sessionKey (optionnel default : "csrftoken") Clé de la session
-	 *                                permettant de récupérer le token csrf.
+	 * @param ISession      $session    Session
+	 * @param INotifier     $notifier   Notifier
+	 * @param ITranslator   $translator
+	 * @param null|string   $redirUrl   (optionnel) URL de redirection en cas d'echec
+	 * @param null|IMessage $message    (optionnel) Message à afficher à l'utilisateur pour
+	 *                                  information sur la redirection en cas d'erreur. Si null, un
+	 *                                  message par défaut est créé.
+	 * @param null|string   $sessionKey (optionnel default : "csrftoken") Clé de la session
+	 *                                  permettant de récupérer le token csrf.
 	 */
 	public function __construct(
 		ISession $session,
 		INotifier $notifier,
+		ITranslator $translator,
 		?string $redirUrl = null,
 		?IMessage $message = null,
 		?string $sessionKey = null
 	) {
 		$this->_csrf = $session->get($sessionKey ?? "csrfToken");
+		$this->_translator = $translator;
 		$this->_notifier = $notifier;
 		$this->_redirUrl = $redirUrl ?? "users/login";
 		$this->_message = $message ?? new Message(
-			"Bad csrf token supplied !",
+			$translator->getAndTranslate("server/engine/core/app/ACCESS_DENIED")." : "
+			.$translator->getAndTranslate("server/engine/core/app/BAD_CSRF_TOKEN"),
 			MessageTypes::ERROR
 		);
 	}
@@ -69,12 +76,10 @@ final class ValidToken implements IAccessRule {
 				return new AccessPermission(
 					false,
 					HTTPStatus::FORBIDDEN,
-					"Access denied : invalid token",
+					(string) $this->_message,
 					new Redirection($this->_redirUrl,HTTPStatus::FORBIDDEN)
 				);
-			}else{
-				return new AccessPermission(true);
-			}
+			}else return new AccessPermission(true);
 		}
 		return null;
 	}

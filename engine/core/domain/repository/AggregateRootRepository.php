@@ -28,8 +28,8 @@ final class AggregateRootRepository implements IAggregateRootRepository {
 	 * @param IAggregateRoot $entity Entité à ajouter
 	 * @param ICommand|null  $command
 	 */
-	public function add(IAggregateRoot $entity,ICommand $command=null):void{
-		$this->_eventStore->save($entity,$command);
+	public function addAggregateRoot(IAggregateRoot $entity, ICommand $command=null):void{
+		$this->_eventStore->saveAggregateRoot($entity, $command);
 	}
 
 	/**
@@ -38,8 +38,8 @@ final class AggregateRootRepository implements IAggregateRootRepository {
 	 * @param IAggregateRoot $aggregate Entité à supprimer
 	 * @param ICommand|null  $command
 	 */
-	public function remove(IAggregateRoot $aggregate,ICommand $command=null):void{
-		$this->_eventStore->save($aggregate,$command);
+	public function removeAggregateRoot(IAggregateRoot $aggregate, ICommand $command=null):void{
+		$this->_eventStore->saveAggregateRoot($aggregate, $command);
 	}
 
 	/**
@@ -49,8 +49,8 @@ final class AggregateRootRepository implements IAggregateRootRepository {
 	 *
 	 * @return null|IAggregateRoot
 	 */
-	public function get(UUID $aggregateId):?IAggregateRoot{
-		return $this->_eventStore->get($aggregateId);
+	public function getAggregateRoot(UUID $aggregateId):?IAggregateRoot{
+		return $this->_eventStore->getAggregateRoot($aggregateId);
 	}
 
 	/**
@@ -59,8 +59,8 @@ final class AggregateRootRepository implements IAggregateRootRepository {
 	 * @param IAggregateRoot $aggregate Entité à modifier
 	 * @param ICommand|null  $command
 	 */
-	public function modify(IAggregateRoot $aggregate,ICommand $command=null): void {
-		$this->_eventStore->save($aggregate,$command);
+	public function modifyAggregateRoot(IAggregateRoot $aggregate, ICommand $command=null): void {
+		$this->_eventStore->saveAggregateRoot($aggregate, $command);
 	}
 	
 	/**
@@ -69,8 +69,8 @@ final class AggregateRootRepository implements IAggregateRootRepository {
 	 * @param UUID[] $aggregatesId Identifiant des aggrégats
 	 * @return array
 	 */
-	public function getAll(UUID... $aggregatesId): array {
-		return $this->_eventStore->getAll(...$aggregatesId);
+	public function getAllAggregateRoots(UUID... $aggregatesId): array {
+		return $this->_eventStore->getAllAggregateRoot(...$aggregatesId);
 	}
 	
 	/**
@@ -79,8 +79,8 @@ final class AggregateRootRepository implements IAggregateRootRepository {
 	 * @param null|ICommand    $command    Commande ayant entrainée l'ajout
 	 * @param IAggregateRoot[] $aggregates Liste des aggrégats à ajouter
 	 */
-	public function addAll(?ICommand $command = null, IAggregateRoot... $aggregates): void {
-		$this->_eventStore->saveAll($command,...$aggregates);
+	public function addAllAggregateRoots(?ICommand $command = null, IAggregateRoot... $aggregates): void {
+		$this->_eventStore->saveAllAggregateRoots($command,...$aggregates);
 	}
 	
 	/**
@@ -89,8 +89,8 @@ final class AggregateRootRepository implements IAggregateRootRepository {
 	 * @param ICommand|null    $command    Commande ayant entrainée la modification
 	 * @param IAggregateRoot[] $aggregates Liste des aggrégats à modifier
 	 */
-	public function modifyAll(?ICommand $command = null, IAggregateRoot... $aggregates): void {
-		$this->_eventStore->saveAll($command,...$aggregates);
+	public function modifyAllAggregateRoots(?ICommand $command = null, IAggregateRoot... $aggregates): void {
+		$this->_eventStore->saveAllAggregateRoots($command,...$aggregates);
 	}
 	
 	/**
@@ -100,7 +100,7 @@ final class AggregateRootRepository implements IAggregateRootRepository {
 	 * @param ICommand|null    $command    Commande ayant entrainée la suppression
 	 * @param IAggregateRoot[] $aggregates Liste des aggrégats à supprimer
 	 */
-	public function removeAll(?ICommand $command = null, IAggregateRoot... $aggregates): void {
-		$this->_eventStore->saveAll($command,...$aggregates);
+	public function removeAllAggregateRoots(?ICommand $command = null, IAggregateRoot... $aggregates): void {
+		$this->_eventStore->saveAllAggregateRoots($command,...$aggregates);
 	}
 }

@@ -14,8 +14,6 @@ final class ChangePassword extends UserCommand{
 	private $_old;
 	/** @var Password $_new */
 	private $_new;
-	/** @var string $_modifier */
-	private $_modifier;
 
 	/**
 	 * ChangePassword constructor.
@@ -25,11 +23,10 @@ final class ChangePassword extends UserCommand{
 	 * @param string $modifier
 	 */
 	public function __construct(string $userId, Password $old, Password $new, string $modifier) {
-		parent::__construct();
+		parent::__construct($modifier);
 		$this->_userId = $userId;
 		$this->_old = $old;
 		$this->_new = $new;
-		$this->_modifier = $modifier;
 	}
 
 	/**
@@ -51,12 +48,5 @@ final class ChangePassword extends UserCommand{
 	 */
 	public function getNew(): Password {
 		return $this->_new;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getModifier(): string {
-		return $this->_modifier;
 	}
 }

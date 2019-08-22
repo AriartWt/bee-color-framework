@@ -24,6 +24,9 @@ final class HTTPStatus extends PHPEnum {
 	public const MULTI_STATUS = 207;
 	public const ALREADY_REPORTED = 208;
 	public const IM_USED = 226;
+	//non-standard
+	public const DONE = 249;
+	public const DATA = 250;
 
 	//300
 	public const MUTLIPLE_CHOICES = 300;

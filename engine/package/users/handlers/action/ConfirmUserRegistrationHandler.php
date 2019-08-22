@@ -68,7 +68,7 @@ final class ConfirmUserRegistrationHandler implements IActionHandler,IDomainEven
 		$this->_access = $access;
 		$this->_rule = $rule;
 		$this->_session = $session;
-		$observer->addEventListener(UserConfirmedEvent::class,$this);
+		$observer->addDomainEventListener(UserConfirmedEvent::class, $this);
 	}
 
 	/**
@@ -96,7 +96,7 @@ final class ConfirmUserRegistrationHandler implements IActionHandler,IDomainEven
 					"$key/BAD_CONFIRM_CODE"
 				));
 
-			$this->_bus->execute(new ConfirmUserRegistration(
+			$this->_bus->executeCommand(new ConfirmUserRegistration(
 				$data["id"],
 				new UserConfirmationCode($data["code"]),
 				$data["id"]
@@ -116,7 +116,7 @@ final class ConfirmUserRegistrationHandler implements IActionHandler,IDomainEven
 	 * Méthode appelée lors de la reception d'un événement
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof UserConfirmedEvent) $this->_event = $e;
 	}
 }

@@ -43,24 +43,47 @@ final class UploadFileHandler extends UploadHandler {
 			);
 			$res = $this->_rule->applyTo($data);
 			if($res->satisfied()){
-				$filesize = filesize($data["file"]["tmp_name"]);
+				$totalSize = 0;
+				foreach($data["files"]["size"] as $size){
+					$totalSize += $size;
+				}
 				$quotas = (new Byte($this->_conf->getString("server/uploader/quotas") ?? -1))->toInt();
 				$dirSize = $this->getUploadDirectorySize();
 				if($quotas >= 0){ // si un quotas est défini
 					$maxFileSize = $quotas - $dirSize; // si pas de limite fichier, la taille max est l'espace disponible
-					if($maxFileSize < $filesize) return new ErrorResponse(
+					if($maxFileSize < $totalSize) return new ErrorResponse(
 						"201",
-						""
+						$this->_translator->getAndReplace("server/engine/package/uploader/STORAGE_QUOTA_EXCEED")
 					);
 				}
 				try{
-					$fname = $this->sanitize($data["name"]);
-					$name = $this->realPath($fname);
-					if(!is_dir(dirname($name)))
-						throw new \InvalidArgumentException("Unknown folder $name");
-					move_uploaded_file($data["file"]["tmp_name"],$name);
-					return new Response($this->getUploadFolderName().$fname);
-				}catch (\InvalidArgumentException $e){
+					$res = [];
+					$alreadyExists = [];
+					foreach($data["names"] as $k=>$name){
+						$fname = $this->sanitize($name);
+						$name = $this->realPath($fname);
+						if(!is_dir(dirname($name)))
+							throw new \InvalidArgumentException("Unknown folder $name");
+						if(is_file($name)) $alreadyExists[] = $fname;
+						else $res[$data["files"]["tmp_name"][$k]] = [
+							"new_name" => $name,
+							"return_value" => $this->getUploadFolderName().$fname,
+							"tmp_name" => $data["files"]["tmp_name"][$k]
+						];
+					}
+					if(count($alreadyExists) > 0) throw new \InvalidArgumentException(
+						$this->_translator->getAndReplace(
+							"server/engine/package/uploader/FILE_ALREADY_EXISTS",
+							implode("\n",$alreadyExists)
+						)
+					);
+					$toSend = [];
+					foreach($res as $k=>$v){
+						move_uploaded_file($v["tmp_name"],$v["new_name"]);
+						$toSend[] = $v["return_value"];
+					}
+					return new Response($toSend);
+				}catch (\Error | \Exception $e){
 					return new ErrorResponse(201,$e->getMessage());
 				}
 			}else return new ErrorResponse(201,$res->message(),$res->errors());

@@ -1,9 +1,9 @@
 @LOGDIR/*.log @LOGDIR/*/*.log @LOGDIR/*/*/*.log @LOGDIR/*/*/*/*.log{
 	daily
-	size 100M
+	size 10M
 	rotate 15
 	compress
 	delaycompress
 	missingok
-	create 644 root root
+	create 744 www-data www-data
 }

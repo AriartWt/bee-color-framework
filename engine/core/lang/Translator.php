@@ -22,9 +22,9 @@ final class Translator implements ITranslator {
 	 * @throws \InvalidArgumentException
 	 */
 	public function __construct(ILanguageLoader $loader, array $langs, ?string $defaultLang=null) {
-		if(empty($langs)){
-			throw new \InvalidArgumentException("At least one lang have to be specified !");
-		}
+		if(empty($langs)) throw new \InvalidArgumentException(
+			"At least one lang must be specified !"
+		);
 		$this->_repositories = [];
 		foreach ($langs as $lang=>$paths){
 			$paths = array_filter($paths,function($path){
@@ -78,9 +78,15 @@ final class Translator implements ITranslator {
 	 * @param string $lang Nouvelle langue par défaut.
 	 */
 	public function changeCurrentLanguage(string $lang): void {
-		if(isset($this->_repositories[$lang])){
-			$this->_defaultLang = $lang;
-		}else{
+		if(isset($this->_repositories[$lang])) $this->_defaultLang = $lang;
+		else{
+			//try to resolve case were weak language form is given (ex fr for fr_FR)
+			foreach($this->_repositories as $l => $repository){
+				if(strpos($l,strtolower($lang)) === 0){
+					$this->_defaultLang = $l;
+					return;
+				}
+			}
 			throw new \InvalidArgumentException("Unknwown language $lang !");
 		}
 	}

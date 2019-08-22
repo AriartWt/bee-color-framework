@@ -12,10 +12,10 @@ final class CancelUserRegistrationHandler extends UserCommandHandler{
 	 * Traite la commande
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		/** @var CancelUserRegistration $command */
 		$user = $this->get($command->getUserId());
-		$user->cancelRegistration($command->getModifierId(),$command->removeUser());
+		$user->cancelRegistration($command->getInitiatorId(),$command->removeUser());
 		$this->repos()->modify($user,$command);
 	}
 }

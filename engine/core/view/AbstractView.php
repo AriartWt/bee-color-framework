@@ -44,7 +44,8 @@ abstract class AbstractView extends View {
 		$this->_router = $router;
 		if($cache){
 			$this->_svg = new SvgImporter(
-				SITE."/package/$package/webroot/Image/svg",
+				dirname(__DIR__,3)
+				."/site/package/$package/webroot/Image/svg",
 				$cache
 			);
 		}

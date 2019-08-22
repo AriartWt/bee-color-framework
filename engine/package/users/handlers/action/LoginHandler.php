@@ -119,7 +119,7 @@ final class LoginHandler implements IActionHandler {
 					//Si l'utilisateur avait fait une demande de récupération de mot de passe
 					//sans aller jusqu'au bout, on l'annule.
 					if($user->getState() instanceof UserWaitingForPasswordReset)
-						$this->_bus->execute(new CancelPasswordRetrieving(
+						$this->_bus->executeCommand(new CancelPasswordRetrieving(
 							$user->getId(),$user->getId()
 						));
 					$this->_notifier->addMessage(new Message(

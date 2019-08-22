@@ -3,7 +3,6 @@ namespace wfw\engine\package\users\command;
 
 use wfw\engine\package\users\domain\Password;
 use wfw\engine\package\users\domain\states\UserState;
-use wfw\engine\package\users\lib\confirmationCode\UserConfirmationCode;
 
 /**
  * Lance une procédure de récupération de mot de passe.
@@ -11,8 +10,6 @@ use wfw\engine\package\users\lib\confirmationCode\UserConfirmationCode;
 final class RetrievePassword extends UserCommand{
 	/** @var string $_userId */
 	private $_userId;
-	/** @var string $_askerId */
-	private $_askerId;
 	/** @var null|Password $_password */
 	private $_password;
 	/** @var null|UserState $_state */
@@ -32,9 +29,8 @@ final class RetrievePassword extends UserCommand{
 		?Password $password = null,
 		?UserState $state=null
 	){
-		parent::__construct();
+		parent::__construct($askerId);
 		$this->_userId = $userId;
-		$this->_askerId = $askerId;
 		$this->_password = $password;
 		$this->_state = $state;
 	}
@@ -45,14 +41,7 @@ final class RetrievePassword extends UserCommand{
 	public function getUserId(): string {
 		return $this->_userId;
 	}
-	
-	/**
-	 * @return string
-	 */
-	public function getAskerId(): string {
-		return $this->_askerId;
-	}
-	
+
 	/**
 	 * @return Password
 	 */

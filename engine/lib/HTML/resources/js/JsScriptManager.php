@@ -10,6 +10,19 @@ use wfw\engine\lib\HTML\resources\FileIncluder;
 final class JsScriptManager extends FileIncluder implements IJsScriptManager {
 	/** @var array $_vars */
 	private $_vars=array();
+	/** @var bool $_preload */
+	private $_preload;
+
+	/**
+	 * JsScriptManager constructor.
+	 *
+	 * @param bool $preload
+	 * @param int  $exceptionFlag
+	 */
+	public function __construct(bool $preload = true, int $exceptionFlag = self::EMIT_EXCEPTION_OFF) {
+		parent::__construct($exceptionFlag);
+		$this->_preload = $preload;
+	}
 
 	/**
 	 *   Ajoute une nouvelle variable si elle n'est pas présente
@@ -30,6 +43,7 @@ final class JsScriptManager extends FileIncluder implements IJsScriptManager {
 			}
 		}
 	}
+
 	/**
 	 *   Supprime une variable de la liste des inclusions si elle est présente
 	 *
@@ -77,6 +91,7 @@ final class JsScriptManager extends FileIncluder implements IJsScriptManager {
 			$res.='</script>';
 		}
 		foreach($this->_registered as $v){
+			if($this->_preload) header("Link: <$v$add_to_url>; rel=preload; as=script",false);
 			$res.='<script type="text/javascript" charset="utf-8" src="'.$v.$add_to_url.'" defer></script>';
 		}
 		return $res;

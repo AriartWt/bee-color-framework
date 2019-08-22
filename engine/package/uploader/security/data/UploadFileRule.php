@@ -6,8 +6,8 @@ use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\security\data\AndRule;
 use wfw\engine\core\security\data\IRule;
 use wfw\engine\core\security\data\IRuleReport;
-use wfw\engine\core\security\data\rules\IsFile;
-use wfw\engine\core\security\data\rules\MatchRegexp;
+use wfw\engine\core\security\data\rules\IsArrayOf;
+use wfw\engine\core\security\data\rules\IsFileArray;
 use wfw\engine\core\security\data\rules\RequiredFields;
 use wfw\engine\lib\PHP\types\Byte;
 
@@ -27,20 +27,20 @@ final class UploadFileRule implements IRule {
 	 */
 	public function __construct(IConf $conf,ITranslator $translator,int $maxFileNameLength = 512) {
 		$key = "server/engine/package/uploader/forms";
-		$maxFileSize = (new Byte($conf->getString("server/uploader/max_size") ?? -1))->toInt();
+		$maxFileSize = (new Byte($conf->getString("server/uploader/max_size_by_file") ?? -1))->toInt();
+		$totalMaxFileSize = (new Byte($conf->getString("server/uploader/max_size_at_once") ?? -1))->toInt();
 		$this->_rule = new AndRule(
 			$translator->get("$key/GENERAL_ERROR"),
-			new RequiredFields($translator->get("$key/REQUIRED"),"file","name"),
-			new MatchRegexp(
-				"/^.{1,$maxFileNameLength}$/",
-			$translator->getAndReplace("$key/INVALID_FILE_NAME",$maxFileNameLength),
-				"name"
-			),
-			new IsFile(
+			new RequiredFields($translator->get("$key/REQUIRED"),"files","names"),
+			new IsArrayOf($translator->get("$key/INVALID_FILE_NAME"),function($fname)use($maxFileNameLength){
+				return is_string($fname) && preg_match("/^.{1,$maxFileNameLength}$/",$fname);
+			},"names"),
+			new IsFileArray(
 				$translator->get("$key/INVALID_FILE"),
 				$maxFileSize,
+				$totalMaxFileSize,
 				$conf->getArray("server/uploader/accepted_mimes") ?? ["/^image\/.*$/","/^video\/.*"],
-				"file"
+				"files"
 			)
 		);
 	}

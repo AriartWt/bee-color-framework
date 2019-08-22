@@ -9,10 +9,10 @@ interface IDomainEventDispatcher {
 	 * Dispatche un événement
 	 * @param IDomainEvent $e Evenement à dispatcher
 	 */
-	public function dispatch(IDomainEvent $e):void;
+	public function dispatchDomainEvent(IDomainEvent $e):void;
 
 	/**
 	 * @param EventList $events
 	 */
-	public function dispatchAll(EventList $events):void;
+	public function dispatchAllDomainEvents(EventList $events):void;
 }

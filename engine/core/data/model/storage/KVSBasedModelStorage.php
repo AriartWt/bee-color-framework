@@ -53,7 +53,7 @@ final class KVSBasedModelStorage implements IModelStorage {
 	 * @param int            $storageMode
 	 */
 	public function set(string $key, IModel $model, ?int $storageMode = null) {
-		$this->_access->set($key,$model,0,$storageMode??$this->_defaultStorage);
+		$this->_access->set($key,$model,0,$storageMode ?? $this->_defaultStorage);
 	}
 
 	/**

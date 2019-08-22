@@ -5,6 +5,7 @@ use wfw\engine\core\action\IAction;
 use wfw\engine\core\action\IActionHandler;
 use wfw\engine\core\command\ICommand;
 use wfw\engine\core\command\ICommandBus;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\request\IRequest;
 use wfw\engine\core\request\IRequestData;
 use wfw\engine\core\response\IResponse;
@@ -30,19 +31,22 @@ abstract class PostDataDefaultActionHandler implements IActionHandler {
 	private $_dataFlag;
 	/** @var bool $_requireAjax */
 	private $_requireAjax;
+	private $_translator;
 
 	/**
 	 * PutArticleOnlineHandler constructor.
 	 *
-	 * @param ICommandBus $bus Bus de commande.
-	 * @param IRule $rule Regle de valdiation
-	 * @param bool $withFiles Si true, inclue le tableau _FILES dans la liste des résultats
-	 *                               passé à createCommand
-	 * @param bool $requireAjax Rejette la requête si elle n'est pas ajax
-	 * @param bool $withGet
+	 * @param ICommandBus $bus         Bus de commande.
+	 * @param ITranslator $translator
+	 * @param IRule       $rule        Regle de valdiation
+	 * @param bool        $withFiles   Si true, inclue le tableau _FILES dans la liste des résultats
+	 *                                 passé à createCommand
+	 * @param bool        $requireAjax Rejette la requête si elle n'est pas ajax
+	 * @param bool        $withGet
 	 */
 	public function __construct(
 		ICommandBus $bus,
+		ITranslator $translator,
 		IRule $rule,
 		bool $withFiles=false,
 		bool $requireAjax=false,
@@ -50,6 +54,7 @@ abstract class PostDataDefaultActionHandler implements IActionHandler {
 	) {
 		$this->_bus = $bus;
 		$this->_rule = $rule;
+		$this->_translator = $translator;
 		$this->_requireAjax = $requireAjax;
 		$this->_dataFlag = IRequestData::POST;
 		if($withFiles) $this->_dataFlag |= IRequestData::FILES;
@@ -72,23 +77,26 @@ abstract class PostDataDefaultActionHandler implements IActionHandler {
 				$command = $this->createCommand($data);
 				if($command instanceof MultiCommand){
 					foreach($command->commands() as $cmd){
-						$this->_bus->execute($cmd);
+						$this->_bus->executeCommand($cmd);
 					}
-				}else $this->_bus->execute($command);
+				}else $this->_bus->executeCommand($command);
 				return $this->successResponse();
 			}catch(\Exception $e){
 				return $this->handleException($e);
 			}catch(\Error $e){
 				return $this->handleError($e);
 			}
-		}else return new ErrorResponse(404,$this->getNotFoundResponseMessage());
+		}else return new ErrorResponse(404,$this->_translator->getAndReplace(
+			$this->getNotFoundResponseTranslationKey(),
+			$action->getInternalPath()
+		));
 	}
 
 	/**
 	 * @return string
 	 */
-	protected function getNotFoundResponseMessage():string{
-		return "Page not found";
+	protected function getNotFoundResponseTranslationKey():string{
+		return "server/engine/core/app/404_NOT_FOUND";
 	}
 
 	/**

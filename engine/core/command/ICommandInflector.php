@@ -14,5 +14,5 @@ interface ICommandInflector {
 	 * @return ICommandHandler[]
 	 * @throws NoCommandHandlerFound
 	 */
-	public function resolveHandlers(ICommand $command):array;
+	public function resolveCommandHandlers(ICommand $command):array;
 }

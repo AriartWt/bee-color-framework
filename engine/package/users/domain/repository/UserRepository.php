@@ -29,7 +29,7 @@ final class UserRepository implements IUserRepository {
 	 */
 	public function get(string $id): ?User {
 		/** @var User $user */
-		$user = $this->_repos->get(new UUID(UUID::V6,$id));
+		$user = $this->_repos->getAggregateRoot(new UUID(UUID::V6, $id));
 		return $user;
 	}
 	
@@ -40,7 +40,7 @@ final class UserRepository implements IUserRepository {
 	 * @param null|ICommand $cmd Commande
 	 */
 	public function add(User $user,?ICommand $cmd = null): void {
-		$this->_repos->add($user);
+		$this->_repos->addAggregateRoot($user);
 	}
 	
 	/**
@@ -48,7 +48,7 @@ final class UserRepository implements IUserRepository {
 	 * @param null|ICommand $cmd Commande
 	 */
 	public function remove(User $user,?ICommand $cmd = null): void {
-		$this->_repos->remove($user);
+		$this->_repos->removeAggregateRoot($user);
 	}
 	
 	/**
@@ -58,7 +58,7 @@ final class UserRepository implements IUserRepository {
 	 * @param null|ICommand $cmd Commande
 	 */
 	public function modify(User $user,?ICommand $cmd = null): void {
-		$this->_repos->modify($user);
+		$this->_repos->modifyAggregateRoot($user);
 	}
 	
 	/**
@@ -68,7 +68,7 @@ final class UserRepository implements IUserRepository {
 	public function getAll(string... $ids): array {
 		$uuids = [];
 		foreach ($ids as $id){$uuids[] = new UUID(UUID::V6,$id);}
-		return $this->_repos->getAll(...$uuids);
+		return $this->_repos->getAllAggregateRoots(...$uuids);
 	}
 	
 	/**
@@ -78,7 +78,7 @@ final class UserRepository implements IUserRepository {
 	 * @param User          ...$users Utilisateurs à ajouter
 	 */
 	public function addAll(?ICommand $cmd = null,User... $users): void {
-		$this->_repos->addAll($cmd,...$users);
+		$this->_repos->addAllAggregateRoots($cmd,...$users);
 	}
 	
 	/**
@@ -88,7 +88,7 @@ final class UserRepository implements IUserRepository {
 	 * @param User          ...$users utilisateurs à modifier
 	 */
 	public function modifyAll(?ICommand $cmd = null,User... $users): void {
-		$this->_repos->modifyAll($cmd,...$users);
+		$this->_repos->modifyAllAggregateRoots($cmd,...$users);
 	}
 	
 	/**
@@ -96,6 +96,6 @@ final class UserRepository implements IUserRepository {
 	 * @param User          ...$users utilisateurs à supprimer
 	 */
 	public function removeAll(?ICommand $cmd = null,User... $users): void {
-		$this->_repos->removeAll($cmd,...$users);
+		$this->_repos->removeAllAggregateRoots($cmd,...$users);
 	}
 }

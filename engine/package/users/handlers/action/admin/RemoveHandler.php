@@ -47,7 +47,7 @@ final class RemoveHandler extends DefaultUserActionHandler implements IDomainEve
 		parent::__construct($bus, $rule, $session, $translator);
 		$this->_encoder = $encoder;
 		$this->_ids = [];
-		$observer->addEventListener(UserRemovedEvent::class,$this);
+		$observer->addDomainEventListener(UserRemovedEvent::class, $this);
 	}
 
 	/**
@@ -76,7 +76,7 @@ final class RemoveHandler extends DefaultUserActionHandler implements IDomainEve
 	 * Méthode appelée lors de la reception d'un événement
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof UserRemovedEvent) $this->_ids[] = (string) $e->getAggregateId();
 	}
 }

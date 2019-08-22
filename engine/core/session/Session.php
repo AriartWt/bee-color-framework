@@ -1,135 +1,132 @@
 <?php
 namespace wfw\engine\core\session;
 
+use wfw\engine\core\session\handlers\errors\SessionFailure;
 use wfw\engine\core\session\handlers\PHPSessionHandler;
 
 /**
  * Session
  */
 final class Session implements ISession {
-	/** @var string $_tmp */
-	private $_tmp;
+	protected const LAST_ACTIVITY = "@-SESSION_LAST_ACTIVITY-@";
 	/** @var string $_logKey */
 	private $_logKey;
+	/** @var int $_timeout */
+	private $_timeout;
+	/** @var bool $_firstStart */
+	private $_firstStart;
 
 	/**
-	 *  Démarre la Session
-	 *
-	 * @param null|string $logKey (optionnel defaut : user) Clé d'accés au champ contenant les
-	 *                            informations de session d'un utilisateur connecté.
-	 * @param null|string $tmp    (optionnel ) Chemin par défaut vers un dossier
-	 *                            temporaire
-	 * @param \SessionHandlerInterface $handler (optionnel) Handler de session
+	 * @param null|string              $logKey  (default : user) User key where all session data of a logged user
+	 *                                          are stored until logout.
+	 * @param \SessionHandlerInterface $handler (optionnel) Session handler to register
+	 * @param int|null                 $timeout
 	 */
 	public function __construct(
 		string $logKey = "user",
-		?string $tmp=null,
-		\SessionHandlerInterface $handler=null
+		\SessionHandlerInterface $handler = null,
+		?int $timeout = null
 	){
-		if(!isset($_SESSION)){
-			if(!is_null($handler) && !( $handler instanceof PHPSessionHandler)){
-				ini_set('session.save_handler','user');
-				ini_set('session.use_strict_mode',true);
-				session_set_save_handler($handler,true);
-			}
+		if(!isset($_SESSION) && !is_null($handler) && !( $handler instanceof PHPSessionHandler)){
+			ini_set('session.use_strict_mode',true);
+			session_set_save_handler($handler,true);
 		}
-		$this->_tmp = $tmp ?? ENGINE.DS."resources".DS."tmp";
+		if(is_null($timeout)){
+			$timeout = ini_get("session.gc_maxlifetime");
+			ini_set("session.gc_maxlifetime",$timeout);
+		}
+		ini_set("session.cookie_lifetime",$timeout);
+		$this->_timeout = $timeout;
+		$this->_firstStart = true;
 		$this->_logKey = $logKey;
-		session_start();
 	}
 
 	/**
-	 *   Détruit la session
+	 * Check the current session timeout and reset the session if expired.
 	 */
-	public function destroy(){
-		session_destroy();
-		session_start();
-	}
-
-	/**
-	 * Crée un dossier temporaire et en retourne le chemin.
-	 *
-	 * @return string Chemin d'accés au dossier temporaire
-	 */
-	public function getTmp():string{
-		$time=microtime();
-		$time=str_replace("0.","",$time);
-		$time=explode(' ',$time);
-		$time=$time[1]."_".$time[0];
-		$tmp=$this->_tmp.DS.session_id().DS.$time;
-		if(!file_exists($tmp)){
-			mkdir($tmp,true);
+	protected function checkTimeout():void{
+		$time = microtime(true);
+		if($this->exists(self::LAST_ACTIVITY) && ($time - $this->get(self::LAST_ACTIVITY)) > $this->_timeout){
+			$this->destroy();
 		}
-		return $tmp;
+		$this->set(self::LAST_ACTIVITY,$time);
 	}
 
 	/**
-	 *	 Permet d'écrire dans la session
-	 *	@param string $key est la clé à inscrire dans la session
-	 *	@param mixed $value est la valeur correspondante
-	 **/
-	public function set($key,$value):void{
+	 * Détruit la session
+	 */
+	public function destroy():void{
+		session_unset();
+		session_destroy();
+		$this->start();
+	}
+
+	private function clearDuplicateCookies():void{
+		if (headers_sent()) return;
+		$cookies = [];
+		foreach (headers_list() as $header) {
+			if (strpos($header, 'Set-Cookie:') === 0) $cookies[] = $header;
+		}
+		header_remove('Set-Cookie');
+		foreach(array_unique($cookies) as $cookie) header($cookie, false);
+	}
+
+	/**
+	 * @param string $key
+	 * @param mixed  $value
+	 */
+	public function set(string $key,$value):void{
 		$_SESSION[$key]=$value;
 	}
 
 	/**
-	 *	 Permet de lire une clé
-	 *
-	 *	@param string $key nom de la clé à lire
-	 * @return mixed|null retourne la session si aucune clé passée, retourne la valeur de la clé si
-	 *                    elle existe, retourne null sinon
-	 **/
-	public function get($key=null){
-		if($key){
-			if(isset($_SESSION[$key])){
-				return $_SESSION[$key];
-			}else{
-				return null;
-			}
-		}else{
-			return $_SESSION;
-		}
+	 * @param null|string $key Key to get. If null, return the sessiond ata as array
+	 * @return mixed|null
+	 */
+	public function get(?string $key=null){
+		if(!is_null($key)) return $_SESSION[$key]?? null;
+		else return $_SESSION;
 	}
 
 	/**
-	 *  Permet de supprimer une clé dans la session
-	 * @param string $key clé à supprimer
+	 * @param string $key Key to remove
 	 */
 	public function remove($key):void{
-		if(isset($_SESSION[$key])){
-			unset($_SESSION[$key]);
-		}
+		if(isset($_SESSION[$key])) unset($_SESSION[$key]);
 	}
 
 	/**
-	 *  Remplace la valeur d'une clé par une nouvelle valeur
-	 * @param  string $key      Clé à rempalcer
-	 * @param  mixed  $newValue Nouvelle valeur à insérer
-	 */
-	public function replace($key,$newValue){
-		if($this->get($key)){
-			$this->remove($key);
-			$this->set($key,$newValue);
-		}
-	}
-
-	/**
-	 *  Permet de savoir si une clé est présente dans la session
-	 *
-	 * @param $key Clé à tester
-	 *
+	 * @param string $key
 	 * @return bool
 	 */
-	public function exists($key): bool
-	{
+	public function exists(string $key): bool {
 		return isset($_SESSION[$key]);
 	}
 
 	/**
-	 * @return bool Permet de savoir si un utilisateur loggé est enregistré.
+	 * @return bool
 	 */
-	public function isLogged(): bool
-	{
+	public function isLogged(): bool {
 		return isset($_SESSION[$this->_logKey]);
+	}
+
+	/**
+	 * Close the session
+	 */
+	public function close():void {
+		if(session_status() === PHP_SESSION_ACTIVE) session_write_close();
+		else throw new SessionFailure("Can't close not open session !");
+	}
+
+	/**
+	 * Start the session
+	 */
+	public function start():void {
+		if(session_status() !== PHP_SESSION_ACTIVE){
+			session_start();
+			if($this->_firstStart) $this->_firstStart = false;
+			else $this->clearDuplicateCookies();
+			$this->checkTimeout();
+		}else throw new SessionFailure("Can't start an active session !");
 	}
 }

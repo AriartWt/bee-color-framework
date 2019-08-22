@@ -43,11 +43,11 @@ final class RetrievePasswordHandler extends UserCommandHandler{
 	 * Traite la commande
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command){
+	public function handleCommand(ICommand $command){
 		/** @var RetrievePassword $command */
 		$user = $this->get($command->getUserId());
 		$confirmationCode = $this->_generator->createUserConfirmationCode();
-		$user->retrievePassword($confirmationCode,$command->getAskerId());
+		$user->retrievePassword($confirmationCode,$command->getInitiatorId());
 		if(is_null($command->getPassword())){
 			$this->_mailProvider->send($this->_mailFactory->create(
 				IUserRegisteredMail::class,
@@ -60,7 +60,7 @@ final class RetrievePasswordHandler extends UserCommandHandler{
 			$user->resetPassword(
 				$command->getPassword(),
 				$confirmationCode,
-				$command->getAskerId(),
+				$command->getInitiatorId(),
 				$command->getState()
 			);
 		}

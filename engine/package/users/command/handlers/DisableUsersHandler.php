@@ -14,11 +14,11 @@ final class DisableUsersHandler extends UserCommandHandler{
 	 *
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		/** @var DisableUsers $command */
 		$users = $this->getAll(...$command->getUsers());
 		foreach($users as $user){
-			$user->disable($command->getDisabler());
+			$user->disable($command->getInitiatorId());
 		}
 		$this->repos()->modifyAll($command,...$users);
 	}

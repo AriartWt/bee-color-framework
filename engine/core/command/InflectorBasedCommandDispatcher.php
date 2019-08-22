@@ -22,10 +22,10 @@ final class InflectorBasedCommandDispatcher implements ICommandDispatcher {
 	 * @param ICommand $command Commande à dispatcher
 	 * @throws NoHandlerFound
 	 */
-	public function dispatch(ICommand $command): void {
-		$handlers = $this->_inflector->resolveHandlers($command);
+	public function dispatchCommand(ICommand $command): void {
+		$handlers = $this->_inflector->resolveCommandHandlers($command);
 		foreach($handlers as $handler){
-			$handler->handle($command);
+			$handler->handleCommand($command);
 		}
 	}
 }

@@ -39,15 +39,20 @@ final class ModelSynchronizer implements IModelSynchronizer {
 
 	/**
 	 * Lance la synchronisation
+	 *
+	 * @param string[] $modelsToRebuild
 	 */
-	public function synchronize(): void {
+	public function synchronize(string... $modelsToRebuild): void {
 		//On met à jour les models du snapshot.
-		$this->_snapshoter->updateSnapshot();
+		$this->_snapshoter->updateSnapshot(...$modelsToRebuild);
 		//On remplace chaque model par sa version la plus récente
 		//Si des erreurs sont survenues lors de la dernière execution,
 		//elles sont effacées et le model repart sur une base saine
 		foreach($this->_snapshoter->getModels() as $k=>$model){
-			$this->_storage->set(get_class($model),$model);
+			if(!($model instanceof \__PHP_Incomplete_Class)) $this->_storage->set(
+				get_class($model),
+				$model
+			);
 		}
 	}
 }

@@ -21,6 +21,8 @@ final class KVSContainer implements IKVSContainer {
 	private $_defaultStorageMode;
 	/** @var ILogger $_logger */
 	private $_logger;
+	/** @var bool $_enabled */
+	private $_enabled;
 
 	/**
 	 * KVSContainer constructor.
@@ -32,6 +34,7 @@ final class KVSContainer implements IKVSContainer {
 	 * @param int      $defaultStorageMode Mode de stockage par défaut du container
 	 * @param string   $dbPath             Chemin d'accés au repertoire parent du container
 	 * @param ILogger  $logger
+	 * @param bool     $enabled
 	 * @throws \InvalidArgumentException
 	 */
 	public function __construct(
@@ -41,8 +44,10 @@ final class KVSContainer implements IKVSContainer {
 		array $groupDefs,
 		int $defaultStorageMode,
 		string $dbPath,
-		ILogger $logger
+		ILogger $logger,
+		bool $enabled = true
 	) {
+		$this->_enabled = $enabled;
 		$this->_logger = $logger;
 		if(KVSModes::existsValue($defaultStorageMode)){
 			$this->_defaultStorageMode = $defaultStorageMode;
@@ -134,7 +139,7 @@ final class KVSContainer implements IKVSContainer {
 	 * @return string Chemin d'accés au repertoir du container.
 	 */
 	public function getSavePath(): string {
-		return $this->_dbPath.DS.$this->getName();
+		return $this->_dbPath.'/'.$this->getName();
 	}
 
 	/**
@@ -142,5 +147,12 @@ final class KVSContainer implements IKVSContainer {
 	 */
 	public function getLogger(): ILogger {
 		return $this->_logger;
+	}
+
+	/**
+	 * @return bool True if the container may start, false otherwise
+	 */
+	public function enabled(): bool {
+		return $this->_enabled;
 	}
 }

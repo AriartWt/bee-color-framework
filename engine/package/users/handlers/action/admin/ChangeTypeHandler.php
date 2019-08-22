@@ -41,14 +41,14 @@ final class ChangeTypeHandler extends DefaultUserActionHandler implements IDomai
 		ITranslator $translator
 	){
 		parent::__construct($bus, $rule, $session,$translator);
-		$observer->addEventListener(UserTypeChangedEvent::class,$this);
+		$observer->addDomainEventListener(UserTypeChangedEvent::class, $this);
 	}
 
 	/**
 	 * Méthode appelée lors de la reception d'un événement
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof UserTypeChangedEvent) $this->_event = $e;
 	}
 

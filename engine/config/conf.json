@@ -2,33 +2,35 @@
 	"server": {
 		"framework": {
 			"name": "wfw",
-			"version": "STABLE-1.3"
+			"version": "2.0"
 		},
 		"daemons": {
 			"kvs": "kvstore\/server\/config\/conf.json",
 			"model_supervisor": "modelSupervisor\/server\/config\/conf.json",
-			"sctl": "sctl\/config\/conf.json"
+			"sctl": "sctl\/config\/conf.json",
+			"rts": "rts\/server\/config\/conf.json"
 		},
 		"cli": {
 			"backup": "backup\/config\/conf.json",
 			"updator": "updator\/config\/conf.json"
 		},
 		"language": {
-			"default": "fr",
+			"default": "fr_FR",
 			"availables": [
-				"fr"
+				"fr_FR"
 			]
 		},
 		"router": {
 			"connections": []
 		},
-		"tmp": {
-			"dir": "site\/tmp"
+		"sessions" : {
+			"timeout" : 1800
 		},
 		"uploader" : {
 			"dir" : "site/webroot/uploads",
 			"quotas" : "1Go",
-			"max_size" : "300Mo",
+			"max_size_by_file" : "300Mo",
+			"max_size_at_once" : "300Mo",
 			"accepted_mimes" : ["/^image\\/.*$/","/^video\\/mp4$/","/^audio\\/mp3$/","/^audio\\/mpeg$/"]
 		},
 	  	"modules" : {

@@ -45,14 +45,14 @@ final class ResetPasswordHandler extends DefaultUserActionHandler implements IDo
 	){
 		parent::__construct($bus,$rule, $session, $translator);
 		$this->_access = $access;
-		$observer->addEventListener(UserPasswordResetedEvent::class,$this);
+		$observer->addDomainEventListener(UserPasswordResetedEvent::class, $this);
 	}
 
 	/**
 	 * Méthode appelée lors de la reception d'un événement
 	 * @param IDomainEvent $e Evenement reçu
 	 */
-	public function recieveEvent(IDomainEvent $e): void {
+	public function recieveDomainEvent(IDomainEvent $e): void {
 		if($e instanceof UserPasswordResetedEvent) $this->_event = $e;
 	}
 

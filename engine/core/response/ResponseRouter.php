@@ -2,7 +2,9 @@
 namespace wfw\engine\core\response;
 
 use wfw\engine\core\action\IAction;
+use wfw\engine\core\conf\IConf;
 use wfw\engine\core\response\errors\InvalidResponseHandler;
+use wfw\engine\core\response\errors\ResponseHandlerNotEnabled;
 use wfw\engine\core\response\errors\ResponseHandlerNotFound;
 use wfw\engine\core\response\responses\ErrorResponse;
 use wfw\engine\package\general\handlers\response\AjaxHandler;
@@ -18,18 +20,35 @@ final class ResponseRouter implements IResponseRouter {
 	private $_factory;
 	/** @var int $_foldingLimit */
 	private $_foldingLimit;
+	/** @var array $_enabledPackage */
+	private $_enabledPackages;
 
 	/**
 	 * ActionResponseRouter constructor.
 	 *
-	 * @param IResponseHandlerFactory $factory Factory pour la création des ResponseHandlers
-	 * @param int $foldingLimit (optionnel defaut : 5) Limite du nombre de sous
-	 *                          repertoirs de recherche. Si la limite est atteinte, et que le
-	 *                          handler n'est pas trouvé, l'exception HandlerNotFound sera levée.
+	 * @param IConf                   $conf
+	 * @param IResponseHandlerFactory $factory      Factory pour la création des ResponseHandlers
+	 * @param int                     $foldingLimit (optionnel defaut : 5) Limite du nombre de sous
+	 *                                              repertoirs de recherche. Si la limite est atteinte, et que le
+	 *                                              handler n'est pas trouvé, l'exception HandlerNotFound sera levée.
 	 */
-	public function __construct(IResponseHandlerFactory $factory, int $foldingLimit = 5) {
+	public function __construct(IConf $conf,IResponseHandlerFactory $factory, int $foldingLimit = 5) {
+		$this->_enabledPackages = array_flip($conf->getArray("server/packages") ?? []);
 		$this->_factory = $factory;
 		$this->_foldingLimit = $foldingLimit;
+	}
+
+	/**
+	 * @param string      $package
+	 * @param null|string $location
+	 * @return bool
+	 */
+	private function enabledPackage(string $package, ?string $location = null):bool{
+		$package = str_replace("\\","/",$package);
+		if(is_null($location)) return isset($this->_enabledPackages["site/$package"])
+			|| isset($this->_enabledPackages["modules/$package"])
+			|| isset($this->_enabledPackages["engine/$package"]);
+		else return isset($this->_enabledPackages["$location/$package"]);
 	}
 
 	/**
@@ -49,26 +68,39 @@ final class ResponseRouter implements IResponseRouter {
 			}else{
 				$path = explode('/',$action->getInternalPath());
 				if(!is_null($package = array_shift($path))){
-					$handlerClass = "package\\$package\\handlers\\response";
+					$handlerClass = "handlers\\response";
+					$modulePackage = $package;
+					$moduleHandlerClass = $handlerClass;
 					$handlerFound = false;
 					$handlerArgs = [];
 					$folding = 0;
 					while(!is_null($part = array_shift($path)) && $folding<$this->_foldingLimit){
 						$handlerClass.="\\";
-						$viewClass = str_replace("handlers\\response","views",$handlerClass)
+						$viewClass = str_replace("handlers\\response","views","package\\$package\\".$handlerClass)
+							.lcfirst($part)."\\".ucfirst($part);
+						$moduleViewClass = str_replace("handlers\\response","views","wfw\\modules\\$modulePackage\\".$moduleHandlerClass)
 							.lcfirst($part)."\\".ucfirst($part);
 						$tmpName = ucfirst($part)."Handler";
-						if(class_exists("wfw\\site\\".$handlerClass.$tmpName)){
-							$handlerClass = "wfw\\site\\".$handlerClass.$tmpName;
+						if(class_exists("wfw\\site\\package\\$package\\".$handlerClass.$tmpName)){
+							$handlerClass = "wfw\\site\\package\\$package\\".$handlerClass.$tmpName;
 							$handlerFound = true;
 							break;
-						}else if(class_exists("wfw\\engine\\".$handlerClass.$tmpName)){
-							$handlerClass = "wfw\\engine\\".$handlerClass.$tmpName;
+						}else if(class_exists("wfw\\modules\\$modulePackage\\".$moduleHandlerClass."\\".$tmpName)){
+							$handlerClass = "wfw\\modules\\$modulePackage\\".$moduleHandlerClass."\\".$tmpName;
+							$handlerFound = true;
+							break;
+						}else if(class_exists("wfw\\engine\\package\\$package\\".$handlerClass.$tmpName)){
+							$handlerClass = "wfw\\engine\\package\\$package\\".$handlerClass.$tmpName;
 							$handlerFound = true;
 							break;
 						}else if(class_exists("wfw\\site\\$viewClass")){
 							$handlerClass = GenericResponseHandler::class;
 							$handlerArgs[] = "wfw\\site\\$viewClass";
+							$handlerFound = true;
+							break;
+						}else if(class_exists("wfw\\modules\\$moduleViewClass")){
+							$handlerClass = GenericResponseHandler::class;
+							$handlerArgs[] = "wfw\\modules\\$moduleViewClass";
 							$handlerFound = true;
 							break;
 						}else if(class_exists("wfw\\engine\\$viewClass")){
@@ -78,9 +110,18 @@ final class ResponseRouter implements IResponseRouter {
 							break;
 						}else{
 							$handlerClass.=$part;
+							if($this->enabledPackage($modulePackage,"modules"))
+								$moduleHandlerClass.="\\$part\\";
+							else $modulePackage.="\\$part";
 						}
 					}
 					if($handlerFound){
+						if(!$this->enabledPackage($package) && !$this->enabledPackage($modulePackage,"modules")) {
+							throw new ResponseHandlerNotEnabled(
+								"Response found : $handlerClass, but the '$package' package or the module '$modulePackage' haven't been enabled. "
+								."Please check your project configuration and add this package to the 'server/packages' list."
+							);
+						}
 						try{
 							return $this->_factory->create(
 								$handlerClass,

@@ -2,9 +2,11 @@
 namespace wfw\engine\core\security\rules;
 
 use wfw\engine\core\action\IAction;
+use wfw\engine\core\lang\ITranslator;
 use wfw\engine\core\notifier\IMessage;
 use wfw\engine\core\notifier\INotifier;
 use wfw\engine\core\notifier\Message;
+use wfw\engine\core\notifier\MessageTypes;
 use wfw\engine\core\response\responses\Redirection;
 use wfw\engine\core\security\AccessPermission;
 use wfw\engine\core\security\IAccessPermission;
@@ -31,31 +33,43 @@ final class UserTypeBasedAccess implements IAccessRule{
 	private $_roles;
 	/** @var string $_redirUrl */
 	private $_redirUrl;
+	/** @var ITranslator $_translator */
+	private $_translator;
 
 	/**
 	 * UserTypeBasedAccess constructor.
-	 * @param ISession $session
-	 * @param INotifier $notifier
-	 * @param array $roles Liste de regexp permettant d'autoriser un type d'utilisateur à accéder à
-	 *                     une action
-	 * @param null|string $redir_url Url de redirection lorsque l'accés est refusé
-	 * @param null|string $sessionKey Cle de session contenant l'utilisateur loggé
+	 *
+	 * @param ISession      $session
+	 * @param INotifier     $notifier
+	 * @param ITranslator   $translator
+	 * @param array         $roles      Liste de regexp permettant d'autoriser un type d'utilisateur à accéder à
+	 *                                  une action
+	 * @param null|string   $redir_url  Url de redirection lorsque l'accés est refusé
+	 * @param null|string   $sessionKey Cle de session contenant l'utilisateur loggé
 	 * @param null|IMessage $message
 	 * @throws \InvalidArgumentException
 	 */
 	public function __construct(
 		ISession $session,
 		INotifier $notifier,
+		ITranslator $translator,
 		array $roles,
 		?string $redir_url=null,
 		?string $sessionKey = null,
 		?IMessage $message=null
 	){
+		$this->_translator = $translator;
 		$this->_notifier = $notifier;
 		$this->_session = $session;
 		$this->_key = $sessionKey ?? "user";
 		$this->_redirUrl = "/";
-		$this->_message = $message ?? new Message("Permission denied !");
+		$this->_message = $message ?? new Message(
+			$translator->getAndTranslate("server/engine/core/app/ACCESS_DENIED")
+			." : ".$this->_translator->getAndTranslate(
+				"server/engine/core/app/INSUFFICIENT_PRIVILEGIES"
+			),
+			MessageTypes::ERROR
+		);
 		foreach($roles as $r=>$rules){
 			if(!class_exists($r) || !is_a($r,UserType::class,true)
 			) throw new \InvalidArgumentException("$r doesn't implements ".UserType::class);
@@ -98,7 +112,7 @@ final class UserTypeBasedAccess implements IAccessRule{
 		return new AccessPermission(
 			false,
 			HTTPStatus::FORBIDDEN,
-			"Access denied : insufficient user privileges",
+			(string) $this->_message,
 			new Redirection($this->_redirUrl,HTTPStatus::FORBIDDEN)
 		);
 	}

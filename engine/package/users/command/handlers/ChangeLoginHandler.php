@@ -28,11 +28,11 @@ final class ChangeLoginHandler extends UserCommandHandler{
 	 * Traite la commande
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		/** @var ChangeLogin $command */
 		if(is_null($this->_access->getByLogin($command->getLogin()))){
 			$user = $this->get($command->getUserId());
-			$user->changeLogin($command->getLogin(),$command->getModifierId());
+			$user->changeLogin($command->getLogin(),$command->getInitiatorId());
 			$this->repos()->modify($user,$command);
 		}else{
 			throw new UserAlreadyExists($command->getLogin()." is not available !");

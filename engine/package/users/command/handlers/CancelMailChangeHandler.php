@@ -12,10 +12,10 @@ final class CancelMailChangeHandler extends UserCommandHandler{
 	 * Traite la commande
 	 * @param ICommand $command Commande à traiter
 	 */
-	public function handle(ICommand $command) {
+	public function handleCommand(ICommand $command) {
 		/** @var CancelMailChange $command */
 		$user = $this->get($command->getUserId());
-		$user->cancelEmailChange($command->getModifierId());
+		$user->cancelEmailChange($command->getInitiatorId());
 		$this->repos()->modify($user,$command);
 	}
 }

@@ -23,10 +23,10 @@ class KVStoreBasedModelLoader implements IModelLoader {
 	 */
 	public function __construct(IKVSAccess $access, array $allowedToLoad) {
 		$this->_kvs = $access;
-		foreach($allowedToLoad as $model){
+		foreach($allowedToLoad as $model=>$params){
 			if(!is_string($model) || !class_exists($model)
 				|| !is_a($model,InMemoryEventBasedModel::class,true)){
-				throw new \InvalidArgumentException("$model is not a valide model name !");
+				throw new \InvalidArgumentException("$model is not a compatible Model !");
 			}
 		}
 		$this->_allowedToLoad = $allowedToLoad;
@@ -40,15 +40,10 @@ class KVStoreBasedModelLoader implements IModelLoader {
 	 * @return IModel|null
 	 */
 	public function load(string $model): ?IModel {
-		if(!is_bool(array_search($model,$this->_allowedToLoad))){
-			if($this->_kvs->exists($model)){
-				return $this->_kvs->get($model);
-			}else{
-				return null;
-			}
-		}else{
-			throw new \InvalidArgumentException("$model is not a valide model name !");
-		}
+		if(isset($this->_allowedToLoad[$model])){
+			if($this->_kvs->exists($model)) return $this->_kvs->get($model);
+			else return null;
+		}else throw new \InvalidArgumentException("$model is not a valide model name !");
 	}
 
 	/**

@@ -121,7 +121,8 @@ final class KVSServerEnvironment implements IKVSServerEnvironment {
 				$this->_groupDefs,
 				$defaultStorage,
 				$containerInfos->path ?? $dbPath,
-				$containerInfos->logger
+				$containerInfos->logger,
+				$containerInfos->enabled ?? true
 			);
 		}
 		$this->_sessions = [];
@@ -162,9 +163,8 @@ final class KVSServerEnvironment implements IKVSServerEnvironment {
 	 * @return bool
 	 */
 	private function checkPermission(stdClass $access,string $requestClass):bool{
-		if(isset($access->all) && $access->all){
-			return true;
-		}else{
+		if(isset($access->all) && $access->all) return true;
+		else{
 			if(is_a($requestClass,ShutdownKVSServerRequest::class,true)
 				&& isset($access->shutdown)
 				&& $access->shutdown){
@@ -180,11 +180,8 @@ final class KVSServerEnvironment implements IKVSServerEnvironment {
 	 * @return IKVSContainer
 	 */
 	public function getContainer(string $name): IKVSContainer {
-		if($this->existsContainer($name)){
-			return $this->_containers[$name];
-		}else{
-			throw new ContainerNotFound("Unknwown container $name");
-		}
+		if($this->existsContainer($name)) return $this->_containers[$name];
+		else throw new ContainerNotFound("Unknwown container $name");
 	}
 
 	/**
@@ -206,11 +203,8 @@ final class KVSServerEnvironment implements IKVSServerEnvironment {
 	 * @return IKVSUser
 	 */
 	public function getUser(string $name): IKVSUser {
-		if($this->existsUser($name)){
-			return $this->_users[$name];
-		}else{
-			throw new UserNotFound("Unknown user $name !");
-		}
+		if($this->existsUser($name)) return $this->_users[$name];
+		else throw new UserNotFound("Unknown user $name !");
 	}
 
 	/**
@@ -278,12 +272,8 @@ final class KVSServerEnvironment implements IKVSServerEnvironment {
 					"expire_date" => microtime(true) + $this->_ttl
 				];
 				return $session->getId();
-			}else{
-				return null;
-			}
-		}else{
-			return null;
-		}
+			}else return null;
+		}else return null;
 	}
 
 	/**
@@ -299,9 +289,7 @@ final class KVSServerEnvironment implements IKVSServerEnvironment {
 		if($this->existsUserSession($sessionId)){
 			$this->touchUserSession($sessionId);
 			return $this->_sessions[$sessionId]["session"];
-		}else{
-			return null;
-		}
+		}else return null;
 	}
 
 	/**
