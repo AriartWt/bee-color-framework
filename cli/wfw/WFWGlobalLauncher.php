@@ -42,6 +42,7 @@ $argvReader=$argvReader = new ArgvReader(new ArgvParser(new ArgvOptMap([
 	new ArgvOpt('self','Applique les commandes sur le wfw global',null,null,true),
 	new ArgvOpt('reinstall','Reinstall wfw and all daemons',null,null,true),
 	new ArgvOpt('uninstall','Uninstall wfw and all daemons',null,null,true),
+	new ArgvOpt('clear_cache','Clear all caches',0,null,true),
 	new ArgvOpt(
 			'update','Met à jour les fichiers wfw du projet ciblé avec les fichiers contenus dans le dossier spécifié '
 			.'(update [-self(global) | -all(tous) | -projet,projet2,...(projets spécifiés)] [sources path]',
@@ -108,6 +109,11 @@ try{
 		system("\"".dirname(__DIR__)."/installer/reinstall.sh\" 2>&1");
 	}else if($argvReader->exists('uninstall')){
 		system("\"".dirname(__DIR__)."/installer/uninstall.sh\" 2>&1");
+	}else if($argvReader->exists('clear_cache')){
+		//clear all caches to be sure all will be reloaded
+		(new HTTPRequest("http://127.0.0.1/wfw/clear_caches.php",[],["method" =>  "GET"]))
+			->send();
+		fwrite(STDOUT,"Cache cleared.\n");
 	}else if($argvReader->exists('restore')){
 		foreach($data as $project=>$p){
 			$p=dirname($p);
