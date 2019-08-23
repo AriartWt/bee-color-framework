@@ -185,9 +185,16 @@ final class MSServer {
 			ILogger::LOG
 		);
 		while(true){
-			$socket = socket_accept($this->_socket);
-			$this->configureSocket($socket);
-			$this->process($socket);
+			try{
+				$socket = socket_accept($this->_socket);
+				$this->configureSocket($socket);
+				$this->process($socket);
+			}catch(\Error | \Exception $e){
+				$this->_logger->log(
+					"[MSServer] Unable to accept connection : $e",
+					ILogger::ERR
+				);
+			}
 		}
 	}
 
