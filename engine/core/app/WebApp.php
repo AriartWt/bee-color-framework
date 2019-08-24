@@ -101,7 +101,7 @@ final class WebApp {
 						$response->getCode(),
 						$permission->getMessage()
 					);
-				}else $this->redirect($response->getUrl(),$response->getCode());
+				}else $this->redirect($response->getUrl(),$response->getCode(), $response->isAbsolute());
 			}
 
 			$responseRouter = $this->_context->getResponseRouter();
@@ -149,14 +149,16 @@ final class WebApp {
 	}
 
 	/**
-	 * @param string   $url  URL de redirection
-	 * @param int|null $code Code de redirection
+	 * @param string    $url  URL de redirection
+	 * @param int|null  $code Code de redirection
+	 * @param bool|null $absolute
 	 */
-	private function redirect(string $url,?int $code = null){
+	private function redirect(string $url,?int $code = null, ?bool $absolute = false){
 		if(HTTPStatus::existsValue($code)){
 			http_response_code($code);
 		}
-		header("Location: ".$this->_context->getRouter()->url($url));
+		$url = $absolute ? $url : $this->_context->getRouter()->url($url);
+		header("Location: $url");
 		exit(0);
 	}
 }

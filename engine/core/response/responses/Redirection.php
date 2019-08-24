@@ -11,16 +11,20 @@ final class Redirection implements IResponse {
 	private $_url;
 	/** @var null|int $code */
 	private $_code;
+	/** @var bool|null $_absolute */
+	private $_absolute;
 
 	/**
 	 * RedirectionResponse constructor.
 	 *
-	 * @param string   $url  URL de redirection
-	 * @param int|null $code Code de redirection
+	 * @param string    $url  URL de redirection
+	 * @param int|null  $code Code de redirection
+	 * @param bool|null $absolute If true, the given url is absolute and must not be parsed by the router.
 	 */
-	public function __construct(string $url,?int $code=null) {
+	public function __construct(string $url,?int $code=null, ?bool $absolute=false) {
 		$this->_url = $url;
 		$this->_code = $code;
+		$this->_absolute = $absolute;
 	}
 
 	/**
@@ -35,6 +39,13 @@ final class Redirection implements IResponse {
 	 */
 	public function getCode():?int{
 		return $this->_code;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isAbsolute():bool{
+		return $this->_absolute;
 	}
 
 	/**
