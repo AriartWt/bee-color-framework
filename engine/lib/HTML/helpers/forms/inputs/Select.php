@@ -51,7 +51,7 @@ final class Select implements IHTMLInput {
 	 */
 	public function setData($data): void {
 		foreach($this->_fields as $field){
-			if($field->getValue() === $data){
+			if($field->getValue() == $data){
 				$field->selected();
 				$this->_data = $data;
 				break;
