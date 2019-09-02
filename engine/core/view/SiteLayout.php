@@ -9,6 +9,7 @@ use wfw\engine\core\router\IRouter;
 use wfw\engine\core\session\ISession;
 use wfw\engine\lib\HTML\resources\css\ICSSManager;
 use wfw\engine\lib\HTML\resources\js\IJsScriptManager;
+use wfw\engine\lib\HTML\resources\SvgImporter;
 use wfw\engine\package\general\lib\JsApiHelper;
 use wfw\engine\package\users\domain\types\Admin;
 
@@ -16,6 +17,7 @@ use wfw\engine\package\users\domain\types\Admin;
  * Default site layout that can be extended.
  */
 class SiteLayout extends Layout {
+	private $_svg;
 	/** @var IConf $_conf */
 	private $_conf;
 	/** @var ICacheSystem $_cache */
@@ -59,6 +61,11 @@ class SiteLayout extends Layout {
 			$conf->getString("server/framework/version")
 			."-app-".($conf->getString("app/version") ?? '0.0')
 		));
+		$this->_svg = new SvgImporter(
+			dirname(__DIR__,3)
+			."/site/package/web/webroot/Image/svg",
+			$cache
+		);
 		$this->_conf = $conf;
 		$this->_cache = $cache;
 		$this->_router = $router;
@@ -84,35 +91,55 @@ class SiteLayout extends Layout {
 	/**
 	 * @return mixed
 	 */
-	public function getConf() {
+	public function getConf():IConf {
 		return $this->_conf;
+	}
+
+	/**
+	 * @return SvgImporter
+	 */
+	public function getSvg():SvgImporter{
+		return $this->_svg;
+	}
+
+	/**
+	 * @param string $name
+	 * @param string $package
+	 * @return string
+	 */
+	public function svgImport(string $name,string $package="web"):string{
+		return $this->_svg->import(
+			dirname(__DIR__,3)
+			."/site/package/$package/webroot/Image/svg/$name",
+			true
+		);
 	}
 
 	/**
 	 * @return mixed
 	 */
-	public function getRouter() {
+	public function getRouter():IRouter {
 		return $this->_router;
 	}
 
 	/**
 	 * @return mixed
 	 */
-	public function getSession() {
+	public function getSession():ISession {
 		return $this->_session;
 	}
 
 	/**
-	 * @return mixed
+	 * @return ICacheSystem
 	 */
-	public function getCache() {
+	public function getCache():ICacheSystem {
 		return $this->_cache;
 	}
 
 	/**
-	 * @return mixed
+	 * @return INotifier
 	 */
-	public function getNotifier() {
+	public function getNotifier():INotifier {
 		return $this->_notifier;
 	}
 }
