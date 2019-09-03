@@ -97,7 +97,7 @@ final class APCUBasedCache implements ICacheSystem{
 	 */
 	public function getAll(array $keys): iterable {
 		foreach($keys as $k=>$key){
-			$keys[$k]="/".str_replace("/",'\/',"^$this->_namespace::$key")."/";
+			$keys[$k]="/".str_replace(["/","\\"],['\/','\\'],"^$this->_namespace::$key")."/";
 		}
 		if(count($keys) === 1) $keys = array_pop($keys);
 		return new \APCUIterator($keys);
