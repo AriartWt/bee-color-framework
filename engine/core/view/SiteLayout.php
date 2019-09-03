@@ -142,4 +142,18 @@ class SiteLayout extends Layout {
 	public function getNotifier():INotifier {
 		return $this->_notifier;
 	}
+
+	/**
+	 * @return string
+	 */
+	public function CSS():string{
+		return $this->registerPostAction($this->getCSSImportCallable());
+	}
+
+	/**
+	 * @return string
+	 */
+	public function JS():string{
+		return $this->registerPostAction($this->getJSImportCallable());
+	}
 }
