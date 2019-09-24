@@ -12,6 +12,7 @@
 	--adminPanel-bottomIcon-width : 60px;
 	--adminPanel-settingsIcon-height : 40px;
 	--adminPanel-settingsIcon-width : 40px;
+	--adminPanel-buttons-color:#FF9900;
 }
 html{
 	height:100%;
@@ -29,6 +30,90 @@ iframe{
 	transform-origin: top right;
 	display:block;
 	box-sizing: border-box;
+}
+.main-panel > div{
+	overflow:auto;
+}
+.body{
+	padding : 20px;
+	overflow:auto;
+}
+.body > div > .buttons{
+	display:inline-flex;
+	position:relative;
+}
+.buttons .button{
+	font-size:200%;
+	font-weight: 400;
+	cursor:pointer;
+	padding:5px;
+	width:50px;
+	box-shadow:0 2px 5px rgba(0,0,0,0.4);
+	text-align:center;
+	display:block;
+	background-color: rgb(55,55,55);
+}
+.buttons .button svg{
+	display:block;
+	width:90%;
+	margin:auto;
+}
+.buttons .button svg path,
+.buttons .button svg circle,
+.buttons .button svg polygon{
+	transition: all 0.35s;
+}
+.buttons .button:hover svg path,
+.buttons .button:hover svg circle,
+.buttons .button:hover svg polygon{
+	fill:white;
+}
+.buttons .button:last-child{
+	position:relative;
+}
+
+.buttons .button:first-child{
+	color:#00ff00;
+}
+.buttons .button:nth-child(2){
+	color:red;
+}
+.buttons .button:last-child,
+.buttons .button:nth-child(3){
+	display:flex;
+	flex-direction: column;
+	justify-content: center;
+}
+.buttons .button:last-child .icon,
+.buttons .button:nth-child(3) .icon{
+	border-radius:100px;
+	background-color: rgb(200,200,200);
+	width:10px;
+	height:10px;
+	display:inline-block;
+	margin:auto;
+}
+.buttons .button:nth-child(3) .icon{
+	background-color: #00ff00;
+}
+.buttons .button .title{
+	position:absolute;
+	left:125%;
+	top:50%;
+	color:var(--adminPanel-buttons-color);
+	font-size:16px;
+	font-weight: 400;
+	opacity:0;
+	white-space: nowrap;
+	transform: translateY(-50%);
+	transition: all 0.35s;
+	padding-left:10px;
+	visibility: hidden;
+}
+.buttons .button:hover .title{
+	visibility: visible;
+	opacity: 1;
+	left:100%;
 }
 .panel{
 	position:fixed;

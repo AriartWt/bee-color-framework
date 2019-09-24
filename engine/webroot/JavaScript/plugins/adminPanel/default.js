@@ -10,7 +10,7 @@ let $lstr = ($key,...$replaces)=>wfw.ui.lang.get("plugins/adminPanel/default/"+$
 wfw.define("plugins/adminPanel/default", function ($params,$loadOrder,$hbTimeout) {
 	let $packages = {}, $modules = {}, $ready = [], $inst=this, $loaded = false;
 	$params = $params || {}; $loadOrder = Array.isArray($loadOrder) ? $loadOrder : [];
-	$hbTimeout = Number.isInteger($hbTimeout) ? Math.abs($hbTimeout) : 0;
+	$hbTimeout = Number.isInteger($hbTimeout) ? Math.abs($hbTimeout) : 10000;
 	let $find = function($pName){
 		let $o = wfw;
 		$pName.split("/").forEach(($part)=> $part in $o ? $o=$o[$part] : $o = null);
