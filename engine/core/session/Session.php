@@ -20,7 +20,7 @@ final class Session implements ISession {
 	 * @param null|string              $logKey  (default : user) User key where all session data of a logged user
 	 *                                          are stored until logout.
 	 * @param \SessionHandlerInterface $handler (optionnel) Session handler to register
-	 * @param int|null                 $timeout
+	 * @param int|null                 $timeout (optionnal) En secondes
 	 */
 	public function __construct(
 		string $logKey = "user",
@@ -36,7 +36,7 @@ final class Session implements ISession {
 			ini_set("session.gc_maxlifetime",$timeout);
 		}
 		ini_set("session.cookie_lifetime",$timeout);
-		$this->_timeout = $timeout;
+		$this->_timeout = ($timeout ?? 1800) * 1000 * 1000;
 		$this->_firstStart = true;
 		$this->_logKey = $logKey;
 	}
@@ -126,7 +126,8 @@ final class Session implements ISession {
 			session_start();
 			if($this->_firstStart) $this->_firstStart = false;
 			else $this->clearDuplicateCookies();
-			$this->checkTimeout();
 		}else throw new SessionFailure("Can't start an active session !");
+		$this->checkTimeout();
+		$this->set(self::LAST_ACTIVITY, microtime(true));
 	}
 }
