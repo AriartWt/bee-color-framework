@@ -21,7 +21,7 @@ use wfw\engine\package\users\domain\settings\InMemoryUserSettings;
 use wfw\engine\package\users\domain\states\DisabledUser;
 use wfw\engine\package\users\domain\types\Admin;
 use wfw\engine\package\users\domain\types\Basic;
-use wfw\engine\package\users\domain\types\Client;
+use wfw\engine\package\users\domain\types\Customer;
 use wfw\engine\package\users\handlers\action\DefaultUserActionHandler;
 use wfw\engine\package\users\security\data\RegisterUserRule;
 
@@ -71,7 +71,7 @@ final class RegisterHandler extends DefaultUserActionHandler implements IDomainE
 			case "admin" :
 				$type = new Admin(); break;
 			case "client" :
-				$type = new Client(); break;
+				$type = new Customer(); break;
 			default :
 				$type = new Basic(); break;
 		}

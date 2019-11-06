@@ -4,7 +4,7 @@ namespace wfw\engine\package\users\data\model\specs;
 
 use wfw\engine\core\data\specification\LeafSpecification;
 use wfw\engine\package\users\data\model\objects\User;
-use wfw\engine\package\users\domain\types\Client;
+use wfw\engine\package\users\domain\types\Customer;
 
 /**
  * Verfie si un utilisateur est un client
@@ -20,6 +20,6 @@ final class IsClient extends LeafSpecification{
 	 */
 	public function isSatisfiedBy($candidate): bool {
 		/** @var User $candidate */
-		return $candidate->getType() instanceof Client;
+		return $candidate->getType() instanceof Customer;
 	}
 }

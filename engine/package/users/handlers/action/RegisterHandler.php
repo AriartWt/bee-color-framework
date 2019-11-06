@@ -27,7 +27,7 @@ use wfw\engine\package\users\domain\Password;
 use wfw\engine\package\users\domain\settings\InMemoryUserSettings;
 use wfw\engine\package\users\domain\states\UserWaitingForRegisteringConfirmation;
 use wfw\engine\package\users\domain\types\Basic;
-use wfw\engine\package\users\domain\types\Client;
+use wfw\engine\package\users\domain\types\Customer;
 use wfw\engine\package\users\lib\confirmationCode\IUserConfirmationCodeGenerator;
 use wfw\engine\package\users\lib\HTML\RegisterUserForm;
 use wfw\engine\package\users\security\data\SelfRegisterRule;
@@ -121,7 +121,7 @@ final class RegisterHandler implements IActionHandler, IDomainEventListener{
 				$type = $this->_conf->getString("server/modules/users/register_type");
 				switch($type){
 					case "client" :
-						$type = new Client(); break;
+						$type = new Customer(); break;
 					case "basic" :
 						$type = new Basic(); break;
 					default :

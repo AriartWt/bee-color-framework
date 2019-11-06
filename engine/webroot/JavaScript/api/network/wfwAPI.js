@@ -18,7 +18,7 @@ wfw.define("network/wfwAPI",(function($csrfToken){
 				return undefined;
 			}
 			if($code && typeof $params[$code] === 'function') $params[$code]($res);
-			else if(typeof $code === "string" && $code.charAt(0) !== '0') $error($res,$code);
+			else if($code && $code.toString().charAt(0) !== '0') $error($res,$code);
 			else if($success) $success($res,$code);
 		};
 		wfw.network.ajax($url,$params);

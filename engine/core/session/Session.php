@@ -31,12 +31,9 @@ final class Session implements ISession {
 			ini_set('session.use_strict_mode',true);
 			session_set_save_handler($handler,true);
 		}
-		if(is_null($timeout)){
-			$timeout = ini_get("session.gc_maxlifetime");
-			ini_set("session.gc_maxlifetime",$timeout);
-		}
-		ini_set("session.cookie_lifetime",$timeout);
 		$this->_timeout = ($timeout ?? 1800) * 1000 * 1000;
+		/*ini_set("session.gc_maxlifetime",$timeout);
+		ini_set("session.cookie_lifetime",$timeout);*/
 		$this->_firstStart = true;
 		$this->_logKey = $logKey;
 	}

@@ -13,7 +13,7 @@ use wfw\engine\package\users\command\ChangeType;
 use wfw\engine\package\users\domain\events\UserTypeChangedEvent;
 use wfw\engine\package\users\domain\types\Admin;
 use wfw\engine\package\users\domain\types\Basic;
-use wfw\engine\package\users\domain\types\Client;
+use wfw\engine\package\users\domain\types\Customer;
 use wfw\engine\package\users\handlers\action\DefaultUserActionHandler;
 use wfw\engine\package\users\security\data\ChangeUserTypeRule;
 
@@ -72,7 +72,7 @@ final class ChangeTypeHandler extends DefaultUserActionHandler implements IDomai
 			case "admin" :
 				$type = new Admin(); break;
 			case "client" :
-				$type = new Client(); break;
+				$type = new Customer(); break;
 			default :
 				$type = new Basic(); break;
 		}
