@@ -7,6 +7,7 @@ use wfw\engine\core\notifier\Message;
 use wfw\engine\core\response\errors\ResponseHandlerNotEnabled;
 use wfw\engine\core\response\responses\ErrorResponse;
 use wfw\engine\core\response\errors\ResponseResolutionFailure;
+use wfw\engine\core\response\responses\FileResponse;
 use wfw\engine\core\response\responses\StaticResponse;
 use wfw\engine\core\app\context\IWebAppContext;
 use wfw\engine\core\response\responses\Redirection;
@@ -102,6 +103,8 @@ final class WebApp {
 						$permission->getMessage()
 					);
 				}else $this->redirect($response->getUrl(),$response->getCode(), $response->isAbsolute());
+			}else if($response instanceof FileResponse){
+				$this->sendFile($response->getData());
 			}
 
 			$responseRouter = $this->_context->getResponseRouter();
@@ -160,5 +163,32 @@ final class WebApp {
 		$url = $absolute ? $url : $this->_context->getRouter()->url($url);
 		header("Location: $url");
 		exit(0);
+	}
+
+	/**
+	 * @param string $filename
+	 */
+	private function sendFile(string $filename):void{
+		//Get file type and set it as Content Type
+		$finfo = finfo_open(FILEINFO_MIME_TYPE);
+		header('Content-Type: '.finfo_file($finfo, $filename));
+		finfo_close($finfo);
+
+		//Use Content-Disposition: attachment to specify the filename
+		header('Content-Disposition: attachment; filename='.basename($filename));
+
+		//No cache
+		header('Expires: 0');
+		header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+		header("Cache-Control: post-check=0, pre-check=0", false);
+		header("Pragma: no-cache");
+
+		//Define file size
+		header('Content-Length: ' . filesize($filename));
+
+		ob_clean();
+		flush();
+		readfile($filename);
+		exit;
 	}
 }
