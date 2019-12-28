@@ -46,7 +46,7 @@ final class ErrorInput implements IHTMLInput {
 	 */
 	public function __toString() {
 		return
-			'<div class="flex">'
+			'<div class="flex form-field-error">'
 			.'<span class="error-inline" id="span'.$this->getName().'" title="'.$this->_errorMessage.'">'
 			.'<img class="input-icon" src="'.$this->_errorIcon.'" alt="Champ incorrect">'
 			.'</span>
