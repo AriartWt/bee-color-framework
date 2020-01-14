@@ -12,6 +12,6 @@ final class IsEmail extends ForEachFieldRule {
 	 * @return bool
 	 */
 	protected function applyOn($data): bool {
-		return !is_null(filter_var($data,FILTER_VALIDATE_EMAIL,FILTER_NULL_ON_FAILURE));
+		return !is_null(filter_var(trim($data),FILTER_VALIDATE_EMAIL,FILTER_NULL_ON_FAILURE));
 	}
 }
