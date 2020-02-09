@@ -39,6 +39,7 @@ abstract class Layout extends View implements ILayout {
 		parent::__construct($viewPath);
 		$this->_useViewCacheDirective = true;
 		$this->_allowCache = false;
+		$this->_version = $version;
 		$this->_css = $css;
 		$this->_js = $js;
 	}
